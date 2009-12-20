@@ -24,7 +24,7 @@ package = {
 		'http://gstreamer.freedesktop.org/src/%{name}/%{name}-%{version}.tar.gz'
 	],
 	'build': [
-		'%{__configure} ' + ' '.join (configure_flags)
-		'%{__make}'
+		'CFLAGS=-I%{_prefix}/include %{__configure} ' + ' '.join (configure_flags),
+		'CFLAGS=-I%{_prefix}/include %{__make}'
 	]
 }
