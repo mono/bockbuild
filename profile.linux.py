@@ -45,12 +45,9 @@ profile['packages'] = [
 	'packages/gstreamer.py',
 	'packages/gst-plugins-base.py',
 	'packages/gst-plugins-good.py',
-	'packages/gst-plugins-bad.py',
-	'packages/gst-plugins-ugly.py',
 
 	# Managed Deps
 	'packages/ndesk-dbus.py',
 	'packages/ndesk-dbus-glib.py',
-	'packages/taglib-sharp.py',
-	'packages/ige-mac-integration-sharp.py'
+	'packages/taglib-sharp.py'
 ]
