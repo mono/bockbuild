@@ -248,3 +248,6 @@ if __name__ == '__main__':
 			continue
 		package['_path'] = path
 		build_package (profile, parse_package (profile, package))
+	
+	print
+	print 'Done.'
