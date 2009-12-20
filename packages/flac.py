@@ -12,7 +12,7 @@ package = {
 		'http://downloads.xiph.org/releases/%{name}/%{name}-%{version}.tar.gz'
 	],
 	'build': [
-		'%{__configure}' + ' '.join (configure_flags),
+		'%{__configure} ' + ' '.join (configure_flags),
 		'%{__make}'
 	]
 }

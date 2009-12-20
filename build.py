@@ -7,6 +7,7 @@ import glob
 import shutil
 import urllib
 import subprocess
+from optparse import OptionParser
 
 def build_package (profile, (package, vars)):
 	package_dir = os.path.dirname (package['_path'])
@@ -19,7 +20,7 @@ def build_package (profile, (package, vars)):
 		print 'Skipping %s - already built' % package['name']
 		return
 
-	print 'Building %s on %s (%s CPU)' % (package['name'], profile['host'], get_cpu_count ())
+	print 'Building %s on %s (%s CPU)' % (package['name'], profile['host'], profile['cpu_count'])
 
 	# Set up the directories
 	if not os.path.exists (profile['build_root']) or not os.path.isdir (profile['build_root']):
@@ -59,6 +60,8 @@ def build_package (profile, (package, vars)):
 			if step.startswith ('cd '):
 				os.chdir (step[3:])
 			else:
+				if not profile['verbose']:
+					step = '( %s ) &>/dev/null' % step
 				run_shell (step)
 
 	open (build_success_file, 'w').close ()
@@ -70,16 +73,13 @@ def load_package_defaults (profile, package):
 
 	# tool macros
 	package['__configure'] = './configure --prefix=%{_prefix}'
-	package['__make'] = 'make -j%s' % get_cpu_count ()
+	package['__make'] = 'make -j%s' % profile['cpu_count']
 	package['__makeinstall'] = '%{__make} install'
 
 	# install default sections if they are missing
-	if not 'prep' in package:
-		package['prep'] = ['tar xf @{sources:0}', 'cd %{name}-%{version}']
-	if not 'build' in package:
-		package['build'] = ['%{__configure}', '%{__make}']
-	if not 'install' in package:
-		package['install'] = ['%{__makeinstall}']
+	package.setdefault ('prep', ['tar xf @{sources:0}', 'cd %{name}-%{version}'])
+	package.setdefault ('build', ['%{__configure}', '%{__make}'])
+	package.setdefault ('install', ['%{__makeinstall}'])
 
 #--------------------------------------
 # Package file parsing
@@ -200,16 +200,36 @@ def log (level, message):
 #--------------------------------------
 
 if __name__ == '__main__':
-	packages_to_build = sys.argv[2:]
-	exec open (sys.argv[1]).read ()
-	
+	parser = OptionParser (usage = 'usage: %prog [options] profile-path [package_names...]')
+	parser.add_option ('-v', '--verbose',
+		action = 'store_true', dest = 'verbose', default = False,
+		help = 'show all build output (e.g. configure, make)')
+	options, args = parser.parse_args ()
+	print options
+	if args == []:
+		parser.print_help ()
+		sys.exit (1)
+
+	profile_path = args[0]
+	packages_to_build = args[1:]
+
+	if not os.path.exists (profile_path):
+		sys.exit ('Profile %s does not exist.' % profile_path)
+
+	try:
+		exec open (profile_path).read ()
+	except Exception as e:
+		sys.exit ('Cannot load profile %s: %s' % (profile_path, e))
+
 	profile_vars = {}
 	for d in [profile, profile['environ']]:
 		for k, v in d.iteritems ():
 			profile_vars[k] = v
 
 	profile = expand_macros (profile, profile_vars, False)
+	profile.setdefault ('cpu_count', get_cpu_count ())
 	profile.setdefault ('host', get_host ())
+	profile.setdefault ('verbose', options.verbose)
 
 	log (0, 'Loaded profile \'%s\' (%s)' % (profile['name'], profile['host']))
 
@@ -219,7 +239,10 @@ if __name__ == '__main__':
 			os.environ[k] = v
 			log (1, '%s = %s' % (k, os.getenv (k)))
 
+	pwd = os.getcwd ()
 	for path in profile['packages']:
+		os.chdir (pwd)
+		path = os.path.join (os.path.dirname (profile_path), path)
 		exec open (path).read ()
 		if not packages_to_build == [] and package['name'] not in packages_to_build:
 			continue
