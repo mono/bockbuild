@@ -29,8 +29,6 @@ profile['packages'] = [
 	'packages/gettext.py',
 	'packages/pkg-config.py',
 	'packages/glib.py',
-	'packages/mono.py',
-
 	'packages/libxml2.py',
 	'packages/libproxy.py',
 	'packages/intltool.py',
@@ -53,7 +51,11 @@ profile['packages'] = [
 	'packages/gst-plugins-base.py',
 	'packages/gst-plugins-good.py',
 
+	# Mono
+	'packages/mono.py',
+
 	# Managed Deps
+	'packages/mono-addins.py',
 	'packages/ndesk-dbus.py',
 	'packages/ndesk-dbus-glib.py',
 	'packages/taglib-sharp.py'
