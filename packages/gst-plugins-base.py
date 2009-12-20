@@ -1,7 +1,8 @@
 configure_flags = [
 	'--disable-gtk-doc',
 	'--disable-gio',
-	'--disable-gnome_vfs'
+	'--disable-gnome_vfs',
+	'--disable-pango'
 ]
 
 # FIXME: these should be passed on the Linux profile
