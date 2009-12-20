@@ -8,22 +8,22 @@ import shutil
 import urllib
 import subprocess
 
-def build_package (package, vars):
+def build_package (profile, (package, vars)):
 	package_dir = os.path.dirname (package['_path'])
-	package_build_dir = os.path.join (config['build_root'],
+	package_build_dir = os.path.join (profile['build_root'],
 		'%s-%s' % (package['name'], package['version']))
-	build_success_file = os.path.join (config['build_root'],
+	build_success_file = os.path.join (profile['build_root'],
 		'%s-%s.success' % (package['name'], package['version']))
 
 	if os.path.exists (build_success_file):
 		print 'Skipping %s - already built' % package['name']
 		return
 
-	print 'Building %s on %s (%s CPU)' % (package['name'], get_host (), get_cpu_count ())
+	print 'Building %s on %s (%s CPU)' % (package['name'], profile['host'], get_cpu_count ())
 
 	# Set up the directories
-	if not os.path.exists (config['build_root']) or not os.path.isdir (config['build_root']):
-		os.makedirs (config['build_root'], 0755)
+	if not os.path.exists (profile['build_root']) or not os.path.isdir (profile['build_root']):
+		os.makedirs (profile['build_root'], 0755)
 
 	shutil.rmtree (package_build_dir, ignore_errors = True)
 	os.makedirs (package_build_dir)
@@ -63,9 +63,9 @@ def build_package (package, vars):
 
 	open (build_success_file, 'w').close ()
 
-def load_package_defaults (config, package):
+def load_package_defaults (profile, package):
 	# path macros
-	package['_build_root'] = os.path.join (config['build_root'], '_install')
+	package['_build_root'] = os.path.join (profile['build_root'], '_install')
 	package['_prefix'] = package['_build_root']
 
 	# tool macros
@@ -85,8 +85,8 @@ def load_package_defaults (config, package):
 # Package file parsing
 #--------------------------------------
 
-def parse_package (package):
-	load_package_defaults (config, package)
+def parse_package (profile, package):
+	load_package_defaults (profile, package)
 
 	# walk the top level to collect and save variable tree
 	vars = {}
@@ -199,44 +199,29 @@ def log (level, message):
 # Main Program
 #--------------------------------------
 
-__packages = []
-config = {
-	'build_root': os.path.join (os.getcwd (), 'build-root')
-}
-
-def load_file (path):
-	package = None
-	packages = None
-	build_env = None
-	if not os.path.isfile (path):
-		sys.exit ('Error: %s is not a file' % path)
-	exec open (path).read ()
-	if isinstance (package, dict):
-		package['_path'] = path
-		__packages.append (parse_package (package))
-	elif isinstance (packages, (list, tuple)):
-		pass
-		for package in packages:
-			load_file (package)
-	if isinstance (build_env, dict):
-		print '%s is overriding build_env config' % path
-		globals ()['config'] = build_env 
-
 if __name__ == '__main__':
-	for arg in sys.argv[1:]:
-		load_file (arg)
+	packages_to_build = sys.argv[2:]
+	exec open (sys.argv[1]).read ()
 	
-	config_vars = {}
-	for d in [config, config['environ']]:
+	profile_vars = {}
+	for d in [profile, profile['environ']]:
 		for k, v in d.iteritems ():
-			config_vars[k] = v
-	config = expand_macros (config, config_vars, False)
+			profile_vars[k] = v
 
-	if config['environ']:
+	profile = expand_macros (profile, profile_vars, False)
+	profile.setdefault ('host', get_host ())
+
+	log (0, 'Loaded profile \'%s\' (%s)' % (profile['name'], profile['host']))
+
+	if 'environ' in profile:
 		log (0, 'Setting environment variables')
-		for k, v in config['environ'].iteritems ():
+		for k, v in profile['environ'].iteritems ():
 			os.environ[k] = v
 			log (1, '%s = %s' % (k, os.getenv (k)))
 
-	for package, vars in __packages:
-		build_package (package, vars)
+	for path in profile['packages']:
+		exec open (path).read ()
+		if not packages_to_build == [] and package['name'] not in packages_to_build:
+			continue
+		package['_path'] = path
+		build_package (profile, parse_package (profile, package))

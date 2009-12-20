@@ -1,3 +1,10 @@
+configure_flags = [
+	'--disable-cpplibs'
+]
+
+if profile['name'] == 'osx':
+	configure_flags.append ('--disable-asm-optimizations')
+
 package = {
 	'name':    'flac',
 	'version': '1.2.1',
@@ -5,9 +12,7 @@ package = {
 		'http://downloads.xiph.org/releases/%{name}/%{name}-%{version}.tar.gz'
 	],
 	'build': [
-		'%{__configure}' \
-			' --disable-asm-optimizations' \
-			' --disable-cpplibs',
+		'%{__configure}' + ' '.join (configure_flags),
 		'%{__make}'
 	]
 }
