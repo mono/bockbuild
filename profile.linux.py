@@ -8,10 +8,12 @@ search_paths = ['%{prefix}']
 bin_paths = [os.path.join (p, 'bin') for p in search_paths]
 bin_paths.extend (['/usr/bin', '/bin'])
 lib_paths = [os.path.join (p, 'lib') for p in search_paths]
+include_paths = [os.path.join (p, 'include') for p in search_paths]
 aclocal_paths = [os.path.join (p, 'share', 'aclocal') for p in search_paths]
 
 profile['environ'] = {
 	'PATH': ':'.join (bin_paths),
+	'C_INCLUDE_PATH': ':'.join (include_paths),
 	'LD_LIBRARY_PATH': ':'.join (lib_paths),
 	'LDFLAGS': ' '.join (['-L' + p for p in lib_paths]),
 	'ACLOCAL_FLAGS': ' '.join (['-I' + p for p in aclocal_paths]),
@@ -24,6 +26,11 @@ profile['environ'] = {
 
 profile['packages'] = [
 	# Base dependencies
+	'packages/gettext.py',
+	'packages/pkg-config.py',
+	'packages/glib.py',
+	'packages/mono.py',
+
 	'packages/libxml2.py',
 	'packages/libproxy.py',
 	'packages/intltool.py',
