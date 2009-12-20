@@ -205,7 +205,7 @@ if __name__ == '__main__':
 		action = 'store_true', dest = 'verbose', default = False,
 		help = 'show all build output (e.g. configure, make)')
 	options, args = parser.parse_args ()
-	print options
+	
 	if args == []:
 		parser.print_help ()
 		sys.exit (1)
