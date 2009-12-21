@@ -6,7 +6,7 @@ profile = {
 	'mono_sdk_path': '/Library/Frameworks/Mono.framework/Versions/Current',
 }
 
-search_paths = ['%{prefix}', '%{mono_sdk_path}']
+search_paths = ['%{prefix}'] #, '%{mono_sdk_path}']
 bin_paths = [os.path.join (p, 'bin') for p in search_paths]
 bin_paths.extend (['/usr/bin', '/bin'])
 lib_paths = [os.path.join (p, 'lib') for p in search_paths]
@@ -23,6 +23,8 @@ gcc_flags = [
 gcc_flags.extend (['-I' + p for p in include_paths])
 
 profile['environ'] = {
+	'CC': 'gcc-4.2',
+	'CXX': 'g++-4.2',
 	'PATH': ':'.join (bin_paths),
 	'C_INCLUDE_PATH': ':'.join (include_paths),
 	'CFLAGS': ' '.join (gcc_flags),
@@ -40,6 +42,11 @@ profile['environ'] = {
 
 profile['packages'] = [
 	# Base dependencies
+	'packages/autoconf.py',
+	'packages/gettext.py',
+	'packages/pkg-config.py',
+	'packages/glib.py',
+	'packages/mono.py',
 	'packages/libxml2.py',
 	'packages/libproxy.py',
 	'packages/intltool.py',
@@ -65,6 +72,7 @@ profile['packages'] = [
 	'packages/gst-plugins-ugly.py',
 
 	# Managed Deps
+	'packages/mono-addins.py',
 	'packages/ndesk-dbus.py',
 	'packages/ndesk-dbus-glib.py',
 	'packages/taglib-sharp.py',
