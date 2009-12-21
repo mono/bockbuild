@@ -29,4 +29,4 @@ package = {
 }
 
 package['prep'].extend (['patch -p0 < @{sources:%s}' % p
-	for p in range (2, len (package['sources']) - 1)])
+	for p in range (2, len (package['sources']))])
