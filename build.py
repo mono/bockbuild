@@ -11,8 +11,9 @@ from optparse import OptionParser
 
 def build_package (profile, (package, vars)):
 	package_dir = os.path.dirname (package['_path'])
-	package_build_dir = os.path.join (profile['build_root'],
+	package_dest_dir = os.path.join (profile['build_root'],
 		'%s-%s' % (package['name'], package['version']))
+	package_build_dir = os.path.join (package_dest_dir, '_build')
 	build_success_file = os.path.join (profile['build_root'],
 		'%s-%s.success' % (package['name'], package['version']))
 
@@ -38,15 +39,18 @@ def build_package (profile, (package, vars)):
 		source = expand_macros (source, vars)
 		local_source = os.path.join (package_dir, source)
 		local_source_file = os.path.basename (local_source)
-		local_sources.append (local_source_file)
-		local_dest_file = os.path.join (package_build_dir, local_source_file)
+		local_dest_file = os.path.join (package_dest_dir, local_source_file)
+		local_sources.append (local_dest_file)
 
-		if os.path.isfile (local_source):
-			log (1, 'copying local source: %s' % local_source_file)
-			shutil.copy2 (local_source, local_dest_file)
-		elif source.startswith (('http', 'https', 'ftp')):
-			log (1, 'downloading remote source: %s' % source)
-			urllib.urlretrieve (source, local_dest_file)
+		if os.path.isfile (local_dest_file):
+			log (1, 'using cached source: %s' % local_dest_file)
+		else:
+			if os.path.isfile (local_source):
+				log (1, 'copying local source: %s' % local_source_file)
+				shutil.copy2 (local_source, local_dest_file)
+			elif source.startswith (('http', 'https', 'ftp')):
+				log (1, 'downloading remote source: %s' % source)
+				urllib.urlretrieve (source, local_dest_file)
 
 	package['sources'] = local_sources
 	
