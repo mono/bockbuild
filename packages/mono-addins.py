@@ -9,7 +9,7 @@ package = {
 		'cd %{name}-%{version}'
 	],
 	'build': [
-		'%{__configure} --disable-gui',
-		'%{__make}'
+		'%{__configure}',
+		'make'
 	]
 }
