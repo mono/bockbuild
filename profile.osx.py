@@ -13,13 +13,13 @@ lib_paths = [os.path.join (p, 'lib') for p in search_paths]
 include_paths = [os.path.join (p, 'include') for p in search_paths]
 aclocal_paths = [os.path.join (p, 'share', 'aclocal') for p in search_paths]
 
+gcc_arch_flags = [ '-m32', '-arch i386' ]
 gcc_flags = [
-	'-m32',
-	'-arch i386',
 	'-D_XOPEN_SOURCE',
 	'-isysroot %{mac_sdk_path}',
 	'-mmacosx-version-min=10.5'
 ]
+gcc_flags.extend (gcc_arch_flags)
 gcc_flags.extend (['-I' + p for p in include_paths])
 
 profile['environ'] = {
@@ -29,9 +29,11 @@ profile['environ'] = {
 	'C_INCLUDE_PATH': ':'.join (include_paths),
 	'CFLAGS': ' '.join (gcc_flags),
 	'CXXFLAGS': '%{CFLAGS}',
+	'CPPFLAGS': '%{CFLAGS}',
 	'LD_LIBRARY_PATH': ':'.join (lib_paths),
-	'DYLD_LIBRARY_PATH': '%{LD_LIBRARY_PATH}',
-	'LDFLAGS': ' '.join (['-L' + p for p in lib_paths]),
+	'LDFLAGS': '%s %s' % (
+		' '.join (['-L' + p for p in lib_paths]),
+		' '.join (gcc_arch_flags)),
 	'ACLOCAL_FLAGS': ' '.join (['-I' + p for p in aclocal_paths]),
 	'PKG_CONFIG_PATH': ':'.join ([
 		os.path.join (p, d, 'pkgconfig')
@@ -42,15 +44,27 @@ profile['environ'] = {
 
 profile['packages'] = [
 	# Base dependencies
-	'packages/autoconf.py',
+	'packages/autoconf.py', # needed to run autoconf after patching glib
 	'packages/gettext.py',
 	'packages/pkg-config.py',
+	'packages/libiconv.py',
+	'packages/libpng.py',
+	'packages/libjpeg.py',
+	'packages/freetype.py',
+	'packages/fontconfig.py',
+	'packages/pixman.py',
+	'packages/cairo.py',
 	'packages/glib.py',
-	'packages/mono.py',
-	'packages/libxml2.py',
-	'packages/libproxy.py',
+	'packages/pango.py',
+	'packages/atk.py',
 	'packages/intltool.py',
+	'packages/gtk+.py',
+	'packages/libglade.py',
+	'packages/libproxy.py',
+	'packages/libxml2.py',
 	'packages/libsoup.py',
+	'packages/sqlite.py',
+	'packages/mono.py',
 	
 	# Xiph codecs/formats
 	'packages/libogg.py',
@@ -72,11 +86,14 @@ profile['packages'] = [
 	'packages/gst-plugins-ugly.py',
 
 	# Managed Deps
+	'packages/gtk-sharp.py',
 	'packages/mono-addins.py',
 	'packages/ndesk-dbus.py',
 	'packages/ndesk-dbus-glib.py',
 	'packages/taglib-sharp.py',
-	'packages/ige-mac-integration-sharp.py'
+	# 'packages/ige-mac-integration-sharp.py'
+
+	'packages/banshee.py'
 ]
 
 if not os.path.isdir (profile['mac_sdk_path']):
