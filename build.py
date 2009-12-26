@@ -56,7 +56,7 @@ def build_package (profile, (package, vars)):
 	
 	os.chdir (package_build_dir)
 
-	for phase in ['prep', 'build', 'install']:
+	for phase in profile['run_phases']:
 		log (0, '%sing %s' % (phase.capitalize (), package['name']))
 		for step in package[phase]:
 			step = expand_macros (step, package)
@@ -193,7 +193,7 @@ def get_cpu_count ():
 
 def log (level, message):
 	if level == 0:
-		print '--> %s' % message
+		print '==> %s' % message
 	elif level == 1:
 		print '    + %s' % message
 	elif level == 2:
@@ -204,10 +204,21 @@ def log (level, message):
 #--------------------------------------
 
 if __name__ == '__main__':
+	default_run_phases = ['prep', 'build', 'install']
+
 	parser = OptionParser (usage = 'usage: %prog [options] profile-path [package_names...]')
 	parser.add_option ('-v', '--verbose',
 		action = 'store_true', dest = 'verbose', default = False,
 		help = 'show all build output (e.g. configure, make)')
+	parser.add_option ('-i', '--include-phase',
+		action = 'append', dest = 'include_run_phases', default = [],
+		help = 'explicitly include a build phase to run %s' % default_run_phases)
+	parser.add_option ('-x', '--exclude-phase',
+		action = 'append', dest = 'exclude_run_phases', default = [],
+		help = 'explicitly exclude a build phase from running %s' % default_run_phases)
+	parser.add_option ('-s', '--only-sources',
+		action = 'store_true', dest = 'only_sources', default = False,
+		help = 'only fetch sources, do not run any build phases')
 	options, args = parser.parse_args ()
 	
 	if args == []:
@@ -234,8 +245,24 @@ if __name__ == '__main__':
 	profile.setdefault ('cpu_count', get_cpu_count ())
 	profile.setdefault ('host', get_host ())
 	profile.setdefault ('verbose', options.verbose)
+	profile.setdefault ('run_phases', default_run_phases)
+
+	if not options.include_run_phases == []:
+		profile['run_phases'] = options.include_run_phases
+	for exclude_phase in options.exclude_run_phases:
+		profile['run_phases'].remove (exclude_phase)
+	if options.only_sources:
+		profile['run_phases'] = []
+
+	for phase_set in [profile['run_phases'],
+		options.include_run_phases, options.exclude_run_phases]:
+		for phase in phase_set:
+			if phase not in default_run_phases:
+				sys.exit ('Invalid run phase \'%s\'' % phase)
 
 	log (0, 'Loaded profile \'%s\' (%s)' % (profile['name'], profile['host']))
+	for phase in profile['run_phases']:
+		log (1, 'Phase \'%s\' will run' % phase)
 
 	if 'environ' in profile:
 		log (0, 'Setting environment variables')
