@@ -3,10 +3,9 @@ profile = {
 	'build_root': os.path.join (os.getcwd (), 'build-root'),
 	'prefix': '%{build_root}/_install',
 	'mac_sdk_path': '/Developer/SDKs/MacOSX10.5.sdk',
-	'mono_sdk_path': '/Library/Frameworks/Mono.framework/Versions/Current',
 }
 
-search_paths = ['%{prefix}'] #, '%{mono_sdk_path}']
+search_paths = ['%{prefix}']
 bin_paths = [os.path.join (p, 'bin') for p in search_paths]
 bin_paths.extend (['/usr/bin', '/bin'])
 lib_paths = [os.path.join (p, 'lib') for p in search_paths]
@@ -68,7 +67,12 @@ profile['packages'] = [
 	'packages/sqlite.py',
 	'packages/ige-mac-integration.py',
 	'packages/mono.py',
-	
+
+	# Icons
+	'packages/librsvg.py',
+	'packages/icon-naming-utils.py',
+	'packages/tango-icon-theme.py',
+
 	# Xiph codecs/formats
 	'packages/libogg.py',
 	'packages/libvorbis.py',
@@ -101,7 +105,3 @@ profile['packages'] = [
 
 if not os.path.isdir (profile['mac_sdk_path']):
 	sys.exit ('Mac OS X SDK does not exist: %s' % profile['mac_sdk_path'])
-
-if not os.path.isdir (profile['mono_sdk_path']):
-	sys.exit ('Mono SDK does not exist: %s' % profile['mono_sdk_path'])
-
