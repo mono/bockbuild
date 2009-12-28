@@ -94,6 +94,7 @@ profile['packages'] = [
 	'packages/ndesk-dbus.py',
 	'packages/ndesk-dbus-glib.py',
 	'packages/taglib-sharp.py',
+	'packages/ige-mac-integration-sharp.py',
 
 	'packages/banshee.py'
 ]
