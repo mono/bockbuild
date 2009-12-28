@@ -4,7 +4,8 @@ configure_flags = [
 	'--disable-ipod',
 	'--disable-boo',
 	'--disable-gnome',
-	'--disable-docs'
+	'--disable-docs',
+	'--enable-osx'
 ]
 
 package = {
@@ -13,12 +14,12 @@ package = {
 	'sources': [],
 	'prep': [
 		'cd ../../../../..',
-		'pwd'
 	],
 	'build': [
 		'cp configure.ac configure.ac.orig',
 		'grep -v AM_GCONF_SOURCE_2 < configure.ac.orig > configure.ac',
 		'./autogen.sh --prefix=%{_prefix} ' + ' '.join (configure_flags),
+		'mv configure.ac.orig configure.ac',
 		'%{__make}'
 	],
 	'install': []
