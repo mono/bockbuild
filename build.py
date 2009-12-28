@@ -108,8 +108,6 @@ def parse_package (profile, package):
 	
 	if not isinstance (package['sources'], (list, tuple)):
 		sys.exit ('Invalid package %s: \'sources\' node must be a list' % path)
-	elif len (package['sources']) <= 0:
-		sys.exit ('Invalid package %s: no sources defined (empty list)' % path)
 
 	return package, vars
 
