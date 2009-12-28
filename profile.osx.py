@@ -44,7 +44,9 @@ profile['environ'] = {
 
 profile['packages'] = [
 	# Base dependencies
-	'packages/autoconf.py', # needed to run autoconf after patching glib
+	'packages/autoconf.py',
+	'packages/automake.py',
+	'packages/libtool.py',
 	'packages/gettext.py',
 	'packages/pkg-config.py',
 	'packages/libiconv.py',
@@ -64,6 +66,7 @@ profile['packages'] = [
 	'packages/libproxy.py',
 	'packages/libsoup.py',
 	'packages/sqlite.py',
+	'packages/ige-mac-integration.py',
 	'packages/mono.py',
 	
 	# Xiph codecs/formats
@@ -91,7 +94,6 @@ profile['packages'] = [
 	'packages/ndesk-dbus.py',
 	'packages/ndesk-dbus-glib.py',
 	'packages/taglib-sharp.py',
-	# 'packages/ige-mac-integration-sharp.py'
 
 	'packages/banshee.py'
 ]

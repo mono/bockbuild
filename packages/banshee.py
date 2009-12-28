@@ -10,11 +10,16 @@ configure_flags = [
 package = {
 	'name':    'banshee-1',
 	'version': '1.5.2',
-	'sources': [
-		'http://download.banshee-project.org/banshee/stable/%{version}/%{name}-%{version}.tar.bz2'
+	'sources': [],
+	'prep': [
+		'cd ../../../../..',
+		'pwd'
 	],
 	'build': [
-		'%{__configure} ' + ' '.join (configure_flags),
+		'cp configure.ac configure.ac.orig',
+		'grep -v AM_GCONF_SOURCE_2 < configure.ac.orig > configure.ac',
+		'./autogen.sh --prefix=%{_prefix} ' + ' '.join (configure_flags),
 		'%{__make}'
-	]
+	],
+	'install': []
 }
