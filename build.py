@@ -59,6 +59,10 @@ def build_package (profile, (package, vars)):
 	for phase in profile['run_phases']:
 		log (0, '%sing %s' % (phase.capitalize (), package['name']))
 		for step in package[phase]:
+			if hasattr (step, '__call__'):
+				log (1, '<py call: %s>' % step.__name__)
+				step (package)
+				continue
 			step = expand_macros (step, package)
 			log (1, step)
 			if step.startswith ('cd '):
@@ -136,7 +140,7 @@ def expand_macros (node, vars, runtime = True):
 	elif isinstance (node, (list, tuple)):
 		for i, v in enumerate (node):
 			node[i] = expand_macros (v, vars, runtime)
-	else:
+	elif isinstance (node, str):
 		orig_node = node
 		iters = 0
 		while True:
