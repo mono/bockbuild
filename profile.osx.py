@@ -1,44 +1,38 @@
 profile = {
-	'name': 'osx',
-	'build_root': os.path.join (os.getcwd (), 'build-root'),
-	'prefix': '%{build_root}/_install',
+	'name':         'osx',
+	'build_root':   os.path.join (os.getcwd (), 'build-root'),
+	'prefix':       '%{build_root}/_install',
 	'mac_sdk_path': '/Developer/SDKs/MacOSX10.5.sdk',
 }
 
-search_paths = ['%{prefix}']
-bin_paths = [os.path.join (p, 'bin') for p in search_paths]
-bin_paths.extend (['/usr/bin', '/bin'])
-lib_paths = [os.path.join (p, 'lib') for p in search_paths]
-include_paths = [os.path.join (p, 'include') for p in search_paths]
-aclocal_paths = [os.path.join (p, 'share', 'aclocal') for p in search_paths]
+if not os.path.isdir (profile['mac_sdk_path']):
+	sys.exit ('Mac OS X SDK does not exist: %s' % profile['mac_sdk_path'])
 
 gcc_arch_flags = [ '-m32', '-arch i386' ]
 gcc_flags = [
 	'-D_XOPEN_SOURCE',
 	'-isysroot %{mac_sdk_path}',
-	'-mmacosx-version-min=10.5'
+	'-mmacosx-version-min=10.5',
+	'-I%{prefix}/include'
 ]
 gcc_flags.extend (gcc_arch_flags)
-gcc_flags.extend (['-I' + p for p in include_paths])
 
 profile['environ'] = {
-	'CC': 'gcc-4.2',
-	'CXX': 'g++-4.2',
-	'PATH': ':'.join (bin_paths),
-	'C_INCLUDE_PATH': ':'.join (include_paths),
-	'CFLAGS': ' '.join (gcc_flags),
-	'CXXFLAGS': '%{CFLAGS}',
-	'CPPFLAGS': '%{CFLAGS}',
-	'LD_LIBRARY_PATH': ':'.join (lib_paths),
-	'LDFLAGS': '%s %s' % (
-		' '.join (['-L' + p for p in lib_paths]),
-		' '.join (gcc_arch_flags)),
-	'ACLOCAL_FLAGS': ' '.join (['-I' + p for p in aclocal_paths]),
-	'PKG_CONFIG_PATH': ':'.join ([
-		os.path.join (p, d, 'pkgconfig')
-			for p in search_paths
-			for d in ['lib', 'share'] 
-	])
+	'PATH':            '%{prefix}/bin:/usr/bin:/bin',
+
+	'CC':              'gcc-4.2',
+	'CXX':             'g++-4.2',
+	'CFLAGS':          ' '.join (gcc_flags),
+	'CXXFLAGS':        '%{CFLAGS}',
+	'CPPFLAGS':        '%{CFLAGS}',
+	'C_INCLUDE_PATH':  '%{prefix}/include',
+
+	'LD_LIBRARY_PATH': '%{prefix}/lib',
+	'LDFLAGS':         '-L%{prefix}/lib ' + ' '.join (gcc_arch_flags),
+
+	'ACLOCAL_FLAGS':   '-I%{prefix}/share/aclocal',
+
+	'PKG_CONFIG_PATH': '%{prefix}/lib/pkgconfig:%{prefix}/share/pkgconfig'
 }
 
 profile['packages'] = [
@@ -71,6 +65,7 @@ profile['packages'] = [
 	# Icons
 	'packages/librsvg.py',
 	'packages/icon-naming-utils.py',
+	'packages/hicolor-icon-theme.py',
 	'packages/tango-icon-theme.py',
 
 	# Xiph codecs/formats
@@ -102,6 +97,3 @@ profile['packages'] = [
 
 	'packages/banshee.py'
 ]
-
-if not os.path.isdir (profile['mac_sdk_path']):
-	sys.exit ('Mac OS X SDK does not exist: %s' % profile['mac_sdk_path'])
