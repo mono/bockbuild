@@ -221,6 +221,9 @@ if __name__ == '__main__':
 	parser.add_option ('-s', '--only-sources',
 		action = 'store_true', dest = 'only_sources', default = False,
 		help = 'only fetch sources, do not run any build phases')
+	parser.add_option ('-e', '--environment', default = False,
+		action = 'store_true', dest = 'dump_environment',
+		help = 'Dump the profile environment as a shell-sourceable list of exports ')
 	options, args = parser.parse_args ()
 	
 	if args == []:
@@ -248,6 +251,11 @@ if __name__ == '__main__':
 	profile.setdefault ('host', get_host ())
 	profile.setdefault ('verbose', options.verbose)
 	profile.setdefault ('run_phases', default_run_phases)
+
+	if options.dump_environment:
+		for k, v in profile['environ'].iteritems ():
+			print 'export %s="%s"' % (k, v)
+		sys.exit (0)
 
 	if not options.include_run_phases == []:
 		profile['run_phases'] = options.include_run_phases
