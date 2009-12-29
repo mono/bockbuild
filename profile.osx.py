@@ -18,6 +18,7 @@ gcc_flags = [
 gcc_flags.extend (gcc_arch_flags)
 
 profile['environ'] = {
+	'BUILD_PREFIX':    '%{prefix}',
 	'PATH':            '%{prefix}/bin:/usr/bin:/bin',
 
 	'CC':              'gcc-4.2',
@@ -54,6 +55,7 @@ profile['packages'] = [
 	'packages/atk.py',
 	'packages/intltool.py',
 	'packages/gtk+.py',
+	'packages/gconf-dummy.py',
 	'packages/libxml2.py',
 	'packages/libglade.py',
 	'packages/libproxy.py',

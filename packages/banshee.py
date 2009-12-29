@@ -35,10 +35,7 @@ package = {
 		change_to_gitdir
 	],
 	'build': [
-		'cp configure.ac configure.ac.orig',
-		'grep -v AM_GCONF_SOURCE_2 < configure.ac.orig > configure.ac',
 		'./autogen.sh --prefix=%{_prefix} ' + ' '.join (configure_flags),
-		'mv configure.ac.orig configure.ac',
 		'%{__make}'
 	],
 	'install': [
