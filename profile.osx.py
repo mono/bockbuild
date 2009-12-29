@@ -97,5 +97,5 @@ profile['packages'] = [
 	'packages/taglib-sharp.py',
 	'packages/ige-mac-integration-sharp.py',
 
-	'packages/banshee.py'
+	# 'packages/banshee.py'
 ]
