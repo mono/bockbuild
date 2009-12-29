@@ -1,0 +1,20 @@
+#!/usr/bin/env bash
+
+set -e
+
+echo "Generating environment..."
+./build.py -e profile.osx.py > osx.env
+
+echo "Loading environment..."
+source osx.env
+export BANSHEE_PATH="$BUILD_PREFIX/lib/banshee-1"
+export MONO_PATH="$BANSHEE_PATH:$BANSHEE_PATH/Extensions:$BANSHEE_PATH/Backends"
+
+echo "Using mono: $(which mono)"
+cd solitary
+make
+mono --debug Solitary.exe \
+	--mono-prefix=$BUILD_PREFIX \
+	$BANSHEE_PATH
+	$BUILD_PREFIX/lib/gstreamer-0.10
+
