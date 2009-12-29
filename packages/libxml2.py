@@ -1,7 +1,11 @@
 package = {
 	'name':    'libxml2',
-	'version': '2.6.30',
+	'version': '2.7.6',
 	'sources': [
-		'http://ftp.gnome.org/pub/gnome/sources/libxml2/2.6/%{name}-%{version}.tar.bz2'
+		'ftp://xmlsoft.org/%{name}/%{name}-%{version}.tar.gz'			
+	],
+	'build': [
+		'%{__configure} --with-python=no',
+		'%{__make}'
 	]
 }
