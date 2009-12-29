@@ -82,7 +82,7 @@ def load_package_defaults (profile, package):
 	# tool macros
 	package['__configure'] = './configure --prefix=%{_prefix}'
 	package['__make'] = 'make -j%s' % profile['cpu_count']
-	package['__makeinstall'] = '%{__make} install'
+	package['__makeinstall'] = 'make install'
 
 	# install default sections if they are missing
 	package.setdefault ('prep', ['tar xf @{sources:0}', 'cd %{name}-%{version}'])
