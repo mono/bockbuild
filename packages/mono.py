@@ -15,5 +15,9 @@ package = {
 	'build': [
 		'%{__configure} ' + ' '.join (configure_flags),
 		'%{__make}'
+	],
+	'install': [
+		'%{__makeinstall}',
+		'sed -ie "s/libcairo.so.2/libcairo.2.dylib/" "%{_prefix}/etc/mono/config"'
 	]
 }
