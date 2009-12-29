@@ -28,11 +28,29 @@ using System;
 using System.IO;
 using System.Collections.Generic;
 
+using Mono.Unix;
+
 public abstract class Item
 {
-    public FileInfo File { get; set; }
     public Solitary Confinement { get; set; }
     public abstract IEnumerable<Item> Load ();
+
+    private FileInfo file;
+    public FileInfo File {
+        get { return file; }
+        set {
+            if (value == null) {
+                file = null;
+                return;
+            }
+
+            file = value;
+            var link = new UnixSymbolicLinkInfo (file.FullName);
+            if (link.HasContents) {
+                file = new FileInfo (link.GetContents ().FullName);
+            }
+        }
+    }
 
     public static Item Resolve (Solitary confinement, FileInfo file)
     {

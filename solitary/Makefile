@@ -10,7 +10,7 @@ SOURCE = \
 all: $(ASSEMBLY)
 
 $(ASSEMBLY): $(SOURCE)
-	gmcs -out:$@ -debug $(SOURCE)
+	gmcs -out:$@ -debug -r:Mono.Posix $(SOURCE)
 
 Options.cs:
 	cp `pkg-config --variable=Sources mono-options` .
