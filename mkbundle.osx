@@ -15,6 +15,6 @@ cd solitary
 make
 mono --debug Solitary.exe \
 	--mono-prefix=$BUILD_PREFIX \
-	$BANSHEE_PATH
+	$BANSHEE_PATH \
 	$BUILD_PREFIX/lib/gstreamer-0.10
 

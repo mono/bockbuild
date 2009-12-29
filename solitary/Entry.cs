@@ -64,13 +64,16 @@ public static class Entry
         
         solitary.LoadBlacklist (blacklist_file);
         
+        long total_size = 0;
         foreach (var path in paths) {
             foreach (var item in solitary.Walk (path)) {
                 foreach (var collect_item in item.Load ()) {
                     solitary.Items.Add (collect_item);
-                    Console.WriteLine (collect_item.File.FullName);
+                    total_size += collect_item.File.Length;
+                    Console.WriteLine ("{0}\t{1}", collect_item.File.Length, collect_item.File.FullName);
                 }
             }
         }
+        Console.WriteLine (total_size);
     }
 }
