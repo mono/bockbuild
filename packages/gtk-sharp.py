@@ -1,31 +1,27 @@
 def svn_co_or_up (package):
 	os.chdir ('..')
-	if os.path.isdir ('gtk-sharp-svn'):
-		os.chdir ('gtk-sharp-svn')
+	if os.path.isdir ('svn'):
+		os.chdir ('svn')
 		os.system ('svn up')
 	else:
-		os.system ('svn co http://anonsvn.mono-project.com/source/trunk/gtk-sharp gtk-sharp-svn')
-		os.chdir ('gtk-sharp-svn')
+		os.system ('svn co http://anonsvn.mono-project.com/source/branches/gtk-sharp-2-12-branch svn')
+		os.chdir ('svn')
 	os.chdir ('..')
 
 package = {
 	'name':    'gtk-sharp',
-	'version': 'svn.HEAD',
+	'version': '2.12.10-svn',
 	'branch':  '212',
 	'sources': [
 		# 'http://ftp.novell.com/pub/mono/sources/%{name}%{branch}/%{name}-%{version}.tar.bz2'
 	],
 	'prep': [
 		svn_co_or_up,
-		'cp -a gtk-sharp-svn _build',
-		'cd _build/gtk-sharp-svn'
+		'cp -a svn _build',
+		'cd _build/svn'
 	],
 	'build': [
-		'./bootstrap-for-the-insane --prefix=%{_prefix}',
+		'./bootstrap-2.12 --prefix=%{_prefix}',
 		'%{__make}'
-	],
-	'install': [
-		'%{__makeinstall}',
-		'find %{_prefix}/lib/mono/gac -iregex ".*/g[td]k-sharp.dll.config" -exec sed -ie "s/x11/quartz/g" "{}" \;'
 	]
 }
