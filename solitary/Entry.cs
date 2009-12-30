@@ -41,6 +41,7 @@ public static class Entry
 
         var p = new OptionSet () {
             { "p|mono-prefix=", "set the mono prefix (e.g. to find etc/mono/config)", v => solitary.MonoPrefix = v },
+            { "r|root=", "set the confinement root - any files outside of the root will be ignored", v => solitary.ConfinementRoot = v },
             { "b|blacklist=", "blacklist file to exclude native libraries from the summary", v => blacklist_file = v },
             { "h|help", "show this message and exit", v => show_help = v != null }
         };
@@ -70,7 +71,12 @@ public static class Entry
                 foreach (var collect_item in item.Load ()) {
                     solitary.Items.Add (collect_item);
                     total_size += collect_item.File.Length;
-                    Console.WriteLine ("{0}\t{1}", collect_item.File.Length, collect_item.File.FullName);
+
+                    if (solitary.ConfinementRoot != null) {
+                        Console.WriteLine (collect_item.File.FullName.Substring (solitary.ConfinementRoot.Length + 1));
+                    } else {
+                        Console.WriteLine (collect_item.File.FullName);
+                    }
                 }
             }
         }

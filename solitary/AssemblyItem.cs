@@ -43,7 +43,7 @@ public class AssemblyItem : Item
             File = new FileInfo (Assembly.Location);
         }
 
-        if (Confinement.Items.Exists (item => item.File.FullName == File.FullName)) {
+        if (!IsValidConfinementItem (this)) {
             yield break;
         }
 

@@ -34,6 +34,7 @@ public class Solitary
     public List<Item> Items { get; private set; }
     public List<string> SearchPaths { get; private set; }
     public string MonoPrefix { get; set; }
+    public string ConfinementRoot { get; set; }
 
     private class BlacklistComparer : IEqualityComparer<string>
     {

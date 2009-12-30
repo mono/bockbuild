@@ -52,6 +52,16 @@ public abstract class Item
         }
     }
 
+    public bool IsValidConfinementItem (Item item)
+    {
+        if (Confinement.ConfinementRoot != null &&
+            !item.File.FullName.StartsWith (Confinement.ConfinementRoot)) {
+            return false;
+        }
+
+        return !Confinement.Items.Exists (c => c.File.FullName == item.File.FullName);
+    }
+
     public static Item Resolve (Solitary confinement, FileInfo file)
     {
         if (file.Name.StartsWith (".")) {
