@@ -4,6 +4,8 @@ SOURCE = \
 	Item.cs \
 	AssemblyItem.cs \
 	NativeLibraryItem.cs \
+	DataItem.cs \
+	ProcessTools.cs \
 	Entry.cs \
 	Options.cs
 

@@ -56,15 +56,16 @@ public static class Entry
             return;
         }
 
-        if (show_help) {
-            Console.WriteLine ("Usage: Shoes [OPTIONS]+ <managed_dir1> <managed_dir2>...");
+        if (show_help || paths.Count == 0) {
+            Console.WriteLine ("Usage: solitary [OPTIONS]+ <paths>...");
             Console.WriteLine ();
             Console.WriteLine ("Options:");
             p.WriteOptionDescriptions (Console.Out);
+            Console.WriteLine ();
             return;
         }
         
-        solitary.LoadBlacklist (blacklist_file);
+        solitary.LoadPathBlacklist (blacklist_file);
         
         long total_size = 0;
         Console.WriteLine ("Locating items...");

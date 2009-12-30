@@ -1,5 +1,5 @@
 // 
-// NativeLibraryItem.cs
+// DataItem.cs
 //  
 // Author:
 //   Aaron Bockover <abockover@novell.com>
@@ -25,33 +25,16 @@
 // THE SOFTWARE.
 
 using System;
-using System.IO;
 using System.Collections.Generic;
 
-public class NativeLibraryItem : Item
+public class DataItem : Item
 {
     public override IEnumerable<Item> Load ()
     {
         if (!IsValidConfinementItem (this)) {
             yield break;
         }
-
-        var deps = ProcessTools.GetNativeDependencies (File);
-        if (deps == null) {
-            yield break;
-        }
-
+        
         yield return this;
-
-        foreach (var dep in deps) {
-            var item = new NativeLibraryItem () {
-                File = new FileInfo (dep),
-                Confinement = Confinement
-            };
-
-            foreach (var child_item in item.Load ()) {
-                yield return child_item;
-            }
-        }
     }
 }

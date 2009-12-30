@@ -30,6 +30,13 @@ using System.Collections.Generic;
 
 using Mono.Unix;
 
+public enum FileType
+{
+    PE32Executable,
+    MachO,
+    Data
+}
+
 public abstract class Item
 {
     public Solitary Confinement { get; set; }
@@ -70,26 +77,48 @@ public abstract class Item
 
         Item item = null;
 
-        switch (Path.GetExtension (file.Name)) {
-            case ".dll":
-            case ".exe":
+        foreach (var regex in confinement.PathBlacklist) {
+            if (regex.IsMatch (file.FullName)) {
+                return null;
+            }
+        }
+
+        switch (GetFileType (file)) {
+            case FileType.PE32Executable: 
                 item = new AssemblyItem ();
                 break;
-            case ".la":
-            case ".a":
-                break;
-            default:
+            case FileType.MachO:
                 item = new NativeLibraryItem ();
                 break;
+            default:
+                item = new DataItem ();
+                break;
         }
 
-        if (item != null) {
-            item.Confinement = confinement;
-            item.File = file;
-        }
-
+        item.Confinement = confinement;
+        item.File = file;
         return item;
     }
-}
 
+    public static FileType GetFileType (FileInfo file)
+    {
+        var proc = ProcessTools.CreateProcess ("file", file.FullName);
+        if (proc == null) {
+            return FileType.Data;
+        }
+        
+        var line = proc.StandardOutput.ReadLine ();
+        if (line == null) {
+            return FileType.Data;
+        }
+
+        if (line.Contains ("Mach-O")) {
+            return FileType.MachO;
+        } else if (line.Contains ("PE32 executable")) {
+            return FileType.PE32Executable;
+        }
+
+        return FileType.Data;
+    }
+}
 

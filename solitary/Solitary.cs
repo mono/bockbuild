@@ -28,10 +28,11 @@ using System;
 using System.IO;
 using System.Diagnostics;
 using System.Collections.Generic;
+using System.Text.RegularExpressions;
 
 public class Solitary
 {
-    public List<string> Blacklist { get; private set; }
+    public List<Regex> PathBlacklist { get; private set; }
     public List<Item> Items { get; private set; }
     public List<string> SearchPaths { get; private set; }
     public string MonoPrefix { get; set; }
@@ -46,7 +47,7 @@ public class Solitary
 
     public Solitary ()
     {
-        Blacklist = new List<string> ();
+        PathBlacklist = new List<Regex> ();
         Items = new List<Item> ();
         SearchPaths = new List<string> ();
 
@@ -92,7 +93,7 @@ public class Solitary
         }
     }
 
-    public void LoadBlacklist (string blacklistFile)
+    public void LoadPathBlacklist (string blacklistFile)
     {
         if (blacklistFile == null) {
             return;
@@ -103,7 +104,7 @@ public class Solitary
             while ((line = reader.ReadLine ()) != null) {
                 line = line.Trim ();
                 if (!String.IsNullOrEmpty (line) && line[0] != '#') {
-                    Blacklist.Add (line);
+                    PathBlacklist.Add (new Regex (line, RegexOptions.Compiled));
                 }
             }
         }
@@ -151,7 +152,8 @@ public class Solitary
             path = Path.Combine (OutputPath, path);
 
             Directory.CreateDirectory (Path.GetDirectoryName (path));
-            if (!strip || !StripBinary (item.File.FullName, path)) {
+            if (!strip || !(item is NativeLibraryItem) ||
+                !StripBinary (item.File.FullName, path)) {
                 File.Copy (item.File.FullName, path);
             }
         }
@@ -159,13 +161,7 @@ public class Solitary
 
     private static bool StripBinary (string source, string target)
     {
-        var proc = Process.Start (new ProcessStartInfo ("strip",
-            String.Format ("-u -r -o \"{1}\" \"{0}\"", source, target)) {
-            RedirectStandardOutput = true,
-            RedirectStandardError = true,
-            UseShellExecute = false
-        });
-        proc.WaitForExit ();
-        return proc.ExitCode == 0;
+        return ProcessTools.CreateProcess ("strip",
+            String.Format ("-u -r -o \"{1}\" \"{0}\"", source, target)) != null;
     }
 }
