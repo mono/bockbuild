@@ -11,15 +11,43 @@ export BANSHEE_PATH="$BUILD_PREFIX/lib/banshee-1"
 export MONO_PATH="$BANSHEE_PATH:$BANSHEE_PATH/Extensions:$BANSHEE_PATH/Backends"
 
 OUTPUT_DIR=$PWD/bundle
+BLACKLIST_FILE=$PWD/.blacklist
 
 echo "Using mono: $(which mono)"
+
 cd solitary
+
 make
+
+{ cat <<EOF
+.*\.la$
+.*\.a$
+.*\.mdb$
+EOF
+} > $BLACKLIST_FILE
+
 mono --debug Solitary.exe \
 	--mono-prefix=$BUILD_PREFIX \
 	--root=$BUILD_PREFIX \
 	--out=$OUTPUT_DIR \
+	--blacklist=$BLACKLIST_FILE \
 	$BUILD_PREFIX/bin/mono \
+	$BUILD_PREFIX/bin/banshee-1 \
 	$BANSHEE_PATH \
-	$BUILD_PREFIX/lib/gstreamer-0.10
+	$BUILD_PREFIX/lib/gstreamer-0.10 \
+	$BUILD_PREFIX/share/banshee-1 \
+	$BUILD_PREFIX/share/icons/hicolor/16x16 \
+	$BUILD_PREFIX/share/icons/hicolor/22x22 \
+	$BUILD_PREFIX/share/icons/hicolor/32x32 \
+	$BUILD_PREFIX/share/icons/hicolor/48x48 \
+	$BUILD_PREFIX/share/icons/Tango/16x16 \
+	$BUILD_PREFIX/share/icons/Tango/22x22 \
+	$BUILD_PREFIX/share/icons/Tango/32x32 \
+	$BUILD_PREFIX/share/icons/Tango/48x48 \
+	$BUILD_PREFIX/etc/mono/config \
+	$BUILD_PREFIX/etc/mono/1.0/machine.config \
+	$BUILD_PREFIX/etc/mono/2.0/machine.config \
+	$BUILD_PREFIX/etc/mono/2.0/settings.map
 
+
+rm $BLACKLIST_FILE
