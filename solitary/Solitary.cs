@@ -26,6 +26,7 @@
 
 using System;
 using System.IO;
+using System.Diagnostics;
 using System.Collections.Generic;
 
 public class Solitary
@@ -35,6 +36,7 @@ public class Solitary
     public List<string> SearchPaths { get; private set; }
     public string MonoPrefix { get; set; }
     public string ConfinementRoot { get; set; }
+    public string OutputPath { get; set; }
 
     private class BlacklistComparer : IEqualityComparer<string>
     {
@@ -134,5 +136,35 @@ public class Solitary
                 yield return item;
             }
         }
-    } 
+    }
+
+    public void CreateBundle (bool strip)
+    {
+        Directory.CreateDirectory (OutputPath);
+
+        foreach (var item in Items) {
+            var path = item.File.FullName;
+            if (ConfinementRoot != null) {
+                path = path.Substring (ConfinementRoot.Length + 1);
+            }
+            path = Path.Combine (OutputPath, path);
+
+            Directory.CreateDirectory (Path.GetDirectoryName (path));
+            if (!strip || !StripBinary (item.File.FullName, path)) {
+                File.Copy (item.File.FullName, path);
+            }
+        }
+    }
+
+    private static bool StripBinary (string source, string target)
+    {
+        var proc = Process.Start (new ProcessStartInfo ("strip",
+            String.Format ("-u -r -o \"{1}\" \"{0}\"", source, target)) {
+            RedirectStandardOutput = true,
+            RedirectStandardError = true,
+            UseShellExecute = false
+        });
+        proc.WaitForExit ();
+        return proc.ExitCode == 0;
+    }
 }

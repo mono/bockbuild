@@ -42,6 +42,7 @@ public static class Entry
         var p = new OptionSet () {
             { "p|mono-prefix=", "set the mono prefix (e.g. to find etc/mono/config)", v => solitary.MonoPrefix = v },
             { "r|root=", "set the confinement root - any files outside of the root will be ignored", v => solitary.ConfinementRoot = v },
+            { "o|out=", "directory into which the bundle should be placed", v => solitary.OutputPath = v },
             { "b|blacklist=", "blacklist file to exclude native libraries from the summary", v => blacklist_file = v },
             { "h|help", "show this message and exit", v => show_help = v != null }
         };
@@ -66,20 +67,23 @@ public static class Entry
         solitary.LoadBlacklist (blacklist_file);
         
         long total_size = 0;
+        Console.WriteLine ("Locating items...");
         foreach (var path in paths) {
             foreach (var item in solitary.Walk (path)) {
                 foreach (var collect_item in item.Load ()) {
                     solitary.Items.Add (collect_item);
                     total_size += collect_item.File.Length;
-
-                    if (solitary.ConfinementRoot != null) {
-                        Console.WriteLine (collect_item.File.FullName.Substring (solitary.ConfinementRoot.Length + 1));
-                    } else {
-                        Console.WriteLine (collect_item.File.FullName);
-                    }
+                    Console.WriteLine (" + {0} ({1} KB)",
+                        collect_item.File.Name,
+                        collect_item.File.Length / 1024);
                 }
             }
         }
-        Console.WriteLine (total_size);
+        Console.WriteLine ("Done locating items. Total size is {0} KB.",
+            total_size / 1024);
+
+        Console.WriteLine ("Creating bundle...");
+        solitary.CreateBundle (true);
+        Console.WriteLine ("Done.");
     }
 }

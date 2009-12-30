@@ -10,12 +10,16 @@ source osx.env
 export BANSHEE_PATH="$BUILD_PREFIX/lib/banshee-1"
 export MONO_PATH="$BANSHEE_PATH:$BANSHEE_PATH/Extensions:$BANSHEE_PATH/Backends"
 
+OUTPUT_DIR=$PWD/bundle
+
 echo "Using mono: $(which mono)"
 cd solitary
 make
 mono --debug Solitary.exe \
 	--mono-prefix=$BUILD_PREFIX \
 	--root=$BUILD_PREFIX \
+	--out=$OUTPUT_DIR \
+	$BUILD_PREFIX/bin/mono \
 	$BANSHEE_PATH \
 	$BUILD_PREFIX/lib/gstreamer-0.10
 

@@ -75,8 +75,7 @@ public abstract class Item
             case ".exe":
                 item = new AssemblyItem ();
                 break;
-            case ".so":
-            case ".dylib":
+            default:
                 item = new NativeLibraryItem ();
                 break;
         }
