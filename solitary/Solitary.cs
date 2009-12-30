@@ -140,6 +140,7 @@ public class Solitary
 
     public void CreateBundle (bool strip)
     {
+        Directory.Delete (OutputPath, true);
         Directory.CreateDirectory (OutputPath);
 
         foreach (var item in Items) {

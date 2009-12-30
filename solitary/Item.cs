@@ -75,6 +75,9 @@ public abstract class Item
             case ".exe":
                 item = new AssemblyItem ();
                 break;
+            case ".la":
+            case ".a":
+                break;
             default:
                 item = new NativeLibraryItem ();
                 break;
