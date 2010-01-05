@@ -238,7 +238,7 @@ if __name__ == '__main__':
 
 	try:
 		exec open (profile_path).read ()
-	except Exception as e:
+	except Exception, e:
 		sys.exit ('Cannot load profile %s: %s' % (profile_path, e))
 
 	profile_vars = {}

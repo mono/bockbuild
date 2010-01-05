@@ -17,7 +17,7 @@ package = {
 	],
 	'prep': [
 		svn_co_or_up,
-		'cp -a svn _build',
+		'cp -r svn _build',
 		'cd _build/svn'
 	],
 	'build': [
