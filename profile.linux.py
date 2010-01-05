@@ -1,39 +1,65 @@
 profile = {
-	'name': 'linux',
-	'build_root': os.path.join (os.getcwd (), 'build-root'),
-	'prefix': '%{build_root}/_install',
+	'name':         'linux',
+	'build_root':   os.path.join (os.getcwd (), 'build-root'),
+	'prefix':       '%{build_root}/_install'
 }
 
-search_paths = ['%{prefix}']
-bin_paths = [os.path.join (p, 'bin') for p in search_paths]
-bin_paths.extend (['/usr/bin', '/bin'])
-lib_paths = [os.path.join (p, 'lib') for p in search_paths]
-include_paths = [os.path.join (p, 'include') for p in search_paths]
-aclocal_paths = [os.path.join (p, 'share', 'aclocal') for p in search_paths]
+# gcc_arch_flags = [ '-m32', '-arch i386' ]
+gcc_arch_flags = []
+gcc_flags = [
+	'-I%{prefix}/include'
+]
+gcc_flags.extend (gcc_arch_flags)
 
 profile['environ'] = {
-	'PATH': ':'.join (bin_paths),
-	'C_INCLUDE_PATH': ':'.join (include_paths),
-	'LD_LIBRARY_PATH': ':'.join (lib_paths),
-	'LDFLAGS': ' '.join (['-L' + p for p in lib_paths]),
-	'ACLOCAL_FLAGS': ' '.join (['-I' + p for p in aclocal_paths]),
-	'PKG_CONFIG_PATH': ':'.join ([
-		os.path.join (p, d, 'pkgconfig')
-			for p in search_paths
-			for d in ['lib', 'share'] 
-	])
+	'BUILD_PREFIX':    '%{prefix}',
+	'PATH':            '%{prefix}/bin:/usr/bin:/bin',
+
+	'CFLAGS':          ' '.join (gcc_flags),
+	'CXXFLAGS':        '%{CFLAGS}',
+	'CPPFLAGS':        '%{CFLAGS}',
+	'C_INCLUDE_PATH':  '%{prefix}/include',
+
+	'LD_LIBRARY_PATH': '%{prefix}/lib',
+	'LDFLAGS':         '-L%{prefix}/lib ' + ' '.join (gcc_arch_flags),
+
+	'ACLOCAL_FLAGS':   '-I%{prefix}/share/aclocal',
+
+	'PKG_CONFIG_PATH': '%{prefix}/lib/pkgconfig:%{prefix}/share/pkgconfig'
 }
 
 profile['packages'] = [
 	# Base dependencies
+	'packages/autoconf.py',
+	'packages/automake.py',
+	'packages/libtool.py',
 	'packages/gettext.py',
 	'packages/pkg-config.py',
-	'packages/glib.py',
+	'packages/libpng.py',
+	'packages/libjpeg.py',
 	'packages/libxml2.py',
-	'packages/libproxy.py',
+	'packages/freetype.py',
+	'packages/fontconfig.py',
+	'packages/pixman.py',
+	'packages/cairo.py',
+	'packages/glib.py',
+	'packages/pango.py',
+	'packages/atk.py',
 	'packages/intltool.py',
+	'packages/gtk+.py',
+	'packages/gconf-dummy.py',
+	'packages/libglade.py',
+	'packages/libproxy.py',
 	'packages/libsoup.py',
-	
+	'packages/sqlite.py',
+	'packages/mono.py',
+
+	# Icons
+	'packages/librsvg.py',
+	'packages/icon-naming-utils.py',
+	'packages/hicolor-icon-theme.py',
+	'packages/tango-icon-theme.py',
+
 	# Xiph codecs/formats
 	'packages/libogg.py',
 	'packages/libvorbis.py',
@@ -50,13 +76,15 @@ profile['packages'] = [
 	'packages/gstreamer.py',
 	'packages/gst-plugins-base.py',
 	'packages/gst-plugins-good.py',
-
-	# Mono
-	'packages/mono.py',
+	'packages/gst-plugins-bad.py',
+	'packages/gst-plugins-ugly.py',
 
 	# Managed Deps
+	'packages/gtk-sharp.py',
 	'packages/mono-addins.py',
 	'packages/ndesk-dbus.py',
 	'packages/ndesk-dbus-glib.py',
-	'packages/taglib-sharp.py'
+	'packages/taglib-sharp.py',
+
+	# 'packages/banshee.py'
 ]
