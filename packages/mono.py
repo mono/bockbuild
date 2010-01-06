@@ -17,7 +17,11 @@ package = {
 		'%{__make}'
 	],
 	'install': [
-		'%{__makeinstall}',
-		'sed -ie "s/libcairo.so.2/libcairo.2.dylib/" "%{_prefix}/etc/mono/config"'
+		'%{__makeinstall}'
 	]
 }
+
+if profile['name'] == 'osx':
+	package['install'].extend ([
+		'sed -ie "s/libcairo.so.2/libcairo.2.dylib/" "%{_prefix}/etc/mono/config"'
+	])

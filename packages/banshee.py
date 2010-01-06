@@ -4,9 +4,11 @@ configure_flags = [
 	'--disable-ipod',
 	'--disable-boo',
 	'--disable-gnome',
-	'--disable-docs',
-	'--enable-osx'
+	'--disable-docs'
 ]
+
+if profile['name'] == 'osx':
+	configure_flags.append ('--enable-osx')
 
 def change_to_gitdir (*args):
 	last_pwd = ''
@@ -15,17 +17,6 @@ def change_to_gitdir (*args):
 		if last_pwd == os.getcwd ():
 			break
 		last_pwd = os.getcwd ()
-
-def overwrite_launcher_script (package):
-	install_bin_path = os.path.join (package['_prefix'], 'bin')
-	install_lib_path = os.path.join (package['_prefix'], 'lib')
-
-	fp = open (os.path.join (install_bin_path, 'banshee-1'), 'w')
-	fp.write ('#!/usr/bin/env bash\n')
-	fp.write ('export LD_LIBRARY_PATH="%s"\n' % install_lib_path)
-	fp.write ('%s %s' % (os.path.join (install_bin_path, 'mono'),
-		os.path.join (install_lib_path, 'banshee-1', 'Nereid.exe')))
-	fp.close ()
 
 package = {
 	'name':    'banshee-1',
@@ -37,9 +28,5 @@ package = {
 	'build': [
 		'./autogen.sh --prefix=%{_prefix} ' + ' '.join (configure_flags),
 		'%{__make}'
-	],
-	'install': [
-		'%{__makeinstall}',
-		overwrite_launcher_script
 	]
 }

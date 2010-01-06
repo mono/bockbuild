@@ -4,6 +4,9 @@ profile = {
 	'prefix':       '%{build_root}/_install'
 }
 
+if not os.path.isdir ('/usr/include/alsa'):
+	sys.exit ('You must have the ALSA headers installed. (/usr/include/alsa)')
+
 # gcc_arch_flags = [ '-m32', '-arch i386' ]
 gcc_arch_flags = []
 gcc_flags = [
@@ -76,8 +79,6 @@ profile['packages'] = [
 	'packages/gstreamer.py',
 	'packages/gst-plugins-base.py',
 	'packages/gst-plugins-good.py',
-	'packages/gst-plugins-bad.py',
-	'packages/gst-plugins-ugly.py',
 
 	# Managed Deps
 	'packages/gtk-sharp.py',
@@ -86,5 +87,5 @@ profile['packages'] = [
 	'packages/ndesk-dbus-glib.py',
 	'packages/taglib-sharp.py',
 
-	# 'packages/banshee.py'
+	'packages/banshee.py'
 ]
