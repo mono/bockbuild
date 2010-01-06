@@ -7,7 +7,8 @@ package = {
 		'http://ftp.gnome.org/pub/gnome/sources/%{name}/%{version_major}/%{name}-%{version}.tar.gz'
 	],
 	'build': [
-		'%{__configure} --without-x',
+		'%{__configure} --without-x --with-included-modules=basic-atsui',
+		'%{__make} -k -C modules || true',
 		'%{__make}'
 	]
 }
