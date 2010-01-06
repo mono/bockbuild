@@ -87,5 +87,5 @@ profile['packages'] = [
 	'packages/ndesk-dbus-glib.py',
 	'packages/taglib-sharp.py',
 
-	'packages/banshee.py'
+	# 'packages/banshee.py'
 ]
