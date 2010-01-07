@@ -106,7 +106,11 @@ class Package:
 	def prep (self):
 		if self.sources == None:
 			return
-		self.sh ('tar xf %{sources[0]}')
+		root, ext = os.path.splitext (self.sources[0])
+		if ext == '.zip':
+			self.sh ('unzip "%{sources[0]}"')
+		else:
+			self.sh ('tar xf "%{sources[0]}"')
 		self.cd ('%{source_dir_name}')
 	
 	def build (self):
