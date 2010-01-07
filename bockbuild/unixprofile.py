@@ -6,7 +6,7 @@ class UnixProfile (Profile):
 		self.name = 'unix'
 
 		self.gcc_flags = [ '-I%{prefix}/include' ]
-		self.ld_flags = [ '-I%{prefix}/lib' ]
+		self.ld_flags = [ '-L%{prefix}/lib' ]
 
 		self.env.set ('PATH', ':',
 			'%{prefix}/bin',

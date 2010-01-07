@@ -7,6 +7,7 @@ class BansheeLinuxProfile (UnixProfile, BansheePackages):
 	def __init__ (self):
 		UnixProfile.__init__ (self)
 		BansheePackages.__init__ (self)
+		self.name = 'linux'
 
 		import os
 		if not os.path.isdir ('/usr/include/alsa'):
