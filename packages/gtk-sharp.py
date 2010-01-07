@@ -10,7 +10,7 @@ class GtkSharpPackage (Package):
 		self.cd ('..')
 		if os.path.isdir ('svn'):
 			self.cd ('svn')
-			self.sh ('svn up')
+			#self.sh ('svn up')
 		else:
 			self.sh ('svn co http://anonsvn.mono-project.com/source/branches/%{name}-%{version} svn')
 			self.cd ('svn')
@@ -23,8 +23,11 @@ class GtkSharpPackage (Package):
 
 	def build (self):
 		self.sh (
-			'./bootstrap-2.12 --prefix=%{prefix}',
+			'./bootstrap-2.12 --prefix="%{prefix}"',
 			'%{make}'
 		)
+
+	def install (self):
+		self.sh ('%{makeinstall}')
 
 GtkSharpPackage ()

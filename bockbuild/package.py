@@ -22,7 +22,7 @@ class Package:
 			self.source_dir_name = '%{name}-%{version}'
 
 		self.prefix = os.path.join (Package.profile.build_root, '_install')
-		self.configure = './configure --prefix=%{prefix}'
+		self.configure = './configure --prefix="%{prefix}"'
 		self.make = 'make -j%s' % Package.profile.cpu_count
 		self.makeinstall = 'make install'
 
@@ -70,7 +70,7 @@ class Package:
 			print 'Skipping %s - already built' % namever
 			return
 
-		print 'Building %s on %s (%s CPU)' % (self.name, profile.host,
+		print '\n\nBuilding %s on %s (%s CPU)' % (self.name, profile.host,
 			profile.cpu_count)
 
 		if not os.path.exists (profile.build_root) or \
@@ -84,9 +84,9 @@ class Package:
 
 		os.chdir (package_build_dir)
 
-		self.prep ()
-		self.build ()
-		self.install ()
+		for phase in Package.profile.run_phases:
+			log (0, '%sing %s' % (phase.capitalize (), self.name))
+			getattr (self, phase) ()
 
 		open (build_success_file, 'w').close ()
 
@@ -94,8 +94,8 @@ class Package:
 		for command in commands:
 			command = expand_macros (command, self)
 			log (1, command)
-			#if not Package.profile.verbose:
-			#	command = '( %s ) &>/dev/null' % command
+			if not Package.profile.verbose:
+				command = '( %s ) &>/dev/null' % command
 			run_shell (command)
 
 	def cd (self, dir):
@@ -105,22 +105,25 @@ class Package:
 
 	def prep (self):
 		if self.sources == None:
+			log (1, '<skipping - no sources defined>')
 			return
 		root, ext = os.path.splitext (self.sources[0])
 		if ext == '.zip':
-			self.sh ('unzip "%{sources[0]}"')
+			self.sh ('unzip -qq "%{sources[0]}"')
 		else:
 			self.sh ('tar xf "%{sources[0]}"')
 		self.cd ('%{source_dir_name}')
 	
 	def build (self):
 		if self.sources == None:
+			log (1, '<skipping - no sources defined>')
 			return
 		self.sh ('%{configure} %{configure_flags}')
 		self.sh ('%{make}')
 
 	def install (self):
 		if self.sources == None:
+			log (1, '<skipping - no sources defined>')
 			return
 		self.sh ('%{makeinstall}')
 

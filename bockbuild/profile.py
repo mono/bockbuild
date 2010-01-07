@@ -1,5 +1,5 @@
 import os
-import build
+from optparse import OptionParser
 from util import *
 from environment import Environment
 from package import *
@@ -15,10 +15,60 @@ class Profile:
 		self.cpu_count = get_cpu_count ()
 		self.host = get_host ()
 
-	def run (self):
-		build.main (self)
-	
 	def build (self):
+		default_run_phases = ['prep', 'build', 'install']
+
+		parser = OptionParser (usage = 'usage: %prog [options] [package_names...]')
+		parser.add_option ('-b', '--build',
+			action = 'store_true', dest = 'do_build', default = False,
+			help = 'build the profile')
+		parser.add_option ('-v', '--verbose',
+			action = 'store_true', dest = 'verbose', default = False,
+			help = 'show all build output (e.g. configure, make)')
+		parser.add_option ('-i', '--include-phase',
+			action = 'append', dest = 'include_run_phases', default = [],
+			help = 'explicitly include a build phase to run %s' % default_run_phases)
+		parser.add_option ('-x', '--exclude-phase',
+			action = 'append', dest = 'exclude_run_phases', default = [],
+			help = 'explicitly exclude a build phase from running %s' % default_run_phases)
+		parser.add_option ('-s', '--only-sources',
+			action = 'store_true', dest = 'only_sources', default = False,
+			help = 'only fetch sources, do not run any build phases')
+		parser.add_option ('-e', '--environment', default = False,
+			action = 'store_true', dest = 'dump_environment',
+			help = 'Dump the profile environment as a shell-sourceable list of exports ')
+		options, args = parser.parse_args ()
+
+		packages_to_build = args
+		self.verbose = options.verbose
+		self.run_phases = default_run_phases
+
+		if options.dump_environment:
+			self.env.compile ()
+			self.env.dump ()
+			sys.exit (0)
+
+		if not options.do_build:
+			parser.print_help ()
+			sys.exit (1)
+
+		if not options.include_run_phases == []:
+			self.run_phases = options.include_run_phases
+		for exclude_phase in options.exclude_run_phases:
+			self.run_phases.remove (exclude_phase)
+		if options.only_sources:
+			self.run_phases = []
+
+		for phase_set in [self.run_phases,
+			options.include_run_phases, options.exclude_run_phases]:
+			for phase in phase_set:
+				if phase not in default_run_phases:
+					sys.exit ('Invalid run phase \'%s\'' % phase)
+
+		log (0, 'Loaded profile \'%s\' (%s)' % (self.name, self.host))
+		for phase in self.run_phases:
+			log (1, 'Phase \'%s\' will run' % phase)
+
 		log (0, 'Setting environment variables')
 		self.env.compile ()
 		self.env.export ()

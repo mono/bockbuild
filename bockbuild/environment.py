@@ -32,6 +32,10 @@ class Environment:
 		expand_macros (self, self._profile)
 
 	def dump (self):
+		print '#------------------------------#'
+		print '# GENERATED FILE - DO NOT EDIT #'
+		print '#------------------------------#'
+		print
 		for k in self.get_names ():
 			print 'export %s="%s"' % (k, self.__dict__[k])
 
