@@ -12,11 +12,14 @@ class DarwinProfile (UnixProfile):
 			raise IOError ('Mac OS X SDK does not exist: %s' \
 				% self.mac_sdk_path)
 
+		self.gcc_arch_flags = [ '-m32', '-arch i386' ]
 		self.gcc_flags.extend ([
 			'-D_XOPEN_SOURCE',
 			'-isysroot %{mac_sdk_path}',
 			'-mmacosx-version-min=10.5'
 		])
+		self.gcc_flags.extend (self.gcc_arch_flags)
+		self.ld_flags.extend (self.gcc_arch_flags)
 
 		self.env.set ('CC',  'gcc-4.2')
 		self.env.set ('CXX', 'g++-4.2')
