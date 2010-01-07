@@ -1,28 +1,22 @@
-configure_flags = [
-	'--disable-gtk-doc',
-	'--disable-gio',
-	'--disable-gnome_vfs',
-	'--disable-pango'
-]
+class GstPluginsBasePackage (GstreamerPackage):
+	def __init__ (self):
+		GstreamerPackage.__init__ (self, 'gstreamer', 'gst-plugins-base',
+			'0.10.25', configure_flags = [
+				'--disable-gtk-doc',
+				'--disable-gio',
+				'--disable-gnome_vfs',
+				'--disable-pango'
+			]
+		)
 
-# FIXME: these should be passed on the Linux profile
-# when we do away with xvideo/xoverlay and replace
-# with Clutter and Cairo
-if profile['name'] == 'osx':
-	configure_flags.extend ([
-		'--disable-x',
-		'--disable-xvideo',
-		'--disable-xshm'
-	])
+		# FIXME: these should be passed on the Linux profile
+		# when we do away with xvideo/xoverlay and replace
+		# with Clutter and Cairo
+		if Package.profile.name == 'darwin':
+			self.configure_flags.extend ([
+				'--disable-x',
+				'--disable-xvideo',
+				'--disable-xshm'
+			])
 
-package = {
-	'name':    'gst-plugins-base',
-	'version': '0.10.25',
-	'sources': [
-		'http://gstreamer.freedesktop.org/src/%{name}/%{name}-%{version}.tar.gz'
-	],
-	'build': [
-		'%{__configure} ' + ' '.join (configure_flags), 
-		'%{__make}'
-	]
-}
+GstPluginsBasePackage ()

@@ -1,7 +1,1 @@
-package = {
-	'name':    'hicolor-icon-theme',
-	'version': '0.11',
-	'sources': [
-		'http://icon-theme.freedesktop.org/releases/%{name}-%{version}.tar.gz'
-	]
-}
+FreeDesktopPackage ('icon-theme', 'hicolor-icon-theme', '0.11')

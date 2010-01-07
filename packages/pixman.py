@@ -1,7 +1,1 @@
-package = {
-	'name':    'pixman',
-	'version': '0.17.2',
-	'sources': [
-		'http://www.cairographics.org/releases/%{name}-%{version}.tar.gz'
-	]
-}
+CairoGraphicsPackage ('pixman', '0.17.2')

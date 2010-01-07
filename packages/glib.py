@@ -1,39 +1,44 @@
-package = {
-	'name':          'glib',
-	'version_major': '2.22',
-	'version_minor': '3',
-	'version':       '%{version_major}.%{version_minor}',
-	'macports_svn':  'http://svn.macports.org/repository/macports/trunk/dports/devel/glib2/files',
-	'sources': [
-		'http://ftp.gnome.org/pub/gnome/sources/%{name}/%{version_major}/%{name}-%{version}.tar.gz',
-	]
-}
+class GlibPackage (GnomePackage):
+	def __init__ (self):
+		GnomePackage.__init__ (self,
+			'glib',
+			version_major = '2.22',
+			version_minor = '3')
 
-if profile['name'] == 'osx':
-	package['sources'].extend ([
-		'%{macports_svn}/config.h.ed',
-		'%{macports_svn}/patch-configure.in.diff',
-		'%{macports_svn}/patch-glib-2.0.pc.in.diff',
-		'%{macports_svn}/patch-gi18n.h.diff',
-		'%{macports_svn}/patch-child-test.c.diff'
-	])
+		self.darwin = Package.profile.name == 'darwin'
+		self.macports_svn = 'http://svn.macports.org/repository/macports/trunk/dports/devel/glib2/files'
 
-	package['prep'] = [
-		'tar xf @{sources:0}',
-		'cd %{name}-%{version}'
-	]
+		if Package.profile.name == 'darwin':
+			self.sources.extend (['%{macports_svn}/' + s for s in [
+				'config.h.ed',
+				'patch-configure.in.diff',
+				'patch-glib-2.0.pc.in.diff',
+				'patch-gi18n.h.diff',
+				'patch-child-test.c.diff'
+			]])
 
-	package['prep'].extend (['patch -p0 < @{sources:%s}' % p
-		for p in range (2, len (package['sources']))])
+	def prep (self):
+		Package.prep (self)
+		if self.darwin:
+			for p in range (2, len (self.sources)):
+				self.sh ('patch -p0 < %{sources[' + str (p) + ']}')
+	
+	def build (self):
+		if not self.darwin:
+			Package.build (self)
+			return
 
-	package['build'] = [
-		'autoconf',
-		'%{__configure}',
-		'ed - config.h < @{sources:1}',
-		'%{__make}'
-	]
+		self.sh (
+			'autoconf',
+			'%{configure}',
+			'ed - config.h < %{sources[1]}',
+			'%{make}'
+		)
 
-	package['install'] = [
-		'%{__makeinstall}',
-		'rm %{_prefix}/lib/charset.alias'
-	]
+	def install (self):
+		Package.install (self)
+		if self.darwin:
+			# FIXME: necessary?
+			self.sh ('rm %{prefix}/lib/charset.alias')
+
+GlibPackage ()

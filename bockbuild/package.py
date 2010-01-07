@@ -1,0 +1,183 @@
+import os
+import sys
+import shutil
+import urllib
+from util import *
+
+class Package:
+	def __init__ (self, name, version, configure_flags = None, sources = None, source_dir_name = None, override_properties = None):
+		Package.last_instance = self
+		
+		self.name = name
+		self.version = version
+		self.configure_flags = configure_flags
+
+		self.sources = sources
+		if self.sources == None \
+			and not self.__class__.default_sources == None:
+			self.sources = list (self.__class__.default_sources)
+
+		self.source_dir_name = source_dir_name
+		if self.source_dir_name == None:
+			self.source_dir_name = '%{name}-%{version}'
+
+		self.prefix = os.path.join (Package.profile.build_root, '_install')
+		self.configure = './configure --prefix=%{prefix}'
+		self.make = 'make -j%s' % Package.profile.cpu_count
+		self.makeinstall = 'make install'
+
+		if not override_properties == None:
+			for k, v in override_properties.iteritems ():
+				self.__dict__[k] = v
+
+	def _fetch_sources (self, package_dir, package_dest_dir):
+		if self.sources == None:
+			return
+
+		local_sources = []
+		for source in self.sources:
+			local_source = os.path.join (package_dir, source)
+			local_source_file = os.path.basename (local_source)
+			local_dest_file = os.path.join (package_dest_dir, local_source_file)
+			local_sources.append (local_dest_file)
+			
+			if os.path.isfile (local_dest_file):
+				log (1, 'using cached source: %s' % local_dest_file)
+			elif os.path.isfile (local_source):
+				log (1, 'copying local source: %s' % local_source_file)
+				shutil.copy2 (local_source, local_dest_file)
+			elif source.startswith (('http://', 'https://', 'ftp://')):
+				log (1, 'downloading remote source: %s' % source)
+				urllib.urlretrieve (source, local_dest_file)
+
+		self.sources = local_sources
+
+	def start_build (self):
+		Package.last_instance = None
+		
+		expand_macros (self, self)
+
+		profile = Package.profile
+
+		namever = '%s-%s' % (self.name, self.version)
+		package_dir = os.path.dirname (os.path.realpath (__file__))
+		package_dest_dir = os.path.join (profile.build_root, namever)
+		package_build_dir = os.path.join (package_dest_dir, '_build')
+		build_success_file = os.path.join (profile.build_root,
+			namever + '.success')
+
+		if os.path.exists (build_success_file):
+			print 'Skipping %s - already built' % namever
+			return
+
+		print 'Building %s on %s (%s CPU)' % (self.name, profile.host,
+			profile.cpu_count)
+
+		if not os.path.exists (profile.build_root) or \
+			not os.path.isdir (profile.build_root):
+			os.makedirs (profile.build_root, 0755)
+
+		shutil.rmtree (package_build_dir, ignore_errors = True)
+		os.makedirs (package_build_dir)
+
+		self._fetch_sources (package_dir, package_dest_dir)
+
+		os.chdir (package_build_dir)
+
+		self.prep ()
+		self.build ()
+		self.install ()
+
+		open (build_success_file, 'w').close ()
+
+	def sh (self, *commands):
+		for command in commands:
+			command = expand_macros (command, self)
+			log (1, command)
+			#if not Package.profile.verbose:
+			#	command = '( %s ) &>/dev/null' % command
+			run_shell (command)
+
+	def cd (self, dir):
+		dir = expand_macros (dir, self)
+		log (1, 'cd "%s"' % dir)
+		os.chdir (dir)
+
+	def prep (self):
+		if self.sources == None:
+			return
+		self.sh ('tar xf %{sources[0]}')
+		self.cd ('%{source_dir_name}')
+	
+	def build (self):
+		if self.sources == None:
+			return
+		self.sh ('%{configure} %{configure_flags}')
+		self.sh ('%{make}')
+
+	def install (self):
+		if self.sources == None:
+			return
+		self.sh ('%{makeinstall}')
+
+Package.default_sources = None
+
+# -------------------------------------
+# Package Templates
+# -------------------------------------
+
+class GnomePackage (Package):
+	def __init__ (self, name, version_major = '0', version_minor = '0',
+		configure_flags = None, sources = None, override_properties = None):
+		
+		self.version_major = version_major
+		self.version_minor = version_minor
+		
+		Package.__init__ (self, name, '%{version_major}.%{version_minor}',
+			configure_flags = configure_flags,
+			sources = sources,
+			override_properties = override_properties)
+
+GnomePackage.default_sources = [
+	'http://ftp.gnome.org/pub/gnome/sources/%{name}/%{version_major}/%{name}-%{version}.tar.gz'
+]
+
+class GnuPackage (Package): pass
+GnuPackage.default_sources = [
+	'http://ftp.gnu.org/gnu/%{name}/%{name}-%{version}.tar.gz'
+]
+
+class CairoGraphicsPackage (Package): pass
+CairoGraphicsPackage.default_sources = [
+	'http://cairographics.org/releases/%{name}-%{version}.tar.gz'
+]
+
+class ProjectPackage (Package):
+	def __init__ (self, project, name, version, configure_flags = None,
+		sources = None, override_properties = None):
+
+		self.project = project
+		Package.__init__ (self, name, version,
+			configure_flags = configure_flags,
+			sources = sources,
+			override_properties = override_properties)
+
+class SourceForgePackage (ProjectPackage): pass
+SourceForgePackage.default_sources = [
+	'http://downloads.sourceforge.net/sourceforge/%{project}/%{name}-%{version}.tar.gz'
+]
+
+class FreeDesktopPackage (ProjectPackage): pass
+FreeDesktopPackage.default_sources = [
+	'http://%{project}.freedesktop.org/releases/%{name}-%{version}.tar.gz'
+]
+
+class GstreamerPackage (ProjectPackage): pass
+GstreamerPackage.default_sources = [
+	'http://%{project}.freedesktop.org/src/%{name}/%{name}-%{version}.tar.gz'
+]
+
+class XiphPackage (ProjectPackage): pass
+XiphPackage.default_sources = [
+	'http://downloads.xiph.org/releases/%{project}/%{name}-%{version}.tar.gz'
+]

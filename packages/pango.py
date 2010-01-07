@@ -1,14 +1,14 @@
-package = {
-	'name':          'pango',
-	'version_major': '1.26',
-	'version_minor': '2',
-	'version':       '%{version_major}.%{version_minor}',
-	'sources': [
-		'http://ftp.gnome.org/pub/gnome/sources/%{name}/%{version_major}/%{name}-%{version}.tar.gz'
+GnomePackage ('pango',
+	version_major = '1.26',
+	version_minor = '2',
+	configure_flags = [
+		'--without-x',
+		'--with-included-modules=basic-atsui'
 	],
-	'build': [
-		'%{__configure} --without-x --with-included-modules=basic-atsui',
-		'%{__make} -k -C modules || true',
-		'%{__make}'
-	]
-}
+	override_properties = {
+		'make':
+			'( make -j%s -k -C modules || true ); '
+			'make -j%s' % \
+				(Package.profile.cpu_count, Package.profile.cpu_count)
+	}
+)

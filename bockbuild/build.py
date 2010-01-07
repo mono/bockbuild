@@ -6,26 +6,26 @@ import re
 import glob
 import shutil
 import urllib
-import subprocess
+from util import *
 from optparse import OptionParser
 
 def build_package (profile, (package, vars)):
 	package_dir = os.path.dirname (package['_path'])
-	package_dest_dir = os.path.join (profile['build_root'],
+	package_dest_dir = os.path.join (profile.build_root,
 		'%s-%s' % (package['name'], package['version']))
 	package_build_dir = os.path.join (package_dest_dir, '_build')
-	build_success_file = os.path.join (profile['build_root'],
+	build_success_file = os.path.join (profile.build_root,
 		'%s-%s.success' % (package['name'], package['version']))
 
 	if os.path.exists (build_success_file):
 		print 'Skipping %s - already built' % package['name']
 		return
 
-	print 'Building %s on %s (%s CPU)' % (package['name'], profile['host'], profile['cpu_count'])
+	print 'Building %s on %s (%s CPU)' % (package['name'], profile.host, profile.cpu_count)
 
 	# Set up the directories
-	if not os.path.exists (profile['build_root']) or not os.path.isdir (profile['build_root']):
-		os.makedirs (profile['build_root'], 0755)
+	if not os.path.exists (profile.build_root) or not os.path.isdir (profile.build_root):
+		os.makedirs (profile.build_root, 0755)
 
 	shutil.rmtree (package_build_dir, ignore_errors = True)
 	os.makedirs (package_build_dir)
@@ -36,7 +36,7 @@ def build_package (profile, (package, vars)):
 	log (0, 'Retrieving sources')
 	local_sources = []
 	for source in package['sources']:
-		source = expand_macros (source, vars)
+		source = legacy_expand_macros (source, vars)
 		local_source = os.path.join (package_dir, source)
 		local_source_file = os.path.basename (local_source)
 		local_dest_file = os.path.join (package_dest_dir, local_source_file)
@@ -56,19 +56,19 @@ def build_package (profile, (package, vars)):
 	
 	os.chdir (package_build_dir)
 
-	for phase in profile['run_phases']:
+	for phase in profile.run_phases:
 		log (0, '%sing %s' % (phase.capitalize (), package['name']))
 		for step in package[phase]:
 			if hasattr (step, '__call__'):
 				log (1, '<py call: %s>' % step.__name__)
 				step (package)
 				continue
-			step = expand_macros (step, package)
+			step = legacy_expand_macros (step, package)
 			log (1, step)
 			if step.startswith ('cd '):
 				os.chdir (step[3:])
 			else:
-				if not profile['verbose']:
+				if not profile.verbose:
 					step = '( %s ) &>/dev/null' % step
 				run_shell (step)
 
@@ -76,12 +76,12 @@ def build_package (profile, (package, vars)):
 
 def load_package_defaults (profile, package):
 	# path macros
-	package['_build_root'] = os.path.join (profile['build_root'], '_install')
+	package['_build_root'] = os.path.join (profile.build_root, '_install')
 	package['_prefix'] = package['_build_root']
 
 	# tool macros
 	package['__configure'] = './configure --prefix=%{_prefix}'
-	package['__make'] = 'make -j%s' % profile['cpu_count']
+	package['__make'] = 'make -j%s' % profile.cpu_count
 	package['__makeinstall'] = 'make install'
 
 	# install default sections if they are missing
@@ -104,7 +104,7 @@ def parse_package (profile, package):
 		vars[k] = v
 
 	# now process the package tree and substitute variables
-	package = expand_macros (package, vars, runtime = False)
+	package = legacy_expand_macros (package, vars, runtime = False)
 
 	for req in ['name', 'version', 'sources', 'prep', 'build', 'install']:
 		if not req in package:
@@ -115,7 +115,7 @@ def parse_package (profile, package):
 
 	return package, vars
 
-def expand_macros (node, vars, runtime = True):
+def legacy_expand_macros (node, vars, runtime = True):
 	macro_type = '%'
 	if runtime:
 		macro_type = '@'
@@ -136,10 +136,10 @@ def expand_macros (node, vars, runtime = True):
 
 	if isinstance (node, dict):
 		for k, v in node.iteritems ():
-			node[k] = expand_macros (v, vars, runtime)
+			node[k] = legacy_expand_macros (v, vars, runtime)
 	elif isinstance (node, (list, tuple)):
 		for i, v in enumerate (node):
-			node[i] = expand_macros (v, vars, runtime)
+			node[i] = legacy_expand_macros (v, vars, runtime)
 	elif isinstance (node, str):
 		orig_node = node
 		iters = 0
@@ -153,41 +153,6 @@ def expand_macros (node, vars, runtime = True):
 			node = v
 
 	return node
-
-#--------------------------------------
-# Utility Functions
-#--------------------------------------
-
-def run_shell (cmd):
-	proc = subprocess.Popen (cmd, shell = True)
-	exit_code = os.waitpid (proc.pid, 0)[1]
-	if not exit_code == 0:
-		print
-		sys.exit ('ERROR: command exited with exit code %s: %s' % (exit_code, cmd))
-
-def backtick (cmd):
-	lines = []
-	for line in os.popen (cmd).readlines ():
-		lines.append (line.rstrip ('\r\n'))
-	return lines
-
-def get_host ():
-	search_paths = ['/usr/share', '/usr/local/share']
-	am_config_guess = []
-	for path in search_paths:
-		am_config_guess.extend (glob.glob (os.path.join (
-			path, os.path.join ('automake*', 'config.guess'))))
-	for config_guess in am_config_guess:
-		config_sub = os.path.join (os.path.dirname (config_guess), 'config.sub')
-		if os.access (config_guess, os.X_OK) and os.access (config_sub, os.X_OK):
-			return backtick ('%s %s' % (config_sub, backtick (config_guess)[0]))[0]
-	return 'python-%s' % os.name
-
-def get_cpu_count ():
-	try:
-		return os.sysconf ('SC_NPROCESSORS_CONF')
-	except:
-		return 1
 
 #--------------------------------------
 # Logging
@@ -205,10 +170,13 @@ def log (level, message):
 # Main Program
 #--------------------------------------
 
-if __name__ == '__main__':
+def main (profile):
 	default_run_phases = ['prep', 'build', 'install']
 
-	parser = OptionParser (usage = 'usage: %prog [options] profile-path [package_names...]')
+	parser = OptionParser (usage = 'usage: %prog [options] [package_names...]')
+	parser.add_option ('-b', '--build',
+		action = 'store_true', dest = 'do_build', default = False,
+		help = 'build the profile')
 	parser.add_option ('-v', '--verbose',
 		action = 'store_true', dest = 'verbose', default = False,
 		help = 'show all build output (e.g. configure, make)')
@@ -226,65 +194,47 @@ if __name__ == '__main__':
 		help = 'Dump the profile environment as a shell-sourceable list of exports ')
 	options, args = parser.parse_args ()
 	
-	if args == []:
+	packages_to_build = args
+	profile.verbose = options.verbose
+	profile.run_phases = default_run_phases
+
+	if options.dump_environment:
+		profile.env.compile ()
+		profile.env.dump ()
+		sys.exit (0)
+
+	if not options.do_build:
 		parser.print_help ()
 		sys.exit (1)
 
-	profile_path = args[0]
-	packages_to_build = args[1:]
-
-	if not os.path.exists (profile_path):
-		sys.exit ('Profile %s does not exist.' % profile_path)
-
-	try:
-		exec open (profile_path).read ()
-	except Exception, e:
-		sys.exit ('Cannot load profile %s: %s' % (profile_path, e))
-
-	profile_vars = {}
-	for d in [profile, profile['environ']]:
-		for k, v in d.iteritems ():
-			profile_vars[k] = v
-
-	profile = expand_macros (profile, profile_vars, False)
-	profile.setdefault ('cpu_count', get_cpu_count ())
-	profile.setdefault ('host', get_host ())
-	profile.setdefault ('verbose', options.verbose)
-	profile.setdefault ('run_phases', default_run_phases)
-
-	if options.dump_environment:
-		for k, v in profile['environ'].iteritems ():
-			print 'export %s="%s"' % (k, v)
-		sys.exit (0)
-
 	if not options.include_run_phases == []:
-		profile['run_phases'] = options.include_run_phases
+		profile.run_phases = options.include_run_phases
 	for exclude_phase in options.exclude_run_phases:
-		profile['run_phases'].remove (exclude_phase)
+		profile.run_phases.remove (exclude_phase)
 	if options.only_sources:
-		profile['run_phases'] = []
+		profile.run_phases = []
 
-	for phase_set in [profile['run_phases'],
+	for phase_set in [profile.run_phases,
 		options.include_run_phases, options.exclude_run_phases]:
 		for phase in phase_set:
 			if phase not in default_run_phases:
 				sys.exit ('Invalid run phase \'%s\'' % phase)
 
-	log (0, 'Loaded profile \'%s\' (%s)' % (profile['name'], profile['host']))
-	for phase in profile['run_phases']:
+	log (0, 'Loaded profile \'%s\' (%s)' % (profile.name, profile.host))
+	for phase in profile.run_phases:
 		log (1, 'Phase \'%s\' will run' % phase)
 
-	if 'environ' in profile:
-		log (0, 'Setting environment variables')
-		for k, v in profile['environ'].iteritems ():
-			os.environ[k] = v
-			log (1, '%s = %s' % (k, os.getenv (k)))
+	profile.env.compile ()
+	profile.env.export ()
+	log (0, 'Setting environment variables')
+	for k in profile.env.get_names ():
+		log (1, '%s = %s' % (k, os.getenv (k)))
 
 	pwd = os.getcwd ()
-	for path in profile['packages']:
+	for path in profile.packages:
 		os.chdir (pwd)
-		path = os.path.join (os.path.dirname (profile_path), path)
-		exec open (path).read ()
+		path = os.path.join (os.path.dirname (sys.argv[0]), path)
+		exec compile (open (path).read (), path, 'exec')
 		if not packages_to_build == [] and package['name'] not in packages_to_build:
 			continue
 		package['_path'] = path

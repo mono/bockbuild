@@ -1,27 +1,24 @@
-configure_args = [
-	'--enable-pdf'
-]
+class CairoPackage (CairoGraphicsPackage):
+	def __init__ (self):
+		Package.__init__ (self, 'cairo', '1.8.8')
+	
+	def build (self):
+		self.configure_flags = [
+			'--enable-pdf'
+		]
 
-if profile['name'] == 'osx':
-	configure_args.extend ([
-		'--enable-quartz',
-		'--disable-xlib=no',
-		'--without-x'
-	])
-elif profile['name'] == 'linux':
-	configure_args.extend ([
-		'--disable-quartz',
-		'--with-x'
-	])
+		if Package.profile.name == 'darwin':
+			self.configure_flags.extend ([
+				'--enable-quartz',
+				'--disable-xlib',
+				'--without-x'
+			])
+		elif Package.profile.name == 'linux':
+			self.configure_flags.extend ([
+				'--disable-quartz',
+				'--with-x'
+			])
 
-package = {
-	'name':    'cairo',
-	'version': '1.8.8',
-	'sources': [
-		'http://cairographics.org/releases/%{name}-%{version}.tar.gz'
-	],
-	'build': [
-		'%{__configure} ' + ' '.join (configure_args),
-		'%{__make}'
-	]
-}
+		Package.build (self)
+
+CairoPackage ()

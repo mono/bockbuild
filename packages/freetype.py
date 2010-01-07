@@ -1,11 +1,3 @@
-package = {
-	'name':    'freetype',
-	'version': '2.3.11',
-	'sources': [
-		'http://downloads.sourceforge.net/sourceforge/%{name}/%{name}-%{version}.tar.gz'
-	],
-	'build': [
-		'./configure --prefix %{_prefix}',
-		'%{__make}'
-	]
-}
+SourceForgePackage ('%{name}', 'freetype', '2.3.11', override_properties = {
+	'configure': './configure --prefix %{prefix}'
+})
