@@ -1,4 +1,4 @@
-#!/usr/bin/env python -B
+#!/usr/bin/python -B
 
 from bockbuild.darwinprofile import DarwinProfile
 from packages import BansheePackages
