@@ -67,7 +67,7 @@ class DarwinProfile (UnixProfile):
 
 		run_shell ('mono --debug solitary/Solitary.exe '
 			'--mono-prefix="%s" --root="%s" --out="%s" %s' % \
-			(install_prefix, install_prefix, self.bundle_res_dir, files))
+			(self.prefix, self.prefix, self.bundle_res_dir, files))
 
 	def configure_pango (self):
 		pango_querymodules = os.path.join (self.prefix, 'bin', 'pango-querymodules')
