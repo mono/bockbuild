@@ -2,7 +2,8 @@ class MonoPackage (Package):
 	def __init__ (self):
 		Package.__init__ (self, 'mono', '2.6.1',
 			sources = [
-				'http://ftp.novell.com/pub/%{name}/sources/%{name}/%{name}-%{version}.tar.bz2'
+				'http://ftp.novell.com/pub/%{name}/sources/%{name}/%{name}-%{version}.tar.bz2',
+				'patches/mono-runtime-relocation.patch'
 			],
 			configure_flags = [
 				'--with-jit=yes',
@@ -12,7 +13,11 @@ class MonoPackage (Package):
 				'--enable-quiet-build'
 			]
 		)
-	
+
+	def prep (self):
+		Package.prep (self)
+		self.sh ('patch -p1 < "%{sources[1]}"')
+
 	def install (self):
 		Package.install (self)
 		if Package.profile.name == 'darwin':
