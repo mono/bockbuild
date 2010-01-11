@@ -15,6 +15,9 @@ class Profile:
 		self.cpu_count = get_cpu_count ()
 		self.host = get_host ()
 
+	def bundle (self, output_dir):
+		sys.exit ('Bundle support not implemented for this profile')
+
 	def build (self):
 		default_run_phases = ['prep', 'build', 'install']
 
@@ -22,6 +25,15 @@ class Profile:
 		parser.add_option ('-b', '--build',
 			action = 'store_true', dest = 'do_build', default = False,
 			help = 'build the profile')
+		parser.add_option ('-z', '--bundle',
+			action = 'store_true', dest = 'do_bundle', default = False,
+			help = 'create a distributable bundle from a build')
+		parser.add_option ('-o', '--output-dir',
+			default = None, action = 'store', dest = 'output_dir',
+			help = 'output directory for housing the bundle (--bundle|-z)')
+		parser.add_option ('-k', '--skeleton-dir',
+			default = None, action = 'store',  dest = 'skeleton_dir',
+			help = 'skeleton directory containing misc files to copy into bundle (--bundle|-z)')
 		parser.add_option ('-v', '--verbose',
 			action = 'store_true', dest = 'verbose', default = False,
 			help = 'show all build output (e.g. configure, make)')
@@ -48,7 +60,7 @@ class Profile:
 			self.env.dump ()
 			sys.exit (0)
 
-		if not options.do_build:
+		if not options.do_build and not options.do_bundle:
 			parser.print_help ()
 			sys.exit (1)
 
@@ -77,12 +89,22 @@ class Profile:
 
 		Package.profile = self
 
-		pwd = os.getcwd ()
-		for path in self.packages:
-			os.chdir (pwd)
-			path = os.path.join (os.path.dirname (sys.argv[0]), path)
-			exec compile (open (path).read (), path, 'exec')
-			if Package.last_instance == None:
-				sys.exit ('%s does not provide a valid package.' % path)
-			Package.last_instance.start_build ()
-			Package.last_instance = None
+		if options.do_build:
+			pwd = os.getcwd ()
+			for path in self.packages:
+				os.chdir (pwd)
+				path = os.path.join (os.path.dirname (sys.argv[0]), path)
+				exec compile (open (path).read (), path, 'exec')
+				if Package.last_instance == None:
+					sys.exit ('%s does not provide a valid package.' % path)
+				Package.last_instance._path = path
+				Package.last_instance.start_build ()
+				Package.last_instance = None
+
+		if options.do_bundle:
+			if not options.output_dir == None:
+				self.bundle_output_dir = os.path.join (os.getcwd (), 'bundle')
+			if not options.skeleton_dir == None:
+				self.bundle_skeleton_dir = os.path.join (os.getcwd (), 'skeleton')
+			self.bundle ()
+			return

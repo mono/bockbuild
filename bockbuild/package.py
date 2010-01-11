@@ -60,7 +60,7 @@ class Package:
 		profile = Package.profile
 
 		namever = '%s-%s' % (self.name, self.version)
-		package_dir = os.path.dirname (os.path.realpath (__file__))
+		package_dir = os.path.dirname (os.path.realpath (self._path))
 		package_dest_dir = os.path.join (profile.build_root, namever)
 		package_build_dir = os.path.join (package_dest_dir, '_build')
 		build_success_file = os.path.join (profile.build_root,
