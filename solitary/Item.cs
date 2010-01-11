@@ -42,6 +42,8 @@ public abstract class Item
     public Solitary Confinement { get; set; }
     public abstract IEnumerable<Item> Load ();
 
+    public FileInfo OriginalFile { get; private set; }
+
     private FileInfo file;
     public FileInfo File {
         get { return file; }
@@ -52,26 +54,58 @@ public abstract class Item
             }
 
             file = value;
-            var link = new UnixSymbolicLinkInfo (file.FullName);
-            if (link.HasContents) {
-                file = new FileInfo (link.GetContents ().FullName);
+            if (OriginalFile == null) {
+                OriginalFile = file;
             }
         }
     }
 
     public bool IsValidConfinementItem (Item item)
     {
+        return IsValidConfinementItem (item, true);
+    }
+    
+    public bool IsValidConfinementItem (Item item, bool checkExists)
+    {
         if (Confinement.ConfinementRoot != null &&
             !item.File.FullName.StartsWith (Confinement.ConfinementRoot)) {
             return false;
+        } else if (!checkExists) {
+            return true;
         }
 
         return !Confinement.Items.Exists (c => c.File.FullName == item.File.FullName);
     }
 
+    public string GetRelocationPath ()
+    {
+        return GetRelocationPath (File.FullName);
+    }
+
+    public string GetRelocationPath (string path)
+    {
+        if (Confinement.ConfinementRoot != null) {
+            path = path.Substring (Confinement.ConfinementRoot.Length + 1);
+        }
+        return Path.Combine (Confinement.OutputPath, path);
+    }
+
+    public virtual void Relocate ()
+    {
+        var path = GetRelocationPath ();
+        Directory.CreateDirectory (Path.GetDirectoryName (path));
+        System.IO.File.Copy (File.FullName, path);
+        File = new FileInfo (path);
+    }
+
+    public static Item Resolve (Solitary confinement, string path)
+    {
+        return Resolve (confinement, new FileInfo (path));
+    }
+
     public static Item Resolve (Solitary confinement, FileInfo file)
     {
-        if (file.Name.StartsWith (".")) {
+        if (!file.Exists || file.Name.StartsWith (".")) {
             return null;
         }
 
@@ -81,6 +115,13 @@ public abstract class Item
             if (regex.IsMatch (file.FullName)) {
                 return null;
             }
+        }
+       
+        if (SymlinkItem.IsSymlink (file.FullName)) { 
+            return new SymlinkItem () {
+                File = file,
+                Confinement = confinement
+            };
         }
 
         switch (GetFileType (file)) {
@@ -108,6 +149,9 @@ public abstract class Item
         }
         
         var line = proc.StandardOutput.ReadLine ();
+        
+        proc.Dispose ();
+        
         if (line == null) {
             return FileType.Data;
         }

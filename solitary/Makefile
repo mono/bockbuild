@@ -5,7 +5,9 @@ SOURCE = \
 	AssemblyItem.cs \
 	NativeLibraryItem.cs \
 	DataItem.cs \
+	SymlinkItem.cs \
 	ProcessTools.cs \
+	PathExtensions.cs \
 	Entry.cs \
 	Options.cs
 

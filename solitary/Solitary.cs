@@ -141,27 +141,33 @@ public class Solitary
 
     public void CreateBundle (bool strip)
     {
-        Directory.Delete (OutputPath, true);
+        try {
+            Directory.Delete (OutputPath, true);
+        } catch (DirectoryNotFoundException) {
+        }
+
         Directory.CreateDirectory (OutputPath);
 
         foreach (var item in Items) {
-            var path = item.File.FullName;
-            if (ConfinementRoot != null) {
-                path = path.Substring (ConfinementRoot.Length + 1);
+            try {
+                item.Relocate ();
+            } catch {
             }
-            path = Path.Combine (OutputPath, path);
+            /*var native_item = item as NativeLibraryItem;
+            if (strip && native_item != null) {
+                native_item.Strip ();
+            }*/
+        }
 
-            Directory.CreateDirectory (Path.GetDirectoryName (path));
-            if (!strip || !(item is NativeLibraryItem) ||
-                !StripBinary (item.File.FullName, path)) {
-                File.Copy (item.File.FullName, path);
+        int count = 0;
+        foreach (var item in Items) {
+            var native_item = item as NativeLibraryItem;
+            if (native_item != null) {
+                count++;
+                native_item.RelocateDependencies ();
             }
         }
-    }
 
-    private static bool StripBinary (string source, string target)
-    {
-        return ProcessTools.CreateProcess ("strip",
-            String.Format ("-u -r -o \"{1}\" \"{0}\"", source, target)) != null;
+        Console.WriteLine ("{0} native libraries processed.", count);
     }
 }

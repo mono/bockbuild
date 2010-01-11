@@ -74,8 +74,9 @@ public static class Entry
                 foreach (var collect_item in item.Load ()) {
                     solitary.Items.Add (collect_item);
                     total_size += collect_item.File.Length;
-                    Console.WriteLine (" + {0} ({1} KB)",
+                    Console.WriteLine (" + {0} ({1} - {2} KB)",
                         collect_item.File.Name,
+                        collect_item.GetType ().Name,
                         collect_item.File.Length / 1024);
                 }
             }

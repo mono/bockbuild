@@ -48,6 +48,16 @@ public class AssemblyItem : Item
         }
 
         yield return this;
+        
+        var sibling = Item.Resolve (Confinement, File.FullName + ".mdb");
+        if (sibling != null) {
+            yield return sibling;
+        } 
+
+        sibling = Item.Resolve (Confinement, File.FullName + ".config");
+        if (sibling != null) {
+            yield return sibling;
+        }
 
         foreach (var item in ReadAssembly ()) {
             yield return item;
@@ -90,10 +100,10 @@ public class AssemblyItem : Item
         foreach (var module in pinvoke_modules) {
             var lib = LocateNativeLibrary (Assembly.Location, module);
             if (lib != null) {
-                var item = new NativeLibraryItem () {
-                    Confinement = Confinement,
-                    File = new FileInfo (lib)
-                };
+                var item = Item.Resolve (Confinement, new FileInfo (lib));
+                if (item == null) {
+                    continue;
+                }
                 foreach (var child_item in item.Load ()) {
                     yield return child_item;
                 }

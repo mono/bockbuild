@@ -53,6 +53,8 @@ public static class ProcessTools
             case "darwin": Host = ProcessHost.Darwin; break;
             case "linux": Host = ProcessHost.Linux; break;
         }
+
+        uname.Dispose ();
     }
 
     public static Process CreateProcess (string cmd)
@@ -99,6 +101,8 @@ public static class ProcessTools
                 items.Add (match.Groups[1].Value.Trim ());
             }
         }
+
+        proc.Dispose ();
 
         return items;
     }
