@@ -25,6 +25,11 @@ class Package:
 		self.configure = './configure --prefix="%{prefix}"'
 		self.make = 'make -j%s' % Package.profile.cpu_count
 		self.makeinstall = 'make install'
+		self.git = 'git'
+		for git in ['/usr/bin/git', '/usr/local/bin/git', '/usr/local/git/bin/git']:
+			if os.path.isfile (git):
+				self.git = git
+				break
 
 		if not override_properties == None:
 			for k, v in override_properties.iteritems ():
@@ -49,6 +54,21 @@ class Package:
 			elif source.startswith (('http://', 'https://', 'ftp://')):
 				log (1, 'downloading remote source: %s' % source)
 				urllib.urlretrieve (source, local_dest_file)
+			elif source.startswith ('git://'):
+				log (1, 'cloning or updating git repository: %s' % source)
+				local_dest_file = os.path.join (package_dest_dir,
+					'%s-%s.git' % (self.name, self.version))
+				local_sources.pop ()
+				local_sources.append (local_dest_file)
+				pwd = os.getcwd ()
+				if not os.path.isdir (os.path.join (local_dest_file, '.git')):
+					self.cd (os.path.dirname (local_dest_file))
+					shutil.rmtree (local_dest_file, ignore_errors = True)
+					self.sh ('%' + '{git} clone "%s" "%s"' % (source, os.path.basename (local_dest_file)))
+				else:
+					self.cd (local_dest_file)
+					self.sh ('%{git} pull --rebase')
+				os.chdir (pwd)
 
 		self.sources = local_sources
 
@@ -107,12 +127,18 @@ class Package:
 		if self.sources == None:
 			log (1, '<skipping - no sources defined>')
 			return
-		root, ext = os.path.splitext (self.sources[0])
-		if ext == '.zip':
-			self.sh ('unzip -qq "%{sources[0]}"')
+
+		if os.path.isdir (os.path.join (self.sources[0], '.git')):
+			dirname = os.path.join (os.getcwd (), os.path.basename (self.sources[0]))
+			self.sh ('cp -a "%s" "%s"' % (self.sources[0], dirname))
+			self.cd (dirname)
 		else:
-			self.sh ('tar xf "%{sources[0]}"')
-		self.cd ('%{source_dir_name}')
+			root, ext = os.path.splitext (self.sources[0])
+			if ext == '.zip':
+				self.sh ('unzip -qq "%{sources[0]}"')
+			else:
+				self.sh ('tar xf "%{sources[0]}"')
+			self.cd ('%{source_dir_name}')
 	
 	def build (self):
 		if self.sources == None:
