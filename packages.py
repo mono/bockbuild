@@ -78,6 +78,7 @@ class BansheePackages:
 
 		if isinstance (self, DarwinProfile):
 			self.packages.extend ([
+				'packages/gtk-quartz-engine.py',
 				'packages/ige-mac-integration.py',
 				'packages/ige-mac-integration-sharp.py'
 			])
