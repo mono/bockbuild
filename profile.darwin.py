@@ -18,16 +18,20 @@ class BansheeDarwinProfile (DarwinProfile, BansheePackages):
 		self.bundle_from_build = [
 			'bin/mono',
 			'bin/banshee-1',
-			'bin/pango-querymodules',
-			'bin/gtk-demo',
 			'lib/banshee-1',
 			'lib/pango',
+			'lib/gtk-2.0/2.10.0/loaders',
+			'lib/gtk-2.0/2.10.0/engines',
+			'lib/gtk-2.0/2.10.0/immodules',
 			'lib/gstreamer-0.10',
 			'share/banshee-1',
+			'share/locale',
 			'etc/mono/config',
 			'etc/mono/1.0/machine.config',
 			'etc/mono/2.0/machine.config',
-			'etc/mono/2.0/settings.map'
+			'etc/mono/2.0/settings.map',
+			'share/icons/hicolor/index.theme',
+			'share/icons/Tango/index.theme'
 		]
 
 		self.bundle_from_build.extend ([
@@ -45,7 +49,6 @@ class BansheeDarwinProfile (DarwinProfile, BansheePackages):
 		])
 
 		DarwinProfile.bundle (self)
-		self.configure_pango ()
 
 		import shutil
 		import glob
