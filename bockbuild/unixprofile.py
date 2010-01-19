@@ -11,7 +11,8 @@ class UnixProfile (Profile):
 		self.env.set ('PATH', ':',
 			'%{prefix}/bin',
 			'/usr/bin',
-			'/bin')
+			'/bin',
+			'/usr/local/git/bin')
 
 		self.env.set ('CFLAGS',          '%{gcc_flags}')
 		self.env.set ('CXXFLAGS',        '%{env.CFLAGS}')
@@ -25,3 +26,7 @@ class UnixProfile (Profile):
 		self.env.set ('PKG_CONFIG_PATH', ':',
 			'%{prefix}/lib/pkgconfig',
 			'%{prefix}/share/pkgconfig')
+
+		self.env.set ('XDG_CONFIG_DIRS', '%{prefix}/etc/xdg')
+		self.env.set ('XDG_DATA_DIRS',   '%{prefix}/share')
+		self.env.set ('XDG_CONFIG_HOME', '$HOME/.config')
