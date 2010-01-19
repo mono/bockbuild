@@ -33,12 +33,13 @@ class BansheePackages:
 			'packages/sqlite.py'
 		])
 
-		# Icons
+		# Theme
 		self.packages.extend ([
 			'packages/librsvg.py',
 			'packages/icon-naming-utils.py',
 			'packages/hicolor-icon-theme.py',
-			'packages/tango-icon-theme.py'
+			'packages/tango-icon-theme.py',
+			'packages/murrine.py'
 		])
 
 		# Codecs
@@ -78,7 +79,6 @@ class BansheePackages:
 
 		if isinstance (self, DarwinProfile):
 			self.packages.extend ([
-				'packages/gtk-quartz-engine.py',
 				'packages/ige-mac-integration.py',
 				'packages/ige-mac-integration-sharp.py'
 			])
