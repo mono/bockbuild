@@ -1,0 +1,11 @@
+* Fix bug overlaying the skeleton on the bundle
+* Generate Info.plist (rather parts of it)
+  - version
+  - copyright
+  - file associations
+* Add DMG support
+* Figure out why solitary trashes the build root
+* Figure out why there are still references to the build root
+  - if the build root is removed, the relocated bundle works flawlessly
+  - if the root exists, two copies of some libraries are loaded into
+    memory with conflicting symbols, and we crash
