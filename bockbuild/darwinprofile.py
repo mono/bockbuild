@@ -68,28 +68,39 @@ class DarwinProfile (UnixProfile):
 		run_shell ('mono --debug solitary/Solitary.exe '
 			'--mono-prefix="%s" --root="%s" --out="%s" %s' % \
 			(self.prefix, self.prefix, self.bundle_res_dir, files))
+		self.configure_gtk ()
 
-	def configure_pango (self):
-		pango_querymodules = os.path.join (self.prefix, 'bin', 'pango-querymodules')
-		if not os.path.isfile (pango_querymodules):
-			print 'Could not find pango-querymodules in the build root'
-			return
+	def configure_gtk (self):
+		paths = [
+			os.path.join ('etc', 'gtk-2.0', 'gdk-pixbuf.loaders'),
+			os.path.join ('etc', 'gtk-2.0', 'gtk.immodules'),
+			os.path.join ('etc', 'gtk-2.0', 'im-multipress.conf'),
+			os.path.join ('etc', 'pango', 'pango.modules')
+		]
 
-		pango_dir = os.path.join (self.bundle_res_dir, 'etc', 'pango')
-		if not os.path.exists (pango_dir):
-			os.makedirs (pango_dir)
+		for path in paths:
+			bundle_path = os.path.join (self.bundle_res_dir, path) + '.in'
+			path = os.path.join (self.prefix, path)
 
-		fp = open (os.path.join (pango_dir, 'pango.modules'), 'w')
-		for line in backtick (pango_querymodules):
-			line = line.strip ()
-			if line.startswith ('#'):
+			if not os.path.isfile (path):
 				continue
-			elif line.startswith (self.prefix):
-				line = line[len (self.prefix) + 1:]
-			fp.write (line + '\n')
-		fp.close ()
 
-		fp = open (os.path.join (pango_dir, 'pangorc'), 'w')
-		fp.write ('[Pango]\n')
-		fp.write ('ModulesPath=./pango.modules\n')
-		fp.close ()
+			try:
+				os.makedirs (os.path.dirname (bundle_path))
+			except:
+				pass
+
+			ifp = open (path)
+			ofp = open (bundle_path, 'w')
+			for line in ifp:
+				if line.startswith ('#'):
+					continue
+				ofp.write (line.replace (self.prefix, '${APP_RESOURCES}'))
+			ifp.close ()
+			ofp.close ()
+
+			if os.path.basename (path) == 'pango.modules':
+				fp = open (os.path.join (os.path.dirname (bundle_path), 'pangorc'), 'w')
+				fp.write ('[Pango]\n')
+				fp.write ('ModuleFiles=./pango.modules\n')
+				fp.close ()
