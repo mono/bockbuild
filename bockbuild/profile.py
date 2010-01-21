@@ -11,6 +11,7 @@ class Profile:
 		self.prefix = os.path.join (self.build_root, '_install')
 		self.env = Environment (self)
 		self.env.set ('BUILD_PREFIX', self.prefix)
+		self.env.set ('BOCKBUILD_ENV', '1')
 		self.packages = []
 		self.cpu_count = get_cpu_count ()
 		self.host = get_host ()
