@@ -14,10 +14,11 @@ class Profile:
 		self.env.set ('BOCKBUILD_ENV', '1')
 		self.packages = []
 		self.cpu_count = get_cpu_count ()
+		self.global_configure_flags = []
 		self.host = get_host ()
 
-	def bundle (self, output_dir):
-		sys.exit ('Bundle support not implemented for this profile')
+	def bundle (self):
+		sys.exit ('Bundle support not implemented for this profile (%s)' % self.name)
 
 	def build (self):
 		default_run_phases = ['prep', 'build', 'install']
