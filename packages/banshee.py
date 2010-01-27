@@ -3,8 +3,7 @@ class BansheePackage (Package):
 		Package.__init__ (self, 'banshee-1', '1.5.3')
 
 		self.sources = [
-			'http://getbanshee.org/~abock/%{name}-%{version}.tar.bz2'
-#			'http://download.banshee-project.org/banshee/stable/%{version}/%{name}-%{version}.tar.bz2'
+			'http://download.banshee-project.org/banshee/stable/%{version}/%{name}-%{version}.tar.bz2'
 		]
 
 		self.configure_flags = [
