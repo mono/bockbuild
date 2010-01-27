@@ -82,3 +82,6 @@ class BansheePackages:
 				'packages/ige-mac-integration.py',
 				'packages/ige-mac-integration-sharp.py'
 			])
+
+		if self.cmd_options.release_build:
+			self.packages.append ('packages/banshee.py')
