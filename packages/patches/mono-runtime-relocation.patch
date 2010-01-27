@@ -5,8 +5,8 @@ Subject: [PATCH] Support Mono runtime relocation on OS X
 
 assembly.c (mono_set_rootdir): support finding the Mono paths on OS X
 at runtime in the same way as on Windows, which yields a relocatable
-Mono. Uses dyld's _NSGetExecutablePath and realpath to resolve the path
-of the running mono process.
+Mono. Uses dyld's _NSGetExecutablePath to resolve the path of the
+running mono process.
 
 On TARGET_ARM, fallback () will always be executed.
 ---
@@ -52,7 +52,7 @@ index 1e7f733..ce37e8e 100644
 +
 +		name = NULL;
 +		if (_NSGetExecutablePath (buf, &buf_size) == 0) {
-+			name = realpath (buf, NULL);
++			name = buf;
 +		}
 +
 +		if (name == NULL) {
