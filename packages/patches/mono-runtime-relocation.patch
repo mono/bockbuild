@@ -52,7 +52,7 @@ index 1e7f733..ce37e8e 100644
 +
 +		name = NULL;
 +		if (_NSGetExecutablePath (buf, &buf_size) == 0) {
-+			name = buf;
++			name = g_strdup (buf);
 +		}
 +
 +		if (name == NULL) {
