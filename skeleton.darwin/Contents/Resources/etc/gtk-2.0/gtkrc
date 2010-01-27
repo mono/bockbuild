@@ -1,3 +1,5 @@
+include "gtkrc.key.mac"
+
 gtk-color-scheme = 
 "base_color:       #fff
 bg_color:          #ededed
