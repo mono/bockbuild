@@ -14,15 +14,12 @@ class Profile:
 		self.env.set ('BOCKBUILD_ENV', '1')
 		self.packages = []
 		self.cpu_count = get_cpu_count ()
-		self.global_configure_flags = []
 		self.host = get_host ()
 
-	def bundle (self):
-		sys.exit ('Bundle support not implemented for this profile (%s)' % self.name)
+		self.parse_options ()
 
-	def build (self):
-		default_run_phases = ['prep', 'build', 'install']
-
+	def parse_options (self):
+		self.default_run_phases = ['prep', 'build', 'install']
 		parser = OptionParser (usage = 'usage: %prog [options] [package_names...]')
 		parser.add_option ('-b', '--build',
 			action = 'store_true', dest = 'do_build', default = False,
@@ -41,42 +38,50 @@ class Profile:
 			help = 'show all build output (e.g. configure, make)')
 		parser.add_option ('-i', '--include-phase',
 			action = 'append', dest = 'include_run_phases', default = [],
-			help = 'explicitly include a build phase to run %s' % default_run_phases)
+			help = 'explicitly include a build phase to run %s' % self.default_run_phases)
 		parser.add_option ('-x', '--exclude-phase',
 			action = 'append', dest = 'exclude_run_phases', default = [],
-			help = 'explicitly exclude a build phase from running %s' % default_run_phases)
+			help = 'explicitly exclude a build phase from running %s' % self.default_run_phases)
 		parser.add_option ('-s', '--only-sources',
 			action = 'store_true', dest = 'only_sources', default = False,
 			help = 'only fetch sources, do not run any build phases')
 		parser.add_option ('-e', '--environment', default = False,
 			action = 'store_true', dest = 'dump_environment',
 			help = 'Dump the profile environment as a shell-sourceable list of exports ')
-		options, args = parser.parse_args ()
+		parser.add_option ('-r', '--release', default = False,
+			action = 'store_true', dest = 'release_build',
+			help = 'Whether or not this build is a release build')
 
-		packages_to_build = args
-		self.verbose = options.verbose
-		self.run_phases = default_run_phases
+		self.cmd_options, self.cmd_args = parser.parse_args ()
 
-		if options.dump_environment:
+	def bundle (self, output_dir):
+		sys.exit ('Bundle support not implemented for this profile')
+
+	def build (self):
+		packages_to_build = self.cmd_args
+		self.verbose = self.cmd_options.verbose
+		self.run_phases = self.default_run_phases
+
+		if self.cmd_options.dump_environment:
 			self.env.compile ()
 			self.env.dump ()
 			sys.exit (0)
 
-		if not options.do_build and not options.do_bundle:
+		if not self.cmd_options.do_build and not self.cmd_options.do_bundle:
 			parser.print_help ()
 			sys.exit (1)
 
-		if not options.include_run_phases == []:
-			self.run_phases = options.include_run_phases
-		for exclude_phase in options.exclude_run_phases:
+		if not self.cmd_options.include_run_phases == []:
+			self.run_phases = self.cmd_options.include_run_phases
+		for exclude_phase in self.cmd_options.exclude_run_phases:
 			self.run_phases.remove (exclude_phase)
-		if options.only_sources:
+		if self.cmd_options.only_sources:
 			self.run_phases = []
 
 		for phase_set in [self.run_phases,
-			options.include_run_phases, options.exclude_run_phases]:
+			self.cmd_options.include_run_phases, self.cmd_options.exclude_run_phases]:
 			for phase in phase_set:
-				if phase not in default_run_phases:
+				if phase not in self.default_run_phases:
 					sys.exit ('Invalid run phase \'%s\'' % phase)
 
 		log (0, 'Loaded profile \'%s\' (%s)' % (self.name, self.host))
@@ -91,7 +96,7 @@ class Profile:
 
 		Package.profile = self
 
-		if options.do_build:
+		if self.cmd_options.do_build:
 			pwd = os.getcwd ()
 			for path in self.packages:
 				os.chdir (pwd)
@@ -103,10 +108,10 @@ class Profile:
 				Package.last_instance.start_build ()
 				Package.last_instance = None
 
-		if options.do_bundle:
-			if not options.output_dir == None:
+		if self.cmd_options.do_bundle:
+			if not self.cmd_options.output_dir == None:
 				self.bundle_output_dir = os.path.join (os.getcwd (), 'bundle')
-			if not options.skeleton_dir == None:
+			if not self.cmd_options.skeleton_dir == None:
 				self.bundle_skeleton_dir = os.path.join (os.getcwd (), 'skeleton')
 			self.bundle ()
 			return
