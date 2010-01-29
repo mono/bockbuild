@@ -53,6 +53,7 @@ class Profile:
 			action = 'store_true', dest = 'release_build',
 			help = 'Whether or not this build is a release build')
 
+		self.parser = parser
 		self.cmd_options, self.cmd_args = parser.parse_args ()
 
 	def bundle (self, output_dir):
@@ -69,7 +70,7 @@ class Profile:
 			sys.exit (0)
 
 		if not self.cmd_options.do_build and not self.cmd_options.do_bundle:
-			parser.print_help ()
+			self.parser.print_help ()
 			sys.exit (1)
 
 		if not self.cmd_options.include_run_phases == []:
