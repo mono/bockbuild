@@ -16,7 +16,6 @@ class Package:
 			self.configure_flags.extend (Package.profile.global_configure_flags)
 		if configure_flags:
 			self.configure_flags.extend (configure_flags)
-		self.configure_flags = configure_flags
 
 		self.sources = sources
 		if self.sources == None \

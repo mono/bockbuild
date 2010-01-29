@@ -18,9 +18,8 @@ class BansheeMingwCrossProfile (UnixProfile, BansheePackages):
 		self.sysroot = '/usr/%{target}/sys-root/%{target}'
 		
 		self.global_configure_flags.extend ([
-			'--host=%{target}',
-			'--target=%{target}',
-			'--build=%{host}'
+			"--host=%s" % self.host,
+			"--target=%s" % self.target
 		])
 
 		self.gcc_flags.extend ([
