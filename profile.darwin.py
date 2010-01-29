@@ -17,6 +17,8 @@ class BansheeDarwinProfile (DarwinProfile, BansheePackages):
 
 		self.bundle_from_build = [
 			'bin/mono',
+			'lib/mono/2.0/gmcs.exe',
+			'lib/mono/gac/Mono.Addins.CecilReflector',
 			'bin/banshee-1',
 			'lib/banshee-1',
 			'lib/pango',
