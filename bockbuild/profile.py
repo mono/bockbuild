@@ -14,6 +14,7 @@ class Profile:
 		self.env.set ('BOCKBUILD_ENV', '1')
 		self.packages = []
 		self.cpu_count = get_cpu_count ()
+		self.global_configure_flags = []
 		self.host = get_host ()
 
 		self.parse_options ()
