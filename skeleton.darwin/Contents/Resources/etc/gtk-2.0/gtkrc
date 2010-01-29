@@ -1,3 +1,8 @@
+# Mac OS X friendly theme
+# Written by Aaron Bockover <abockover@novell.com>
+# Copyright 2010 Novell, Inc.
+# Released under the MIT/X11 license
+
 include "gtkrc.key.mac"
 
 gtk-color-scheme = 
