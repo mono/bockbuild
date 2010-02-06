@@ -7,7 +7,8 @@ class BansheePackage (Package):
 		]
 
 		self.configure_flags = [
-			'--disable-docs'
+			'--disable-docs',
+			'--disable-webkit'
 		]
 
 		if Package.profile.name == 'darwin':
