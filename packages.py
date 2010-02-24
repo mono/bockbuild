@@ -27,7 +27,6 @@ class BansheePackages:
 			'packages/intltool.py',
 			'packages/gtk+.py',
 			'packages/gconf-dummy.py',
-			'packages/libglade.py',
 			'packages/libproxy.py',
 			'packages/libsoup.py',
 			'packages/sqlite.py'

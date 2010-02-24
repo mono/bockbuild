@@ -3,7 +3,7 @@ class GlibPackage (GnomePackage):
 		GnomePackage.__init__ (self,
 			'glib',
 			version_major = '2.22',
-			version_minor = '3')
+			version_minor = '4')
 
 		self.darwin = Package.profile.name == 'darwin'
 		self.macports_svn = 'http://svn.macports.org/repository/macports/trunk/dports/devel/glib2/files'

@@ -1,1 +1,1 @@
-XiphPackage ('theora', 'libtheora', '1.1beta3')
+XiphPackage ('theora', 'libtheora', '1.1.1')

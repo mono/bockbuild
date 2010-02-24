@@ -1,1 +1,1 @@
-CairoGraphicsPackage ('pixman', '0.17.2')
+CairoGraphicsPackage ('pixman', '0.17.6')
