@@ -79,8 +79,7 @@ class BansheePackages:
 
 		if isinstance (self, DarwinProfile):
 			self.packages.extend ([
-				'packages/ige-mac-integration.py',
-				'packages/ige-mac-integration-sharp.py'
+				'packages/ige-mac-integration.py'
 			])
 
 		if self.cmd_options.release_build:
