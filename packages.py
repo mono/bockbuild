@@ -78,6 +78,7 @@ class BansheePackages:
 
 		if isinstance (self, DarwinProfile):
 			self.packages.extend ([
+				'packages/monobjc.py',
 				'packages/ige-mac-integration.py'
 			])
 
