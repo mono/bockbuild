@@ -19,7 +19,6 @@ class BansheePackage (Package):
 				'--disable-ipod',
 				'--disable-boo',
 				'--disable-gnome',
-				'--enable-osx',
 				'--with-vendor-build-id="banshee-project.org OSX 10.5+ i386/Intel"'
 			])
 
