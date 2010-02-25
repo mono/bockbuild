@@ -8,6 +8,8 @@ class Package:
 	def __init__ (self, name, version, configure_flags = None, sources = None, source_dir_name = None, override_properties = None):
 		Package.last_instance = self
 		
+		self._dirstack = []
+
 		self.name = name
 		self.version = version
 
@@ -127,6 +129,13 @@ class Package:
 		dir = expand_macros (dir, self)
 		log (1, 'cd "%s"' % dir)
 		os.chdir (dir)
+
+	def pushd (self, dir):
+		self._dirstack.append (os.getcwd ())
+		self.cd (dir)
+
+	def popd (self):
+		self.cd (self._dirstack.pop ())
 
 	def prep (self):
 		if self.sources == None:
