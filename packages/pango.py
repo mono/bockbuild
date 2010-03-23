@@ -17,6 +17,8 @@ class PangoPackage (GnomePackage):
 		if Package.profile.name == 'darwin':
 			self.sources.extend ([
 				'http://git.gnome.org/browse/pango/patch/?id=0f06d7758bc37a4942342d2c17a88944cbc88adb',
+				# patch for bgo#608415
+				'http://git.gnome.org/browse/pango/patch/?id=77f99dd9e17c5051b2b2dcfe6e7746f924e9f71b'
 			])
 
 	def prep (self):
@@ -24,5 +26,6 @@ class PangoPackage (GnomePackage):
 		self.sh ('patch -p0 < "%{sources[1]}"')
 		if Package.profile.name == 'darwin':
 			self.sh ('patch -p1 < "%{sources[2]}"')
+			self.sh ('patch -p1 < "%{sources[3]}"')
 
 PangoPackage ()
