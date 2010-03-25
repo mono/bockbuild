@@ -1,6 +1,6 @@
 class MonoPackage (Package):
 	def __init__ (self):
-		Package.__init__ (self, 'mono', '2.6.1',
+		Package.__init__ (self, 'mono', '2.6.3',
 			sources = [
 				'http://ftp.novell.com/pub/%{name}/sources/%{name}/%{name}-%{version}.tar.bz2',
 				'patches/mono-runtime-relocation.patch'
@@ -12,6 +12,9 @@ class MonoPackage (Package):
 				'--with-moonlight=no',
 				'--enable-quiet-build'
 			]
+
+			# Mono (in libgc) likes to fail to build randomly
+			self.make = 'for((i=0;i<20;i++)); do make && break; done'
 		)
 
 	def prep (self):
