@@ -12,10 +12,9 @@ class MonoPackage (Package):
 				'--with-moonlight=no',
 				'--enable-quiet-build'
 			]
-
-			# Mono (in libgc) likes to fail to build randomly
-			self.make = 'for((i=0;i<20;i++)); do make && break; done'
 		)
+		# Mono (in libgc) likes to fail to build randomly
+		self.make = 'for((i=0;i<20;i++)); do make && break; done'
 
 	def prep (self):
 		Package.prep (self)
