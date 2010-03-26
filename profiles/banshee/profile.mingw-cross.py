@@ -1,6 +1,9 @@
 #!/usr/bin/python -B
 
 import os
+import sys
+
+sys.path.append ('../..')
 
 from bockbuild.unixprofile import UnixProfile
 from packages import BansheePackages

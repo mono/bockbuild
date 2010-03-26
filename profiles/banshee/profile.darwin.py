@@ -3,6 +3,8 @@
 import os
 import sys
 
+sys.path.append ('../..')
+
 from bockbuild.darwinprofile import DarwinProfile
 from packages import BansheePackages
 
