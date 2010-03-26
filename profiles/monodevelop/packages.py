@@ -26,6 +26,7 @@ class MonoDevelopPackages:
 			'atk.py',
 			'intltool.py',
 			'gtk+.py',
+			'libglade.py',
 			'sqlite.py'
 		])
 
@@ -47,3 +48,7 @@ class MonoDevelopPackages:
 
 		self.packages = [os.path.join ('..', '..', 'packages', p)
 			for p in self.packages]
+
+		self.packages.extend ([
+			'monodevelop-svn.py'
+		])
