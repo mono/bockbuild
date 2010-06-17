@@ -2,8 +2,8 @@ class GlibPackage (GnomePackage):
 	def __init__ (self):
 		GnomePackage.__init__ (self,
 			'glib',
-			version_major = '2.22',
-			version_minor = '4')
+			version_major = '2.24',
+			version_minor = '1')
 
 		self.darwin = Package.profile.name == 'darwin'
 		self.macports_svn = 'http://svn.macports.org/repository/macports/trunk/dports/devel/glib2/files'
@@ -13,7 +13,9 @@ class GlibPackage (GnomePackage):
 				'config.h.ed',
 				'patch-configure.in.diff',
 				'patch-glib-2.0.pc.in.diff',
+				'patch-glib_gunicollate.c.diff',
 				'patch-gi18n.h.diff',
+				'patch-gio_xdgmime_xdgmime.c.diff',
 				'patch-child-test.c.diff'
 			]])
 
