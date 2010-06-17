@@ -1,1 +1,1 @@
-SourceForgePackage ('gtk-osx', 'ige-mac-integration', '0.8.6')
+SourceForgePackage ('gtk-osx', 'ige-mac-integration', '0.9.3')
