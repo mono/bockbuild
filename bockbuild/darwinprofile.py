@@ -65,7 +65,7 @@ class DarwinProfile (UnixProfile):
 		for file in self.bundle_from_build:
 			files = files + ' "%s"' % os.path.join (self.prefix, file)
 
-		run_shell ('mono --debug solitary/Solitary.exe '
+		run_shell ('mono --debug ../../solitary/Solitary.exe '
 			'--mono-prefix="%s" --root="%s" --out="%s" %s' % \
 			(self.prefix, self.prefix, self.bundle_res_dir, files))
 		self.configure_gtk ()
