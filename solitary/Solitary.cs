@@ -141,11 +141,6 @@ public class Solitary
 
     public void CreateBundle (bool strip)
     {
-        try {
-            Directory.Delete (OutputPath, true);
-        } catch (DirectoryNotFoundException) {
-        }
-
         Directory.CreateDirectory (OutputPath);
 
         foreach (var item in Items) {
