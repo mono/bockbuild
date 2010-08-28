@@ -1,4 +1,4 @@
-GnuPackage ('gettext', '0.17', configure_flags = [
+GnuPackage ('gettext', '0.18.1.1', configure_flags = [
 	'--disable-java',
 	'--disable-libasprintf',
 	'--disable-openmp'

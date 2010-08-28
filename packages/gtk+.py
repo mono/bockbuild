@@ -1,8 +1,8 @@
 class GtkPackage (GnomePackage):
 	def __init__ (self):
 		GnomePackage.__init__ (self, 'gtk+',
-			version_major = '2.18',
-			version_minor = '7',
+			version_major = '2.20',
+			version_minor = '1',
 			configure_flags = [
 				'--with-gdktarget=%{gdk_target}',
 				'--disable-cups',
@@ -15,7 +15,6 @@ class GtkPackage (GnomePackage):
 			self.gdk_target = 'quartz'
 			self.sources.extend ([
 				'http://github.com/jralls/gtk-osx-build/raw/master/patches/gdk-quartz-input-window.patch',
-				'http://git.dronelabs.com/gtk+/patch/?id=18773097865b173fb8c28b691e23d087f0269382',
 				'http://git.dronelabs.com/gtk+/patch/?id=729cbea7a2b27c4b8f2062316c0f406ab4c01dac'
 			])
 		elif Package.profile.name == 'linux':

@@ -1,1 +1,1 @@
-FreeDesktopPackage ('icon-theme', 'hicolor-icon-theme', '0.11')
+FreeDesktopPackage ('icon-theme', 'hicolor-icon-theme', '0.12')

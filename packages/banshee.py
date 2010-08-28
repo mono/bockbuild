@@ -1,9 +1,9 @@
 class BansheePackage (Package):
 	def __init__ (self):
-		Package.__init__ (self, 'banshee-1', '1.5.7')
+		Package.__init__ (self, 'banshee-1', '1.7.3')
 
 		self.sources = [
-			'http://download.banshee-project.org/banshee/stable/%{version}/%{name}-%{version}.tar.bz2'
+			'http://download.banshee.fm/banshee/unstable/%{version}/%{name}-%{version}.tar.bz2'
 		]
 
 		self.configure_flags = [

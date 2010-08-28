@@ -1,1 +1,1 @@
-XiphPackage ('ogg', 'libogg', '1.1.4')
+XiphPackage ('ogg', 'libogg', '1.2.0')

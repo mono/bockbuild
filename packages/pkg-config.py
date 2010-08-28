@@ -1,1 +1,1 @@
-FreeDesktopPackage ('%{name}', 'pkg-config', '0.23')
+FreeDesktopPackage ('%{name}', 'pkg-config', '0.25')
