@@ -1,5 +1,6 @@
 import os
 from bockbuild.darwinprofile import DarwinProfile
+from bockbuild.gnomeprofile import GnomeProfile
 
 class BansheePackages:
 	def __init__ (self):
@@ -14,7 +15,6 @@ class BansheePackages:
 
 		# Base Libraries
 		self.packages.extend ([
-			# 'libiconv.py',
 			'libpng.py',
 			'libjpeg.py',
 			'libxml2.py',
@@ -29,8 +29,18 @@ class BansheePackages:
 			'gtk+.py',
 			'gconf-dummy.py',
 			'libproxy.py',
+			'libgcrypt.py',
+			'gnutls.py',
 			'libsoup.py',
 			'sqlite.py'
+		])
+
+		# WebKit
+		self.packages.extend ([
+			'gperf.py',
+			'enchant.py',
+			'libicu.py',
+			'webkit.py'
 		])
 
 		# Theme
