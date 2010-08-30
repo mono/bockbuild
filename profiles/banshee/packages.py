@@ -35,13 +35,14 @@ class BansheePackages:
 			'sqlite.py'
 		])
 
-		# WebKit
-		self.packages.extend ([
-			'gperf.py',
-			'enchant.py',
-			'libicu.py',
-			'webkit.py'
-		])
+		# WebKit (only on Linux for now)
+		if isinstance (self, GnomeProfile):
+			self.packages.extend ([
+				'gperf.py',
+				'enchant.py',
+				'libicu.py',
+				'webkit.py'
+			])
 
 		# Theme
 		self.packages.extend ([
