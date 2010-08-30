@@ -3,12 +3,12 @@
 import sys
 sys.path.append ('../..')
 
-from bockbuild.unixprofile import UnixProfile
+from bockbuild.gnomeprofile import GnomeProfile
 from packages import BansheePackages
 
-class BansheeLinuxProfile (UnixProfile, BansheePackages):
+class BansheeLinuxProfile (GnomeProfile, BansheePackages):
 	def __init__ (self):
-		UnixProfile.__init__ (self)
+		GnomeProfile.__init__ (self)
 		BansheePackages.__init__ (self)
 		self.name = 'linux'
 
