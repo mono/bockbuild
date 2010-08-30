@@ -1,5 +1,9 @@
-GnomePackage ('libsoup', '2.30', '2', configure_flags = [
-	' --without-gnome',
-	' --disable-gtk-doc',
-	' --disable-ssl'
-])
+class LibsoupPackage (GnomePackage):
+	def __init__ (self):
+		GnomePackage.__init__ (self, 'libsoup', '2.30', '2')
+		self.configure_flags = [
+			'--disable-gtk-doc',
+			' --without-gnome'
+		]
+
+LibsoupPackage ()

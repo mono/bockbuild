@@ -1,4 +1,4 @@
-Package ('webkit', '1.2.2',
+Package ('webkit', '1.2.3',
 	sources = [ 'http://webkitgtk.org/%{name}-%{version}.tar.gz' ],
 	configure_flags = [
 		'--disable-video',
