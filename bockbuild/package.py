@@ -194,6 +194,11 @@ GnuPackage.default_sources = [
 	'http://ftp.gnu.org/gnu/%{name}/%{name}-%{version}.tar.gz'
 ]
 
+class GnuBz2Package (Package): pass
+GnuBz2Package.default_sources = [
+	'http://ftp.gnu.org/gnu/%{name}/%{name}-%{version}.tar.bz2'
+]
+
 class CairoGraphicsPackage (Package): pass
 CairoGraphicsPackage.default_sources = [
 	'http://cairographics.org/releases/%{name}-%{version}.tar.gz'
