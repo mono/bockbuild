@@ -16,4 +16,5 @@ class BansheeLinuxProfile (GnomeProfile, BansheePackages):
 		if not os.path.isdir ('/usr/include/alsa'):
 			raise IOError ('You must have the ALSA headers installed. (/usr/include/alsa)')
 
-BansheeLinuxProfile ().build ()
+if __name__ == '__main__':
+	BansheeLinuxProfile ().build ()
