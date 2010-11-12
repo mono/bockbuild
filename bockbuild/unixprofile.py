@@ -8,6 +8,16 @@ class UnixProfile (Profile):
 		self.gcc_flags = [ '-I%{prefix}/include' ]
 		self.ld_flags = [ '-L%{prefix}/lib' ]
 
+		try:
+			self.gcc_flags.extend (self.gcc_extra_flags)
+		except:
+			pass
+
+		try:
+			self.ld_flags.extend (self.ld_extra_flags)
+		except:
+			pass
+
 		self.env.set ('PATH', ':',
 			'%{prefix}/bin',
 			'/usr/bin',
