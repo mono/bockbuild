@@ -52,6 +52,9 @@ class Profile:
 		parser.add_option ('-r', '--release', default = False,
 			action = 'store_true', dest = 'release_build',
 			help = 'Whether or not this build is a release build')
+		parser.add_option ('-p', '--show-source-paths', default = False,
+			action = 'store_true', dest = 'show_source_paths',
+			help = 'Output a list of all source paths/URLs for all packages')
 
 		self.parser = parser
 		self.cmd_options, self.cmd_args = parser.parse_args ()
@@ -69,7 +72,9 @@ class Profile:
 			self.env.dump ()
 			sys.exit (0)
 
-		if not self.cmd_options.do_build and not self.cmd_options.do_bundle:
+		if not self.cmd_options.show_source_paths and \
+			not self.cmd_options.do_build and \
+			not self.cmd_options.do_bundle:
 			self.parser.print_help ()
 			sys.exit (1)
 
@@ -98,7 +103,7 @@ class Profile:
 
 		Package.profile = self
 
-		if self.cmd_options.do_build:
+		if self.cmd_options.do_build or self.cmd_options.show_source_paths:
 			pwd = os.getcwd ()
 			for path in self.packages:
 				os.chdir (pwd)
@@ -107,8 +112,20 @@ class Profile:
 				if Package.last_instance == None:
 					sys.exit ('%s does not provide a valid package.' % path)
 				Package.last_instance._path = path
-				Package.last_instance.start_build ()
+				if self.cmd_options.do_build:
+					Package.last_instance.start_build ()
+				else:
+					expand_macros (Package.last_instance, Package.last_instance)
+					if Package.last_instance.sources:
+						for source in Package.last_instance.sources:
+							print '%s\t%s\t%s\t%s' % (Package.last_instance.name,
+								Package.last_instance.version, os.path.dirname (source),
+								os.path.basename (source))
+
 				Package.last_instance = None
+
+		if self.cmd_options.show_source_paths:
+			sys.exit (0)
 
 		if self.cmd_options.do_bundle:
 			if not self.cmd_options.output_dir == None:
