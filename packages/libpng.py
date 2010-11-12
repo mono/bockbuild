@@ -1,3 +1,3 @@
-SourceForgePackage ('%{name}', 'libpng', '1.4.3', configure_flags = [
+SourceForgePackage ('%{name}', 'libpng', '1.4.4', configure_flags = [
 	'--enable-shared'
 ])

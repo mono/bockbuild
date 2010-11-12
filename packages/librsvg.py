@@ -1,1 +1,1 @@
-GnomePackage ('librsvg', version_major = '2.26', version_minor = '3')
+GnomePackage ('librsvg', version_major = '2.32', version_minor = '0')

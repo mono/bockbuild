@@ -1,3 +1,3 @@
-SourceForgePackage ('%{name}', 'freetype', '2.4.2', override_properties = {
+SourceForgePackage ('%{name}', 'freetype', '2.4.3', override_properties = {
 	'configure': './configure --prefix "%{prefix}"'
 })

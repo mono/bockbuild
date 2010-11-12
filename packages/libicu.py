@@ -1,6 +1,6 @@
-Package ('libicu', '4.4.1',
+Package ('libicu', '4.5.2',
 	source_dir_name = 'icu/source',
 	sources = [
-		'http://download.icu-project.org/files/icu4c/4.4.1/icu4c-4_4_1-src.tgz'
+		'http://download.icu-project.org/files/icu4c/%{version}/icu4c-4_5_2-src.tgz'
 	]
 )
