@@ -11,7 +11,7 @@ class GlibPackage (GnomePackage):
 		if Package.profile.name == 'darwin':
 			self.sources.extend (['%{macports_svn}/' + s for s in [
 				'config.h.ed',
-				'patch-configure.in.diff',
+				'patch-configure.ac.diff',
 				'patch-glib-2.0.pc.in.diff',
 				'patch-glib_gunicollate.c.diff',
 				'patch-gi18n.h.diff',
