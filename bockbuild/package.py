@@ -1,7 +1,7 @@
 import os
 import sys
 import shutil
-import urllib
+from urllib import FancyURLopener
 from util import *
 
 class Package:
@@ -60,7 +60,7 @@ class Package:
 				shutil.copy2 (local_source, local_dest_file)
 			elif source.startswith (('http://', 'https://', 'ftp://')):
 				log (1, 'downloading remote source: %s' % source)
-				urllib.urlretrieve (source, local_dest_file)
+				FancyURLopener ().retrieve (source, local_dest_file)
 			elif source.startswith ('git://'):
 				log (1, 'cloning or updating git repository: %s' % source)
 				local_dest_file = os.path.join (package_dest_dir,
