@@ -1,6 +1,6 @@
 class CairoPackage (CairoGraphicsPackage):
 	def __init__ (self):
-		Package.__init__ (self, 'cairo', '1.10.0')
+		Package.__init__ (self, 'cairo', '1.10.2')
 	
 	def build (self):
 		self.configure_flags = [

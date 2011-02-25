@@ -1,9 +1,9 @@
 class BansheePackage (Package):
 	def __init__ (self):
-		Package.__init__ (self, 'banshee-1', '1.8.0')
+		Package.__init__ (self, 'banshee-1', '1.9.4')
 
 		self.sources = [
-			'http://download.banshee.fm/banshee/stable/%{version}/%{name}-%{version}.tar.bz2'
+			'http://download.banshee.fm/banshee/unstable/%{version}/%{name}-%{version}.tar.bz2'
 		]
 
 #		self.configure = './autogen.sh --prefix=%{prefix}'

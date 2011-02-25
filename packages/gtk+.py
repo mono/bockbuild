@@ -1,8 +1,8 @@
 class GtkPackage (GnomePackage):
 	def __init__ (self):
 		GnomePackage.__init__ (self, 'gtk+',
-			version_major = '2.22',
-			version_minor = '0',
+			version_major = '2.24',
+			version_minor = '1',
 			configure_flags = [
 				'--with-gdktarget=%{gdk_target}',
 				'--disable-cups',

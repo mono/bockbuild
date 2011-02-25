@@ -1,3 +1,3 @@
-Package ('sqlite', '3.7.3', sources = [
-	'http://www.sqlite.org/sqlite-amalgamation-%{version}.tar.gz'
+Package ('sqlite-autoconf', '3070500', sources = [
+	'http://www.sqlite.org/%{name}-%{version}.tar.gz'
 ])
