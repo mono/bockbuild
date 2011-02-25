@@ -32,7 +32,7 @@ class DarwinProfile (UnixProfile):
 
 	def make_app_bundle (self):
 		plist_path = os.path.join (self.bundle_skeleton_dir, 'Contents', 'Info.plist')
-		app_name = 'Unknown.app'
+		app_name = 'Unknown'
 		plist = None
 		if os.path.exists (plist_path):
 			plist = Plist.fromFile (plist_path)
@@ -69,10 +69,10 @@ class DarwinProfile (UnixProfile):
 			'--mono-prefix="%s" --root="%s" --out="%s" %s' % \
 			(self.prefix, self.prefix, self.bundle_res_dir, files))
 		self.configure_gtk ()
+		self.configure_gdk_pixbuf ()
 
 	def configure_gtk (self):
 		paths = [
-			os.path.join ('etc', 'gtk-2.0', 'gdk-pixbuf.loaders'),
 			os.path.join ('etc', 'gtk-2.0', 'gtk.immodules'),
 			os.path.join ('etc', 'gtk-2.0', 'im-multipress.conf'),
 			os.path.join ('etc', 'pango', 'pango.modules')
@@ -104,3 +104,8 @@ class DarwinProfile (UnixProfile):
 				fp.write ('[Pango]\n')
 				fp.write ('ModuleFiles=./pango.modules\n')
 				fp.close ()
+
+	def configure_gdk_pixbuf (self):
+		path = os.path.join (self.bundle_res_dir, 'etc', 'gtk-2.0', 'gdk-pixbuf.loaders.in')
+		run_shell ('gdk-pixbuf-query-loaders 2>/dev/null | ' + \
+			'sed \'s,%s,\\${APP_RESOURCES},g\' 1> "%s"' % (self.prefix, path))
