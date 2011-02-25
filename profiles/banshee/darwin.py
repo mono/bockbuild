@@ -27,6 +27,7 @@ class BansheeDarwinProfile (DarwinProfile, BansheePackages):
 			'lib/gtk-2.0/2.10.0/loaders',
 			'lib/gtk-2.0/2.10.0/engines',
 			'lib/gtk-2.0/2.10.0/immodules',
+			'lib/gdk-pixbuf-2.0/2.10.0/loaders',
 			'lib/gstreamer-0.10',
 			'share/banshee-1',
 			'share/locale',
