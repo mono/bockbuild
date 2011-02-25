@@ -31,6 +31,7 @@ class BansheePackages:
 			'gconf-dummy.py',
 			'cmake.py',
 			'libproxy.py',
+			'libgpg-error.py',
 			'libgcrypt.py',
 			'gnutls.py',
 			'libsoup.py',
