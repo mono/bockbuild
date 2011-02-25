@@ -5,11 +5,14 @@ class MurrinePackage (GnomePackage):
 			version_major = '0.98',
 			version_minor = '1')
 
-# FIXME: this may need porting
-#		self.sources.append ('patches/murrine-osx.patch')
-#
-#	def prep (self):
-#		Package.prep (self)
-#		self.sh ('patch -p1 < "%{sources[1]}"')
+		self.configure = 'autoreconf -fi && ./configure --prefix="%{prefix}"'
+
+		self.sources.append ('patches/murrine-link-pixman.patch')
+		# FIXME: this may need porting
+		# self.sources.append ('patches/murrine-osx.patch')
+
+	def prep (self):
+		Package.prep (self)
+		self.sh ('patch -p1 < "%{sources[1]}"')
 
 MurrinePackage ()
