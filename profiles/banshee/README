@@ -6,16 +6,16 @@ Making a release:
 
   - start the release build process:
   
-      $ ./profile.darwin.py -bvr
+      $ ./darwin.py -bvr
 
   - next start the bundling process:
 
-      $ ./profile.darwin.py -e > darwin.env
+      $ ./darwin.py -e > darwin.env
 	  $ source darwin.env
-	  $ pushd pushd ../../solitary
+	  $ pushd ../../solitary
 	  $ make
 	  $ popd
-	  $ ./profile.darwin.py -z
+	  $ ./darwin.py -z
 
   - now test the bundle. You *must* do this in a new shell instance,
     because your current instance has the build environment sourced in,
