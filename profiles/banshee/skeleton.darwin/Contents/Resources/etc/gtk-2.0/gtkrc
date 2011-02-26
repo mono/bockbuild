@@ -21,6 +21,8 @@ gtk-menu-popup-delay = 1
 gtk-button-images = 0
 gtk-menu-images = 0
 gtk-enable-mnemonics = 0
+gtk-icon-sizes = "gtk-small-toolbar=16,16:gtk-large-toolbar=22,22"
+gtk-toolbar-icon-size = large-toolbar
 
 style "murrine-default" {
 	xthickness = 1
@@ -81,13 +83,10 @@ style "murrine-default" {
 	text[INSENSITIVE] = darker (@bg_color)
 
 	engine "murrine" {
-		profile = MURRINE
-		
 		contrast = 0.7
 		glazestyle = 3
 		roundness = 3
 		reliefstyle = 2
-		gradients = TRUE
 		gradient_shades = { 1.15, 1.07, 1.02, 0.9 }
 		lightborder_shade = 1.36
 		lightborderstyle = 1
@@ -132,7 +131,6 @@ style "murrine-button" = "murrine-wider" {
 		contrast = 0.925
 		lightborder_shade = 1.7
 		gradient_shades = {1.15,1.07,1.0185,0.885} 
-		gradients = TRUE
 	}
 }
 
@@ -209,7 +207,6 @@ style "murrine-menu-item" {
 		roundness = 0
 		gradient_shades = { 1.07, 1.05, 1.04, 1.01 } 
 		highlight_shade = 1.0 
-		gradients = TRUE 
 		glow_shade = 1.3
 		glowstyle = 0
 		contrast = 0.8
@@ -241,7 +238,6 @@ style "murrine-tooltips" = "murrine-wider" {
 style "murrine-toolbar" {
 	engine "murrine" {
 		gradient_shades = { 1.0, 0.98, 0.96, 0.928 } 
-		gradients = TRUE
 		highlight_shade = 1.00
 		contrast = 0.96
 	}
