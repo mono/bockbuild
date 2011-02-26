@@ -88,11 +88,12 @@ class BansheePackages:
 			'mono-addins.py',
 			'ndesk-dbus.py',
 			'ndesk-dbus-glib.py',
-			'taglib-sharp.py'
+			'taglib-sharp.py',
 		])
 
 		if isinstance (self, DarwinProfile):
 			self.packages.extend ([
+				'monomac.py',
 				'ige-mac-integration.py'
 			])
 
