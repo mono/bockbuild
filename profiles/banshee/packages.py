@@ -29,8 +29,6 @@ class BansheePackages:
 			'gdk-pixbuf.py',
 			'gtk+.py',
 			'gconf-dummy.py',
-			'cmake.py',
-			'libproxy.py',
 			'libgpg-error.py',
 			'libgcrypt.py',
 			'gnutls.py',
