@@ -28,7 +28,7 @@ class Package:
 		if self.source_dir_name == None:
 			self.source_dir_name = '%{name}-%{version}'
 
-		self.prefix = os.path.join (Package.profile.build_root, '_install')
+		self.prefix = Package.profile.prefix
 		self.configure = './configure --prefix="%{prefix}"'
 		self.make = 'make -j%s' % Package.profile.cpu_count
 		self.makeinstall = 'make install'
