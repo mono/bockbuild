@@ -1,0 +1,39 @@
+#!/usr/bin/env bash
+
+# This is the magic path used by glick
+BUNDLE_ROOT=/proc/self/fd/1023
+
+prefix=$BUNDLE_ROOT
+libdir=$BUNDLE_ROOT/lib
+exec_asm="Banshee.exe"
+MONO_EXE="$BUNDLE_ROOT/lib/banshee-1/$exec_asm"
+BANSHEE_EXEC_NAME=banshee
+
+# Don't touch the real config directory
+export XDG_CONFIG_HOME=$HOME/.config-glick
+BANSHEE_CONFIG_DIR="$XDG_CONFIG_HOME/banshee-1"
+
+export PATH=$BUNDLE_ROOT/bin${PATH:+:$PATH}
+export LD_LIBRARY_PATH=$BUNDLE_ROOT/lib/banshee-1:$BUNDLE_ROOT/lib/banshee-1/Extensions:$BUNDLE_ROOT/lib/banshee-1/Backends:$BUNDLE_ROOT/lib${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}
+export GST_PLUGIN_PATH=$BUNDLE_ROOT/lib/banshee-1/gstreamer-0.10${GST_PLUGIN_PATH:+:$GST_PLUGIN_PATH}
+
+GTK_THEME=Shiki-Brave
+export GTK2_RC_FILES=$BUNDLE_ROOT/share/themes/${GTK_THEME}/gtk-2.0/gtkrc
+
+[ -n "$BANSHEE_DEBUG" -o -f "${BANSHEE_CONFIG_DIR}/always-debug" ] && BANSHEE_DEBUG="--debug"
+BANSHEE_REDIRECT_LOG="${BANSHEE_CONFIG_DIR}/log"
+
+# We are testing the SGen compacting GC
+export MONO_ENV_OPTIONS="--gc=sgen"
+
+if [ -n "$BANSHEE_DEBUG" -o -n "$BANSHEE_TRACE" -o -n "$BANSHEE_PROFILE" ]; then
+    MONO_OPTIONS="$BANSHEE_DEBUG $BANSHEE_TRACE $BANSHEE_PROFILE"
+    echo "** Running Mono with $MONO_OPTIONS **"
+fi
+
+# Finally - environment is set up, time to run our beloved
+exec_args="-a $BANSHEE_EXEC_NAME mono $MONO_OPTIONS $MONO_EXE $BANSHEE_DEBUG"
+
+mkdir -p `dirname "$BANSHEE_REDIRECT_LOG"`
+(echo "exec $exec_args " "$@"; echo; exec $exec_args "$@") &> $BANSHEE_REDIRECT_LOG
+
