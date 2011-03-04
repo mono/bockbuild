@@ -32,7 +32,7 @@ if [ -n "$BANSHEE_DEBUG" -o -n "$BANSHEE_TRACE" -o -n "$BANSHEE_PROFILE" ]; then
 fi
 
 # Finally - environment is set up, time to run our beloved
-exec_args="-a $BANSHEE_EXEC_NAME mono $MONO_OPTIONS $MONO_EXE $BANSHEE_DEBUG"
+exec_args="-a $BANSHEE_EXEC_NAME mono-sgen $MONO_OPTIONS $MONO_EXE $BANSHEE_DEBUG"
 
 mkdir -p `dirname "$BANSHEE_REDIRECT_LOG"`
 (echo "exec $exec_args " "$@"; echo; exec $exec_args "$@") &> $BANSHEE_REDIRECT_LOG
