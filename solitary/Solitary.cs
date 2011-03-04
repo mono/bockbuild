@@ -35,6 +35,7 @@ public class Solitary
     public List<Regex> PathBlacklist { get; private set; }
     public List<Item> Items { get; private set; }
     public List<string> SearchPaths { get; private set; }
+    public Dictionary<string, int> EscapedItems { get; set; }
     public string MonoPrefix { get; set; }
     public string ConfinementRoot { get; set; }
     public string OutputPath { get; set; }
@@ -50,6 +51,7 @@ public class Solitary
         PathBlacklist = new List<Regex> ();
         Items = new List<Item> ();
         SearchPaths = new List<string> ();
+        EscapedItems = new Dictionary<string, int> ();
 
         FindNativeLibrarySearchPaths ();
     }

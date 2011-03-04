@@ -34,6 +34,7 @@ public enum FileType
 {
     PE32Executable,
     MachO,
+    ELF,
     Data
 }
 
@@ -67,8 +68,19 @@ public abstract class Item
     
     public bool IsValidConfinementItem (Item item, bool checkExists)
     {
+        if (!String.IsNullOrEmpty (ProcessTools.RealConfinementRoot) &&
+            item.File.FullName.StartsWith (ProcessTools.RealConfinementRoot)) {
+            string path = file.FullName.Replace (ProcessTools.RealConfinementRoot, Confinement.ConfinementRoot);
+            item.File = new FileInfo (path);
+        }
+
         if (Confinement.ConfinementRoot != null &&
             !item.File.FullName.StartsWith (Confinement.ConfinementRoot)) {
+            if (Confinement.EscapedItems.ContainsKey (item.File.FullName)) {
+                Confinement.EscapedItems[item.File.FullName]++;
+            } else {
+                Confinement.EscapedItems[item.File.FullName] = 1;
+            }
             return false;
         } else if (!checkExists) {
             return true;
@@ -116,8 +128,14 @@ public abstract class Item
                 return null;
             }
         }
-       
-        if (SymlinkItem.IsSymlink (file.FullName)) { 
+
+        if (!String.IsNullOrEmpty (ProcessTools.RealConfinementRoot) &&
+            file.FullName.StartsWith (ProcessTools.RealConfinementRoot)) {
+            string path = file.FullName.Replace (ProcessTools.RealConfinementRoot, confinement.ConfinementRoot);
+            file = new FileInfo (path);
+        }
+
+        if (SymlinkItem.IsSymlink (file.FullName)) {
             return new SymlinkItem () {
                 File = file,
                 Confinement = confinement
@@ -129,6 +147,7 @@ public abstract class Item
                 item = new AssemblyItem ();
                 break;
             case FileType.MachO:
+            case FileType.ELF:
                 item = new NativeLibraryItem ();
                 break;
             default:
@@ -160,6 +179,8 @@ public abstract class Item
             return FileType.MachO;
         } else if (line.Contains ("PE32 executable")) {
             return FileType.PE32Executable;
+        } else if (line.Contains ("ELF")) {
+            return FileType.ELF;
         }
 
         return FileType.Data;

@@ -84,6 +84,11 @@ public static class Entry
         Console.WriteLine ("Done locating items. Total size is {0} KB.",
             total_size / 1024);
 
+        Console.WriteLine ("Items out of confinement :");
+        foreach (KeyValuePair<string, int> item in solitary.EscapedItems) {
+            Console.WriteLine (String.Format ("    {0} ({1})", item.Key, item.Value));
+        }
+
         Console.WriteLine ("Creating bundle...");
         solitary.CreateBundle (true);
         Console.WriteLine ("Done.");
