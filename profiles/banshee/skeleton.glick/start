@@ -16,6 +16,7 @@ BANSHEE_CONFIG_DIR="$XDG_CONFIG_HOME/banshee-1"
 export PATH=$BUNDLE_ROOT/bin${PATH:+:$PATH}
 export LD_LIBRARY_PATH=$BUNDLE_ROOT/lib/banshee-1:$BUNDLE_ROOT/lib/banshee-1/Extensions:$BUNDLE_ROOT/lib/banshee-1/Backends:$BUNDLE_ROOT/lib${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}
 export GST_PLUGIN_PATH=$BUNDLE_ROOT/lib/banshee-1/gstreamer-0.10${GST_PLUGIN_PATH:+:$GST_PLUGIN_PATH}
+export GST_REGISTRY="$BANSHEE_CONFIG_DIR/gstreamer-registry.bin"
 
 GTK_THEME=Shiki-Brave
 export GTK2_RC_FILES=$BUNDLE_ROOT/share/themes/${GTK_THEME}/gtk-2.0/gtkrc
