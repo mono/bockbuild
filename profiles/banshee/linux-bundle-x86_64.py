@@ -23,7 +23,7 @@ class BansheeLinuxProfile (GlickProfile, BansheePackages):
 		self.bundle_output_dir = os.path.join (self_dir, 'bundle.glick')
 
 		self.bundle_from_build = [
-			'bin/mono-sgen',
+			'bin/mono',
 			'lib/mono/2.0/gmcs.exe',
 			'lib/mono/gac/Mono.Addins.CecilReflector',
 			'lib/banshee-1',
