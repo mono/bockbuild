@@ -2,21 +2,16 @@
 
 import os
 import sys
+
 sys.path.append ('../..')
 
 from bockbuild.glickprofile import GlickProfile
-from packages import BansheePackages
+from linux import BansheeLinuxProfile
 
-class BansheeLinuxProfile (GlickProfile, BansheePackages):
+class BansheeLinuxBundleProfile (GlickProfile, BansheeLinuxProfile):
 	def __init__ (self):
+		BansheeLinuxProfile.__init__ (self)
 		GlickProfile.__init__ (self)
-		BansheePackages.__init__ (self)
-
-		self.name = 'linux'
-
-		import os
-		if not os.path.isdir ('/usr/include/alsa'):
-			raise IOError ('You must have the ALSA headers installed. (/usr/include/alsa)')
 
 		self_dir = os.path.realpath (os.path.dirname (sys.argv[0]))
 		self.bundle_skeleton_dir = os.path.join (self_dir, 'skeleton.glick')
@@ -81,4 +76,4 @@ class BansheeLinuxProfile (GlickProfile, BansheePackages):
 				os.unlink (path)
 
 if __name__ == '__main__':
-	BansheeLinuxProfile ().build ()
+	BansheeLinuxBundleProfile ().build ()
