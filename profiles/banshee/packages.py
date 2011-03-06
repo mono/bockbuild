@@ -1,6 +1,7 @@
 import os
 from bockbuild.darwinprofile import DarwinProfile
 from bockbuild.gnomeprofile import GnomeProfile
+from bockbuild.glickprofile import GlickProfile
 
 class BansheePackages:
 	def __init__ (self):
@@ -37,7 +38,7 @@ class BansheePackages:
 		])
 
 		# WebKit (only on Linux for now)
-		if isinstance (self, GnomeProfile):
+		if isinstance (self, GnomeProfile) or isinstance (self, GlickProfile):
 			self.packages.extend ([
 				'gperf.py',
 				'enchant.py',
