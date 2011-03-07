@@ -1,0 +1,53 @@
+Making a bundle for linux:
+
+In order to make a bundle for linux that can be run from any directory, we'll use
+glick, which is available at http://people.gnome.org/~alexl/glick/.
+Glick uses a trick that allows the bundle to find all its files via an absolute
+pathname (/proc/self/fd/1023), making everything much easier. The build process
+below will configure everything with "--prefix=/proc/self/fd/1023".
+So you need to have glick installed in order to proceed.
+
+  - If this is not your first time using bockbuild, remove your build-root
+    directory; If you intend to release the bundle you should rebuild the whole
+    world to ensure no regressions or build quirks were introduced during
+    any testing
+
+  - Spawn a magic shell in which we will run the whole process. In this shell,
+    /proc/self/fd/1023 is a link to the directory where everything will be
+    installed.
+
+      $ mkdir -p build-root/_install
+      $ glick-shell build-root/_install
+
+  - Start the release build process:
+  
+      $ ./linux-bundle.py -bvr
+
+  - Compile solitary:
+
+      $ ./linux-bundle.py -e > linux-bundle.env
+      $ source linux-bundle.env
+      $ pushd ../../solitary
+      $ make
+      $ popd
+
+  - Start the bundling process. This will also copy the content of skeleton.glick/
+    into the bundle directory.
+
+      $ ./linux-bundle.py -z
+
+  - Exit the magic shell to get back to a regular environment.
+
+      $ exit
+
+  - Build the ext2 filesystem image containing everything under the bundle.glick
+    directory. This needs to be run as root because it uses loopback mounts. You
+    might have to replace the first line of the glick-mkext2 with "#!/bin/bash"
+    if bash is not you default shell.
+
+      # sudo glick-mkext2 image.ext2 bundle.glick
+
+  - Build the glick file, which is an ELF executable containing the ext2 image.
+
+      $ mkglick banshee.run image.ext2
+

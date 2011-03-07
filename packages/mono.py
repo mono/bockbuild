@@ -15,7 +15,7 @@ class MonoPackage (Package):
 		)
 
 		# Mono (in libgc) likes to fail to build randomly
-		self.make = 'for((i=0;i<20;i++)); do make && break; done'
+		self.make = 'for i in 1 2 3 4 5 6 7 8 9 10; do make && break; done'
 
 #	def prep (self):
 #		Package.prep (self)

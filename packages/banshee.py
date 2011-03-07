@@ -16,6 +16,7 @@ class BansheePackage (Package):
 		]
 
 		self.configure_flags.extend ([
+			'--disable-hal',
 			'--disable-mtp',
 			'--disable-daap',
 			'--disable-ipod',

@@ -28,7 +28,9 @@ using System;
 using System.IO;
 using System.Diagnostics;
 using System.Collections.Generic;
+using System.Text;
 using System.Text.RegularExpressions;
+using Mono.Unix;
 
 public enum ProcessHost
 {
@@ -40,6 +42,7 @@ public enum ProcessHost
 public static class ProcessTools
 {
     public static ProcessHost Host { get; private set; }
+    public static string RealConfinementRoot { get; private set; }
 
     static ProcessTools ()
     {
@@ -55,6 +58,15 @@ public static class ProcessTools
         }
 
         uname.Dispose ();
+
+        var glick_root = Environment.GetEnvironmentVariable ("GLICKROOT");
+        if (!String.IsNullOrEmpty (glick_root)) {
+            StringBuilder sb = new StringBuilder (200);
+            int r = Mono.Unix.Native.Syscall.readlink (glick_root, sb);
+            if (r > 0) {
+                RealConfinementRoot = sb.ToString (0, r);
+            }
+        }
     }
 
     public static Process CreateProcess (string cmd)
@@ -64,6 +76,13 @@ public static class ProcessTools
 
     public static Process CreateProcess (string cmd, string args)
     {
+        if (!String.IsNullOrEmpty (RealConfinementRoot)) {
+            // Process.Start closes all non-standard file descriptors, so we need
+            // to run the command with glick-shell, so that it has /proc/self/fd/1023
+            args = String.Format ("{0} {1} {2}", RealConfinementRoot, cmd, args);
+            cmd = "glick-shell";
+        }
+
         try {
             var proc = Process.Start (new ProcessStartInfo (cmd, args) {
                 RedirectStandardOutput = true,
@@ -75,13 +94,13 @@ public static class ProcessTools
             if (proc.ExitCode != 0) {
                 return null;
             }
-            
+
             return proc;
         } catch {
             return null;
         }
     }
- 
+
     public static List<string> GetNativeDependencies (FileInfo file)
     {
         var proc = Host == ProcessHost.Darwin
@@ -92,11 +111,15 @@ public static class ProcessTools
             return null;
         }
 
+        string pattern = Host == ProcessHost.Darwin
+            ? @"^\s+(.+)\(.+"
+            : @"=>\s(\S.+)\(.+";
+
         var items = new List<string> ();
         string line;
 
         while ((line = proc.StandardOutput.ReadLine ()) != null) {
-            var match = Regex.Match (line, @"^\s+(.+)\(.+");
+            var match = Regex.Match (line, pattern);
             if (match.Success) {
                 items.Add (match.Groups[1].Value.Trim ());
             }

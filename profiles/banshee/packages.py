@@ -1,6 +1,7 @@
 import os
 from bockbuild.darwinprofile import DarwinProfile
 from bockbuild.gnomeprofile import GnomeProfile
+from bockbuild.glickprofile import GlickProfile
 
 class BansheePackages:
 	def __init__ (self):
@@ -29,8 +30,6 @@ class BansheePackages:
 			'gdk-pixbuf.py',
 			'gtk+.py',
 			'gconf-dummy.py',
-			'cmake.py',
-			'libproxy.py',
 			'libgpg-error.py',
 			'libgcrypt.py',
 			'gnutls.py',

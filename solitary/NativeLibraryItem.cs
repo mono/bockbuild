@@ -67,7 +67,11 @@ public class NativeLibraryItem : Item
     public void RelocateDependencies ()
     {
         if (ProcessTools.Host != ProcessHost.Darwin) {
-            throw new ApplicationException ("Relocation not supported on anything but Darwin");
+            if (String.IsNullOrEmpty (ProcessTools.RealConfinementRoot)) {
+                throw new ApplicationException ("Relocation not supported on anything but Darwin");
+            } else {
+                return;
+            }
         }
 
         var proc = ProcessTools.CreateProcess ("otool", "-D " + File.FullName);
