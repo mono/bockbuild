@@ -19,29 +19,35 @@ So you need to have glick installed in order to proceed.
       $ mkdir -p build-root/_install
       $ glick-shell build-root/_install
 
-  - start the release build process:
+  - Start the release build process:
   
       $ ./linux-bundle.py -bvr
 
-  - compile solitary:
+  - Compile solitary:
 
-      $ ./linux-bundle.py -e > -bundle.env
+      $ ./linux-bundle.py -e > linux-bundle.env
       $ source linux-bundle.env
       $ pushd ../../solitary
       $ make
       $ popd
 
-  - start the bundling process. This will also copy the content of skeleton.glick/
+  - Start the bundling process. This will also copy the content of skeleton.glick/
     into the bundle directory.
 
       $ ./linux-bundle.py -z
 
-  - build the ext2 filesystem image containing everything under the bundle.glick
-    directory. This needs to be run as root because it uses loopback mounts.
+  - Exit the magic shell to get back to a regular environment.
+
+      $ exit
+
+  - Build the ext2 filesystem image containing everything under the bundle.glick
+    directory. This needs to be run as root because it uses loopback mounts. You
+    might have to replace the first line of the glick-mkext2 with "#!/bin/bash"
+    if bash is not you default shell.
 
       # sudo glick-mkext2 image.ext2 bundle.glick
 
-  - build the glick file, which is an ELF executable containing the ext2 image.
+  - Build the glick file, which is an ELF executable containing the ext2 image.
 
       $ mkglick banshee.run image.ext2
 
