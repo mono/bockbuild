@@ -34,18 +34,18 @@ class BansheePackages:
 			'libgpg-error.py',
 			'libgcrypt.py',
 			'gnutls.py',
+			'glib-networking.py',
 			'libsoup.py',
 			'sqlite.py'
 		])
 
-		# WebKit (only on Linux for now)
-		if isinstance (self, GnomeProfile):
-			self.packages.extend ([
-				'gperf.py',
-				'enchant.py',
-				'libicu.py',
-				'webkit.py'
-			])
+		# WebKit
+		self.packages.extend ([
+			'gperf.py',
+			'enchant.py',
+			'libicu.py',
+			'webkit.py'
+		])
 
 		# Theme
 		self.packages.extend ([

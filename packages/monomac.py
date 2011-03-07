@@ -26,7 +26,7 @@ class MonoMacPackage (Package):
 	def install (self):
 		self.sh ('mkdir -p %{prefix}/lib/monomac')
 		self.sh ('mkdir -p %{prefix}/share/pkgconfig')
-		self.sh ('echo "Name: MonoMac\nDescription: Mono Mac bindings\nVersion:%{pkgconfig_version}\nLibs: -r:%{prefix}/lib/monomac/MonoMac.dll" > %{prefix}/share/pkgconfig/monomac.pc')
+		self.sh ('echo "Libraries=%{prefix}/lib/monomac/MonoMac.dll\n\nName: MonoMac\nDescription: Mono Mac bindings\nVersion:%{pkgconfig_version}\nLibs: -r:%{prefix}/lib/monomac/MonoMac.dll" > %{prefix}/share/pkgconfig/monomac.pc')
 		self.sh ('cp MonoMac.dll %{prefix}/lib/monomac')
 
 MonoMacPackage ()
