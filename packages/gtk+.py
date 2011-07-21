@@ -15,6 +15,7 @@ class GtkPackage (GnomePackage):
 			self.sources.extend ([
 				'http://github.com/jralls/gtk-osx-build/raw/master/patches/gdk-quartz-input-window.patch',
 				'http://git.dronelabs.com/gtk+/patch/?id=729cbea7a2b27c4b8f2062316c0f406ab4c01dac',
+				'https://bugzilla.gnome.org/attachment.cgi?id=192416'
 			])
 
 	def prep (self):
