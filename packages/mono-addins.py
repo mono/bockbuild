@@ -1,6 +1,4 @@
-Package ('mono-addins', '0.5',
-	sources = [ 'http://ftp.novell.com/pub/mono/sources/%{name}/%{name}-%{version}.tar.bz2' ],
-	configure_flags = ['--disable-gui'],
-
+GitHubTarballPackage ('mono', 'mono-addins', '0.6.1+84f77', '84f77c2298d3782e282d1d30855502939b0ec98e',
+	configure = './autogen.sh --prefix=%{prefix}',
 	override_properties = { 'make': 'make' }
 )

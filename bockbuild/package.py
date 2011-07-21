@@ -186,7 +186,7 @@ class GnomePackage (Package):
 			override_properties = override_properties)
 
 GnomePackage.default_sources = [
-	'http://ftp.gnome.org/pub/gnome/sources/%{name}/%{version_major}/%{name}-%{version}.tar.gz'
+	'http://ftp.gnome.org/pub/gnome/sources/%{name}/%{version_major}/%{name}-%{version}.tar.bz2'
 ]
 
 class GnuPackage (Package): pass
@@ -222,6 +222,18 @@ SourceForgePackage.default_sources = [
 class FreeDesktopPackage (ProjectPackage): pass
 FreeDesktopPackage.default_sources = [
 	'http://%{project}.freedesktop.org/releases/%{name}-%{version}.tar.gz'
+]
+
+class GitHubTarballPackage (Package):
+	def __init__ (self, org, name, version, commit, configure, override_properties = None):
+		self.commit = commit
+		self.org = org
+		Package.__init__ (self, name, version,
+			override_properties = override_properties)
+		self.configure = configure
+		self.source_dir_name = '%s-%s-%s' % ( org, name, self.commit[:7] )
+GitHubTarballPackage.default_sources = [
+	'http://github.com/%{org}/%{name}/tarball/%{commit}'
 ]
 
 class GstreamerPackage (ProjectPackage): pass
