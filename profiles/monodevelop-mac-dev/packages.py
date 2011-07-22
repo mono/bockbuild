@@ -39,7 +39,9 @@ class MonoDevelopMacDevPackages:
 			'icon-naming-utils.py',
 			'hicolor-icon-theme.py',
 			'tango-icon-theme.py',
-			'murrine.py'
+			'murrine.py',
+			'gtk-engines.py',
+			'gtk-quartz-engine.py'
 		])
 
 		# Mono
