@@ -30,6 +30,9 @@ class GtkPackage (GnomePackage):
 				# Bug 655074 - [PATCH] Fix crash with undecorated windows on MacOS Lion
 				#https://bugzilla.gnome.org/show_bug.cgi?id=655074
 				'patches/gtk/gtkundecoratedwindow.patch',
+
+				# add some missing keybindings
+				'patches/gtk/gtkmackeys.patch',
 			])
 
 	def prep (self):
