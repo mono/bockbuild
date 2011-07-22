@@ -17,8 +17,10 @@ class MonoDevelopMacDevProfile (DarwinProfile, MonoDevelopMacDevPackages):
 
 MonoDevelopMacDevProfile ().build ()
 
+profname = "md-dev-env"
+dir = os.path.realpath (os.path.dirname (sys.argv[0]))
 envscript = '''#!/bin/sh
-PROFNAME="monogtk"
+PROFNAME="%s"
 INSTALLDIR=%s/build-root/_install
 export DYLD_FALLBACK_LIBRARY_PATH="$INSTALLDIR/lib:/lib:/usr/lib:$DYLD_FALLBACK_LIBRARY_PATH"
 export C_INCLUDE_PATH="$INSTALLDIR/include:$C_INCLUDE_PATH"
@@ -35,7 +37,7 @@ export MONO_INSTALL_PREFIX="$INSTALLDIR"
 #echo "test \"\$prefix\" = NONE && prefix=\"$INSTALLDIR\"" > $CONFIG_SITE
 
 PS1="[$PROFNAME] \w @ "
-''' % os.path.realpath (os.path.dirname (sys.argv[0]))
+''' % ( profname, dir )
 
-with open('md-dev-env', 'w') as f:
+with open(os.path.join (dir, profname), 'w') as f:
        f.write (envscript)
