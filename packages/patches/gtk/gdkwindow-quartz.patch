@@ -1,0 +1,14 @@
+git --diff a/gdk/quartz/gdkwindow-quartz.c b/gdk/quartz/gdkwindow-quartz.c
+index efc0672..85a6ef1 100644
+--- a/gdk/quartz/gdkwindow-quartz.c
++++ b/gdk/quartz/gdkwindow-quartz.c
+@@ -258,6 +258,9 @@ gdk_window_impl_quartz_begin_paint_region (GdkPaintable    *paintable,
+     goto done;
+ 
+   gdk_region_get_rectangles (clipped_and_offset_region, &rects, &n_rects);
++/* No rects, no point in going further */
++  if (n_rects == 0) 
++    goto done;
+ 
+   if (bg_pixmap == NULL)
+     {

@@ -1,0 +1,43 @@
+--- a/gdk/quartz/gdkevents-quartz.c
++++ b/gdk/quartz/gdkevents-quartz.c
+@@ -217,6 +217,8 @@ get_mouse_button_from_ns_event (NSEvent *event)
+   switch (button)
+     {
+     case 0:
++      if ([event modifierFlags] & NSControlKeyMask)
++        return 3;
+       return 1;
+     case 1:
+       return 3;
+@@ -246,17 +248,29 @@ get_keyboard_modifiers_from_ns_event (NSEvent *nsevent)
+ {
+   GdkModifierType modifiers = 0;
+   int nsflags;
++  gboolean swap_ctrl_cmd = FALSE;
+ 
+   nsflags = [nsevent modifierFlags];
++
++  switch ([nsevent type])
++    {
++      case NSLeftMouseDown:
++      case NSLeftMouseUp:
++      case NSLeftMouseDragged:
++	swap_ctrl_cmd = TRUE;
++	break;
++      default:
++	break;
++    }
+   
+   if (nsflags & NSAlphaShiftKeyMask)
+     modifiers |= GDK_LOCK_MASK;
+   if (nsflags & NSShiftKeyMask)
+     modifiers |= GDK_SHIFT_MASK;
+   if (nsflags & NSControlKeyMask)
+-    modifiers |= GDK_CONTROL_MASK;
++    modifiers |= swap_ctrl_cmd ? GDK_MOD1_MASK : GDK_CONTROL_MASK;
+   if (nsflags & NSCommandKeyMask)
+-    modifiers |= GDK_MOD1_MASK;
++    modifiers |= swap_ctrl_cmd ? GDK_CONTROL_MASK : GDK_MOD1_MASK;
+   if (nsflags & NSAlternateKeyMask)
+       modifiers |= GDK_MOD5_MASK;
+ 
