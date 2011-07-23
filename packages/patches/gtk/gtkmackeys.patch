@@ -1,8 +1,8 @@
 diff --git a/gtk/gtkrc.key.mac b/gtk/gtkrc.key.mac
-index 7b6e8d1..71d1ce6 100644
+index 7b6e8d1..454f8b6 100644
 --- a/gtk/gtkrc.key.mac
 +++ b/gtk/gtkrc.key.mac
-@@ -1,25 +1,41 @@
+@@ -1,25 +1,42 @@
  binding "gtk-mac-alt-arrows"
  {
 -  bind "<alt>Right"           { "move-cursor" (words, 1, 0) }
@@ -49,13 +49,14 @@ index 7b6e8d1..71d1ce6 100644
 -  bind "<alt>Delete" { "delete-from-cursor" (word-ends, 1) }
 -  bind "<alt>KP_Delete" { "delete-from-cursor" (word-ends, 1) }
 -  bind "<alt>BackSpace" { "delete-from-cursor" (word-ends, -1) }
-+  bind "<mod5>Delete" { "delete-from-cursor" (word-ends, 1) }
-+  bind "<mod5>KP_Delete" { "delete-from-cursor" (word-ends, 1) }
-+  bind "<mod5>BackSpace" { "delete-from-cursor" (word-ends, -1) }
++#these don't work as mod5 is always set
++#  bind "<mod5>Delete" { "delete-from-cursor" (word-ends, 1) }
++#  bind "<mod5>KP_Delete" { "delete-from-cursor" (word-ends, 1) }
++#  bind "<mod5>BackSpace" { "delete-from-cursor" (word-ends, -1) }
  }
  
  class "GtkTextView" binding "gtk-mac-alt-delete"
-@@ -118,123 +134,16 @@ binding "gtk-mac-icon-view"
+@@ -118,123 +135,16 @@ binding "gtk-mac-icon-view"
  }
  
  class "GtkIconView" binding "gtk-mac-icon-view"
