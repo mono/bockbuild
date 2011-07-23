@@ -2,8 +2,8 @@ class PangoPackage (GnomePackage):
 	def __init__ (self):
 		GnomePackage.__init__ (self,
 			'pango',
-			version_major = '1.29',
-			version_minor = '3',
+			version_major = '1.28',
+			version_minor = '4',
 			configure_flags = [
 				'--without-x'
 			]
