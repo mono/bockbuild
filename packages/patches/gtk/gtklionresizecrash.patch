@@ -1,16 +1,43 @@
 diff --git a/gdk/quartz/gdkevents-quartz.c b/gdk/quartz/gdkevents-quartz.c
-index 1334d83..b548674 100644
+index 1334d83..9b19030 100644
 --- a/gdk/quartz/gdkevents-quartz.c
 +++ b/gdk/quartz/gdkevents-quartz.c
-@@ -642,7 +642,10 @@ find_window_for_ns_event (NSEvent *nsevent,
+@@ -642,7 +642,9 @@ find_window_for_ns_event (NSEvent *nsevent,
                  GdkWindowObject *grab_private;
                  NSWindow *grab_nswindow;
  
 -		grab_toplevel = gdk_window_get_effective_toplevel (grab->window);
-+		GdkWindow* grab_win = grab->window ? grab->window : grab->native_window;
-+		if (!grab_win)
++		grab_toplevel = gdk_window_get_effective_toplevel (grab->window ? grab->window : grab->native_window);
++		if (!grab_toplevel)
 +			return NULL;
-+		grab_toplevel = gdk_window_get_effective_toplevel (grab_win);
                  grab_private = (GdkWindowObject *)grab_toplevel;
  
                  grab_nswindow = ((GdkWindowImplQuartz *)grab_private->impl)->toplevel;
+@@ -652,6 +654,16 @@ find_window_for_ns_event (NSEvent *nsevent,
+                 *x = point.x;
+                 *y = grab_private->height - point.y;
+ 
++		/* If we're on Lion and within 5 pixels of an edge, then
++		 * assume that the user wants to resize, and return NULL to
++		 * let Quartz get on with it. We check the selector
++		 * isRestorable to see if we're on 10.7.
++		 */
++		if (([grab_nswindow respondsToSelector:@selector(isRestorable)]) &&
++			( *x < 5 || *x > grab_private->width - 5 ||
++			  *y > grab_private->height - 5))
++			return NULL;
++
+ 		return grab_toplevel;
+ 	      }
+ 
+@@ -700,8 +712,8 @@ find_window_for_ns_event (NSEvent *nsevent,
+                      * will most likely be larger than 15x15 and for
+                      * scroll bars there are also other means to move
+                      * the scroll bar.  Since the resize indicator is
+-                     * the only way of resizing windows on Mac OS, it
+-                     * is too important to not make functional.
++                     * the only way of resizing windows on Mac OS before
++                     * 10.7, it is too important to not make functional.
+                      */
+                     frame = [toplevel_impl->view bounds];
+                     if (x_tmp > frame.size.width - GRIP_WIDTH
