@@ -1,0 +1,16 @@
+diff --git a/gdk/quartz/gdkevents-quartz.c b/gdk/quartz/gdkevents-quartz.c
+index 1334d83..b548674 100644
+--- a/gdk/quartz/gdkevents-quartz.c
++++ b/gdk/quartz/gdkevents-quartz.c
+@@ -642,7 +642,10 @@ find_window_for_ns_event (NSEvent *nsevent,
+                 GdkWindowObject *grab_private;
+                 NSWindow *grab_nswindow;
+ 
+-		grab_toplevel = gdk_window_get_effective_toplevel (grab->window);
++		GdkWindow* grab_win = grab->window ? grab->window : grab->native_window;
++		if (!grab_win)
++			return NULL;
++		grab_toplevel = gdk_window_get_effective_toplevel (grab_win);
+                 grab_private = (GdkWindowObject *)grab_toplevel;
+ 
+                 grab_nswindow = ((GdkWindowImplQuartz *)grab_private->impl)->toplevel;
