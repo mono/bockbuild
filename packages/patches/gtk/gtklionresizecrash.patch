@@ -1,18 +1,21 @@
+diff --git a/gdk/gdkwindow.c b/gdk/gdkwindow.c
+index f058570..a12a65b 100644
+--- a/gdk/gdkwindow.c
++++ b/gdk/gdkwindow.c
+@@ -10731,6 +10731,9 @@ proxy_button_event (GdkEvent *source_event,
+ 					toplevel_x, toplevel_y,
+ 					NULL, NULL);
+ 
++      if (pointer_window == NULL)
++        pointer_window = toplevel_window;
++
+       /* Find the event window, that gets the grab */
+       w = (GdkWindowObject *)pointer_window;
+       while (w != NULL &&
 diff --git a/gdk/quartz/gdkevents-quartz.c b/gdk/quartz/gdkevents-quartz.c
 index 1334d83..9b19030 100644
 --- a/gdk/quartz/gdkevents-quartz.c
 +++ b/gdk/quartz/gdkevents-quartz.c
-@@ -642,7 +642,9 @@ find_window_for_ns_event (NSEvent *nsevent,
-                 GdkWindowObject *grab_private;
-                 NSWindow *grab_nswindow;
- 
--		grab_toplevel = gdk_window_get_effective_toplevel (grab->window);
-+		grab_toplevel = gdk_window_get_effective_toplevel (grab->window ? grab->window : grab->native_window);
-+		if (!grab_toplevel)
-+			return NULL;
-                 grab_private = (GdkWindowObject *)grab_toplevel;
- 
-                 grab_nswindow = ((GdkWindowImplQuartz *)grab_private->impl)->toplevel;
 @@ -652,6 +654,16 @@ find_window_for_ns_event (NSEvent *nsevent,
                  *x = point.x;
                  *y = grab_private->height - point.y;
