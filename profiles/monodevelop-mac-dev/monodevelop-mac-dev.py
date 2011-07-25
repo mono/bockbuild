@@ -12,7 +12,9 @@ class MonoDevelopMacDevProfile (DarwinProfile, MonoDevelopMacDevPackages):
 	def __init__ (self):
 		DarwinProfile.__init__ (self)
 		MonoDevelopMacDevPackages.__init__ (self)
-
+		
+		self.gcc_flags.extend ([ '-g' ])
+		
 		self_dir = os.path.realpath (os.path.dirname (sys.argv[0]))
 
 MonoDevelopMacDevProfile ().build ()
