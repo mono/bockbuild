@@ -1,46 +1,134 @@
+diff --git a/gdk/gdkdisplay.c b/gdk/gdkdisplay.c
+index f7b43cf..75f3c3f 100644
+--- a/gdk/gdkdisplay.c
++++ b/gdk/gdkdisplay.c
+@@ -805,6 +805,7 @@ _gdk_display_add_pointer_grab (GdkDisplay *display,
+   info->event_mask = event_mask;
+   info->time = time;
+   info->implicit = implicit;
++  info->resizing = FALSE;
+ 
+   /* Find the first grab that has a larger start time (if any) and insert
+    * before that. I.E we insert after already existing grabs with same
+diff --git a/gdk/gdkinternals.h b/gdk/gdkinternals.h
+index e861a4e..14a1be1 100644
+--- a/gdk/gdkinternals.h
++++ b/gdk/gdkinternals.h
+@@ -185,6 +185,8 @@ typedef struct
+ 
+   gboolean activated;
+   gboolean implicit_ungrab;
++  gboolean resizing;
++
+ } GdkPointerGrabInfo;
+ 
+ typedef struct _GdkInputWindow GdkInputWindow;
 diff --git a/gdk/gdkwindow.c b/gdk/gdkwindow.c
-index f058570..a12a65b 100644
+index f058570..5365a85 100644
 --- a/gdk/gdkwindow.c
 +++ b/gdk/gdkwindow.c
-@@ -10731,6 +10731,9 @@ proxy_button_event (GdkEvent *source_event,
- 					toplevel_x, toplevel_y,
- 					NULL, NULL);
+@@ -10742,6 +10742,8 @@ proxy_button_event (GdkEvent *source_event,
+ 	  w = parent;
+ 	}
+       pointer_window = (GdkWindow *)w;
++      if (!pointer_window)
++	  pointer_window = toplevel_window;
  
-+      if (pointer_window == NULL)
-+        pointer_window = toplevel_window;
-+
-       /* Find the event window, that gets the grab */
-       w = (GdkWindowObject *)pointer_window;
-       while (w != NULL &&
+       _gdk_display_add_pointer_grab  (display,
+ 				      pointer_window,
 diff --git a/gdk/quartz/gdkevents-quartz.c b/gdk/quartz/gdkevents-quartz.c
-index 1334d83..9b19030 100644
+index 079e4fe..d975384 100644
 --- a/gdk/quartz/gdkevents-quartz.c
 +++ b/gdk/quartz/gdkevents-quartz.c
-@@ -652,6 +654,16 @@ find_window_for_ns_event (NSEvent *nsevent,
+@@ -561,6 +561,7 @@ find_window_for_ns_event (NSEvent *nsevent,
+   NSPoint point;
+   NSPoint screen_point;
+   NSEventType event_type;
++  const gint GDK_LION_RESIZE = 5;
+ 
+   view = (GdkQuartzView *)[[nsevent window] contentView];
+ 
+@@ -608,6 +609,8 @@ find_window_for_ns_event (NSEvent *nsevent,
+         grab = _gdk_display_get_last_pointer_grab (display);
+ 	if (WINDOW_IS_TOPLEVEL (toplevel) && grab)
+ 	  {
++	    if (grab->resizing)
++	      return NULL;
+             /* Implicit grabs do not go through XGrabPointer and thus the
+              * event mask should not be checked.
+              */
+@@ -625,7 +628,11 @@ find_window_for_ns_event (NSEvent *nsevent,
+                 GdkWindow *toplevel_under_pointer;
+                 gint x_tmp, y_tmp;
+ 
+-                toplevel_under_pointer = find_toplevel_under_pointer (display,
++
++		if (grab->resizing)
++		    return NULL;
++
++               toplevel_under_pointer = find_toplevel_under_pointer (display,
+                                                                       screen_point,
+                                                                       &x_tmp, &y_tmp);
+                 if (toplevel_under_pointer)
+@@ -644,6 +651,9 @@ find_window_for_ns_event (NSEvent *nsevent,
+                 GdkWindowObject *grab_private;
+                 NSWindow *grab_nswindow;
+ 
++		if (!grab->window)
++		  return NULL;
++
+ 		grab_toplevel = gdk_window_get_effective_toplevel (grab->window);
+                 grab_private = (GdkWindowObject *)grab_toplevel;
+ 
+@@ -654,7 +664,20 @@ find_window_for_ns_event (NSEvent *nsevent,
                  *x = point.x;
                  *y = grab_private->height - point.y;
  
+-		return grab_toplevel;
 +		/* If we're on Lion and within 5 pixels of an edge, then
 +		 * assume that the user wants to resize, and return NULL to
 +		 * let Quartz get on with it. We check the selector
 +		 * isRestorable to see if we're on 10.7.
 +		 */
 +		if (([grab_nswindow respondsToSelector:@selector(isRestorable)]) &&
-+			( *x < 5 || *x > grab_private->width - 5 ||
-+			  *y > grab_private->height - 5))
-+			return NULL;
-+
- 		return grab_toplevel;
++		    (*x < GDK_LION_RESIZE ||
++                     *x > grab_private->width - GDK_LION_RESIZE ||
++                     *y > grab_private->height - GDK_LION_RESIZE))
++		{
++		    grab->resizing = TRUE;
++		    return NULL;
++		}
++ 		return grab_toplevel;
  	      }
  
-@@ -700,8 +712,8 @@ find_window_for_ns_event (NSEvent *nsevent,
-                      * will most likely be larger than 15x15 and for
-                      * scroll bars there are also other means to move
-                      * the scroll bar.  Since the resize indicator is
--                     * the only way of resizing windows on Mac OS, it
--                     * is too important to not make functional.
-+                     * the only way of resizing windows on Mac OS before
-+                     * 10.7, it is too important to not make functional.
-                      */
-                     frame = [toplevel_impl->view bounds];
-                     if (x_tmp > frame.size.width - GRIP_WIDTH
+ 	    return NULL;
+@@ -685,6 +708,7 @@ find_window_for_ns_event (NSEvent *nsevent,
+               {
+                 GdkWindowObject *toplevel_private;
+                 GdkWindowImplQuartz *toplevel_impl;
++		gboolean lion;
+ 
+                 toplevel = toplevel_under_pointer;
+ 
+@@ -714,6 +738,21 @@ find_window_for_ns_event (NSEvent *nsevent,
+                         return NULL;
+                       }
+                   }
++		/* If we're on Lion and within 5 pixels of an edge,
++		 * then assume that the user wants to resize, and
++		 * return NULL to let Quartz get on with it. We check
++		 * the selector isRestorable to see if we're on 10.7.
++		 * This extra check is in case the user starts
++		 * dragging before GDK recognizes the grab.
++		 */
++		lion = [toplevel_impl->toplevel respondsToSelector:@selector(isRestorable)];
++		if (lion && (*x < GDK_LION_RESIZE ||
++                             *x > toplevel_private->width - GDK_LION_RESIZE ||
++                             *y > toplevel_private->height - GDK_LION_RESIZE))
++		  {
++                    return NULL;
++                  }
++
+ 
+                 *x = x_tmp;
+                 *y = y_tmp;

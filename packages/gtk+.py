@@ -34,8 +34,6 @@ class GtkPackage (GnomePackage):
 				# add some missing keybindings
 				'patches/gtk/gtkmackeys.patch',
 
-				# Partial workaround for crasher when resizing on Lion. Resizing is 
-				# broken (except from the titlebar), but it no longer crashes.
 				# Bug 655122 - Crash when resizing window on MacOS Lion
 				# https://bugzilla.gnome.org/show_bug.cgi?id=655122
 				'patches/gtk/gtklionresizecrash.patch',
