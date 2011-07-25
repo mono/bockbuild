@@ -35,7 +35,7 @@ index 7b6e8d1..454f8b6 100644
 +  bind "<shift><meta>Left"     { "move-cursor" (paragraph-ends, -1, 1) }
 +  bind "<shift><meta>KP_Left"  { "move-cursor" (paragraph-ends, -1, 1) }
 +  bind "<meta>Right"           { "move-cursor" (paragraph-ends, 1, 0) }
-+  bind "<metaKP_>Right"        { "move-cursor" (paragraph-ends, 1, 0) }
++  bind "<meta>KP_Right"        { "move-cursor" (paragraph-ends, 1, 0) }
 +  bind "<shift><meta>Right"    { "move-cursor" (paragraph-ends, 1, 1) }
 +  bind "<shift><meta>KP_Right" { "move-cursor" (paragraph-ends, 1, 1) }
 +}
