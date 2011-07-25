@@ -42,6 +42,10 @@ class GtkPackage (GnomePackage):
 				# new window on Lion
 				# https://bugzilla.gnome.org/show_bug.cgi?id=655087
 				'patches/gtk/gdkemptypath.patch',
+
+				# Bug 508601 - Copying from GTK+ applications causes crash
+				# https://bugzilla.gnome.org/show_bug.cgi?id=508601
+				'patches/gtk/gtk-clipboard-crash.patch',
 			])
 
 	def prep (self):
