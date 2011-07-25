@@ -37,6 +37,11 @@ class GtkPackage (GnomePackage):
 				# Bug 655122 - Crash when resizing window on MacOS Lion
 				# https://bugzilla.gnome.org/show_bug.cgi?id=655122
 				'patches/gtk/gtklionresizecrash.patch',
+
+				# Bug 655087 - CoreGraphics error "clip: empty path" creating
+				# new window on Lion
+				# https://bugzilla.gnome.org/show_bug.cgi?id=655087
+				'patches/gtk/gdkemptypath.patch',
 			])
 
 	def prep (self):
