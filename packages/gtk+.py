@@ -15,7 +15,6 @@ class GtkPackage (GnomePackage):
 			self.sources.extend ([
 				#patches from gtk-osx-build
 				'patches/gtk/gtkselection.patch',
-				'patches/gtk/gdkwindow-quartz.patch',
 				'patches/gtk/gtk-keyhash.patch',
 				'patches/gtk/gtk-relocation.patch',
 				'patches/gtk/gdk-deadkeys.patch',
@@ -41,7 +40,7 @@ class GtkPackage (GnomePackage):
 				# Bug 655087 - CoreGraphics error "clip: empty path" creating
 				# new window on Lion
 				# https://bugzilla.gnome.org/show_bug.cgi?id=655087
-				'patches/gtk/gdkemptypath.patch',
+				'patches/gtk/gdk-empty-clip.patch',
 
 				# Bug 508601 - Copying from GTK+ applications causes crash
 				# https://bugzilla.gnome.org/show_bug.cgi?id=508601
