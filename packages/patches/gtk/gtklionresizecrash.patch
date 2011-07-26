@@ -37,10 +37,10 @@ index f058570..5365a85 100644
        _gdk_display_add_pointer_grab  (display,
  				      pointer_window,
 diff --git a/gdk/quartz/gdkevents-quartz.c b/gdk/quartz/gdkevents-quartz.c
-index 079e4fe..d975384 100644
+index 1334d83..1eb367e 100644
 --- a/gdk/quartz/gdkevents-quartz.c
 +++ b/gdk/quartz/gdkevents-quartz.c
-@@ -561,6 +561,7 @@ find_window_for_ns_event (NSEvent *nsevent,
+@@ -559,6 +559,7 @@ find_window_for_ns_event (NSEvent *nsevent,
    NSPoint point;
    NSPoint screen_point;
    NSEventType event_type;
@@ -48,7 +48,7 @@ index 079e4fe..d975384 100644
  
    view = (GdkQuartzView *)[[nsevent window] contentView];
  
-@@ -608,6 +609,8 @@ find_window_for_ns_event (NSEvent *nsevent,
+@@ -606,6 +607,8 @@ find_window_for_ns_event (NSEvent *nsevent,
          grab = _gdk_display_get_last_pointer_grab (display);
  	if (WINDOW_IS_TOPLEVEL (toplevel) && grab)
  	  {
@@ -57,7 +57,7 @@ index 079e4fe..d975384 100644
              /* Implicit grabs do not go through XGrabPointer and thus the
               * event mask should not be checked.
               */
-@@ -625,7 +628,11 @@ find_window_for_ns_event (NSEvent *nsevent,
+@@ -623,7 +626,11 @@ find_window_for_ns_event (NSEvent *nsevent,
                  GdkWindow *toplevel_under_pointer;
                  gint x_tmp, y_tmp;
  
@@ -70,7 +70,7 @@ index 079e4fe..d975384 100644
                                                                        screen_point,
                                                                        &x_tmp, &y_tmp);
                  if (toplevel_under_pointer)
-@@ -644,6 +651,9 @@ find_window_for_ns_event (NSEvent *nsevent,
+@@ -642,6 +649,9 @@ find_window_for_ns_event (NSEvent *nsevent,
                  GdkWindowObject *grab_private;
                  NSWindow *grab_nswindow;
  
@@ -80,7 +80,7 @@ index 079e4fe..d975384 100644
  		grab_toplevel = gdk_window_get_effective_toplevel (grab->window);
                  grab_private = (GdkWindowObject *)grab_toplevel;
  
-@@ -654,7 +664,20 @@ find_window_for_ns_event (NSEvent *nsevent,
+@@ -652,7 +662,21 @@ find_window_for_ns_event (NSEvent *nsevent,
                  *x = point.x;
                  *y = grab_private->height - point.y;
  
@@ -90,7 +90,8 @@ index 079e4fe..d975384 100644
 +		 * let Quartz get on with it. We check the selector
 +		 * isRestorable to see if we're on 10.7.
 +		 */
-+		if (([grab_nswindow respondsToSelector:@selector(isRestorable)]) &&
++		if (event_type != NSLeftMouseUp &&
++		    ([grab_nswindow respondsToSelector:@selector(isRestorable)]) &&
 +		    (*x < GDK_LION_RESIZE ||
 +                     *x > grab_private->width - GDK_LION_RESIZE ||
 +                     *y > grab_private->height - GDK_LION_RESIZE))
@@ -102,15 +103,15 @@ index 079e4fe..d975384 100644
  	      }
  
  	    return NULL;
-@@ -685,6 +708,7 @@ find_window_for_ns_event (NSEvent *nsevent,
+@@ -683,6 +707,7 @@ find_window_for_ns_event (NSEvent *nsevent,
                {
                  GdkWindowObject *toplevel_private;
                  GdkWindowImplQuartz *toplevel_impl;
-+		gboolean lion;
++                gboolean lion;
  
                  toplevel = toplevel_under_pointer;
  
-@@ -714,6 +738,21 @@ find_window_for_ns_event (NSEvent *nsevent,
+@@ -712,6 +737,20 @@ find_window_for_ns_event (NSEvent *nsevent,
                          return NULL;
                        }
                    }
@@ -128,7 +129,6 @@ index 079e4fe..d975384 100644
 +		  {
 +                    return NULL;
 +                  }
-+
  
                  *x = x_tmp;
                  *y = y_tmp;
