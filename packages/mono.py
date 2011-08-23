@@ -1,8 +1,8 @@
 class MonoPackage (Package):
 	def __init__ (self):
-		Package.__init__ (self, 'mono', '2.10.2',
+		Package.__init__ (self, 'mono', '2.10.4',
 			sources = [
-				'http://ftp.novell.com/pub/%{name}/sources/%{name}/%{name}-%{version}.tar.bz2',
+				'http://download.mono-project.com/sources/%{name}/%{name}-%{version}.tar.bz2',
 				'patches/mono-runtime-relocation.patch'
 			],
 			configure_flags = [
