@@ -1,6 +1,6 @@
 class MonoPackage (Package):
 	def __init__ (self):
-		Package.__init__ (self, 'mono', '2.10.4',
+		Package.__init__ (self, 'mono', '2.10.5',
 			sources = [
 				'http://download.mono-project.com/sources/%{name}/%{name}-%{version}.tar.bz2',
 				'patches/mono-runtime-relocation.patch'
