@@ -1,0 +1,97 @@
+From 8664df767cb9dbe48647f9853e3dcf551701d3ca Mon Sep 17 00:00:00 2001
+From: Andrea Canciani <ranma42@gmail.com>
+Date: Sat, 03 Sep 2011 16:39:24 +0000
+Subject: quartz: Fix the 32-bits build on MacOSX 10.7
+
+FMGetATSFontRefFromFont() is not public on Lion nor on 64-bits
+Frameworks, but it seems to be available in the dynamic libs, hence we
+can dlsym() it just like other private functions.
+
+Works around the error:
+cairo-quartz-font.c: In function 'cairo_quartz_font_face_create_for_atsu_font_id':
+cairo-quartz-font.c:830: error: implicit declaration of function 'FMGetATSFontRefFromFont'
+
+Fixes https://bugs.freedesktop.org/show_bug.cgi?id=39493
+---
+diff --git a/src/cairo-quartz-font.c b/src/cairo-quartz-font.c
+index 8b34ed8..53d5c35 100644
+--- a/src/cairo-quartz-font.c
++++ b/src/cairo-quartz-font.c
+@@ -93,6 +93,9 @@ static int (*CGFontGetAscentPtr) (CGFontRef fontRef) = NULL;
+ static int (*CGFontGetDescentPtr) (CGFontRef fontRef) = NULL;
+ static int (*CGFontGetLeadingPtr) (CGFontRef fontRef) = NULL;
+ 
++/* Not public anymore in 64-bits nor in 10.7 */
++static ATSFontRef (*FMGetATSFontRefFromFontPtr) (FMFont iFont) = NULL;
++
+ static cairo_bool_t _cairo_quartz_font_symbol_lookup_done = FALSE;
+ static cairo_bool_t _cairo_quartz_font_symbols_present = FALSE;
+ 
+@@ -132,6 +135,8 @@ quartz_font_ensure_symbols(void)
+     CGContextGetAllowsFontSmoothingPtr = dlsym(RTLD_DEFAULT, "CGContextGetAllowsFontSmoothing");
+     CGContextSetAllowsFontSmoothingPtr = dlsym(RTLD_DEFAULT, "CGContextSetAllowsFontSmoothing");
+ 
++    FMGetATSFontRefFromFontPtr = dlsym(RTLD_DEFAULT, "FMGetATSFontRefFromFont");
++
+     if ((CGFontCreateWithFontNamePtr || CGFontCreateWithNamePtr) &&
+ 	CGFontGetGlyphBBoxesPtr &&
+ 	CGFontGetGlyphsForUnicharsPtr &&
+@@ -805,7 +810,6 @@ _cairo_quartz_scaled_font_get_cg_font_ref (cairo_scaled_font_t *abstract_font)
+     return ffont->cgFont;
+ }
+ 
+-#ifndef __LP64__
+ /*
+  * compat with old ATSUI backend
+  */
+@@ -826,15 +830,22 @@ _cairo_quartz_scaled_font_get_cg_font_ref (cairo_scaled_font_t *abstract_font)
+ cairo_font_face_t *
+ cairo_quartz_font_face_create_for_atsu_font_id (ATSUFontID font_id)
+ {
+-    ATSFontRef atsFont = FMGetATSFontRefFromFont (font_id);
+-    CGFontRef cgFont = CGFontCreateWithPlatformFont (&atsFont);
+-    cairo_font_face_t *ff;
++    quartz_font_ensure_symbols();
+ 
+-    ff = cairo_quartz_font_face_create_for_cgfont (cgFont);
++    if (FMGetATSFontRefFromFontPtr != NULL) {
++	ATSFontRef atsFont = FMGetATSFontRefFromFontPtr (font_id);
++	CGFontRef cgFont = CGFontCreateWithPlatformFont (&atsFont);
++	cairo_font_face_t *ff;
+ 
+-    CGFontRelease (cgFont);
++	ff = cairo_quartz_font_face_create_for_cgfont (cgFont);
++
++	CGFontRelease (cgFont);
+ 
+-    return ff;
++	return ff;
++    } else {
++	_cairo_error_throw (CAIRO_STATUS_NO_MEMORY);
++	return (cairo_font_face_t *)&_cairo_font_face_nil;
++    }
+ }
+ 
+ /* This is the old name for the above function, exported for compat purposes */
+@@ -845,4 +856,3 @@ cairo_atsui_font_face_create_for_atsu_font_id (ATSUFontID font_id)
+ {
+     return cairo_quartz_font_face_create_for_atsu_font_id (font_id);
+ }
+-#endif
+diff --git a/src/cairo-quartz.h b/src/cairo-quartz.h
+index 8d001c5..9be5f9a 100644
+--- a/src/cairo-quartz.h
++++ b/src/cairo-quartz.h
+@@ -66,10 +66,8 @@ cairo_quartz_surface_get_cg_context (cairo_surface_t *surface);
+ cairo_public cairo_font_face_t *
+ cairo_quartz_font_face_create_for_cgfont (CGFontRef font);
+ 
+-#ifndef __LP64__
+ cairo_public cairo_font_face_t *
+ cairo_quartz_font_face_create_for_atsu_font_id (ATSUFontID font_id);
+-#endif
+ 
+ #endif /* CAIRO_HAS_QUARTZ_FONT */
+ 
+--
+cgit v0.9.0.2-2-gbebe
