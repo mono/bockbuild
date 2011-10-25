@@ -10,9 +10,14 @@ class MonoPackage (Package):
 				'--with-ikvm=no',
 				'--with-mcs-docs=no',
 				'--with-moonlight=no',
-				'--enable-quiet-build'
+				'--enable-quiet-build',
 			]
 		)
+		if Package.profile.name == 'darwin':
+			self.configure_flags.extend ([
+				# fix build on lion, it uses 64-bit host even with -m32
+				'--build=i386-apple-darwin11.2.0',
+			])
 
 		# Mono (in libgc) likes to fail to build randomly
 		self.make = 'for i in 1 2 3 4 5 6 7 8 9 10; do make && break; done'
