@@ -1,0 +1,22 @@
+--- a/gettext-tools/gnulib-lib/string.in.h
++++ b/gettext-tools/gnulib-lib/string.in.h
+@@ -233,6 +233,7 @@ _GL_WARN_ON_USE (stpcpy, "stpcpy is unportable - "
+ #if @GNULIB_STPNCPY@
+ # if @REPLACE_STPNCPY@
+ #  if !(defined __cplusplus && defined GNULIB_NAMESPACE)
++#   undef stpncpy
+ #   define stpncpy rpl_stpncpy
+ #  endif
+ _GL_FUNCDECL_RPL (stpncpy, char *,
+--- a/gettext-tools/configure
++++ b/gettext-tools/configure
+@@ -40606,7 +40606,9 @@ else
+ #include <stdlib.h>
+ #include <string.h> /* for strcpy */
+ /* The stpncpy prototype is missing in <string.h> on AIX 4.  */
++#if defined(_AIX) && !defined(stpncpy)
+ extern char *stpncpy (char *dest, const char *src, size_t n);
++#endif
+ int main () {
+   const char *src = "Hello";
+   char dest[10];
