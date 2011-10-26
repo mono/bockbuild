@@ -21,6 +21,9 @@ class GtkPackage (GnomePackage):
 				# add some missing keybindings
 #				'patches/gtk/gtkmackeys.patch',
 
+				# https://bugzilla.gnome.org/show_bug.cgi?id=516725
+				# http://bugzilla-attachments.gnome.org/attachment.cgi?id=197616
+				'patches/gtk/gtk-smooth-scrolling.patch',
 			])
 
 	def prep (self):
