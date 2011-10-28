@@ -1,62 +1,14 @@
+From 79a92f99a9dbdc7b1a651b0e8665807bd89c6632 Mon Sep 17 00:00:00 2001
+From: Michael Natterer <mitch@lanedo.com>
+Date: Tue, 25 Oct 2011 15:01:25 +0000
+Subject: gtkrc.key.mac: remove half the file, it was an accidential double paste
+
+---
 diff --git a/gtk/gtkrc.key.mac b/gtk/gtkrc.key.mac
-index 7b6e8d1..454f8b6 100644
+index 5389ffe..e6ec0e8 100644
 --- a/gtk/gtkrc.key.mac
 +++ b/gtk/gtkrc.key.mac
-@@ -1,25 +1,42 @@
- binding "gtk-mac-alt-arrows"
- {
--  bind "<alt>Right"           { "move-cursor" (words, 1, 0) }
--  bind "<alt>KP_Right"        { "move-cursor" (words, 1, 0) }
--  bind "<alt>Left"            { "move-cursor" (words, -1, 0) }
--  bind "<alt>KP_Left"         { "move-cursor" (words, -1, 0) }
--  bind "<shift><alt>Right"    { "move-cursor" (words, 1, 1) }
--  bind "<shift><alt>KP_Right" { "move-cursor" (words, 1, 1) }
--  bind "<shift><alt>Left"     { "move-cursor" (words, -1, 1) }
--  bind "<shift><alt>KP_Left"  { "move-cursor" (words, -1, 1) }
-+#these don't work as mod5 is always set
-+#  bind "<mod5>Right"           { "move-cursor" (words, 1, 0) }
-+#  bind "<mod5>KP_Right"        { "move-cursor" (words, 1, 0) }
-+#  bind "<mod5>Left"            { "move-cursor" (words, -1, 0) }
-+#  bind "<mod5>KP_Left"         { "move-cursor" (words, -1, 0) }
-+#  bind "<shift><mod5>Right"    { "move-cursor" (words, 1, 1) }
-+#  bind "<shift><mod5>KP_Right" { "move-cursor" (words, 1, 1) }
-+#  bind "<shift><mod5>Left"     { "move-cursor" (words, -1, 1) }
-+#  bind "<shift><mod5>KP_Left"  { "move-cursor" (words, -1, 1) }
- }
- 
- class "GtkTextView" binding "gtk-mac-alt-arrows"
- class "GtkLabel" binding "gtk-mac-alt-arrows"
- class "GtkEntry" binding "gtk-mac-alt-arrows"
- 
-+binding "gtk-mac-cmd-arrows"
-+{
-+  bind "<meta>Left"            { "move-cursor" (paragraph-ends, -1, 0) }
-+  bind "<meta>KP_Left"         { "move-cursor" (paragraph-ends, -1, 0) }
-+  bind "<shift><meta>Left"     { "move-cursor" (paragraph-ends, -1, 1) }
-+  bind "<shift><meta>KP_Left"  { "move-cursor" (paragraph-ends, -1, 1) }
-+  bind "<meta>Right"           { "move-cursor" (paragraph-ends, 1, 0) }
-+  bind "<meta>KP_Right"        { "move-cursor" (paragraph-ends, 1, 0) }
-+  bind "<shift><meta>Right"    { "move-cursor" (paragraph-ends, 1, 1) }
-+  bind "<shift><meta>KP_Right" { "move-cursor" (paragraph-ends, 1, 1) }
-+}
-+
-+class "GtkTextView" binding "gtk-mac-cmd-arrows"
-+class "GtkLabel" binding "gtk-mac-cmd-arrows"
-+class "GtkEntry" binding "gtk-mac-cmd-arrows"
- 
- binding "gtk-mac-alt-delete"
- {
--  bind "<alt>Delete" { "delete-from-cursor" (word-ends, 1) }
--  bind "<alt>KP_Delete" { "delete-from-cursor" (word-ends, 1) }
--  bind "<alt>BackSpace" { "delete-from-cursor" (word-ends, -1) }
-+#these don't work as mod5 is always set
-+#  bind "<mod5>Delete" { "delete-from-cursor" (word-ends, 1) }
-+#  bind "<mod5>KP_Delete" { "delete-from-cursor" (word-ends, 1) }
-+#  bind "<mod5>BackSpace" { "delete-from-cursor" (word-ends, -1) }
- }
- 
- class "GtkTextView" binding "gtk-mac-alt-delete"
-@@ -118,123 +135,16 @@ binding "gtk-mac-icon-view"
+@@ -120,123 +120,3 @@ binding "gtk-mac-icon-view"
  }
  
  class "GtkIconView" binding "gtk-mac-icon-view"
@@ -97,24 +49,19 @@ index 7b6e8d1..454f8b6 100644
 -  unbind "<ctrl>c"
 -  unbind "<ctrl>v"
 -}
- 
+-
 -class "GtkTextView" binding "gtk-mac-cmd-c"
 -class "GtkEntry" binding "gtk-mac-cmd-c"
- 
+-
 -
 -binding "gtk-mac-text-view"
-+binding "gtk-mac-emacs-begin-end"
- {
+-{
 -  bind "<shift><meta>a" { "select-all" (0) }
 -  bind "<meta>a" { "select-all" (1) }
 -  unbind "<shift><ctrl>a"
 -  unbind "<ctrl>a"
-+  bind "<ctrl>a"               { "move-cursor" (paragraph-ends, -1, 0) }
-+  bind "<shift><ctrl>a"        { "move-cursor" (paragraph-ends, -1, 1) }
-+  bind "<ctrl>e"               { "move-cursor" (paragraph-ends, 1, 0) }
-+  bind "<shift><ctrl>e"        { "move-cursor" (paragraph-ends, 1, 1) }
- }
- 
+-}
+-
 -class "GtkTextView" binding "gtk-mac-text-view"
 -
 -
@@ -185,6 +132,5 @@ index 7b6e8d1..454f8b6 100644
 -}
 -
 -class "GtkIconView" binding "gtk-mac-icon-view"
-+class "GtkTextView" binding "gtk-mac-emacs-begin-end"
-+class "GtkLabel" binding "gtk-mac-emacs-begin-end"
-+class "GtkEntry" binding "gtk-mac-emacs-begin-end"
+--
+cgit v0.9.0.2

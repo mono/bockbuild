@@ -1,0 +1,56 @@
+From ccf12f7b406ecbd8f0c26b0e6dc86d4593144dab Mon Sep 17 00:00:00 2001
+From: Michael Natterer <mitch@lanedo.com>
+Date: Tue, 25 Oct 2011 20:19:11 +0000
+Subject: gtkrc.key.mac: add Command-cursor text navigation
+
+and some emacs-ish Control bindings that work in native widgets.
+Patch from Michael Hutchinson.
+---
+diff --git a/gtk/gtkrc.key.mac b/gtk/gtkrc.key.mac
+index e6ec0e8..631e0dd 100644
+--- a/gtk/gtkrc.key.mac
++++ b/gtk/gtkrc.key.mac
+@@ -83,6 +83,41 @@ binding "gtk-mac-entry"
+ class "GtkEntry" binding "gtk-mac-entry"
+ 
+ 
++binding "gtk-mac-cmd-arrows"
++{
++  bind "<meta>Left" { "move-cursor" (paragraph-ends, -1, 0) }
++  bind "<meta>KP_Left" { "move-cursor" (paragraph-ends, -1, 0) }
++  bind "<shift><meta>Left" { "move-cursor" (paragraph-ends, -1, 1) }
++  bind "<shift><meta>KP_Left" { "move-cursor" (paragraph-ends, -1, 1) }
++  bind "<meta>Right" { "move-cursor" (paragraph-ends, 1, 0) }
++  bind "<meta>KP_Right" { "move-cursor" (paragraph-ends, 1, 0) }
++  bind "<shift><meta>Right" { "move-cursor" (paragraph-ends, 1, 1) }
++  bind "<shift><meta>KP_Right" { "move-cursor" (paragraph-ends, 1, 1) }
++}
++
++class "GtkTextView" binding "gtk-mac-cmd-arrows"
++class "GtkLabel" binding "gtk-mac-cmd-arrows"
++class "GtkEntry" binding "gtk-mac-cmd-arrows"
++
++
++binding "gtk-mac-emacs-like"
++{
++  bind "<ctrl>a" { "move-cursor" (paragraph-ends, -1, 0) }
++  bind "<shift><ctrl>a" { "move-cursor" (paragraph-ends, -1, 1) }
++  bind "<ctrl>e" { "move-cursor" (paragraph-ends, 1, 0) }
++  bind "<shift><ctrl>e" { "move-cursor" (paragraph-ends, 1, 1) }
++
++  bind "<ctrl>b" { "move-cursor" (logical-positions, -1, 0) }
++  bind "<shift><ctrl>b" { "move-cursor" (logical-positions, -1, 1) }
++  bind "<ctrl>f" { "move-cursor" (logical-positions, 1, 0) }
++  bind "<shift><ctrl>f" { "move-cursor" (logical-positions, 1, 1) }
++}
++
++class "GtkTextView" binding "gtk-mac-emacs-like"
++class "GtkLabel" binding "gtk-mac-emacs-like"
++class "GtkEntry" binding "gtk-mac-emacs-like
++
++
+ binding "gtk-mac-file-chooser"
+ {
+   bind "<meta>v" { "location-popup-on-paste" () }
+--
+cgit v0.9.0.2
