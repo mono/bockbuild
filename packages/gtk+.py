@@ -13,11 +13,6 @@ class GtkPackage (GnomePackage):
 		if Package.profile.name == 'darwin':
 			self.gdk_target = 'quartz'
 			self.sources.extend ([
-				#patches from gtk-osx-build
-#				'patches/gtk/gtkselection.patch',
-#				'patches/gtk/gtkdndmemory.patch',
-				'patches/gtk/gtkselection_deref.patch',
-
 				# add some missing keybindings
 #				'patches/gtk/gtkmackeys.patch',
 
