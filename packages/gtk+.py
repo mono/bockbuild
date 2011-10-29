@@ -24,7 +24,7 @@ class GtkPackage (GnomePackage):
 				'patches/gtk/04-e81b6971d85c7a782269454311b022ce14787486.patch',
 
 				# https://bugzilla.gnome.org/show_bug.cgi?id=516725
-				# http://bugzilla-attachments.gnome.org/attachment.cgi?id=197616
+				# http://bugzilla-attachments.gnome.org/attachment.cgi?id=200174
 				'patches/gtk/gtk-smooth-scrolling.patch',
 			])
 
