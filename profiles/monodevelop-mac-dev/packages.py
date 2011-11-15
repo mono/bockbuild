@@ -16,6 +16,7 @@ class MonoDevelopMacDevPackages:
 		self.packages.extend ([
 			'libpng.py',
 			'libjpeg.py',
+			'libtiff.py',
 			'libxml2.py',
 			'freetype.py',
 			'fontconfig.py',
