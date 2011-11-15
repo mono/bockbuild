@@ -38,9 +38,16 @@ class GtkPackage (GnomePackage):
 				'http://git.gnome.org/browse/gtk+/patch/?id=5123ad079ea364a1083b579da92afc7415c0b8b7',
 				# quartz: handle recursive CFRunLoops
 				'http://git.gnome.org/browse/gtk+/patch/?id=6f4a6b4936c78b34682547de323b2afaf4559be6',
+				# gdk: exclude MOD1 from the virtual modifier mapping
+				'http://git.gnome.org/browse/gtk+/patch/?id=32b70a56d13050b6d2b0a570c436da1c303814f3',
+				# [Quartz Bug 663182] NSImage throws an exception from _gtk_quartz_create_image_from_pixbuf()
+				'http://git.gnome.org/browse/gtk+/patch/?id=fadc82ad2647277628fd140514b54473dbeb2f4c',
 
 				# smooth scrolling, https://bugzilla.gnome.org/show_bug.cgi?id=516725
-				'http://bugzilla-attachments.gnome.org/attachment.cgi?id=200174'
+				'http://bugzilla-attachments.gnome.org/attachment.cgi?id=200174',
+
+				# make new modifier behviour opt-in, so as not to break old versions of MonoDevelop
+				'patches/gdk-quartz-set-fix-modifiers-hack.patch',
 			])
 
 	def prep (self):

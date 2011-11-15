@@ -1,0 +1,131 @@
+diff --git a/gdk/quartz/gdkevents-quartz.c b/gdk/quartz/gdkevents-quartz.c
+index 2889097..f333e13 100644
+--- a/gdk/quartz/gdkevents-quartz.c
++++ b/gdk/quartz/gdkevents-quartz.c
+@@ -277,10 +277,19 @@ get_keyboard_modifiers_from_ns_event (NSEvent *nsevent)
+     modifiers |= GDK_SHIFT_MASK;
+   if (nsflags & NSControlKeyMask)
+     modifiers |= GDK_CONTROL_MASK;
+-  if (nsflags & NSAlternateKeyMask)
+-    modifiers |= GDK_MOD1_MASK;
+-  if (nsflags & NSCommandKeyMask)
+-    modifiers |= GDK_MOD2_MASK;
++
++  if (gdk_quartz_get_fix_modifiers ())
++    {
++      if (nsflags & NSAlternateKeyMask)
++        modifiers |= GDK_MOD1_MASK;
++      if (nsflags & NSCommandKeyMask)
++        modifiers |= GDK_MOD2_MASK;
++    }
++  else
++    {
++      if (nsflags & NSCommandKeyMask)
++        modifiers |= GDK_MOD1_MASK;
++    }
+ 
+   return modifiers;
+ }
+@@ -920,7 +929,7 @@ fill_key_event (GdkWindow    *window,
+         {
+         case GDK_Meta_R:
+         case GDK_Meta_L:
+-          mask = GDK_MOD2_MASK;
++          mask = gdk_quartz_get_fix_modifiers () ? GDK_MOD2_MASK : GDK_MOD1_MASK;
+           break;
+         case GDK_Shift_R:
+         case GDK_Shift_L:
+@@ -931,7 +940,7 @@ fill_key_event (GdkWindow    *window,
+           break;
+         case GDK_Alt_R:
+         case GDK_Alt_L:
+-          mask = GDK_MOD1_MASK;
++          mask = gdk_quartz_get_fix_modifiers () ? GDK_MOD1_MASK : GDK_MOD2_MASK;
+           break;
+         case GDK_Control_R:
+         case GDK_Control_L:
+diff --git a/gdk/quartz/gdkglobals-quartz.c b/gdk/quartz/gdkglobals-quartz.c
+index 53c6d5e..31dbab1 100644
+--- a/gdk/quartz/gdkglobals-quartz.c
++++ b/gdk/quartz/gdkglobals-quartz.c
+@@ -41,3 +41,17 @@ gdk_quartz_osx_version (void)
+   else
+     return minor;
+ }
++
++static gboolean fix_modifiers = FALSE;
++
++void
++gdk_quartz_set_fix_modifiers (gboolean fix)
++{
++  fix_modifiers = fix;
++}
++
++gboolean
++gdk_quartz_get_fix_modifiers (void)
++{
++  return fix_modifiers;
++}
+diff --git a/gdk/quartz/gdkkeys-quartz.c b/gdk/quartz/gdkkeys-quartz.c
+index 5b4a79a..03c260b 100644
+--- a/gdk/quartz/gdkkeys-quartz.c
++++ b/gdk/quartz/gdkkeys-quartz.c
+@@ -712,16 +712,18 @@ void
+ gdk_keymap_add_virtual_modifiers (GdkKeymap       *keymap,
+                                   GdkModifierType *state)
+ {
+-  if (*state & GDK_MOD2_MASK)
+-    *state |= GDK_META_MASK;
++  if (gdk_quartz_get_fix_modifiers ())
++    if (*state & GDK_MOD2_MASK)
++      *state |= GDK_META_MASK;
+ }
+ 
+ gboolean
+ gdk_keymap_map_virtual_modifiers (GdkKeymap       *keymap,
+                                   GdkModifierType *state)
+ {
+-  if (*state & GDK_META_MASK)
+-    *state |= GDK_MOD2_MASK;
++  if (gdk_quartz_get_fix_modifiers ())
++    if (*state & GDK_META_MASK)
++      *state |= GDK_MOD2_MASK;
+ 
+   return TRUE;
+ }
+diff --git a/gdk/quartz/gdkquartz.h b/gdk/quartz/gdkquartz.h
+index 742d651..ed0ba35 100644
+--- a/gdk/quartz/gdkquartz.h
++++ b/gdk/quartz/gdkquartz.h
+@@ -58,6 +58,9 @@ id        gdk_quartz_drag_context_get_dragging_info_libgtk_only (GdkDragContext
+ NSEvent  *gdk_quartz_event_get_nsevent                          (GdkEvent       *event);
+ GdkOSXVersion gdk_quartz_osx_version                            (void);
+ 
++void      gdk_quartz_set_fix_modifiers (gboolean fix);
++gboolean  gdk_quartz_get_fix_modifiers (void);
++
+ G_END_DECLS
+ 
+ #endif /* __GDK_QUARTZ_H__ */
+diff --git a/gtk/gtkprivate.h b/gtk/gtkprivate.h
+index 53afe0e..af94a83 100644
+--- a/gtk/gtkprivate.h
++++ b/gtk/gtkprivate.h
+@@ -122,7 +122,7 @@ gboolean _gtk_fnmatch (const char *pattern,
+ #ifndef GDK_WINDOWING_QUARTZ
+ #define GTK_NO_TEXT_INPUT_MOD_MASK (GDK_MOD1_MASK | GDK_CONTROL_MASK)
+ #else
+-#define GTK_NO_TEXT_INPUT_MOD_MASK (GDK_MOD2_MASK | GDK_CONTROL_MASK)
++#define GTK_NO_TEXT_INPUT_MOD_MASK (gdk_quartz_get_fix_modifiers () ? (GDK_MOD2_MASK | GDK_CONTROL_MASK) : (GDK_MOD1_MASK | GDK_CONTROL_MASK))
+ #endif
+ 
+ #ifndef GDK_WINDOWING_QUARTZ
+@@ -130,7 +130,7 @@ gboolean _gtk_fnmatch (const char *pattern,
+ #define GTK_MODIFY_SELECTION_MOD_MASK GDK_CONTROL_MASK
+ #else
+ #define GTK_EXTEND_SELECTION_MOD_MASK GDK_SHIFT_MASK
+-#define GTK_MODIFY_SELECTION_MOD_MASK GDK_MOD2_MASK
++#define GTK_MODIFY_SELECTION_MOD_MASK (gdk_quartz_get_fix_modifiers () ? GDK_MOD2_MASK : GDK_MOD1_MASK)
+ #endif
+ 
+ gboolean _gtk_button_event_triggers_context_menu (GdkEventButton *event);
