@@ -9,18 +9,25 @@ class DarwinProfile (UnixProfile):
 		UnixProfile.__init__ (self)
 		
 		self.name = 'darwin'
-		self.mac_sdk_path = '/Developer/SDKs/MacOSX10.7.sdk'
-		
-		if not os.path.isdir (self.mac_sdk_path):
-			raise IOError ('Mac OS X SDK does not exist: %s' \
-				% self.mac_sdk_path)
+		if (os.path.isdir ('/Developer/SDKs/MacOSX10.7.sdk')):
+			self.mac_sdk_path = '/Developer/SDKs/MacOSX10.7.sdk'
+			self.gcc_flags.extend ([
+				'-D_XOPEN_SOURCE',
+				'-isysroot %{mac_sdk_path}',
+				'-mmacosx-version-min=10.7',
+			])
+		elif (os.path.isdir ('/Developer/SDKs/MacOSX10.6.sdk')):
+			self.mac_sdk_path = '/Developer/SDKs/MacOSX10.6.sdk'
+			self.gcc_flags.extend ([
+				'-D_XOPEN_SOURCE',
+				'-isysroot %{mac_sdk_path}',
+				'-mmacosx-version-min=10.6',
+			])
+		else:
+			raise IOError ('Mac OS X SDKs 10.6 and 10.7 not found')
 
 		self.gcc_arch_flags = [ '-m32', '-arch i386' ]
-		self.gcc_flags.extend ([
-			'-D_XOPEN_SOURCE',
-			'-isysroot %{mac_sdk_path}',
-			'-mmacosx-version-min=10.7',
-		])
+		
 		self.gcc_flags.extend (self.gcc_arch_flags)
 		self.ld_flags.extend (self.gcc_arch_flags)
 
