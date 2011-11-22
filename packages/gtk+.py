@@ -26,7 +26,7 @@ class GtkPackage (GnomePackage):
 				'http://git.gnome.org/browse/gtk+/patch/?id=7c77f9a69ab4dfea9f015cf09db6d501576523aa',
 
 				# smooth scrolling, https://bugzilla.gnome.org/show_bug.cgi?id=516725
-				'http://bugzilla-attachments.gnome.org/attachment.cgi?id=200174',
+				'http://bugzilla-attachments.gnome.org/attachment.cgi?id=201916',
 
 				# make new modifier behviour opt-in, so as not to break old versions of MonoDevelop
 				'patches/gdk-quartz-set-fix-modifiers-hack.patch',
