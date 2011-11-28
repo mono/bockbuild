@@ -19,6 +19,8 @@ class PangoPackage (GnomePackage):
 			# Bug 647969 - CoreText backend needs proper font fallback/coverage support
 			# https://bugzilla.gnome.org/show_bug.cgi?id=647969
 			'http://bugzilla-attachments.gnome.org/attachment.cgi?id=201356',
+			# Bug 664125 - Zero-width spaces cause missing characters
+			'http://bugzilla-attachments.gnome.org/attachment.cgi?id=202190',
 		])
 
 	def prep (self):
