@@ -18,7 +18,7 @@ class PangoPackage (GnomePackage):
 			'http://git.gnome.org/browse/pango/patch/?id=c21b1bfe1278de08673c495ba398fbdee874a778',
 			# Bug 647969 - CoreText backend needs proper font fallback/coverage support
 			# https://bugzilla.gnome.org/show_bug.cgi?id=647969
-			'http://bugzilla-attachments.gnome.org/attachment.cgi?id=201356',
+#			'http://bugzilla-attachments.gnome.org/attachment.cgi?id=201356',
 			# Bug 664125 - Zero-width spaces cause missing characters
 			'http://bugzilla-attachments.gnome.org/attachment.cgi?id=202190',
 		])
