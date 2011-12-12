@@ -23,24 +23,18 @@ class MonoDevelopMacDevPackages:
 			'pixman.py',
 			'cairo.py',
 			'glib.py',
-			#gtk-doc requres docbook, install it using brew
-			#'gtk-doc.py',
 			'pango.py',
 			'atk.py',
 			'intltool.py',
 			'gdk-pixbuf.py',
 			'gtk+.py',
 			'libglade.py',
-			'sqlite.py'
 		])
 
 		# Theme
 		self.packages.extend ([
 			'librsvg.py',
-			'icon-naming-utils.py',
 			'hicolor-icon-theme.py',
-			'tango-icon-theme.py',
-			'murrine.py',
 			'gtk-engines.py',
 			'gtk-quartz-engine.py'
 		])
