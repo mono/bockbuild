@@ -11,12 +11,15 @@ class GlibPackage (GnomePackage):
 		if Package.profile.name == 'darwin':
 			self.sources.extend (['%{macports_svn}/' + s for s in [
 				'config.h.ed',
-				'patch-configure.ac.diff',
-				'patch-glib-2.0.pc.in.diff',
+				'patch-configure.diff',
 				'patch-glib_gunicollate.c.diff',
 				'patch-gi18n.h.diff',
 				'patch-gio_xdgmime_xdgmime.c.diff',
+				'patch-gio_gdbusprivate.c.diff',
 			]])
+			self.sources.extend ([
+				'patches/patch-glib-2.0.pc.in.diff',
+			])
 
 	def prep (self):
 		Package.prep (self)
