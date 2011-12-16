@@ -29,6 +29,9 @@ class PangoPackage (GnomePackage):
 			'http://bugzilla-attachments.gnome.org/attachment.cgi?id=203357',
 			# Bug 664125 - Zero-width spaces cause missing characters
 			'http://bugzilla-attachments.gnome.org/attachment.cgi?id=202190',
+
+			# Workaround for Bug 2393 - [Gtk] Pango in Mono 2.10.7 does not work on snow leopard
+			'http://bugzilla.xamarin.com/attachment.cgi?id=1053',
 		])
 
 	def prep (self):
