@@ -16,13 +16,10 @@ class PangoPackage (GnomePackage):
 			'http://bugzilla-attachments.gnome.org/attachment.cgi?id=96023',
 			
 			# 2
-			# revert this, it requires unstable glib simply for some deprecation marker macros
-			'http://git.gnome.org/browse/pango/patch/?id=0e091322',
-			
-			# 3 - n
-
+			# revert git 0e091322, it requires unstable glib simply for some deprecation marker macros
 			'patches/pango-stable-glib.patch',
 
+			# 3 - n
 			# Bug 647969 - CoreText backend needs proper font fallback/coverage support
 			# https://bugzilla.gnome.org/show_bug.cgi?id=647969
 			'http://bugzilla-attachments.gnome.org/attachment.cgi?id=201356',
@@ -37,7 +34,7 @@ class PangoPackage (GnomePackage):
 	def prep (self):
 		GnomePackage.prep (self)
 		self.sh ('patch -p0 < "%{sources[1]}"')
-		self.sh ('patch -p1 -R < "%{sources[2]}"')
+		self.sh ('patch -p1 < "%{sources[2]}"')
 		if Package.profile.name == 'darwin':
 			for p in range (3, len (self.sources)):
 				self.sh ('patch -p1 < "%{sources[' + str (p) + ']}"')
