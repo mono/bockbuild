@@ -20,7 +20,6 @@ class MonoDevelopMacDevPackages:
 			'libxml2.py',
 			'freetype.py',
 			'fontconfig.py',
-			'gtk-doc.py',
 			'pixman.py',
 			'cairo.py',
 			'glib.py',
