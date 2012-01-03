@@ -8,6 +8,8 @@ sys.path.append ('../..')
 from bockbuild.darwinprofile import DarwinProfile
 from packages import MonoDevelopMacDevPackages
 
+abs_pathself = os.path.realpath (os.path.abspath (sys.argv[0]))
+
 class MonoDevelopMacDevProfile (DarwinProfile, MonoDevelopMacDevPackages):
 	def __init__ (self):
 		DarwinProfile.__init__ (self)
@@ -15,12 +17,13 @@ class MonoDevelopMacDevProfile (DarwinProfile, MonoDevelopMacDevPackages):
 		
 		self.gcc_flags.extend ([ '-g' ])
 		
-		self_dir = os.path.realpath (os.path.dirname (sys.argv[0]))
+		self_dir = os.path.dirname (abs_pathself)
 
 MonoDevelopMacDevProfile ().build ()
 
 profname = "md-dev-env"
-dir = os.path.realpath (os.path.dirname (sys.argv[0]))
+dir = os.path.dirname (abs_pathself)
+
 envscript = '''#!/bin/sh
 PROFNAME="%s"
 INSTALLDIR=%s/build-root/_install
@@ -40,6 +43,8 @@ export MONO_INSTALL_PREFIX="$INSTALLDIR"
 
 PS1="[$PROFNAME] \w @ "
 ''' % ( profname, dir )
+
+print os.path.join (dir, profname)
 
 with open(os.path.join (dir, profname), 'w') as f:
        f.write (envscript)
