@@ -1,2 +1,2 @@
-GitHubTarballPackage('mono', 'libgdiplus', '2.10', '5179dd3de1b06c6e4d3525dce890c25b4fa10975', configure = './autogen.sh --prefix="%{prefix}"')                                                                                                                                         
+GitHubTarballPackage('mono', 'libgdiplus', '2.10', 'f7f70076b73925f13de9cc69822debbc4cde5e48', configure = './autogen.sh --prefix="%{prefix}"')                                                                                                                                         
 
