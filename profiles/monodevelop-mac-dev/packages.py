@@ -36,6 +36,7 @@ class MonoDevelopMacDevPackages:
 			'librsvg.py',
 			'hicolor-icon-theme.py',
 			'gtk-engines.py',
+			'murrine.py',
 			'gtk-quartz-engine.py'
 		])
 
