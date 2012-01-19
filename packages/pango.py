@@ -22,10 +22,10 @@ class PangoPackage (GnomePackage):
 			# 3 - n
 			# Bug 647969 - CoreText backend needs proper font fallback/coverage support
 			# https://bugzilla.gnome.org/show_bug.cgi?id=647969
-			'http://bugzilla-attachments.gnome.org/attachment.cgi?id=201356',
-			'http://bugzilla-attachments.gnome.org/attachment.cgi?id=203357',
-			# Bug 664125 - Zero-width spaces cause missing characters
-			'http://bugzilla-attachments.gnome.org/attachment.cgi?id=202190',
+			'http://bugzilla-attachments.gnome.org/attachment.cgi?id=203657',
+
+			 # [Bug 664125] - Zero-width spaces cause missing characters
+			'http://git.gnome.org/browse/pango/patch/?id=dbf40154eb5804f4e8c582f12b30b8291c9c3532',
 
 			# Workaround for Bug 2393 - [Gtk] Pango in Mono 2.10.7 does not work on snow leopard
 			'http://bugzilla.xamarin.com/attachment.cgi?id=1053',
