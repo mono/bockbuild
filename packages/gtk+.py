@@ -21,7 +21,7 @@ class GtkPackage (GnomePackage):
 				'http://bugzilla-attachments.gnome.org/attachment.cgi?id=201916',
 
 				# make new modifier behviour opt-in, so as not to break old versions of MonoDevelop
-				'patches/gdk-quartz-set-fix-modifiers-hack.patch',
+				'patches/gdk-quartz-set-fix-modifiers-hack-v2.patch',
 			])
 
 	def prep (self):
