@@ -128,7 +128,7 @@ index 19a20f5..c7ceec6 100644
 +  else
 +    {
 +      if (*state & GDK_META_MASK)
-+        *state |= GDK_MOD2_MASK;
++        *state |= GDK_MOD1_MASK;
 +    }
  
    return TRUE;
