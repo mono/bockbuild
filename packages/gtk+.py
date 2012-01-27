@@ -1,6 +1,6 @@
-class GtkPackage (GnomePackage):
+class GtkPackage (GnomeXzPackage):
 	def __init__ (self):
-		GnomePackage.__init__ (self, 'gtk+',
+		GnomeXzPackage.__init__ (self, 'gtk+',
 			version_major = '2.24',
 			version_minor = '9',
 			configure_flags = [

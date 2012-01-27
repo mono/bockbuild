@@ -138,6 +138,10 @@ class Package:
 		self.cd (self._dirstack.pop ())
 
 	def prep (self):
+		self.tar = os.path.join (Package.profile.prefix, 'bin', 'tar')
+		if not os.path.exists (self.tar):
+			self.tar = 'tar'
+
 		if self.sources == None:
 			log (1, '<skipping - no sources defined>')
 			return
@@ -151,7 +155,7 @@ class Package:
 			if ext == '.zip':
 				self.sh ('unzip -qq "%{sources[0]}"')
 			else:
-				self.sh ('tar xf "%{sources[0]}"')
+				self.sh ('%{tar} xf "%{sources[0]}"')
 			self.cd ('%{source_dir_name}')
 	
 	def build (self):
@@ -187,6 +191,12 @@ class GnomePackage (Package):
 
 GnomePackage.default_sources = [
 	'http://ftp.gnome.org/pub/gnome/sources/%{name}/%{version_major}/%{name}-%{version}.tar.bz2'
+]
+
+class GnomeXzPackage (GnomePackage): pass
+
+GnomePackage.default_sources = [
+	'http://ftp.gnome.org/pub/gnome/sources/%{name}/%{version_major}/%{name}-%{version}.tar.xz'
 ]
 
 class GnuPackage (Package): pass

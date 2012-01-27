@@ -5,6 +5,8 @@ class MonoDevelopMacDevPackages:
 	def __init__ (self):
 		# Toolchain
 		self.packages.extend ([
+			'xz.py',
+			'tar.py',
 			'autoconf.py',
 			'automake.py',
 			'libtool.py',
