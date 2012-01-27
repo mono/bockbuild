@@ -79,7 +79,7 @@ index 53c6d5e..31dbab1 100644
 +  return fix_modifiers;
 +}
 diff --git a/gdk/quartz/gdkkeys-quartz.c b/gdk/quartz/gdkkeys-quartz.c
-index 19a20f5..94298ae 100644
+index 19a20f5..c7ceec6 100644
 --- a/gdk/quartz/gdkkeys-quartz.c
 +++ b/gdk/quartz/gdkkeys-quartz.c
 @@ -693,11 +693,11 @@ gdk_keymap_translate_keyboard_state (GdkKeymap       *keymap,
@@ -96,15 +96,22 @@ index 19a20f5..94298ae 100644
                              state | bit,
                              NULL, NULL))
  	tmp_modifiers |= bit;
-@@ -718,16 +718,18 @@ void
+@@ -718,16 +718,32 @@ void
  gdk_keymap_add_virtual_modifiers (GdkKeymap       *keymap,
                                    GdkModifierType *state)
  {
 -  if (*state & GDK_MOD2_MASK)
 -    *state |= GDK_META_MASK;
 +  if (gdk_quartz_get_fix_modifiers ())
-+    if (*state & GDK_MOD2_MASK)
-+      *state |= GDK_META_MASK;
++    {
++      if (*state & GDK_MOD2_MASK)
++        *state |= GDK_META_MASK;
++    }
++  else
++    {
++      if (*state & GDK_MOD1_MASK)
++        *state |= GDK_META_MASK;
++    }
  }
  
  gboolean
@@ -114,8 +121,15 @@ index 19a20f5..94298ae 100644
 -  if (*state & GDK_META_MASK)
 -    *state |= GDK_MOD2_MASK;
 +  if (gdk_quartz_get_fix_modifiers ())
-+    if (*state & GDK_META_MASK)
-+      *state |= GDK_MOD2_MASK;
++    {
++      if (*state & GDK_META_MASK)
++        *state |= GDK_MOD2_MASK;
++    }
++  else
++    {
++      if (*state & GDK_META_MASK)
++        *state |= GDK_MOD2_MASK;
++    }
  
    return TRUE;
  }
