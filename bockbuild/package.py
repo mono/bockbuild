@@ -195,7 +195,7 @@ GnomePackage.default_sources = [
 
 class GnomeXzPackage (GnomePackage): pass
 
-GnomePackage.default_sources = [
+GnomeXzPackage.default_sources = [
 	'http://ftp.gnome.org/pub/gnome/sources/%{name}/%{version_major}/%{name}-%{version}.tar.xz'
 ]
 
