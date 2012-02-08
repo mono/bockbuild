@@ -1,0 +1,40 @@
+diff --git a/modules/basic/basic-coretext.c b/modules/basic/basic-coretext.c
+index 991743e..fd482e9 100644
+--- a/modules/basic/basic-coretext.c
++++ b/modules/basic/basic-coretext.c
+@@ -89,6 +89,8 @@ basic_engine_shape (PangoEngineShape    *engine,
+   CFIndex i, glyph_count;
+   CFIndex *indices = NULL;
+   const CGGlyph *cgglyphs;
++  const char *cur = text;
++  gint cur_index = 0;
+ 
+   CFTypeRef keys[] = {
+       (CFTypeRef) kCTFontAttributeName
+@@ -164,11 +166,12 @@ basic_engine_shape (PangoEngineShape    *engine,
+ 
+       result = pango_coverage_get (coverage, wc);
+ 
++      cur = g_utf8_offset_to_pointer (cur, indices[real_i] - cur_index);
++      cur_index = cur - text;
++
+       if (result != PANGO_COVERAGE_NONE)
+         {
+-          set_glyph (font, glyphs, real_i,
+-                     g_utf8_offset_to_pointer (text, indices[real_i]) - text,
+-                     cgglyphs[real_i]);
++          set_glyph (font, glyphs, real_i, cur_index, cgglyphs[real_i]);
+ 
+           if (g_unichar_type (wc) == G_UNICODE_NON_SPACING_MARK)
+             {
+@@ -191,9 +194,7 @@ basic_engine_shape (PangoEngineShape    *engine,
+             }
+         }
+       else
+-        set_glyph (font, glyphs, real_i,
+-                   g_utf8_offset_to_pointer (text, indices[real_i]) - text,
+-                   PANGO_GET_UNKNOWN_GLYPH (wc));
++	set_glyph (font, glyphs, real_i, cur_index, PANGO_GET_UNKNOWN_GLYPH (wc));
+     }
+ 
+   free (indices);
