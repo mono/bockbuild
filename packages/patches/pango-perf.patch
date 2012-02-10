@@ -7,7 +7,7 @@ index 991743e..fd482e9 100644
    CFIndex *indices = NULL;
    const CGGlyph *cgglyphs;
 +  const char *text_offset_ptr = text;
-+  CFIndex index = 0;
++  CFIndex last_index = 0;
  
    CFTypeRef keys[] = {
        (CFTypeRef) kCTFontAttributeName
@@ -15,8 +15,8 @@ index 991743e..fd482e9 100644
  
        result = pango_coverage_get (coverage, wc);
  
-+      text_offset_ptr = g_utf8_offset_to_pointer (text_offset_ptr, indices[real_i] - index);
-+      index = indices[real_i];
++      text_offset_ptr = g_utf8_offset_to_pointer (text_offset_ptr, indices[real_i] - last_index);
++      last_index = indices[real_i];
 +
        if (result != PANGO_COVERAGE_NONE)
          {
