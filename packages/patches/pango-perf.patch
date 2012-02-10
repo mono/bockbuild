@@ -6,8 +6,8 @@ index 991743e..fd482e9 100644
    CFIndex i, glyph_count;
    CFIndex *indices = NULL;
    const CGGlyph *cgglyphs;
-+  const char *cur = text;
-+  gint cur_index = 0;
++  const char *text_offset_ptr = text;
++  CFIndex index = 0;
  
    CFTypeRef keys[] = {
        (CFTypeRef) kCTFontAttributeName
@@ -15,15 +15,15 @@ index 991743e..fd482e9 100644
  
        result = pango_coverage_get (coverage, wc);
  
-+      cur = g_utf8_offset_to_pointer (cur, indices[real_i] - cur_index);
-+      cur_index = cur - text;
++      text_offset_ptr = g_utf8_offset_to_pointer (text_offset_ptr, indices[real_i] - index);
++      index = indices[real_i];
 +
        if (result != PANGO_COVERAGE_NONE)
          {
 -          set_glyph (font, glyphs, real_i,
 -                     g_utf8_offset_to_pointer (text, indices[real_i]) - text,
 -                     cgglyphs[real_i]);
-+          set_glyph (font, glyphs, real_i, cur_index, cgglyphs[real_i]);
++          set_glyph (font, glyphs, real_i, text_offset_ptr - text, cgglyphs[real_i]);
  
            if (g_unichar_type (wc) == G_UNICODE_NON_SPACING_MARK)
              {
@@ -34,7 +34,7 @@ index 991743e..fd482e9 100644
 -        set_glyph (font, glyphs, real_i,
 -                   g_utf8_offset_to_pointer (text, indices[real_i]) - text,
 -                   PANGO_GET_UNKNOWN_GLYPH (wc));
-+	set_glyph (font, glyphs, real_i, cur_index, PANGO_GET_UNKNOWN_GLYPH (wc));
++        set_glyph (font, glyphs, real_i, text_offset_ptr - text, PANGO_GET_UNKNOWN_GLYPH (wc));
      }
  
    free (indices);
