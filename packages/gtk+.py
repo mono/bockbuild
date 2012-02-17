@@ -2,7 +2,7 @@ class GtkPackage (GnomeXzPackage):
 	def __init__ (self):
 		GnomeXzPackage.__init__ (self, 'gtk+',
 			version_major = '2.24',
-			version_minor = '9',
+			version_minor = '10',
 			configure_flags = [
 				'--with-gdktarget=%{gdk_target}',
 #				'--disable-cups',
@@ -13,10 +13,6 @@ class GtkPackage (GnomeXzPackage):
 		if Package.profile.name == 'darwin':
 			self.gdk_target = 'quartz'
 			self.sources.extend ([
-				# post-2.24.9 commits from 2.24 branch
-				# Bug 667691 - implement gdk_window_restack() for Quartz
-				'http://git.gnome.org/browse/gtk+/patch/?id=5f48cfe4918d54d91ec2a87877be6a19b6d43b45',
-
 				# smooth scrolling, https://bugzilla.gnome.org/show_bug.cgi?id=516725
 				'http://bugzilla-attachments.gnome.org/attachment.cgi?id=201916',
 
