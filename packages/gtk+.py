@@ -22,6 +22,10 @@ class GtkPackage (GnomeXzPackage):
 
 				# make new modifier behviour opt-in, so as not to break old versions of MonoDevelop
 				'patches/gdk-quartz-set-fix-modifiers-hack-v3.patch',
+
+				# attempt to work around 2158 - [GTK] crash triggering context menu
+				# also prints some warnings that may help to debug the real issue
+				'patches/gtk-bxc-2158-debugging.patch',
 			])
 
 	def prep (self):
