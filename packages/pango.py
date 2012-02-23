@@ -29,8 +29,8 @@ class PangoPackage (GnomePackage):
 			# Make CoreText backend more robust against broken fonts
 			'http://git.gnome.org/browse/pango/patch/?id=38ada127bfb53911ecd64ced26fd23ec67138b43',
 
-			# [Bug 664125] - Zero-width spaces cause missing characters - performance patch
-			'patches/pango-perf.patch',
+			# [Bug 664125] - Zero-width spaces cause missing characters
+			'http://bugzilla-attachments.gnome.org/attachment.cgi?id=208003',
 		])
 
 	def prep (self):
