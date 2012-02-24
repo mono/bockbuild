@@ -19,6 +19,10 @@ class GtkPackage (GnomeXzPackage):
 				# make new modifier behviour opt-in, so as not to break old versions of MonoDevelop
 				'patches/gdk-quartz-set-fix-modifiers-hack-v3.patch',
 
+				# window resizing, https://bugzilla.xamarin.com/show_bug.cgi?id=3120
+				'https://bugzilla.xamarin.com/attachment.cgi?id=1386',
+				'https://bugzilla.xamarin.com/attachment.cgi?id=1387',
+
 				# https://bugzilla.xamarin.com/show_bug.cgi?id=3505
 				'patches/gtk-mac-function-keys.patch',
 
