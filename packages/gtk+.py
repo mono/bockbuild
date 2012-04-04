@@ -19,12 +19,15 @@ class GtkPackage (GnomeXzPackage):
 				# make new modifier behviour opt-in, so as not to break old versions of MonoDevelop
 				'patches/gdk-quartz-set-fix-modifiers-hack-v3.patch',
 
+				# post-2.24.10 commits
+				# quartz: make function keys work (again?)
+				'http://git.gnome.org/browse/gtk+/patch/?id=0b24f16241f563b71c0c827bbb760a72df892b6a',
+				# quartz: remove excess initializers in the new modifier_keys array
+				'http://git.gnome.org/browse/gtk+/patch/?id=dca75f3b938d3744ec493466d26e0cfb024326aa',
+
 				# window resizing, https://bugzilla.xamarin.com/show_bug.cgi?id=3120
 				'https://bugzilla.xamarin.com/attachment.cgi?id=1386',
 				'https://bugzilla.xamarin.com/attachment.cgi?id=1387',
-
-				# https://bugzilla.xamarin.com/show_bug.cgi?id=3505
-				'patches/gtk-mac-function-keys.patch',
 
 				# attempt to work around 2158 - [GTK] crash triggering context menu
 				# also prints some warnings that may help to debug the real issue
