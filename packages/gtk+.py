@@ -32,6 +32,10 @@ class GtkPackage (GnomeXzPackage):
 				# attempt to work around 2158 - [GTK] crash triggering context menu
 				# also prints some warnings that may help to debug the real issue
 				'patches/gtk-bxc-2158-debugging.patch',
+
+				# Backport of gdk_screen_get_monitor_workarea
+				# Tooltip etc now honor menu and dock when positioning
+				'patches/gtk-monitor-workarea.patch',
 			])
 
 	def prep (self):
