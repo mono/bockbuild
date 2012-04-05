@@ -36,6 +36,14 @@ class GtkPackage (GnomeXzPackage):
 				# Backport of gdk_screen_get_monitor_workarea
 				# Tooltip etc now honor menu and dock when positioning
 				'patches/gtk-monitor-workarea.patch',
+
+				# Embedded NSViews
+				'patches/gtk-embedded-nsview/0001-gtk-add-new-widget-GtkNSView-which-alows-to-embed-an.patch',
+				'patches/gtk-embedded-nsview/0002-quartz-return-events-on-embedded-foreign-NSViews-bac.patch',
+				'patches/gtk-embedded-nsview/0003-gdk-add-signal-GdkWindow-native-child-event.patch',
+				'patches/gtk-embedded-nsview/0004-tests-add-a-GtkEntry-to-testnsview-so-we-can-test-fo.patch',
+				'patches/gtk-embedded-nsview/0005-gtk-connect-to-GdkWindow-native-child-event-to-imple.patch',
+
 			])
 
 	def prep (self):
