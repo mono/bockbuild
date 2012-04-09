@@ -18,12 +18,18 @@ class PangoPackage (GnomeXzPackage):
 			# 2
 			# revert git 0e091322, it requires unstable glib simply for some deprecation marker macros
 			'patches/pango-stable-glib.patch',
+
+			# 3
+			# Bug #4169 - Crash in pango_core_text_font_map_init
+			# https://bugzilla.xamarin.com/show_bug.cgi?id=4169
+			'patches/bug4169.patch',
 		])
 
 	def prep (self):
 		GnomePackage.prep (self)
 		self.sh ('patch -p0 < "%{sources[1]}"')
 		self.sh ('patch -p1 < "%{sources[2]}"')
+		self.sh ('patch -p1 < "%{sources[3]}"')
 #		if Package.profile.name == 'darwin':
 #			for p in range (3, len (self.sources)):
 #				self.sh ('patch -p1 < "%{sources[' + str (p) + ']}"')
