@@ -2,8 +2,8 @@ class PangoPackage (GnomeXzPackage):
 	def __init__ (self):
 		GnomePackage.__init__ (self,
 			'pango',
-			version_major = '1.30',
-			version_minor = '0',
+			version_major = '1.29',
+			version_minor = '5',
 			configure_flags = [
 				'--without-x'
 			]
@@ -23,6 +23,16 @@ class PangoPackage (GnomeXzPackage):
 			# Bug #4169 - Crash in pango_core_text_font_map_init
 			# https://bugzilla.xamarin.com/show_bug.cgi?id=4169
 			'patches/bug4169.patch',
+
+			# 4 - n
+			# [Bug 664125] - Zero-width spaces cause missing characters
+			'http://git.gnome.org/browse/pango/patch/?id=dbf40154eb5804f4e8c582f12b30b8291c9c3532',                                                               			
+			# CoreText backend: implement font fallbacks
+			'http://git.gnome.org/browse/pango/patch/?id=37e74619215ede8a4fa7f5edabab14b517e673b2',                                                               			
+			# Make CoreText backend more robust against broken fonts
+			'http://git.gnome.org/browse/pango/patch/?id=38ada127bfb53911ecd64ced26fd23ec67138b43',                                                               			
+			# [Bug 664125] - Zero-width spaces cause missing characters
+			'http://bugzilla-attachments.gnome.org/attachment.cgi?id=208003',
 		])
 
 	def prep (self):
@@ -30,8 +40,8 @@ class PangoPackage (GnomeXzPackage):
 		self.sh ('patch -p0 < "%{sources[1]}"')
 		self.sh ('patch -p1 < "%{sources[2]}"')
 		self.sh ('patch -p1 < "%{sources[3]}"')
-#		if Package.profile.name == 'darwin':
-#			for p in range (3, len (self.sources)):
-#				self.sh ('patch -p1 < "%{sources[' + str (p) + ']}"')
+		if Package.profile.name == 'darwin':
+			for p in range (4, len (self.sources)):
+				self.sh ('patch -p1 < "%{sources[' + str (p) + ']}"')
 
 PangoPackage ()
