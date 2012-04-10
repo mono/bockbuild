@@ -1,0 +1,41 @@
+diff --git a/mcs/class/Microsoft.Build.Engine/Microsoft.Build.BuildEngine/Import.cs b/mcs/class/Microsoft.Build.Engine/Microsoft.Build.BuildEngine/Import.cs
+index 332ee68..f0c2c31 100644
+--- a/mcs/class/Microsoft.Build.Engine/Microsoft.Build.BuildEngine/Import.cs
++++ b/mcs/class/Microsoft.Build.Engine/Microsoft.Build.BuildEngine/Import.cs
+@@ -79,6 +79,22 @@ namespace Microsoft.Build.BuildEngine {
+ 			}
+ 		}
+ 
++		internal bool CheckEvaluatedProjectPathExists ()
++		{
++			string path = EvaluatedProjectPath;
++
++			if (File.Exists (path))
++				return true;
++
++			if (Path.GetFileName (path) == "Microsoft.CSharp.Targets") {
++				path = Path.ChangeExtension (path, ".targets");
++				if (File.Exists (path))
++					return true;
++			}
++
++			return false;
++		}
++
+ 		// FIXME: condition
+ 		internal void Evaluate (bool ignoreMissingImports)
+ 		{
+diff --git a/mcs/class/Microsoft.Build.Engine/Microsoft.Build.BuildEngine/Project.cs b/mcs/class/Microsoft.Build.Engine/Microsoft.Build.BuildEngine/Project.cs
+index 3a8d2fe..04a5034 100644
+--- a/mcs/class/Microsoft.Build.Engine/Microsoft.Build.BuildEngine/Project.cs
++++ b/mcs/class/Microsoft.Build.Engine/Microsoft.Build.BuildEngine/Project.cs
+@@ -1156,6 +1156,9 @@ namespace Microsoft.Build.BuildEngine {
+ 				return false;
+ 			}
+ 
++			if (!import.CheckEvaluatedProjectPathExists ())
++				return false;
++
+ 			Imports.Add (import);
+ 			string importingFile = importingProject != null ? importingProject.FullFileName : FullFileName;
+ 			ParentEngine.LogMessage (MessageImportance.Low,
