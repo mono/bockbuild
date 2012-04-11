@@ -15,9 +15,10 @@ class GlibPackage (GnomePackage):
 				'patch-glib_gunicollate.c.diff',
 				'patch-gi18n.h.diff',
 				'patch-gio_xdgmime_xdgmime.c.diff',
-				'patch-gio_gdbusprivate.c.diff',
+				# 'patch-gio_gdbusprivate.c.diff', # The latest version of patch targets v2.32
 			]])
 			self.sources.extend ([
+				'https://trac.macports.org/export/87469/trunk/dports/devel/glib2/files/patch-gio_gdbusprivate.c.diff',
 				'patches/patch-glib-2.0.pc.in.diff',
 			])
 
