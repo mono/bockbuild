@@ -16,10 +16,9 @@ Subject: [PATCH 1/5] gtk: add new widget GtkNSView which alows to embed an
  create mode 100644 gtk/gtknsview.h
  create mode 100644 tests/testnsview.c
 
-diff --git a/gtk/Makefile.am b/gtk/Makefile.am
-index 908291f..20e9876 100644
---- a/gtk/Makefile.am
-+++ b/gtk/Makefile.am
+diff -urNp a/gtk/Makefile.am b/gtk/Makefile.am
+--- a/gtk/Makefile.am	2012-01-10 19:06:05.000000000 -0500
++++ b/gtk/Makefile.am	2012-04-11 12:01:27.000000000 -0400
 @@ -731,6 +731,7 @@ gtk_use_win32_c_sources = \
  	gtkwin32embedwidget.c \
  	gtkmountoperation-stub.c
@@ -36,10 +35,158 @@ index 908291f..20e9876 100644
  gtk_c_sources += $(gtk_use_quartz_c_sources)
  else
  gtk_c_sources += $(gtk_use_stub_c_sources)
-diff --git a/gtk/gtk.h b/gtk/gtk.h
-index 94e0b61..cc5834a 100644
---- a/gtk/gtk.h
-+++ b/gtk/gtk.h
+diff -urNp a/gtk/Makefile.in b/gtk/Makefile.in
+--- a/gtk/Makefile.in	2012-02-06 10:34:27.000000000 -0500
++++ b/gtk/Makefile.in	2012-04-11 12:09:45.000000000 -0400
+@@ -66,14 +66,15 @@ DIST_COMMON = $(am__gtkunixprintinclude_
+ @USE_WIN32_TRUE@@USE_X11_FALSE@am__append_10 = gtkwin32embed.h gtkwin32embedwidget.h
+ @USE_WIN32_TRUE@@USE_X11_FALSE@am__append_11 = $(gtk_use_win32_c_sources)
+ @USE_QUARTZ_TRUE@@USE_WIN32_FALSE@@USE_X11_FALSE@am__append_12 = gtksearchenginequartz.h
+-@USE_QUARTZ_TRUE@@USE_WIN32_FALSE@@USE_X11_FALSE@am__append_13 = $(gtk_use_quartz_c_sources)
+-@USE_QUARTZ_FALSE@@USE_WIN32_FALSE@@USE_X11_FALSE@am__append_14 = $(gtk_use_stub_c_sources)
+-@HAVE_INTROSPECTION_TRUE@@USE_X11_TRUE@am__append_15 = --add-include-path=$(top_builddir)/gdk/x11
+-@HAVE_INTROSPECTION_TRUE@am__append_16 = Gtk-2.0.gir
+-@HAVE_INTROSPECTION_TRUE@am__append_17 = $(gir_DATA) $(typelibs_DATA)
++@USE_QUARTZ_TRUE@@USE_WIN32_FALSE@@USE_X11_FALSE@am__append_13 = gtknsview.h
++@USE_QUARTZ_TRUE@@USE_WIN32_FALSE@@USE_X11_FALSE@am__append_14 = $(gtk_use_quartz_c_sources)
++@USE_QUARTZ_FALSE@@USE_WIN32_FALSE@@USE_X11_FALSE@am__append_15 = $(gtk_use_stub_c_sources)
++@HAVE_INTROSPECTION_TRUE@@USE_X11_TRUE@am__append_16 = --add-include-path=$(top_builddir)/gdk/x11
++@HAVE_INTROSPECTION_TRUE@am__append_17 = Gtk-2.0.gir
++@HAVE_INTROSPECTION_TRUE@am__append_18 = $(gir_DATA) $(typelibs_DATA)
+ bin_PROGRAMS = gtk-query-immodules-2.0$(EXEEXT) \
+ 	gtk-update-icon-cache$(EXEEXT)
+-@OS_WIN32_TRUE@am__append_18 = \
++@OS_WIN32_TRUE@am__append_19 = \
+ @OS_WIN32_TRUE@	$(GTK_UPDATE_ICON_CACHE_MANIFEST)
+ 
+ subdir = gtk
+@@ -203,7 +204,7 @@ am__libgtk_directfb_2_0_la_SOURCES_DIST 
+ 	gtkprintoperation-win32.c gtkplug-x11.c gtksocket-x11.c \
+ 	gtkxembed.c gtktrayicon-x11.c gtkmountoperation-x11.c \
+ 	gtkplug-win32.c gtksocket-win32.c gtkwin32embed.c \
+-	gtkwin32embedwidget.c gtkmountoperation-stub.c \
++	gtkwin32embedwidget.c gtkmountoperation-stub.c gtknsview.c \
+ 	gtksearchenginequartz.c gtkplug-stub.c gtksocket-stub.c
+ @USE_QUARTZ_FALSE@am__objects_1 = gtkclipboard.lo gtkdnd.lo
+ @USE_QUARTZ_TRUE@am__objects_1 = gtkclipboard-quartz.lo \
+@@ -395,7 +396,7 @@ am__libgtk_quartz_2_0_la_SOURCES_DIST = 
+ 	gtkprintoperation-win32.c gtkplug-x11.c gtksocket-x11.c \
+ 	gtkxembed.c gtktrayicon-x11.c gtkmountoperation-x11.c \
+ 	gtkplug-win32.c gtksocket-win32.c gtkwin32embed.c \
+-	gtkwin32embedwidget.c gtkmountoperation-stub.c \
++	gtkwin32embedwidget.c gtkmountoperation-stub.c gtknsview.c \
+ 	gtksearchenginequartz.c gtkplug-stub.c gtksocket-stub.c
+ @USE_QUARTZ_FALSE@am__objects_16 =  \
+ @USE_QUARTZ_FALSE@	libgtk_quartz_2_0_la-gtkclipboard.lo \
+@@ -767,7 +768,7 @@ am__libgtk_win32_2_0_la_SOURCES_DIST = g
+ 	gtkprintoperation-win32.c gtkplug-x11.c gtksocket-x11.c \
+ 	gtkxembed.c gtktrayicon-x11.c gtkmountoperation-x11.c \
+ 	gtkplug-win32.c gtksocket-win32.c gtkwin32embed.c \
+-	gtkwin32embedwidget.c gtkmountoperation-stub.c \
++	gtkwin32embedwidget.c gtkmountoperation-stub.c gtknsview.c \
+ 	gtksearchenginequartz.c gtkplug-stub.c gtksocket-stub.c
+ am_libgtk_win32_2_0_la_OBJECTS = $(am__objects_15)
+ libgtk_win32_2_0_la_OBJECTS = $(am_libgtk_win32_2_0_la_OBJECTS)
+@@ -855,7 +856,7 @@ am__libgtk_x11_2_0_la_SOURCES_DIST = gtk
+ 	gtkprintoperation-win32.c gtkplug-x11.c gtksocket-x11.c \
+ 	gtkxembed.c gtktrayicon-x11.c gtkmountoperation-x11.c \
+ 	gtkplug-win32.c gtksocket-win32.c gtkwin32embed.c \
+-	gtkwin32embedwidget.c gtkmountoperation-stub.c \
++	gtkwin32embedwidget.c gtkmountoperation-stub.c gtknsview.c \
+ 	gtksearchenginequartz.c gtkplug-stub.c gtksocket-stub.c
+ am_libgtk_x11_2_0_la_OBJECTS = $(am__objects_15)
+ libgtk_x11_2_0_la_OBJECTS = $(am_libgtk_x11_2_0_la_OBJECTS)
+@@ -1200,7 +1201,7 @@ EXTRA_DIST = gtkquartz.h $(gtk_private_h
+ 	tree_minus.xbm tree_minus.xpm tree_plus.xpm gtk.def \
+ 	gtk-builder-convert gtk-win32.rc gtk-win32.rc.in \
+ 	gtkwin32embed.h gtkwin32embedwidget.h gtkwin32embedwidget.c \
+-	gtkprint-win32.h gtkprint-win32.c gtksearchenginequartz.h \
++	gtkprint-win32.h gtkprint-win32.c gtknsview.h gtksearchenginequartz.h \
+ 	gtkrc.default gtkrc.key.default gtkrc.key.emacs gtkrc.key.mac \
+ 	makefile.msc makefile.msc.in makegtkalias.pl \
+ 	aliasfilescheck.sh abicheck.sh pltcheck.sh \
+@@ -1230,7 +1231,7 @@ XVFB_START = \
+ 	|| { echo "Gtk+Tests:ERROR: Failed to start Xvfb environment for X11 target tests."; exit 1; } \
+ 	&& DISPLAY=:$$XID && export DISPLAY
+ 
+-INTROSPECTION_GIRS = $(am__append_16)
++INTROSPECTION_GIRS = $(am__append_17)
+ INTROSPECTION_SCANNER_ARGS = \
+ 	--add-include-path=../gdk
+ 
+@@ -1362,7 +1363,7 @@ gtk_public_h_sources = gtk.h gtkaboutdia
+ 	gtkgamma.h gtkinputdialog.h gtkitemfactory.h gtklist.h \
+ 	gtklistitem.h gtkoldeditable.h gtkoptionmenu.h gtkpixmap.h \
+ 	gtkpreview.h gtkprogress.h gtksignal.h gtktipsquery.h \
+-	gtktooltips.h
++	gtktooltips.h $(am__append_13)
+ @OS_UNIX_TRUE@gtk_unix_print_public_h_sources = \
+ @OS_UNIX_TRUE@	gtkpagesetupunixdialog.h	\
+ @OS_UNIX_TRUE@	gtkprintunixdialog.h		\
+@@ -1473,8 +1474,8 @@ gtk_base_c_sources = gtkquery.c gtksearc
+ 	gtkpreview.c gtkprogress.c gtksignal.c gtktipsquery.c \
+ 	gtktooltips.c
+ gtk_c_sources = $(gtk_base_c_sources) $(am__append_5) $(am__append_7) \
+-	$(am__append_9) $(am__append_11) $(am__append_13) \
+-	$(am__append_14)
++	$(am__append_9) $(am__append_11) $(am__append_14) \
++	$(am__append_15)
+ gtk_all_c_sources = $(gtk_base_c_sources) $(gtk_os_unix_c_sources) \
+ 	$(gtk_os_win32_c_sources) $(gtk_use_x11_c_sources) \
+ 	$(gtk_use_win32_c_sources) $(gtk_use_stub_c_sources)
+@@ -1511,6 +1512,7 @@ gtk_use_win32_c_sources = \
+ 	gtkmountoperation-stub.c
+ 
+ gtk_use_quartz_c_sources = \
++	gtknsview.c		\
+ 	gtksearchenginequartz.c	\
+ 	gtkplug-stub.c		\
+ 	gtksocket-stub.c	\
+@@ -1585,7 +1587,7 @@ EXTRA_HEADERS = 
+ #
+ # setup autogeneration dependencies
+ gen_sources = xgen-gdef xgen-gtbh xgen-gtic xgen-gmh xgen-gmc xgen-gmlh xgen-gmlc xgen-gtfsrc.c xgen-gtf
+-CLEANFILES = $(gen_sources) $(am__append_17)
++CLEANFILES = $(gen_sources) $(am__append_18)
+ BUILT_SOURCES = $(gtk_built_sources)
+ 
+ # target platform:
+@@ -1627,7 +1629,7 @@ LDADDS = \
+ 
+ @HAVE_INTROSPECTION_TRUE@Gtk_2_0_gir_SCANNERFLAGS = --warn-all \
+ @HAVE_INTROSPECTION_TRUE@	--add-include-path=$(top_builddir)/gdk \
+-@HAVE_INTROSPECTION_TRUE@	$(am__append_15)
++@HAVE_INTROSPECTION_TRUE@	$(am__append_16)
+ @HAVE_INTROSPECTION_TRUE@Gtk_2_0_gir_INCLUDES = Atk-1.0 Gdk-2.0
+ @HAVE_INTROSPECTION_TRUE@Gtk_2_0_gir_CFLAGS = \
+ @HAVE_INTROSPECTION_TRUE@		$(INCLUDES) \
+@@ -1641,7 +1643,7 @@ LDADDS = \
+ @HAVE_INTROSPECTION_TRUE@gir_DATA = $(INTROSPECTION_GIRS)
+ @HAVE_INTROSPECTION_TRUE@typelibsdir = $(libdir)/girepository-1.0
+ @HAVE_INTROSPECTION_TRUE@typelibs_DATA = $(INTROSPECTION_GIRS:.gir=.typelib)
+-bin_SCRIPTS = gtk-builder-convert $(am__append_18)
++bin_SCRIPTS = gtk-builder-convert $(am__append_19)
+ 
+ # Workaround for UAC silliness: programs with "update" in their name
+ # are believed to be installers and require elevated privileges to be
+@@ -4522,6 +4524,14 @@ libgtk_quartz_2_0_la-gtkmountoperation-s
+ @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+ @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libgtk_quartz_2_0_la_CFLAGS) $(CFLAGS) -c -o libgtk_quartz_2_0_la-gtkmountoperation-stub.lo `test -f 'gtkmountoperation-stub.c' || echo '$(srcdir)/'`gtkmountoperation-stub.c
+ 
++libgtk_quartz_2_0_la-gtknsview.lo: gtknsview.c
++@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libgtk_quartz_2_0_la_CFLAGS) $(CFLAGS) -MT libgtk_quartz_2_0_la-gtknsview.lo -MD -MP -MF $(DEPDIR)/libgtk_quartz_2_0_la-gtknsview.Tpo -c -o libgtk_quartz_2_0_la-gtknsview.lo `test -f 'gtknsview.c' || echo '$(srcdir)/'`gtknsview.c
++@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libgtk_quartz_2_0_la-gtknsview.Tpo $(DEPDIR)/libgtk_quartz_2_0_la-gtknsview.Plo
++@am__fastdepCC_FALSE@	$(AM_V_CC) @AM_BACKSLASH@
++@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='gtknsview.c' object='libgtk_quartz_2_0_la-gtknsview.lo' libtool=yes @AMDEPBACKSLASH@
++@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
++@am__fastdepCC_FALSE@	$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libgtk_quartz_2_0_la_CFLAGS) $(CFLAGS) -c -o libgtk_quartz_2_0_la-gtknsview.lo `test -f 'gtknsview.c' || echo '$(srcdir)/'`gtknsview.c
++
+ libgtk_quartz_2_0_la-gtksearchenginequartz.lo: gtksearchenginequartz.c
+ @am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libgtk_quartz_2_0_la_CFLAGS) $(CFLAGS) -MT libgtk_quartz_2_0_la-gtksearchenginequartz.lo -MD -MP -MF $(DEPDIR)/libgtk_quartz_2_0_la-gtksearchenginequartz.Tpo -c -o libgtk_quartz_2_0_la-gtksearchenginequartz.lo `test -f 'gtksearchenginequartz.c' || echo '$(srcdir)/'`gtksearchenginequartz.c
+ @am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libgtk_quartz_2_0_la-gtksearchenginequartz.Tpo $(DEPDIR)/libgtk_quartz_2_0_la-gtksearchenginequartz.Plo
+diff -urNp a/gtk/gtk.h b/gtk/gtk.h
+--- a/gtk/gtk.h	2011-08-15 22:30:52.000000000 -0400
++++ b/gtk/gtk.h	2012-04-11 12:01:27.000000000 -0400
 @@ -218,6 +218,10 @@
  #include <gtk/gtkwidget.h>
  #include <gtk/gtkwindow.h>
@@ -51,11 +198,9 @@ index 94e0b61..cc5834a 100644
  /* Broken */
  #include <gtk/gtktext.h>
  #include <gtk/gtktree.h>
-diff --git a/gtk/gtknsview.c b/gtk/gtknsview.c
-new file mode 100644
-index 0000000..1e55865
---- /dev/null
-+++ b/gtk/gtknsview.c
+diff -urNp a/gtk/gtknsview.c b/gtk/gtknsview.c
+--- a/gtk/gtknsview.c	1969-12-31 19:00:00.000000000 -0500
++++ b/gtk/gtknsview.c	2012-04-11 12:01:27.000000000 -0400
 @@ -0,0 +1,291 @@
 +/* GTK - The GIMP Toolkit
 + * Copyright (C) 1995-1997 Peter Mattis, Spencer Kimball and Josh MacDonald
@@ -348,11 +493,9 @@ index 0000000..1e55865
 +
 +#define __GTK_NS_VIEW_C__
 +#include "gtkaliasdef.c"
-diff --git a/gtk/gtknsview.h b/gtk/gtknsview.h
-new file mode 100644
-index 0000000..61499ae
---- /dev/null
-+++ b/gtk/gtknsview.h
+diff -urNp a/gtk/gtknsview.h b/gtk/gtknsview.h
+--- a/gtk/gtknsview.h	1969-12-31 19:00:00.000000000 -0500
++++ b/gtk/gtknsview.h	2012-04-11 12:01:27.000000000 -0400
 @@ -0,0 +1,62 @@
 +/* GTK - The GIMP Toolkit
 + * Copyright (C) 1995-1997 Peter Mattis, Spencer Kimball and Josh MacDonald
@@ -416,10 +559,9 @@ index 0000000..61499ae
 +G_END_DECLS
 +
 +#endif /* __GTK_NS_VIEW_H__ */
-diff --git a/tests/Makefile.am b/tests/Makefile.am
-index 3888826..af098f6 100644
---- a/tests/Makefile.am
-+++ b/tests/Makefile.am
+diff -urNp a/tests/Makefile.am b/tests/Makefile.am
+--- a/tests/Makefile.am	2011-08-15 22:30:53.000000000 -0400
++++ b/tests/Makefile.am	2012-04-11 12:01:27.000000000 -0400
 @@ -8,7 +8,8 @@ INCLUDES =				\
  	-DGDK_DISABLE_DEPRECATED	\
  	-DGTK_DISABLE_DEPRECATED	\
@@ -438,7 +580,7 @@ index 3888826..af098f6 100644
  	testoffscreen			\
  	testoffscreenwindow		\
  	testorientable			\
-@@ -134,6 +136,7 @@ testmultidisplay_DEPENDENCIES = $(TEST_DEPS)
+@@ -134,6 +136,7 @@ testmultidisplay_DEPENDENCIES = $(TEST_D
  testmultiscreen_DEPENDENCIES = $(TEST_DEPS)
  testnotebookdnd_DEPENDENCIES = $(TEST_DEPS)
  testnouiprint_DEPENDENCIES = $(TEST_DEPS)
@@ -446,16 +588,16 @@ index 3888826..af098f6 100644
  testoffscreen_DEPENDENCIES = $(TEST_DEPS)
  testoffscreenwindow_DEPENDENCIES = $(TEST_DEPS)
  testorientable_DEPENDENCIES = $(TEST_DEPS)
-@@ -166,6 +169,8 @@ testtooltips_DEPENDENCIES = $(TEST_DEPS)
- testvolumebutton_DEPENDENCIES = $(TEST_DEPS)
- testwindows_DEPENDENCIES = $(TEST_DEPS)
+@@ -233,6 +236,8 @@ testvolumebutton_LDADD = $(LDADDS)
+ testwindows_LDADD = $(LDADDS)
+ 
  
 +testnsview_LDFLAGS = -framework WebKit
 +
  testentrycompletion_SOURCES = 	\
  	prop-editor.c		\
  	testentrycompletion.c
-@@ -262,6 +267,9 @@ testrecentchoosermenu_SOURCES =	\
+@@ -329,6 +334,9 @@ testrecentchoosermenu_SOURCES =	\
  testvolumebutton_SOURCES =	\
  	testvolumebutton.c
  
@@ -465,11 +607,9 @@ index 3888826..af098f6 100644
  testoffscreen_SOURCES = 	\
  	gtkoffscreenbox.c	\
  	gtkoffscreenbox.h	\
-diff --git a/tests/testnsview.c b/tests/testnsview.c
-new file mode 100644
-index 0000000..5842529
---- /dev/null
-+++ b/tests/testnsview.c
+diff -urNp a/tests/testnsview.c b/tests/testnsview.c
+--- a/tests/testnsview.c	1969-12-31 19:00:00.000000000 -0500
++++ b/tests/testnsview.c	2012-04-11 12:01:27.000000000 -0400
 @@ -0,0 +1,160 @@
 +/* testnsview.c
 + * Copyright (C) 2011 Michael Natterer <mitch@lanedo.com>
