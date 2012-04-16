@@ -5,8 +5,8 @@ from util import *
 from unixprofile import UnixProfile
 
 class DarwinProfile (UnixProfile):
-	def __init__ (self):
-		UnixProfile.__init__ (self)
+	def __init__ (self, prefix = False):
+		UnixProfile.__init__ (self, prefix)
 		
 		self.name = 'darwin'
 		sdkroot = '/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/'

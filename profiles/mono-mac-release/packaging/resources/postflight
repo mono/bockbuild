@@ -1,0 +1,42 @@
+#!/bin/sh -x
+
+FW=/Library/Frameworks/Mono.framework
+FW_CURRENT=${FW}/Versions/Current
+
+WHITELIST=$(cat $(dirname $0)/whitelist.txt)
+
+if [ -d ${FW}/Commands ]; then
+    for i in ${WHITELIST}; do
+	# Only create a symlink if there isn't a file there
+	if test -e "${FW}/Commands/${i}" && test ! -e "/usr/bin/${i}"; then
+        	echo "${i}"
+	        ln -sf "${FW}/Commands/${i}" "/usr/bin/${i}"
+	fi
+    done;
+else
+    echo "${FW}/Commands does not exist"
+    echo "Can not create links to /usr/bin."
+fi
+
+if [ -d ${FW_CURRENT} ]; then
+    cd ${FW_CURRENT}/share/man
+    for i in ${WHITELIST}; do
+        for j in $(ls man*/${i}.*); do
+            if test ! -e "/usr/share/man/${j}"; then
+                ln -sf "${FW_CURRENT}/share/man/${j}" "/usr/share/man/${j}"
+            fi
+        done
+    done
+
+    cd ${FW_CURRENT}/etc
+    # Make sure we run the files we lay down, and not other stuff installed on the system
+    export PATH=${FW_CURRENT}/bin:$PATH
+    # gtk+ setup
+    gdk-pixbuf-query-loaders --update-cache
+    # pango setup
+    mkdir -p pango
+    pango-querymodules >  pango/pango.modules
+fi
+
+# Mono framework should be owned by root
+chown -R root:admin ${FW}

@@ -34,7 +34,7 @@ class GlibPackage (GnomePackage):
 			return
 
 		self.sh (
-			'autoconf',
+			# 'autoconf',
 			'%{configure}',
 			'ed - config.h < %{sources[1]}',
 			'%{make}'

@@ -1,8 +1,8 @@
 from profile import Profile
 
 class UnixProfile (Profile):
-	def __init__ (self):
-		Profile.__init__ (self)
+	def __init__ (self, prefix = False):
+		Profile.__init__ (self, prefix)
 		self.name = 'unix'
 
 		self.gcc_flags = [ '-I%{prefix}/include' ]

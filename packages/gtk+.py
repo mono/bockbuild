@@ -5,11 +5,13 @@ class GtkPackage (GnomeXzPackage):
 			version_minor = '10',
 			configure_flags = [
 				'--with-gdktarget=%{gdk_target}',
+				'--prefix="%{prefix}"'
 #				'--disable-cups',
 			]
 		)
-
+		self.configure = './configure'
 		self.gdk_target = 'x11'
+
 		if Package.profile.name == 'darwin':
 			self.gdk_target = 'quartz'
 			self.sources.extend ([
@@ -51,5 +53,16 @@ class GtkPackage (GnomeXzPackage):
 		if Package.profile.name == 'darwin':
 			for p in range (1, len (self.sources)):
 				self.sh ('patch -p1 < "%{sources[' + str (p) + ']}"')
+
+	def install(self):
+		Package.install(self)
+		self.install_gtkrc ()
+
+	def install_gtkrc(self):
+		origin = os.path.join (self.package_dest_dir (), os.path.basename (self.sources[1]))
+		destdir = os.path.join (self.prefix, "etc", "gtk-2.0")
+		if not os.path.exists (destdir):
+			os.makedirs(destdir)
+		self.sh('cp %s %s' % (origin, destdir))
 
 GtkPackage ()

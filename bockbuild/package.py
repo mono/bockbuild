@@ -46,6 +46,9 @@ class Package:
 		if self.sources == None:
 			return
 
+		if not os.path.exists (package_dest_dir):
+			os.mkdir (package_dest_dir)
+
 		local_sources = []
 		for source in self.sources:
 			local_source = os.path.join (package_dir, source)
@@ -74,10 +77,25 @@ class Package:
 					self.sh ('%' + '{git} clone "%s" "%s"' % (source, os.path.basename (local_dest_file)))
 				else:
 					self.cd (local_dest_file)
+					self.sh ('%{git} reset --hard')
+					self.sh ('%{git} clean -xfd')
 					self.sh ('%{git} pull --rebase')
+				revision = os.getenv('BUILD_REVISION')
+				if revision != None:
+					self.cd (local_dest_file)
+					self.sh ('%' + '{git} reset --hard %s' % revision)
 				os.chdir (pwd)
 
 		self.sources = local_sources
+
+	def package_root_dir (self, build_root = False):
+		source_cache = os.getenv('BOCKBUILD_SOURCE_CACHE')
+		if source_cache != None:
+			print 'Using BOCKBUILD_SOURCE_CACHE = %s' % source_cache
+		return source_cache or build_root or Package.profile.build_root
+
+	def package_dest_dir (self, build_root = False):
+		return os.path.join (self.package_root_dir (build_root or Package.profile.build_root), '%s-%s' % (self.name, self.version))
 
 	def start_build (self):
 		Package.last_instance = None
@@ -85,20 +103,23 @@ class Package:
 		expand_macros (self, self)
 
 		profile = Package.profile
-
 		namever = '%s-%s' % (self.name, self.version)
 		package_dir = os.path.dirname (os.path.realpath (self._path))
-		package_dest_dir = os.path.join (profile.build_root, namever)
-		package_build_dir = os.path.join (package_dest_dir, '_build')
-		build_success_file = os.path.join (profile.build_root,
-			namever + '.success')
+		package_build_dir = os.path.join (os.path.join (profile.build_root, namever), '_build')
+		build_success_file = os.path.join (profile.build_root, namever + '.success')
+		install_success_file = os.path.join (profile.build_root, namever + '.install')
 
 		if os.path.exists (build_success_file):
 			print 'Skipping %s - already built' % namever
+			if not os.path.exists (install_success_file):
+				print 'Installing %s' % namever
+				os.chdir (package_build_dir)
+				self.cd ('%{source_dir_name}')
+				self.install ()
+				open (install_success_file, 'w').close ()
 			return
 
-		print '\n\nBuilding %s on %s (%s CPU)' % (self.name, profile.host,
-			profile.cpu_count)
+		print '\n\nBuilding %s on %s (%s CPU)' % (self.name, profile.host, profile.cpu_count)
 
 		if not os.path.exists (profile.build_root) or \
 			not os.path.isdir (profile.build_root):
@@ -107,7 +128,7 @@ class Package:
 		shutil.rmtree (package_build_dir, ignore_errors = True)
 		os.makedirs (package_build_dir)
 
-		self._fetch_sources (package_dir, package_dest_dir)
+		self._fetch_sources (package_dir, self.package_dest_dir (profile.build_root))
 
 		os.chdir (package_build_dir)
 
@@ -116,6 +137,7 @@ class Package:
 			getattr (self, phase) ()
 
 		open (build_success_file, 'w').close ()
+		open (install_success_file, 'w').close ()
 
 	def sh (self, *commands):
 		for command in commands:
@@ -148,7 +170,8 @@ class Package:
 
 		if os.path.isdir (os.path.join (self.sources[0], '.git')):
 			dirname = os.path.join (os.getcwd (), os.path.basename (self.sources[0]))
-			self.sh ('cp -a "%s" "%s"' % (self.sources[0], dirname))
+			# self.sh ('cp -a "%s" "%s"' % (self.sources[0], dirname))
+			self.sh ('git clone --shared "%s" "%s"' % (self.sources[0], dirname))
 			self.cd (dirname)
 		else:
 			root, ext = os.path.splitext (self.sources[0])

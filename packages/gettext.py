@@ -12,7 +12,7 @@ class GettextPackage (GnuPackage):
 			self.configure_flags.extend ([
 				# only build the tools, osx has the lib
 				# https://github.com/mxcl/homebrew/blob/master/Library/Formula/gettext.rb
-				'--without-included-gettext',
+				#'--without-included-gettext',
 			])
 			self.sources.extend ([
 				# Fixes building on Lion
