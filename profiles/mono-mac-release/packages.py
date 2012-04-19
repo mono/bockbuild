@@ -9,6 +9,8 @@ class MonoReleasePackages:
 				# 'autoconf.py',
 				# 'automake.py',
 				# 'libtool.py', 
+				'xz.py',
+				'tar.py',
 				'gettext.py',
 				'pkg-config.py'
 				])
