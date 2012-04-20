@@ -15,6 +15,9 @@ class GtkPackage (GnomeXzPackage):
 		if Package.profile.name == 'darwin':
 			self.gdk_target = 'quartz'
 			self.sources.extend ([
+				# Custom gtkrc
+				'patches/gtkrc',
+
 				# smooth scrolling, https://bugzilla.gnome.org/show_bug.cgi?id=516725
 				'http://bugzilla-attachments.gnome.org/attachment.cgi?id=201916',
 
