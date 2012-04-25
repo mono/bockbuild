@@ -22,7 +22,7 @@ class PangoPackage (GnomeXzPackage):
 			# 3
 			# Bug #4169 - Crash in pango_core_text_font_map_init
 			# https://bugzilla.xamarin.com/show_bug.cgi?id=4169
-			'patches/bug4169.patch',
+			'https://bugzilla.xamarin.com/attachment.cgi?id=1650',
 		])
 
 	def prep (self):
