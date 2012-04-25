@@ -26,14 +26,21 @@ class GtkPackage (GnomeXzPackage):
 				'http://git.gnome.org/browse/gtk+/patch/?id=0b24f16241f563b71c0c827bbb760a72df892b6a',
 				# quartz: remove excess initializers in the new modifier_keys array
 				'http://git.gnome.org/browse/gtk+/patch/?id=dca75f3b938d3744ec493466d26e0cfb024326aa',
-
-				# window resizing, https://bugzilla.xamarin.com/show_bug.cgi?id=3120
-				'https://bugzilla.xamarin.com/attachment.cgi?id=1386',
-				'https://bugzilla.xamarin.com/attachment.cgi?id=1387',
+				# Export break_all_grabs() within Quartz backend
+				'http://git.gnome.org/browse/gtk+/patch/?id=ac4f3be6a5a6672708af8fe732b932fd1e1d8beb',
+				# [quartz] Fix manual resizing of windows
+				'http://git.gnome.org/browse/gtk+/patch/?id=5f25687104f77aba310ac32c35d263f9d565d983',
+				# quartz: fix coordinates for synthesized event
+				'http://git.gnome.org/browse/gtk+/patch/?id=f91c525fe23a71abe389746bc5560bfe507ae5cb',
+				# quartz: properly handle the given hotspot position
+				'http://git.gnome.org/browse/gtk+/patch/?id=698aba575c506c81dc0f05b1224f94b54a83c5c4',
 
 				# attempt to work around 2158 - [GTK] crash triggering context menu
 				# also prints some warnings that may help to debug the real issue
-				'patches/gtk-bxc-2158-debugging.patch',
+				'https://bugzilla.xamarin.com/attachment.cgi?id=1644',
+
+				# Bug 2698 - [GTK] Clipboard gets cleared after closing Monodevelop
+				'https://bugzilla.xamarin.com/attachment.cgi?id=1722',
 
 				# Backport of gdk_screen_get_monitor_workarea
 				# Tooltip etc now honor menu and dock when positioning
