@@ -1,25 +1,22 @@
-class GlibPackage (GnomePackage):
+class GlibPackage (GnomeXzPackage):
 	def __init__ (self):
 		GnomePackage.__init__ (self,
 			'glib',
-			version_major = '2.28',
-			version_minor = '8')
+			version_major = '2.30',
+			version_minor = '3')
 
 		self.darwin = Package.profile.name == 'darwin'
-		self.macports_svn = 'http://svn.macports.org/repository/macports/trunk/dports/devel/glib2/files'
 
 		if Package.profile.name == 'darwin':
-			self.sources.extend (['%{macports_svn}/' + s for s in [
-				'config.h.ed',
-				'patch-configure.diff',
-				'patch-glib_gunicollate.c.diff',
-				'patch-gi18n.h.diff',
-				'patch-gio_xdgmime_xdgmime.c.diff',
-				# 'patch-gio_gdbusprivate.c.diff', # The latest version of patch targets v2.32
-			]])
+			#link to specific revisions for glib 2.30.x
 			self.sources.extend ([
+				'https://trac.macports.org/export/62644/trunk/dports/devel/glib2/files/config.h.ed',
+				'https://trac.macports.org/export/87503/trunk/dports/devel/glib2/files/patch-configure.diff',
+				'https://trac.macports.org/export/92347/trunk/dports/devel/glib2/files/patch-glib_gunicollate.c.diff',
+				'https://trac.macports.org/export/92347/trunk/dports/devel/glib2/files/patch-gi18n.h.diff',
+				'https://trac.macports.org/export/92347/trunk/dports/devel/glib2/files/patch-gio_xdgmime_xdgmime.c.diff',
+				'https://trac.macports.org/export/87469/trunk/dports/devel/glib2/files/patch-glib-2.0.pc.in.diff',
 				'https://trac.macports.org/export/87469/trunk/dports/devel/glib2/files/patch-gio_gdbusprivate.c.diff',
-				'patches/patch-glib-2.0.pc.in.diff',
 			])
 
 	def prep (self):

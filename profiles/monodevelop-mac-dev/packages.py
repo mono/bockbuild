@@ -24,6 +24,7 @@ class MonoDevelopMacDevPackages:
 			'fontconfig.py',
 			'pixman.py',
 			'cairo.py',
+			'libffi.py',
 			'glib.py',
 			'pango.py',
 			'atk.py',
