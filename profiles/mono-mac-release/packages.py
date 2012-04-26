@@ -26,7 +26,7 @@ class MonoReleasePackages:
 				'fontconfig.py',
 				'pixman.py',
 				'cairo.py',
-				'libffi.pg',
+				'libffi.py',
 				'glib.py',
 				'pango.py',
 				'atk.py',
