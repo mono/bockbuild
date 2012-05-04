@@ -42,6 +42,9 @@ class GtkPackage (GnomeXzPackage):
 				# Bug 2698 - [GTK] Clipboard gets cleared after closing Monodevelop
 				'https://bugzilla.xamarin.com/attachment.cgi?id=1722',
 
+				# Bug 4353 - [Crash] MonoDevelop 2.9.4 crashing randomly
+				'https://bugzilla.xamarin.com/attachment.cgi?id=1805',
+
 				# Backport of gdk_screen_get_monitor_workarea
 				# Tooltip etc now honor menu and dock when positioning
 				'patches/gtk-monitor-workarea.patch',
