@@ -3,7 +3,7 @@
 FW=/Library/Frameworks/Mono.framework
 FW_CURRENT=${FW}/Versions/Current
 
-WHITELIST=$(cat $(dirname $0)/whitelist.txt)
+WHITELIST=$(cat "$(dirname "$0")/whitelist.txt")
 
 if [ -d ${FW}/Commands ]; then
     for i in ${WHITELIST}; do

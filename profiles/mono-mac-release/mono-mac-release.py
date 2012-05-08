@@ -62,6 +62,7 @@ class MonoReleaseProfile (DarwinProfile, MonoReleasePackages):
 
 	def make_package_symlinks(self, root):
 		os.symlink (self.prefix, os.path.join (root, "Versions", "Current"))
+		currentlink = os.path.join (self.MONO_ROOT, "Versions", "Current")
 		links = [
 			("bin", "Commands"),
 			("include", "Headers"),
@@ -70,7 +71,7 @@ class MonoReleaseProfile (DarwinProfile, MonoReleasePackages):
 			(os.path.join ("lib", "libmono-2.0.dylib"), "Mono")
 		]
 		for srcname, destname in links:
-			src  = os.path.join (self.prefix, srcname)
+			src  = os.path.join (currentlink, srcname)
 			dest = os.path.join (root, destname)
 			if os.path.exists (dest):
 				os.unlink (dest)
