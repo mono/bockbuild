@@ -31,4 +31,17 @@ rm -rf share/themes/ThinIce
 rm -rf share/info
 rm -rf share/icons/gnome
 rm -rf share/icons/hicolor
+rm -rf share/gtk-doc
 rm -rf share/gettext/*.class
+rm -rf share/doc
+rm -rf share/emacs
+rm -rf share/strings
+rm -rf share/pixmaps
+rm -rf share/intltool
+rm -rf var/cache/fontconfig
+
+# we don't need any of the llvm executables except llc and opt
+rm -rf bin/bugpoint
+rm -rf bin/lli
+rm -rf bin/llvm-*
+rm -rf bin/macho-dump
