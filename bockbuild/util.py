@@ -65,7 +65,7 @@ def run_shell (cmd, print_cmd = False):
 	exit_code = os.waitpid (proc.pid, 0)[1]
 	if not exit_code == 0:
 		print
-		sys.exit ('ERROR: command exited with exit code %s: %s' % (exit_code, cmd))
+		raise Exception('ERROR: command exited with exit code %s: %s' % (exit_code, cmd))
 
 def backtick (cmd):
 	lines = []
