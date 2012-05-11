@@ -34,6 +34,10 @@ class GtkPackage (GnomeXzPackage):
 				'http://git.gnome.org/browse/gtk+/patch/?id=f91c525fe23a71abe389746bc5560bfe507ae5cb',
 				# quartz: properly handle the given hotspot position
 				'http://git.gnome.org/browse/gtk+/patch/?id=698aba575c506c81dc0f05b1224f94b54a83c5c4',
+				# quartz: handle yet another dead tilde variant
+				'http://git.gnome.org/browse/gtk+/patch/?id=b738cf85d9a77c4b4baa493278ea001f0c99264f',
+				# quartz: add a special case to GtkIMContextSimply for entering '"'
+				'http://git.gnome.org/browse/gtk+/patch/?id=71164e57b9b999f07a613806058ee87b9cbf882d',
 
 				# attempt to work around 2158 - [GTK] crash triggering context menu
 				# also prints some warnings that may help to debug the real issue
@@ -55,7 +59,6 @@ class GtkPackage (GnomeXzPackage):
 				'patches/gtk-embedded-nsview/0003-gdk-add-signal-GdkWindow-native-child-event.patch',
 				'patches/gtk-embedded-nsview/0004-tests-add-a-GtkEntry-to-testnsview-so-we-can-test-fo.patch',
 				'patches/gtk-embedded-nsview/0005-gtk-connect-to-GdkWindow-native-child-event-to-imple.patch',
-
 			])
 
 	def prep (self):
