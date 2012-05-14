@@ -38,16 +38,16 @@ class GtkPackage (GnomeXzPackage):
 				'http://git.gnome.org/browse/gtk+/patch/?id=b738cf85d9a77c4b4baa493278ea001f0c99264f',
 				# quartz: add a special case to GtkIMContextSimply for entering '"'
 				'http://git.gnome.org/browse/gtk+/patch/?id=71164e57b9b999f07a613806058ee87b9cbf882d',
+				# quartz: Ignore events from all mouse buttons past the resize boundary
+				'http://git.gnome.org/browse/gtk+/patch/?id=194d5544b4bc4499e6953fb57010bb6b6db5f60a',
+				# Implement _gtk_clipboard_store_all()
+				'http://git.gnome.org/browse/gtk+/patch/?id=eb831590cd9354bdcb9933ca9bfe531b12177473',
+				# quartz: Don't use compound text for selections
+				'http://git.gnome.org/browse/gtk+/patch/?id=43c9a702c708231b038ca072ef4738d5ea547ccf',
 
 				# attempt to work around 2158 - [GTK] crash triggering context menu
 				# also prints some warnings that may help to debug the real issue
 				'https://bugzilla.xamarin.com/attachment.cgi?id=1644',
-
-				# Bug 2698 - [GTK] Clipboard gets cleared after closing Monodevelop
-				'https://bugzilla.xamarin.com/attachment.cgi?id=1722',
-
-				# Bug 4353 - [Crash] MonoDevelop 2.9.4 crashing randomly
-				'https://bugzilla.xamarin.com/attachment.cgi?id=1805',
 
 				# Backport of gdk_screen_get_monitor_workarea
 				# Tooltip etc now honor menu and dock when positioning
