@@ -44,6 +44,8 @@ class GtkPackage (GnomeXzPackage):
 				'http://git.gnome.org/browse/gtk+/patch/?id=eb831590cd9354bdcb9933ca9bfe531b12177473',
 				# quartz: Don't use compound text for selections
 				'http://git.gnome.org/browse/gtk+/patch/?id=43c9a702c708231b038ca072ef4738d5ea547ccf',
+				# GtkTreeView: make tree expanding/collapsing more robust
+				'http://git.gnome.org/browse/gtk+/patch/?id=b32a9eb691920f21ad3b9127c833aaba15727c4b',
 
 				# attempt to work around 2158 - [GTK] crash triggering context menu
 				# also prints some warnings that may help to debug the real issue
