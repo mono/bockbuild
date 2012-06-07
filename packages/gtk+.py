@@ -67,6 +67,9 @@ class GtkPackage (GnomeXzPackage):
 
 				# Bug 4656 - Massive overdraw when scrolling in text editor
 				'https://bugzilla.xamarin.com/attachment.cgi?id=1858',
+
+				# 2157 - Context menus flaky near left edge of screen
+				'https://bugzilla.xamarin.com/attachment.cgi?id=2014',
 			])
 
 	def prep (self):
