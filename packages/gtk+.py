@@ -15,6 +15,9 @@ class GtkPackage (GnomeXzPackage):
 		if Package.profile.name == 'darwin':
 			self.gdk_target = 'quartz'
 			self.sources.extend ([
+				# Custom gtkrc
+				'patches/gtkrc',
+
 				# smooth scrolling, https://bugzilla.gnome.org/show_bug.cgi?id=516725
 				'http://bugzilla-attachments.gnome.org/attachment.cgi?id=201916',
 
@@ -75,7 +78,7 @@ class GtkPackage (GnomeXzPackage):
 	def prep (self):
 		Package.prep (self)
 		if Package.profile.name == 'darwin':
-			for p in range (1, len (self.sources)):
+			for p in range (2, len (self.sources)):
 				self.sh ('patch -p1 < "%{sources[' + str (p) + ']}"')
 
 	def install(self):
