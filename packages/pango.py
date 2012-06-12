@@ -3,7 +3,7 @@ class PangoPackage (GnomeXzPackage):
 		GnomePackage.__init__ (self,
 			'pango',
 			version_major = '1.30',
-			version_minor = '0',
+			version_minor = '1',
 			configure_flags = [
 				'--without-x'
 			]
@@ -19,10 +19,10 @@ class PangoPackage (GnomeXzPackage):
 			# revert git 0e091322, it requires unstable glib simply for some deprecation marker macros
 			'patches/pango-stable-glib.patch',
 
-			# Post-1.30.0 commits from git
+			# Post-1.30.1 commits from git
 
-			# Use same font family name fallback in pango_core_text_font_map_init
-			'http://git.gnome.org/browse/pango/patch/?id=216d03ba5023b247515e2adf5df658c0e4e90b3d',
+			# coretext: don't insert item in the hash if it originated from the hash
+			'http://git.gnome.org/browse/pango/patch/?id=70a85d441d973883af4afb57599bc570eeea4c83',
 		])
 
 	def prep (self):
