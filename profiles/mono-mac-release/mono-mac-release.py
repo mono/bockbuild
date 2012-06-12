@@ -1,4 +1,4 @@
-#!/usr/bin/python -B
+#!/usr/bin/python -B -u
 
 import fileinput, glob, os, pprint, re, sys, tempfile, shutil, string
 
