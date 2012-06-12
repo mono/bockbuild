@@ -49,6 +49,8 @@ class GtkPackage (GnomeXzPackage):
 				'http://git.gnome.org/browse/gtk+/patch/?id=43c9a702c708231b038ca072ef4738d5ea547ccf',
 				# GtkTreeView: make tree expanding/collapsing more robust
 				'http://git.gnome.org/browse/gtk+/patch/?id=b32a9eb691920f21ad3b9127c833aaba15727c4b',
+				# quartz: delay emission of EnterNotify until window position is known
+				'http://git.gnome.org/browse/gtk+/patch/?id=860499ce90a6f184181f2e7249871e2514c83e00',
 
 				# attempt to work around 2158 - [GTK] crash triggering context menu
 				# also prints some warnings that may help to debug the real issue
@@ -70,9 +72,6 @@ class GtkPackage (GnomeXzPackage):
 
 				# Bug 4656 - Massive overdraw when scrolling in text editor
 				'https://bugzilla.xamarin.com/attachment.cgi?id=1858',
-
-				# 2157 - Context menus flaky near left edge of screen
-				'https://bugzilla.xamarin.com/attachment.cgi?id=2014',
 			])
 
 	def prep (self):
