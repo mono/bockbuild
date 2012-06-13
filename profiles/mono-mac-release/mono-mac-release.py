@@ -54,8 +54,9 @@ class MonoReleaseProfile (DarwinProfile, MonoReleasePackages):
 				for line in c:
 					if re.search(r'</configuration>', line):
 						# Insert libgdiplus entries before the end of the file
-						output.write('\t<dllmap dll="gdiplus" target="%slibgdiplus.dylib" />\n' % lib)
-						output.write('\t<dllmap dll="gdiplus.dll" target="%slibgdiplus.dylib" />\n' % lib)
+						gdipluspath = os.path.join (lib, "libgdiplus.dylib")
+						output.write('\t<dllmap dll="gdiplus" target="%s" />\n' % gdipluspath)
+						output.write('\t<dllmap dll="gdiplus.dll" target="%s" />\n' % gdipluspath)
 					output.write(line)
 
 		os.rename(temp, config)
