@@ -5,7 +5,7 @@ class MurrinePackage (GnomeXzPackage):
 			version_major = '0.98',
 			version_minor = '2')
 
-		self.configure = 'autoreconf -fi && ./configure --prefix="%{prefix}"'
+		self.configure = './configure --prefix="%{prefix}"'
 
 		# FIXME: this may need porting
 		# self.sources.append ('patches/murrine-osx.patch')
