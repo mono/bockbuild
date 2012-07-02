@@ -1,4 +1,4 @@
-GstreamerPackage ('gstreamer', 'gst-plugins-ugly', '0.10.17', configure_flags = [
+GstreamerPackage ('gstreamer', 'gst-plugins-ugly', '0.10.19', configure_flags = [
 	' --disable-gtk-doc',
 	' --disable-asfdemux',
 	' --disable-dvdsub',
