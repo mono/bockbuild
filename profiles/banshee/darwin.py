@@ -21,15 +21,15 @@ class BansheeDarwinProfile (DarwinProfile, BansheePackages):
 			'bin/mono',
 			'lib/mono/2.0/gmcs.exe',
 			'lib/mono/gac/Mono.Addins.CecilReflector',
-			'bin/banshee-1',
-			'lib/banshee-1',
+			'bin/banshee',
+			'lib/banshee',
 			'lib/pango',
 			'lib/gtk-2.0/2.10.0/loaders',
 			'lib/gtk-2.0/2.10.0/engines',
 			'lib/gtk-2.0/2.10.0/immodules',
 			'lib/gdk-pixbuf-2.0/2.10.0/loaders',
 			'lib/gstreamer-0.10',
-			'share/banshee-1',
+			'share/banshee',
 			'share/locale',
 			'etc/mono/config',
 			'etc/mono/1.0/machine.config',
@@ -46,7 +46,7 @@ class BansheeDarwinProfile (DarwinProfile, BansheePackages):
 		])
 
 	def bundle (self):
-		banshee_path = os.path.join (self.prefix, 'lib', 'banshee-1')
+		banshee_path = os.path.join (self.prefix, 'lib', 'banshee')
 		os.environ['MONO_PATH'] = ':'.join ([
 			banshee_path,
 			os.path.join (banshee_path, 'Extensions'),
@@ -59,13 +59,12 @@ class BansheeDarwinProfile (DarwinProfile, BansheePackages):
 		import glob
 
 		bin_path = os.path.join (self.bundle_macos_dir, 'Banshee')
-		shutil.move (os.path.join (self.bundle_res_dir, 'bin', 'banshee-1'), bin_path)
+		shutil.move (os.path.join (self.bundle_res_dir, 'bin', 'banshee'), bin_path)
 		os.chmod (bin_path, 0755)
 
-		for nuke in [ 'NotificationArea', 'AudioCd', 'Dap',
-			'Dap.MassStorage', 'MiniMode' ]:
+		for nuke in [ 'NotificationArea', 'AudioCd', 'MiniMode' ]:
 			for path in glob.glob (os.path.join (self.bundle_res_dir,
-				'lib', 'banshee-1', 'Extensions', 'Banshee.%s*' % nuke)):
+				'lib', 'banshee', 'Extensions', 'Banshee.%s*' % nuke)):
 				os.unlink (path)
 
 BansheeDarwinProfile ().build ()
