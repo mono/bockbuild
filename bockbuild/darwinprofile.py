@@ -9,18 +9,23 @@ class DarwinProfile (UnixProfile):
 		UnixProfile.__init__ (self, prefix)
 		
 		self.name = 'darwin'
+		self.os_x_major = 10
+
 		sdkroot = '/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/'
 		if (not os.path.isdir (sdkroot)):
 			sdkroot = '/Developer/SDKs/'
 
 		if (os.path.isdir (sdkroot + 'MacOSX10.6.sdk')):
+			self.os_x_minor = 6
 			self.mac_sdk_path = sdkroot + 'MacOSX10.6.sdk'
 			self.gcc_flags.extend ([
 				'-D_XOPEN_SOURCE',
 				'-isysroot %{mac_sdk_path}',
 				'-mmacosx-version-min=10.6',
 			])
+			self.mac_sdk_path = sdkroot + 'MacOSX10.6.sdk'
 		elif (os.path.isdir (sdkroot + 'MacOSX10.7.sdk')):
+			self.os_x_minor = 7
 			self.mac_sdk_path = sdkroot + 'MacOSX10.7.sdk'
 			self.gcc_flags.extend ([
 				'-D_XOPEN_SOURCE',
