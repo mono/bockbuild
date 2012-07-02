@@ -5,7 +5,7 @@ from urllib import FancyURLopener
 from util.util import *
 
 class Package:
-	def __init__ (self, name, version, configure_flags = None, sources = None, source_dir_name = None, override_properties = None):
+	def __init__ (self, name, version, configure_flags = None, sources = None, source_dir_name = None, override_properties = None, configure = None):
 		Package.last_instance = self
 		
 		self._dirstack = []
@@ -29,7 +29,12 @@ class Package:
 			self.source_dir_name = '%{name}-%{version}'
 
 		self.prefix = Package.profile.prefix
-		self.configure = './configure --prefix="%{prefix}"'
+
+		if configure:
+			self.configure = configure
+		else:
+			self.configure = './configure --prefix="%{prefix}"'
+
 		self.make = 'make -j%s' % Package.profile.cpu_count
 		self.makeinstall = 'make install'
 		self.git = 'git'
