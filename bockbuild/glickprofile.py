@@ -1,7 +1,7 @@
 import os
 import shutil
 from plistlib import Plist
-from util import *
+from util.util import *
 from unixprofile import UnixProfile
 
 class GlickProfile (UnixProfile):

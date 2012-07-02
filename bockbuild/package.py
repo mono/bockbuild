@@ -2,7 +2,7 @@ import os
 import sys
 import shutil
 from urllib import FancyURLopener
-from util import *
+from util.util import *
 
 class Package:
 	def __init__ (self, name, version, configure_flags = None, sources = None, source_dir_name = None, override_properties = None):
