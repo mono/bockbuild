@@ -50,6 +50,9 @@ class Profile:
 		parser.add_option ('-s', '--only-sources',
 			action = 'store_true', dest = 'only_sources', default = False,
 			help = 'only fetch sources, do not run any build phases')
+		parser.add_option ('-d', '--debug', default = False,
+			action = 'store_true', dest = 'debug',
+			help = 'Build with debug flags enabled')
 		parser.add_option ('-e', '--environment', default = False,
 			action = 'store_true', dest = 'dump_environment',
 			help = 'Dump the profile environment as a shell-sourceable list of exports ')
