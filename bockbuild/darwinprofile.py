@@ -135,5 +135,10 @@ class DarwinProfile (UnixProfile):
 
 	def configure_gdk_pixbuf (self):
 		path = os.path.join (self.bundle_res_dir, 'etc', 'gtk-2.0', 'gdk-pixbuf.loaders.in')
+
+		# HACK solitary relocates some .dylib so that gdk-pixbuf-query-loaders will fail
+		# if not run from the build-root/_install/lib/ directory
+		os.chdir ('%s/lib/' % self.prefix)
+
 		run_shell ('gdk-pixbuf-query-loaders 2>/dev/null | ' + \
 			'sed \'s,%s,\\${APP_RESOURCES},g\' 1> "%s"' % (self.prefix, path))
