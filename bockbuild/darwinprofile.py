@@ -51,6 +51,10 @@ class DarwinProfile (UnixProfile):
 		self.env.set ('CC',  'gcc')
 		self.env.set ('CXX', 'g++')
 
+		# GTK2_RC_FILES must be a ":"-seperated list of files (NOT a single folder)
+		self.gtk2_rc_files = os.path.join (os.getcwd (), 'skeleton.darwin', 'Contents', 'Resources', 'etc', 'gtk-2.0', 'gtkrc')
+		self.env.set ('GTK2_RC_FILES', '%{gtk2_rc_files}')
+
 	def bundle (self):
 		self.make_app_bundle ()
 
