@@ -8,10 +8,12 @@ class BansheePackages:
 		# Toolchain
 		self.packages.extend ([
 			'autoconf.py',
+			'tar.py',
+			'xz.py',
 			'automake.py',
 			'libtool.py',
 			'gettext.py',
-			'pkg-config.py'
+			'pkg-config.py',
 		])
 
 		# Base Libraries
@@ -19,11 +21,14 @@ class BansheePackages:
 			'libpng.py',
 			'libjpeg.py',
 			'libxml2.py',
+			'libffi.py',
+			'libtiff.py',
 			'freetype.py',
 			'fontconfig.py',
 			'pixman.py',
 			'cairo.py',
 			'glib.py',
+			'libcroco.py',
 			'pango.py',
 			'atk.py',
 			'intltool.py',
@@ -32,18 +37,45 @@ class BansheePackages:
 			'gconf-dummy.py',
 			'libgpg-error.py',
 			'libgcrypt.py',
+			'gmp.py',
+			'nettle.py',
 			'gnutls.py',
 			'glib-networking.py',
 			'libsoup.py',
-			'sqlite.py'
+			'sqlite.py',
 		])
 
-		# WebKit
+		# banshee-community-extensions
+		self.packages.extend ([
+			# lastfm fingerprint
+			'fftw.py',
+			'libsamplerate.py',
+
+			# openvp (currently not working)
+			#'libopentk.py',
+			'libsdl.py',
+			'libglade.py',
+
+		])
+
+		# exclude package with possible patent/copyright issues
+		# when doing release builds
+		if not self.cmd_options.release_build:
+			self.packages.extend ([
+				# BCE streamrecorder
+				'lame.py',
+			])
+
+		# WebKit-gtk
+		# TODO on darwin currently fails on the build stage
+		# so don't include it on darwin for now
 		if not isinstance (self, DarwinProfile):
 			self.packages.extend ([
+		# WebKit-gtk dependencies
 				'gperf.py',
 				'enchant.py',
 				'libicu.py',
+				'zlib.py',
 				'webkit.py'
 			])
 
@@ -86,19 +118,20 @@ class BansheePackages:
 			'mono.py',
 			'gtk-sharp.py',
 			'mono-addins.py',
-			'ndesk-dbus.py',
-			'ndesk-dbus-glib.py',
+			'dbus-sharp.py',
+			'dbus-sharp-glib.py',
 			'taglib-sharp.py',
+			'mono-upnp.py',
 		])
 
 		if isinstance (self, DarwinProfile):
 			self.packages.extend ([
 				'monomac.py',
-				'ige-mac-integration.py'
+				'gtk-mac-integration.py'
 			])
 
 		if self.cmd_options.release_build:
-			self.packages.append ('banshee.py')
+			self.packages.append ('banshee-git.py')
 
 		self.packages = [os.path.join ('..', '..', 'packages', p)
 			for p in self.packages]

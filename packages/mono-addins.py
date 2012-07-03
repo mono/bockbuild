@@ -1,4 +1,5 @@
-GitHubTarballPackage ('mono', 'mono-addins', '0.6.1+84f77', '84f77c2298d3782e282d1d30855502939b0ec98e',
-	configure = './autogen.sh --prefix=%{prefix}',
-	override_properties = { 'make': 'make' }
+Package ('mono-addins', '0.6.2',
+	sources = [
+		'http://download.mono-project.com/sources/mono-addins/%{name}-%{version}.tar.bz2'
+	]
 )

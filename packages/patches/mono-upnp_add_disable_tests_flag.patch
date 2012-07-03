@@ -1,0 +1,65 @@
+From c6f9bab3cbf7f1a90a904f98dd05ee576fb82c14 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Timo=20D=C3=B6rr?= <timo@latecrew.de>
+Date: Mon, 25 Jun 2012 10:58:21 +0200
+Subject: [PATCH] Add --disable-tests flag to configure script
+
+By default, NUnit tests are still build but packagers (and builders on
+OS X) can specify --disable-tests to omit the check and thus won't need
+to install NUnit prior to building.
+---
+ Makefile.am  |   10 ++++++++--
+ configure.ac |   14 ++++++++++----
+ 2 files changed, 18 insertions(+), 6 deletions(-)
+
+diff --git a/Makefile.am b/Makefile.am
+index b304df6..fa210a9 100644
+--- a/Makefile.am
++++ b/Makefile.am
+@@ -5,10 +5,16 @@ EXTRA_DIST = \
+ 
+ #Warning: This is an automatically generated file, do not edit!
+ if ENABLE_DEBUG
+- SUBDIRS =  src/Mono.Ssdp/Mono.Ssdp src/Mono.Upnp src/Mono.Upnp.Dcp/Mono.Upnp.Dcp.MediaServer1 tests
++ SUBDIRS =  src/Mono.Ssdp/Mono.Ssdp src/Mono.Upnp src/Mono.Upnp.Dcp/Mono.Upnp.Dcp.MediaServer1 
++if ENABLE_TESTS
++ SUBDIRS +=  tests
++endif
+ endif
+ if ENABLE_RELEASE
+- SUBDIRS =  src/Mono.Ssdp/Mono.Ssdp src/Mono.Upnp src/Mono.Upnp.Dcp/Mono.Upnp.Dcp.MediaServer1 tests
++ SUBDIRS =  src/Mono.Ssdp/Mono.Ssdp src/Mono.Upnp src/Mono.Upnp.Dcp/Mono.Upnp.Dcp.MediaServer1
++if ENABLE_TESTS
++ SUBDIRS +=  tests
++endif
+ endif
+ 
+ .PHONY: test
+diff --git a/configure.ac b/configure.ac
+index 9040d51..fbf0217 100644
+--- a/configure.ac
++++ b/configure.ac
+@@ -51,11 +51,17 @@ PKG_CHECK_MODULES([GLIB_SHARP_20], [glib-sharp-2.0])
+ PKG_CHECK_MODULES([GLADE_SHARP_20], [glade-sharp-2.0])
+ PKG_CHECK_MODULES([MONO_ADDINS], [mono-addins])
+ PKG_CHECK_MODULES([TAGLIB_SHARP], [taglib-sharp])
+-PKG_CHECK_MODULES([NUNIT], [nunit])
+-
+-AC_PATH_PROG(NUNIT_CMD, nunit-console2, nunit-console)
+-AC_SUBST(NUNIT_CMD)
+ 
++AC_ARG_ENABLE(tests,
++	AC_HELP_STRING([--enable-tests],
++		[Build nunit tests [default=YES]]),
++		[], enable_tests=yes)
++	AM_CONDITIONAL(ENABLE_TESTS, test x$enable_tests = xyes)
++	if test "x$enable_tests" = "xyes" ; then
++		PKG_CHECK_MODULES([NUNIT], [nunit])
++		AC_PATH_PROG(NUNIT_CMD, nunit-console2, nunit-console)
++		AC_SUBST(NUNIT_CMD)
++	fi
+ 
+ AC_CONFIG_FILES([
+ src/Mono.Ssdp/Mono.Ssdp/mono.ssdp.pc
+-- 
+1.7.7.5 (Apple Git-26)
+

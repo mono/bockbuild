@@ -1,5 +1,6 @@
 import os
-from util import *
+from util.util import *
+from util.csproj import *
 from collections import deque
 
 class EnvironmentItem:
@@ -38,6 +39,14 @@ class Environment:
 		print
 		for k in self.get_names ():
 			print 'export %s="%s"' % (k, self.__dict__[k])
+
+	def dump_csproj (self):
+		for k in self.get_names ():
+			print '<Variable name="%s" value="%s" />' % (k, self.__dict__[k])
+
+	def write_csproj (self, file):
+		writer = csproj_writer (file, self)
+		writer.write ()
 
 	def export (self):
 		for k in self.get_names ():

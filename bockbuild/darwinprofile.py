@@ -1,7 +1,7 @@
 import os
 import shutil
 from plistlib import Plist
-from util import *
+from util.util import *
 from unixprofile import UnixProfile
 
 class DarwinProfile (UnixProfile):
@@ -9,18 +9,23 @@ class DarwinProfile (UnixProfile):
 		UnixProfile.__init__ (self, prefix)
 		
 		self.name = 'darwin'
+		self.os_x_major = 10
+
 		sdkroot = '/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/'
 		if (not os.path.isdir (sdkroot)):
 			sdkroot = '/Developer/SDKs/'
 
 		if (os.path.isdir (sdkroot + 'MacOSX10.6.sdk')):
+			self.os_x_minor = 6
 			self.mac_sdk_path = sdkroot + 'MacOSX10.6.sdk'
 			self.gcc_flags.extend ([
 				'-D_XOPEN_SOURCE',
 				'-isysroot %{mac_sdk_path}',
 				'-mmacosx-version-min=10.6',
 			])
+			self.mac_sdk_path = sdkroot + 'MacOSX10.6.sdk'
 		elif (os.path.isdir (sdkroot + 'MacOSX10.7.sdk')):
+			self.os_x_minor = 7
 			self.mac_sdk_path = sdkroot + 'MacOSX10.7.sdk'
 			self.gcc_flags.extend ([
 				'-D_XOPEN_SOURCE',
@@ -31,7 +36,11 @@ class DarwinProfile (UnixProfile):
 			raise IOError ('Mac OS X SDKs 10.6 and 10.7 not found')
 
 		self.gcc_arch_flags = [ '-m32', '-arch i386' ]
+		self.gcc_debug_flags = [ '-O0', '-ggdb3' ]
 		
+		if self.cmd_options.debug is True:
+			self.gcc_flags.extend (self.gcc_debug_flags)
+
 		self.gcc_flags.extend (self.gcc_arch_flags)
 		self.ld_flags.extend (self.gcc_arch_flags)
 
@@ -41,6 +50,10 @@ class DarwinProfile (UnixProfile):
 		#else:
 		self.env.set ('CC',  'gcc')
 		self.env.set ('CXX', 'g++')
+
+		# GTK2_RC_FILES must be a ":"-seperated list of files (NOT a single folder)
+		self.gtk2_rc_files = os.path.join (os.getcwd (), 'skeleton.darwin', 'Contents', 'Resources', 'etc', 'gtk-2.0', 'gtkrc')
+		self.env.set ('GTK2_RC_FILES', '%{gtk2_rc_files}')
 
 	def bundle (self):
 		self.make_app_bundle ()
@@ -122,5 +135,10 @@ class DarwinProfile (UnixProfile):
 
 	def configure_gdk_pixbuf (self):
 		path = os.path.join (self.bundle_res_dir, 'etc', 'gtk-2.0', 'gdk-pixbuf.loaders.in')
+
+		# HACK solitary relocates some .dylib so that gdk-pixbuf-query-loaders will fail
+		# if not run from the build-root/_install/lib/ directory
+		os.chdir ('%s/lib/' % self.prefix)
+
 		run_shell ('gdk-pixbuf-query-loaders 2>/dev/null | ' + \
 			'sed \'s,%s,\\${APP_RESOURCES},g\' 1> "%s"' % (self.prefix, path))

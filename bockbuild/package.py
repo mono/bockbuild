@@ -2,10 +2,10 @@ import os
 import sys
 import shutil
 from urllib import FancyURLopener
-from util import *
+from util.util import *
 
 class Package:
-	def __init__ (self, name, version, configure_flags = None, sources = None, source_dir_name = None, override_properties = None):
+	def __init__ (self, name, version, configure_flags = None, sources = None, source_dir_name = None, override_properties = None, configure = None):
 		Package.last_instance = self
 		
 		self._dirstack = []
@@ -29,10 +29,16 @@ class Package:
 			self.source_dir_name = '%{name}-%{version}'
 
 		self.prefix = Package.profile.prefix
-		self.configure = './configure --prefix="%{prefix}"'
+
+		if configure:
+			self.configure = configure
+		else:
+			self.configure = './configure --prefix="%{prefix}"'
+
 		self.make = 'make -j%s' % Package.profile.cpu_count
 		self.makeinstall = 'make install'
 		self.git = 'git'
+		self.git_branch = 'master'
 		for git in ['/usr/bin/git', '/usr/local/bin/git', '/usr/local/git/bin/git']:
 			if os.path.isfile (git):
 				self.git = git
@@ -64,7 +70,7 @@ class Package:
 			elif source.startswith (('http://', 'https://', 'ftp://')):
 				log (1, 'downloading remote source: %s' % source)
 				FancyURLopener ().retrieve (source, local_dest_file)
-			elif source.startswith ('git://'):
+			elif source.startswith (('git://','file://')):
 				log (1, 'cloning or updating git repository: %s' % source)
 				local_dest_file = os.path.join (package_dest_dir,
 					'%s-%s.git' % (self.name, self.version))
@@ -84,7 +90,7 @@ class Package:
 				if not checkout_exists:
 					self.cd (os.path.dirname (local_dest_file))
 					shutil.rmtree (local_dest_file, ignore_errors = True)
-					self.sh ('%' + '{git} clone "%s" "%s"' % (source, os.path.basename (local_dest_file)))
+					self.sh ('%' + '{git} clone -b %s "%s" "%s"' % (self.git_branch, source, os.path.basename (local_dest_file)))
 				revision = os.getenv('BUILD_REVISION')
 				if revision != None:
 					self.cd (local_dest_file)
@@ -235,6 +241,11 @@ GnuPackage.default_sources = [
 class GnuBz2Package (Package): pass
 GnuBz2Package.default_sources = [
 	'http://ftp.gnu.org/gnu/%{name}/%{name}-%{version}.tar.bz2'
+]
+
+class GnuXzPackage (Package): pass
+GnuXzPackage.default_sources = [
+        'http://ftp.gnu.org/gnu/%{name}/%{name}-%{version}.tar.xz'
 ]
 
 class CairoGraphicsPackage (Package): pass
