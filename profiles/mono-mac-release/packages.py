@@ -41,6 +41,7 @@ class MonoReleasePackages:
 
 		# # Theme
 		self.packages.extend([
+				'libcroco.py',
 				'librsvg.py',
 				'hicolor-icon-theme.py',
 				'gtk-engines.py',
