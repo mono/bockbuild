@@ -69,6 +69,15 @@ diff -urNp a/gtk/Makefile.in b/gtk/Makefile.in
  	gtksearchenginequartz.c gtkplug-stub.c gtksocket-stub.c
  @USE_QUARTZ_FALSE@am__objects_1 = gtkclipboard.lo gtkdnd.lo
  @USE_QUARTZ_TRUE@am__objects_1 = gtkclipboard-quartz.lo \
+@@ -298,7 +298,7 @@
+ am__objects_9 = gtkplug-win32.lo gtksocket-win32.lo gtkwin32embed.lo \
+ 	gtkwin32embedwidget.lo gtkmountoperation-stub.lo
+ @USE_WIN32_TRUE@@USE_X11_FALSE@am__objects_10 = $(am__objects_9)
+-am__objects_11 = gtksearchenginequartz.lo gtkplug-stub.lo \
++am__objects_11 = gtknsview.lo gtksearchenginequartz.lo gtkplug-stub.lo \
+ 	gtksocket-stub.lo gtkmountoperation-stub.lo
+ @USE_QUARTZ_TRUE@@USE_WIN32_FALSE@@USE_X11_FALSE@am__objects_12 = $(am__objects_11)
+ am__objects_13 = gtkplug-stub.lo gtksocket-stub.lo \
 @@ -395,7 +396,7 @@ am__libgtk_quartz_2_0_la_SOURCES_DIST = 
  	gtkprintoperation-win32.c gtkplug-x11.c gtksocket-x11.c \
  	gtkxembed.c gtktrayicon-x11.c gtkmountoperation-x11.c \
@@ -78,6 +87,15 @@ diff -urNp a/gtk/Makefile.in b/gtk/Makefile.in
  	gtksearchenginequartz.c gtkplug-stub.c gtksocket-stub.c
  @USE_QUARTZ_FALSE@am__objects_16 =  \
  @USE_QUARTZ_FALSE@	libgtk_quartz_2_0_la-gtkclipboard.lo \
+@@ -670,7 +670,7 @@
+ 	libgtk_quartz_2_0_la-gtkwin32embedwidget.lo \
+ 	libgtk_quartz_2_0_la-gtkmountoperation-stub.lo
+ @USE_WIN32_TRUE@@USE_X11_FALSE@am__objects_25 = $(am__objects_24)
+-am__objects_26 = libgtk_quartz_2_0_la-gtksearchenginequartz.lo \
++am__objects_26 = libgtk_quartz_2_0_la-gtknsview.lo libgtk_quartz_2_0_la-gtksearchenginequartz.lo \
+ 	libgtk_quartz_2_0_la-gtkplug-stub.lo \
+ 	libgtk_quartz_2_0_la-gtksocket-stub.lo \
+ 	libgtk_quartz_2_0_la-gtkmountoperation-stub.lo
 @@ -767,7 +768,7 @@ am__libgtk_win32_2_0_la_SOURCES_DIST = g
  	gtkprintoperation-win32.c gtkplug-x11.c gtksocket-x11.c \
  	gtkxembed.c gtktrayicon-x11.c gtkmountoperation-x11.c \
@@ -169,6 +187,22 @@ diff -urNp a/gtk/Makefile.in b/gtk/Makefile.in
  
  # Workaround for UAC silliness: programs with "update" in their name
  # are believed to be installers and require elevated privileges to be
+@@ -2209,6 +2209,7 @@
+ @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/gtkmountoperation-stub.Plo@am__quote@
+ @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/gtkmountoperation-x11.Plo@am__quote@
+ @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/gtkmountoperation.Plo@am__quote@
++@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/gtknsview.Plo@am__quote@
+ @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/gtknotebook.Plo@am__quote@
+ @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/gtkobject.Plo@am__quote@
+ @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/gtkoffscreenwindow.Plo@am__quote@
+@@ -2480,6 +2481,7 @@
+ @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libgtk_quartz_2_0_la-gtkmountoperation-stub.Plo@am__quote@
+ @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libgtk_quartz_2_0_la-gtkmountoperation-x11.Plo@am__quote@
+ @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libgtk_quartz_2_0_la-gtkmountoperation.Plo@am__quote@
++@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libgtk_quartz_2_0_la-gtknsview.Plo@am__quote@
+ @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libgtk_quartz_2_0_la-gtknotebook.Plo@am__quote@
+ @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libgtk_quartz_2_0_la-gtkobject.Plo@am__quote@
+ @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libgtk_quartz_2_0_la-gtkoffscreenwindow.Plo@am__quote@
 @@ -4522,6 +4524,14 @@ libgtk_quartz_2_0_la-gtkmountoperation-s
  @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
  @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libgtk_quartz_2_0_la_CFLAGS) $(CFLAGS) -c -o libgtk_quartz_2_0_la-gtkmountoperation-stub.lo `test -f 'gtkmountoperation-stub.c' || echo '$(srcdir)/'`gtkmountoperation-stub.c
