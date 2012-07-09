@@ -5,7 +5,7 @@ import fileinput, glob, os, pprint, re, sys, tempfile, shutil, string
 sys.path.append ('../..')
 
 from bockbuild.darwinprofile import DarwinProfile
-from bockbuild.util import *
+from bockbuild.util.util import *
 from packages import MonoReleasePackages
 
 class MonoReleaseProfile (DarwinProfile, MonoReleasePackages):
