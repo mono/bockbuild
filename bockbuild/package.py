@@ -70,7 +70,7 @@ class Package:
 			elif source.startswith (('http://', 'https://', 'ftp://')):
 				log (1, 'downloading remote source: %s' % source)
 				FancyURLopener ().retrieve (source, local_dest_file)
-			elif source.startswith (('git://','file://')):
+			elif source.startswith (('git://','file://', 'ssh://')) or source.endswith ('.git'):
 				log (1, 'cloning or updating git repository: %s' % source)
 				local_dest_file = os.path.join (package_dest_dir,
 					'%s-%s.git' % (self.name, self.version))
