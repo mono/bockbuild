@@ -36,6 +36,7 @@ class MonoDevelopMacDevPackages:
 
 		# Theme
 		self.packages.extend ([
+			'libcroco.py',
 			'librsvg.py',
 			'hicolor-icon-theme.py',
 			'gtk-engines.py',
