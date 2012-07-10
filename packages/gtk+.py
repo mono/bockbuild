@@ -72,6 +72,9 @@ class GtkPackage (GnomeXzPackage):
 
 				# Bug 4656 - Massive overdraw when scrolling in text editor
 				'https://bugzilla.xamarin.com/attachment.cgi?id=1858',
+
+				# Bug 2158 - [GTK] crash in find_window_for_ns_event
+				'https://bugzilla.xamarin.com/attachment.cgi?id=2182',
 			])
 
 	def prep (self):
