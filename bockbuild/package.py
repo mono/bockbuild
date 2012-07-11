@@ -250,7 +250,7 @@ GnuXzPackage.default_sources = [
 
 class CairoGraphicsPackage (Package): pass
 CairoGraphicsPackage.default_sources = [
-	'http://cairographics.org/releases/%{name}-%{version}.tar.gz'
+	'http://cairographics.org/releases/%{name}-%{version}.tar.xz'
 ]
 
 class ProjectPackage (Package):
