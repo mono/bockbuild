@@ -1,4 +1,4 @@
-class CairoPackage (CairoGraphicsPackage):
+class CairoPackage (CairoGraphicsXzPackage):
 	def __init__ (self):
 		Package.__init__ (self, 'cairo', '1.12.2')
 	def build (self):
