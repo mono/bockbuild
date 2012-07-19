@@ -78,6 +78,9 @@ class GtkPackage (GnomeXzPackage):
 
 				# Bug 6156 - [gtk] Quitting the application with unsaved file and answering Cancel results in crash
 				'https://bugzilla.xamarin.com/attachment.cgi?id=2214',
+
+				# Bug 4470 - Word Selection failures when computer uptime exceeds 2^32 ms
+				'https://bugzilla.xamarin.com/attachment.cgi?id=2233',
 			])
 
 	def prep (self):
