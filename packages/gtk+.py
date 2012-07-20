@@ -81,6 +81,9 @@ class GtkPackage (GnomeXzPackage):
 
 				# Bug 4470 - Word Selection failures when computer uptime exceeds 2^32 ms
 				'https://bugzilla.xamarin.com/attachment.cgi?id=2233',
+
+				# Bug 3457 - [GTK] Support more standard keyboard shortcuts in dialogs
+				'https://bugzilla.xamarin.com/attachment.cgi?id=2240',
 			])
 
 	def prep (self):
