@@ -2,7 +2,7 @@ class GtkPackage (GnomeXzPackage):
 	def __init__ (self):
 		GnomeXzPackage.__init__ (self, 'gtk+',
 			version_major = '2.24',
-			version_minor = '10',
+			version_minor = '11',
 			configure_flags = [
 				'--with-gdktarget=%{gdk_target}',
 				'--prefix="%{prefix}"'
@@ -23,34 +23,6 @@ class GtkPackage (GnomeXzPackage):
 
 				# make new modifier behviour opt-in, so as not to break old versions of MonoDevelop
 				'patches/gdk-quartz-set-fix-modifiers-hack-v3.patch',
-
-				# post-2.24.10 commits
-				# quartz: make function keys work (again?)
-				'http://git.gnome.org/browse/gtk+/patch/?id=0b24f16241f563b71c0c827bbb760a72df892b6a',
-				# quartz: remove excess initializers in the new modifier_keys array
-				'http://git.gnome.org/browse/gtk+/patch/?id=dca75f3b938d3744ec493466d26e0cfb024326aa',
-				# Export break_all_grabs() within Quartz backend
-				'http://git.gnome.org/browse/gtk+/patch/?id=ac4f3be6a5a6672708af8fe732b932fd1e1d8beb',
-				# [quartz] Fix manual resizing of windows
-				'http://git.gnome.org/browse/gtk+/patch/?id=5f25687104f77aba310ac32c35d263f9d565d983',
-				# quartz: fix coordinates for synthesized event
-				'http://git.gnome.org/browse/gtk+/patch/?id=f91c525fe23a71abe389746bc5560bfe507ae5cb',
-				# quartz: properly handle the given hotspot position
-				'http://git.gnome.org/browse/gtk+/patch/?id=698aba575c506c81dc0f05b1224f94b54a83c5c4',
-				# quartz: handle yet another dead tilde variant
-				'http://git.gnome.org/browse/gtk+/patch/?id=b738cf85d9a77c4b4baa493278ea001f0c99264f',
-				# quartz: add a special case to GtkIMContextSimply for entering '"'
-				'http://git.gnome.org/browse/gtk+/patch/?id=71164e57b9b999f07a613806058ee87b9cbf882d',
-				# quartz: Ignore events from all mouse buttons past the resize boundary
-				'http://git.gnome.org/browse/gtk+/patch/?id=194d5544b4bc4499e6953fb57010bb6b6db5f60a',
-				# Implement _gtk_clipboard_store_all()
-				'http://git.gnome.org/browse/gtk+/patch/?id=eb831590cd9354bdcb9933ca9bfe531b12177473',
-				# quartz: Don't use compound text for selections
-				'http://git.gnome.org/browse/gtk+/patch/?id=43c9a702c708231b038ca072ef4738d5ea547ccf',
-				# GtkTreeView: make tree expanding/collapsing more robust
-				'http://git.gnome.org/browse/gtk+/patch/?id=b32a9eb691920f21ad3b9127c833aaba15727c4b',
-				# quartz: delay emission of EnterNotify until window position is known
-				'http://git.gnome.org/browse/gtk+/patch/?id=860499ce90a6f184181f2e7249871e2514c83e00',
 
 				# attempt to work around 2158 - [GTK] crash triggering context menu
 				# also prints some warnings that may help to debug the real issue
