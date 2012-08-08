@@ -24,4 +24,4 @@ class MonoTwoTenPackage(Package):
 	def install(self):
 		Package.install(self)
 
-MonoMasterPackage()
+MonoTwoTenPackage()
