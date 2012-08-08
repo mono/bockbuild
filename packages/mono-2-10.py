@@ -1,7 +1,7 @@
 class MonoTwoTenPackage(Package):
 
 	def __init__(self):
-		Package.__init__(self, 'mono', '2.10',
+		Package.__init__(self, 'mono', '2.10.10',
 			sources = ['git://github.com/mono/mono'],
 			configure_flags = [
 				'--enable-nls=no',
