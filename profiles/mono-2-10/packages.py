@@ -52,7 +52,7 @@ class MonoReleasePackages:
 		self.packages.extend([
 				'mono-llvm-2-10.py',
 				'mono-2-10.py',
-				'libgdiplus.py',
+				'libgdiplus-2-10.py',
 				'xsp.py',
 				'gtk-sharp-2.12-release.py',
 				'boo.py',

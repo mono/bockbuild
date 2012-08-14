@@ -7,7 +7,7 @@ from util.util import *
 class Package:
 	def __init__ (self, name, version, configure_flags = None, sources = None, source_dir_name = None, override_properties = None, configure = None):
 		Package.last_instance = self
-		
+
 		self._dirstack = []
 
 		self.name = name
@@ -61,7 +61,7 @@ class Package:
 			local_source_file = os.path.basename (local_source)
 			local_dest_file = os.path.join (package_dest_dir, local_source_file)
 			local_sources.append (local_dest_file)
-			
+
 			if os.path.isfile (local_dest_file):
 				log (1, 'using cached source: %s' % local_dest_file)
 			elif os.path.isfile (local_source):
@@ -110,7 +110,7 @@ class Package:
 
 	def start_build (self):
 		Package.last_instance = None
-		
+
 		expand_macros (self, self)
 
 		profile = Package.profile
@@ -191,7 +191,7 @@ class Package:
 			else:
 				self.sh ('%{tar} xf "%{sources[0]}"')
 			self.cd ('%{source_dir_name}')
-	
+
 	def build (self):
 		if self.sources == None:
 			log (1, '<skipping - no sources defined>')
@@ -214,10 +214,10 @@ Package.default_sources = None
 class GnomePackage (Package):
 	def __init__ (self, name, version_major = '0', version_minor = '0',
 		configure_flags = None, sources = None, override_properties = None):
-		
+
 		self.version_major = version_major
 		self.version_minor = version_minor
-		
+
 		Package.__init__ (self, name, '%{version_major}.%{version_minor}',
 			configure_flags = configure_flags,
 			sources = sources,
