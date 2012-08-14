@@ -41,6 +41,6 @@ class GlibPackage (GnomeXzPackage):
 		Package.install (self)
 		if self.darwin:
 			# FIXME: necessary?
-			self.sh ('rm %{prefix}/lib/charset.alias')
+			self.sh ('rm -f %{prefix}/lib/charset.alias')
 
 GlibPackage ()
