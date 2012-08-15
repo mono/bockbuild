@@ -60,7 +60,7 @@ class MonoReleasePackages:
 				'ironlangs.py',
 				'fsharp.py',
 				'mono-addins.py',
-				'mono-basic-2-10.py',
+				# 'mono-basic-2-10.py',
 				])
 
 		self.packages = [os.path.join('..', '..', 'packages', p) for p in self.packages]
