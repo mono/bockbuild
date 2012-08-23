@@ -41,7 +41,8 @@ class MonoDevelopMacDevPackages:
 			'hicolor-icon-theme.py',
 			'gtk-engines.py',
 			'murrine.py',
-			'gtk-quartz-engine.py'
+			'gtk-quartz-engine.py',
+			'xamarin-gtk-theme.py',
 		])
 
 		# Mono

@@ -45,6 +45,8 @@ class MonoReleasePackages:
 				'librsvg.py',
 				'hicolor-icon-theme.py',
 				'gtk-engines.py',
+				'murrine.py',
+				'xamarin-gtk-theme.py',
 				# 'gtk-quartz-engine.py'
 				])
 
