@@ -30,6 +30,10 @@ class GtkPackage (GnomeXzPackage):
 				'patches/gtk-scrolling/0009-gtk-initial-event-handling-to-GtkScrolledWindow-s-ov.patch',
 				'patches/gtk-scrolling/0010-gtk-implement-clicking-on-the-scrollbars-but-not-on-.patch',
 				'patches/gtk-scrolling/0011-fix-makefiles.patch',
+				#round 2
+				'patches/gtk-scrolling/0001-Implement-gtk-enable-overlay-scrollbars-GtkSetting.patch',
+				'patches/gtk-scrolling/0002-Use-gtk-enable-overlay-scrollbars-in-GtkScrolledWind.patch',
+				'patches/gtk-scrolling/0003-gtk-correctly-handle-toggling-of-the-scrollbar-visib.patch',
 
 				# make new modifier behviour opt-in, so as not to break old versions of MonoDevelop
 				'patches/gdk-quartz-set-fix-modifiers-hack-v3.patch',
