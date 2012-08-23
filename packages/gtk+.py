@@ -18,8 +18,18 @@ class GtkPackage (GnomeXzPackage):
 				# Custom gtkrc
 				'patches/gtkrc',
 
-				# smooth scrolling, https://bugzilla.gnome.org/show_bug.cgi?id=516725
-				'http://bugzilla-attachments.gnome.org/attachment.cgi?id=201916',
+				# smooth scrolling, scrollbars, overscroll
+				'patches/gtk-scrolling/0001-Smooth-scrolling.patch',
+				'patches/gtk-scrolling/0002-gtk-Add-a-way-to-do-event-capture.patch',
+				'patches/gtk-scrolling/0003-scrolledwindow-Kinetic-scrolling-support.patch',
+				'patches/gtk-scrolling/0004-gtk-paint-only-the-exposed-region-in-gdk_window_expo.patch',
+				'patches/gtk-scrolling/0005-GtkScrolledWindow-add-overlay-scrollbars.patch',
+				'patches/gtk-scrolling/0006-gtk-paint-to-the-right-windows-in-gtk_scrolled_windo.patch',
+				'patches/gtk-scrolling/0007-gtk-move-overlay-scrollbar-rectangle-calculation-to-.patch',
+				'patches/gtk-scrolling/0008-gtk-add-drawing-of-the-scrollbar-s-background.patch',
+				'patches/gtk-scrolling/0009-gtk-initial-event-handling-to-GtkScrolledWindow-s-ov.patch',
+				'patches/gtk-scrolling/0010-gtk-implement-clicking-on-the-scrollbars-but-not-on-.patch',
+				'patches/gtk-scrolling/0011-fix-makefiles.patch',
 
 				# make new modifier behviour opt-in, so as not to break old versions of MonoDevelop
 				'patches/gdk-quartz-set-fix-modifiers-hack-v3.patch',
@@ -40,10 +50,7 @@ class GtkPackage (GnomeXzPackage):
 				'patches/gtk-embedded-nsview/0005-gtk-connect-to-GdkWindow-native-child-event-to-imple.patch',
 
 				# Zoom, rotate, swipe events
-				'https://bugzilla.xamarin.com/attachment.cgi?id=1965',
-
-				# Bug 4656 - Massive overdraw when scrolling in text editor
-				'https://bugzilla.xamarin.com/attachment.cgi?id=1858',
+				'patches/gtk-gestures.patch',
 
 				# Bug 2158 - [GTK] crash in find_window_for_ns_event
 				'https://bugzilla.xamarin.com/attachment.cgi?id=2182',

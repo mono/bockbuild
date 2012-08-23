@@ -1,0 +1,180 @@
+From 0650e4bbef362828ec0a4ccd950175dfea5d50dd Mon Sep 17 00:00:00 2001
+From: Michael Natterer <mitch@gimp.org>
+Date: Thu, 14 Jun 2012 16:40:38 +0200
+Subject: [PATCH 08/10] gtk: add drawing of the scrollbar's background
+
+---
+ gtk/gtkscrolledwindow.c |  103 +++++++++++++++++++++++++++++++++++++----------
+ 1 files changed, 82 insertions(+), 21 deletions(-)
+
+diff --git a/gtk/gtkscrolledwindow.c b/gtk/gtkscrolledwindow.c
+index a1e1893..4ff4fbf 100644
+--- a/gtk/gtkscrolledwindow.c
++++ b/gtk/gtkscrolledwindow.c
+@@ -3062,7 +3062,9 @@ static void
+ gtk_scrolled_window_get_child_scroll_areas (GtkScrolledWindow *scrolled_window,
+                                             GtkWidget         *child,
+                                             GdkWindow         *child_window,
++                                            GdkRectangle      *vbar_rect,
+                                             GdkRectangle      *vslider_rect,
++                                            GdkRectangle      *hbar_rect,
+                                             GdkRectangle      *hslider_rect)
+ {
+    GtkScrolledWindowPrivate *priv = GTK_SCROLLED_WINDOW_GET_PRIVATE (scrolled_window);
+@@ -3105,7 +3107,7 @@ gtk_scrolled_window_get_child_scroll_areas (GtkScrolledWindow *scrolled_window,
+        value_h = gtk_adjustment_get_value (adj);
+      }
+ 
+-   if (vslider_rect && scrolled_window->vscrollbar)
++   if ((vbar_rect || vslider_rect) && scrolled_window->vscrollbar)
+      {
+        adj = gtk_range_get_adjustment (GTK_RANGE (scrolled_window->vscrollbar));
+ 
+@@ -3132,21 +3134,43 @@ gtk_scrolled_window_get_child_scroll_areas (GtkScrolledWindow *scrolled_window,
+            if (window_height > allocation.height)
+              y += value_v;
+ 
+-           vslider_rect->x = x;
+-           vslider_rect->y = y;
+-           vslider_rect->width = priv->sb_width;
+-           vslider_rect->height = height;
++           if (vbar_rect)
++             {
++               vbar_rect->x = x - priv->sb_padding;
++               vbar_rect->y = 0;
++               vbar_rect->width = priv->sb_width + 2 * priv->sb_padding;
++               vbar_rect->height = viewport_height;
++             }
++
++           if (vslider_rect)
++             {
++               vslider_rect->x = x;
++               vslider_rect->y = y;
++               vslider_rect->width = priv->sb_width;
++               vslider_rect->height = height;
++             }
+          }
+        else
+          {
+-           vslider_rect->x = 0;
+-           vslider_rect->y = 0;
+-           vslider_rect->width = 0;
+-           vslider_rect->height = 0;
++           if (vbar_rect)
++             {
++               vbar_rect->x = 0;
++               vbar_rect->y = 0;
++               vbar_rect->width = 0;
++               vbar_rect->height = 0;
++             }
++
++           if (vslider_rect)
++             {
++               vslider_rect->x = 0;
++               vslider_rect->y = 0;
++               vslider_rect->width = 0;
++               vslider_rect->height = 0;
++             }
+          }
+      }
+ 
+-   if (hslider_rect && scrolled_window->hscrollbar)
++   if ((hbar_rect || hslider_rect) && scrolled_window->hscrollbar)
+      {
+        adj = gtk_range_get_adjustment (GTK_RANGE (scrolled_window->hscrollbar));
+ 
+@@ -3173,17 +3197,39 @@ gtk_scrolled_window_get_child_scroll_areas (GtkScrolledWindow *scrolled_window,
+            if (window_height > allocation.height)
+              y += value_v;
+ 
+-           hslider_rect->x = x;
+-           hslider_rect->y = y;
+-           hslider_rect->width = width;
+-           hslider_rect->height = priv->sb_width;
++           if (hbar_rect)
++             {
++               hbar_rect->x = 0;
++               hbar_rect->y = y - priv->sb_padding;
++               hbar_rect->width = viewport_width;
++               hbar_rect->height = priv->sb_width + 2 * priv->sb_padding;
++             }
++
++           if (hslider_rect)
++             {
++               hslider_rect->x = x;
++               hslider_rect->y = y;
++               hslider_rect->width = width;
++               hslider_rect->height = priv->sb_width;
++             }
+          }
+        else
+          {
+-           hslider_rect->x = 0;
+-           hslider_rect->y = 0;
+-           hslider_rect->width = 0;
+-           hslider_rect->height = 0;
++           if (hbar_rect)
++             {
++               hbar_rect->x = 0;
++               hbar_rect->y = 0;
++               hbar_rect->width = 0;
++               hbar_rect->height = 0;
++             }
++
++           if (hslider_rect)
++             {
++               hslider_rect->x = 0;
++               hslider_rect->y = 0;
++               hslider_rect->width = 0;
++               hslider_rect->height = 0;
++             }
+          }
+      }
+ }
+@@ -3194,7 +3240,9 @@ gtk_scrolled_window_child_expose (GtkWidget         *widget,
+                                   GtkScrolledWindow *scrolled_window)
+ {
+    GtkScrolledWindowPrivate *priv = GTK_SCROLLED_WINDOW_GET_PRIVATE (scrolled_window);
++   GdkRectangle vbar_rect;
+    GdkRectangle vslider_rect;
++   GdkRectangle hbar_rect;
+    GdkRectangle hslider_rect;
+    cairo_t   *cr;
+ 
+@@ -3205,7 +3253,20 @@ gtk_scrolled_window_child_expose (GtkWidget         *widget,
+    gtk_scrolled_window_get_child_scroll_areas (scrolled_window,
+                                                gtk_bin_get_child (GTK_BIN (scrolled_window)),
+                                                eevent->window,
+-                                               &vslider_rect, &hslider_rect);
++                                               &vbar_rect, &vslider_rect,
++                                               &hbar_rect, &hslider_rect);
++
++   if (TRUE)
++     {
++       if (scrolled_window->vscrollbar && vbar_rect.width > 0)
++         gdk_cairo_rectangle (cr, &vbar_rect);
++
++       if (scrolled_window->hscrollbar && hbar_rect.width > 0)
++         gdk_cairo_rectangle (cr, &hbar_rect);
++
++       cairo_set_source_rgba (cr, 0, 0, 0, 0.2);
++       cairo_fill (cr);
++     }
+ 
+    if (scrolled_window->vscrollbar && vslider_rect.width > 0)
+      gtk_scrolled_window_rounded_rectangle (cr,
+@@ -3225,9 +3286,9 @@ gtk_scrolled_window_child_expose (GtkWidget         *widget,
+                                             priv->sb_radius,
+                                             priv->sb_radius);
+ 
+-   cairo_set_source_rgba (cr, 0, 0, 0,
+-                          gtk_adjustment_get_value (priv->opacity));
++   cairo_set_source_rgba (cr, 0, 0, 0, gtk_adjustment_get_value (priv->opacity));
+    cairo_fill (cr);
++
+    cairo_destroy (cr);
+ 
+    return FALSE;
+-- 
+1.7.5.4
+
