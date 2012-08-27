@@ -18,6 +18,14 @@ class GtkPackage (GnomeXzPackage):
 				# Custom gtkrc
 				'patches/gtkrc',
 
+				# post 2.24.11 commits
+				# Bug 681784 Colorspaces used in gtk+ and cairo quartz backends do not match
+				'http://git.gnome.org/browse/gtk+/patch/?id=48547aadef8547686ae43cb317caeb882ecc2699',
+				# quartz: add evil casting to make sure time wraps correctly on 32bit machines
+				'http://git.gnome.org/browse/gtk+/patch/?id=c0c3085128b0af739c73db31f9330508aad8f2e6',
+				# quartz: fix corruption during scrolling in some cases
+				'http://git.gnome.org/browse/gtk+/patch/?id=3d5cd6e0553131bf7bec30e0524a66a4d481821b',
+
 				# smooth scrolling, scrollbars, overscroll
 				'patches/gtk-scrolling/0001-Smooth-scrolling.patch',
 				'patches/gtk-scrolling/0002-gtk-Add-a-way-to-do-event-capture.patch',
@@ -61,9 +69,6 @@ class GtkPackage (GnomeXzPackage):
 
 				# Bug 6156 - [gtk] Quitting the application with unsaved file and answering Cancel results in crash
 				'https://bugzilla.xamarin.com/attachment.cgi?id=2214',
-
-				# Bug 4470 - Word Selection failures when computer uptime exceeds 2^32 ms
-				'https://bugzilla.xamarin.com/attachment.cgi?id=2233',
 
 				# Bug 3457 - [GTK] Support more standard keyboard shortcuts in dialogs
 				'https://bugzilla.xamarin.com/attachment.cgi?id=2240',

@@ -8,7 +8,7 @@ class MonoReleasePackages:
 		self.packages.extend([
 				# 'autoconf.py',
 				# 'automake.py',
-				# 'libtool.py',
+				'libtool.py',
 				'xz.py',
 				'tar.py',
 				'gettext.py',

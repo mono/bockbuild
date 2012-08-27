@@ -5,7 +5,7 @@ from urllib import FancyURLopener
 from util.util import *
 
 class Package:
-	def __init__ (self, name, version, configure_flags = None, sources = None, source_dir_name = None, override_properties = None, configure = None):
+	def __init__ (self, name, version, configure_flags = None, sources = None, revision = None, source_dir_name = None, override_properties = None, configure = None):
 		Package.last_instance = self
 
 		self._dirstack = []
@@ -27,6 +27,8 @@ class Package:
 		self.source_dir_name = source_dir_name
 		if self.source_dir_name == None:
 			self.source_dir_name = '%{name}-%{version}'
+
+		self.revision = revision
 
 		self.prefix = Package.profile.prefix
 
@@ -91,10 +93,9 @@ class Package:
 					self.cd (os.path.dirname (local_dest_file))
 					shutil.rmtree (local_dest_file, ignore_errors = True)
 					self.sh ('%' + '{git} clone -b %s "%s" "%s"' % (self.git_branch, source, os.path.basename (local_dest_file)))
-				revision = os.getenv('BUILD_REVISION')
-				if revision != None:
+				if self.revision != None:
 					self.cd (local_dest_file)
-					self.sh ('%' + '{git} reset --hard %s' % revision)
+					self.sh ('%' + '{git} reset --hard %s' % self.revision)
 				os.chdir (pwd)
 
 		self.sources = local_sources
