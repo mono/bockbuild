@@ -23,6 +23,9 @@ class PangoPackage (GnomeXzPackage):
 
 			# coretext: don't insert item in the hash if it originated from the hash
 			'http://git.gnome.org/browse/pango/patch/?id=70a85d441d973883af4afb57599bc570eeea4c83',
+
+			# coretext: silently fail on invalid UTF8 instead of crashing
+			'http://git.gnome.org/browse/pango/patch/?id=fa4cd1a232529898a616e86ab89965d5ffc52347',
 		])
 
 	def prep (self):
