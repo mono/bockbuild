@@ -93,9 +93,12 @@ class Package:
 					self.cd (os.path.dirname (local_dest_file))
 					shutil.rmtree (local_dest_file, ignore_errors = True)
 					self.sh ('%' + '{git} clone -b %s "%s" "%s"' % (self.git_branch, source, os.path.basename (local_dest_file)))
+				self.cd (local_dest_file)
+				self.sh ('%' + '{git} checkout -b %s remotes/origin/%s' % (self.git_branch, self.git_branch))
 				if self.revision != None:
-					self.cd (local_dest_file)
 					self.sh ('%' + '{git} reset --hard %s' % self.revision)
+
+				self.sh ('%' + '{git} log -1')
 				os.chdir (pwd)
 
 		self.sources = local_sources
