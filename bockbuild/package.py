@@ -5,7 +5,7 @@ from urllib import FancyURLopener
 from util.util import *
 
 class Package:
-	def __init__ (self, name, version, configure_flags = None, sources = None, revision = None, source_dir_name = None, override_properties = None, configure = None):
+	def __init__ (self, name, version, configure_flags = None, sources = None, revision = None, git_branch = 'master', source_dir_name = None, override_properties = None, configure = None):
 		Package.last_instance = self
 
 		self._dirstack = []
@@ -40,7 +40,7 @@ class Package:
 		self.make = 'make -j%s' % Package.profile.cpu_count
 		self.makeinstall = 'make install'
 		self.git = 'git'
-		self.git_branch = 'master'
+		self.git_branch = git_branch
 		for git in ['/usr/bin/git', '/usr/local/bin/git', '/usr/local/git/bin/git']:
 			if os.path.isfile (git):
 				self.git = git
@@ -92,10 +92,13 @@ class Package:
 				if not checkout_exists:
 					self.cd (os.path.dirname (local_dest_file))
 					shutil.rmtree (local_dest_file, ignore_errors = True)
-					self.sh ('%' + '{git} clone -b %s "%s" "%s"' % (self.git_branch, source, os.path.basename (local_dest_file)))
+					self.sh ('%' + '{git} clone "%s" "%s"' % (source, os.path.basename (local_dest_file)))
+				self.cd (local_dest_file)
+				self.sh ('%' + '{git} checkout %s' % self.git_branch)
 				if self.revision != None:
-					self.cd (local_dest_file)
 					self.sh ('%' + '{git} reset --hard %s' % self.revision)
+
+				self.sh ('%' + '{git} log -1')
 				os.chdir (pwd)
 
 		self.sources = local_sources
