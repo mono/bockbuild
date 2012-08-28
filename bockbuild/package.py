@@ -92,9 +92,9 @@ class Package:
 				if not checkout_exists:
 					self.cd (os.path.dirname (local_dest_file))
 					shutil.rmtree (local_dest_file, ignore_errors = True)
-					self.sh ('%' + '{git} clone -b %s "%s" "%s"' % (self.git_branch, source, os.path.basename (local_dest_file)))
+					self.sh ('%' + '{git} clone "%s" "%s"' % (source, os.path.basename (local_dest_file)))
 				self.cd (local_dest_file)
-				self.sh ('%' + '{git} checkout -b %s remotes/origin/%s' % (self.git_branch, self.git_branch))
+				self.sh ('%' + '{git} checkout %s' % self.git_branch)
 				if self.revision != None:
 					self.sh ('%' + '{git} reset --hard %s' % self.revision)
 
