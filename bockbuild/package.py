@@ -5,7 +5,7 @@ from urllib import FancyURLopener
 from util.util import *
 
 class Package:
-	def __init__ (self, name, version, configure_flags = None, sources = None, revision = None, source_dir_name = None, override_properties = None, configure = None):
+	def __init__ (self, name, version, configure_flags = None, sources = None, revision = None, git_branch = None, source_dir_name = None, override_properties = None, configure = None):
 		Package.last_instance = self
 
 		self._dirstack = []
