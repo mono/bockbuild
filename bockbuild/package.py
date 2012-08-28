@@ -5,7 +5,7 @@ from urllib import FancyURLopener
 from util.util import *
 
 class Package:
-	def __init__ (self, name, version, configure_flags = None, sources = None, revision = None, git_branch = None, source_dir_name = None, override_properties = None, configure = None):
+	def __init__ (self, name, version, configure_flags = None, sources = None, revision = None, git_branch = 'master', source_dir_name = None, override_properties = None, configure = None):
 		Package.last_instance = self
 
 		self._dirstack = []
@@ -40,7 +40,7 @@ class Package:
 		self.make = 'make -j%s' % Package.profile.cpu_count
 		self.makeinstall = 'make install'
 		self.git = 'git'
-		self.git_branch = 'master'
+		self.git_branch = git_branch
 		for git in ['/usr/bin/git', '/usr/local/bin/git', '/usr/local/git/bin/git']:
 			if os.path.isfile (git):
 				self.git = git
