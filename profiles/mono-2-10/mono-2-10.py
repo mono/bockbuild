@@ -176,9 +176,10 @@ class MonoReleaseProfile (DarwinProfile, MonoReleasePackages):
 			for name in files:
 				f = os.path.join (path, name)
 				file_type = backtick ("file %s" % f)
-				if file_type.contains ("Mach-O"):
+				if "dSYM" in f: continue
+				if "Mach-O" in "".join (file_type):
 					print "Generating dsyms for %s" % f
-					self.sh ('dsymutil %s' % f)
+					backtick ('dsymutil %s' % f)
 
 	# THIS IS THE MAIN METHOD FOR MAKING A PACKAGE
 	def package (self):
