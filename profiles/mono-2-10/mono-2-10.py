@@ -171,14 +171,25 @@ class MonoReleaseProfile (DarwinProfile, MonoReleasePackages):
 
 		shutil.rmtree (working)
 
+	def generate_dsym (self):
+		for path, dirs, files in os.walk (self.prefix):
+			for name in files:
+				f = os.path.join (path, name)
+				file_type = backtick ("file %s" % f)
+				if file_type.contains ("Mach-O"):
+					print "Generating dsyms for %s" % f
+					self.sh ('dsymutil %s' % f)
+
 	# THIS IS THE MAIN METHOD FOR MAKING A PACKAGE
 	def package (self):
 		self.remove_files (prefix = '*.la')
 		self.remove_files (prefix = '*.a')
 		self.include_libgdiplus ()
+		self.generate_dsym ()
 		# must apply blacklist first here because PackageMaker follows symlinks :(
 		backtick (os.path.join (self.packaging_dir, 'mdk_blacklist.sh') + ' ' + self.release_root)
 		self.build_package ()
+
 
 MonoReleaseProfile ().build ()
 
