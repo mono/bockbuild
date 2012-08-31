@@ -12,8 +12,7 @@ class MonoTwoTenPackage(Package):
 				'--prefix=' + Package.profile.prefix,
 				'--with-ikvm=yes',
 				'--with-moonlight=no'
-			],
-			source_dir_name = "mono-2.10.git"
+			]
 		)
 		if Package.profile.name == 'darwin':
 			self.configure_flags.extend([

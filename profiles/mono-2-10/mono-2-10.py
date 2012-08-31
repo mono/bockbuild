@@ -40,11 +40,6 @@ class MonoReleaseProfile (DarwinProfile, MonoReleasePackages):
 	def framework_path (self, subdir):
 		return os.path.join (self.prefix, subdir)
 
-	def remove_files (self, subdir = "lib", prefix = "*"):
-		dir = os.path.join (self.prefix, subdir)
-		print "Removing %s files in %s" % (prefix, dir)
-		backtick ('find %s -name "%s" -delete' % (dir, prefix))
-
 	def include_libgdiplus (self):
 		config = os.path.join (self.prefix, "etc", "mono", "config")
 		temp = config + ".tmp"
@@ -183,8 +178,6 @@ class MonoReleaseProfile (DarwinProfile, MonoReleasePackages):
 
 	# THIS IS THE MAIN METHOD FOR MAKING A PACKAGE
 	def package (self):
-		self.remove_files (prefix = '*.la')
-		# self.remove_files (prefix = '*.a')
 		self.include_libgdiplus ()
 		self.generate_dsym ()
 		# must apply blacklist first here because PackageMaker follows symlinks :(
