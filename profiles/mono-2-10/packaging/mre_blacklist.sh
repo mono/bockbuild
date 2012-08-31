@@ -9,7 +9,7 @@ MONODIR=$1
 
 cd $MONODIR
 find . -name '*.la' -delete
-find . -name '*.a' -delete
+# find . -name '*.a' -delete
 rm -rf lib/gtk-2.0/2.10.0/engines/libcrux-engine.so
 rm -rf lib/gtk-2.0/2.10.0/engines/libglide.so
 rm -rf lib/gtk-2.0/2.10.0/engines/libhcengine.so
