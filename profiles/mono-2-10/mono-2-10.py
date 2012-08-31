@@ -184,7 +184,7 @@ class MonoReleaseProfile (DarwinProfile, MonoReleasePackages):
 	# THIS IS THE MAIN METHOD FOR MAKING A PACKAGE
 	def package (self):
 		self.remove_files (prefix = '*.la')
-		self.remove_files (prefix = '*.a')
+		# self.remove_files (prefix = '*.a')
 		self.include_libgdiplus ()
 		self.generate_dsym ()
 		# must apply blacklist first here because PackageMaker follows symlinks :(
