@@ -40,11 +40,6 @@ class MonoReleaseProfile (DarwinProfile, MonoReleasePackages):
 	def framework_path (self, subdir):
 		return os.path.join (self.prefix, subdir)
 
-	def remove_files (self, subdir = "lib", prefix = "*"):
-		dir = os.path.join (self.prefix, subdir)
-		print "Removing %s files in %s" % (prefix, dir)
-		backtick ('find %s -name "%s" -delete' % (dir, prefix))
-
 	def include_libgdiplus (self):
 		config = os.path.join (self.prefix, "etc", "mono", "config")
 		temp = config + ".tmp"
@@ -108,7 +103,7 @@ class MonoReleaseProfile (DarwinProfile, MonoReleasePackages):
 
 		self.make_package_symlinks(monoroot)
 
-		# copy to package root	
+		# copy to package root
 		backtick ('rsync -aP "%s" "%s"' % (self.release_root, versions))
 
 		return tmpdir
@@ -171,11 +166,20 @@ class MonoReleaseProfile (DarwinProfile, MonoReleasePackages):
 
 		shutil.rmtree (working)
 
+	def generate_dsym (self):
+		for path, dirs, files in os.walk (self.prefix):
+			for name in files:
+				f = os.path.join (path, name)
+				file_type = backtick ("file %s" % f)
+				if "dSYM" in f: continue
+				if "Mach-O" in "".join (file_type):
+					print "Generating dsyms for %s" % f
+					backtick ('dsymutil %s' % f)
+
 	# THIS IS THE MAIN METHOD FOR MAKING A PACKAGE
 	def package (self):
-		self.remove_files (prefix = '*.la')
-		self.remove_files (prefix = '*.a')
 		self.include_libgdiplus ()
+		self.generate_dsym ()
 		# must apply blacklist first here because PackageMaker follows symlinks :(
 		backtick (os.path.join (self.packaging_dir, 'mdk_blacklist.sh') + ' ' + self.release_root)
 		self.build_package ()
