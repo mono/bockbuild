@@ -176,10 +176,24 @@ class MonoReleaseProfile (DarwinProfile, MonoReleasePackages):
 					print "Generating dsyms for %s" % f
 					backtick ('dsymutil %s' % f)
 
+	# Expand $(pcfiledir) in the .pcfiles to full paths
+	def expand_pcfiledir (self):
+		print 'Replacing ${pcfiledir} with full path'
+		for path, dirs, files in os.walk (os.path.join (self.prefix, "lib", "pkgconfig")):
+			for name in files:
+				original = os.path.join (path, name)
+				replacement = os.path.join (path, name + ".new")
+				full_path = os.path.join (self.MONO_ROOT, "Versions", self.RELEASE_VERSION)
+				with open (replacement, "wt") as replaced:
+					for line in open (original):
+						replaced.write (line.replace ('prefix=${pcfiledir}/../..', 'prefix=%s' % full_path))
+				os.rename (replacement, original)
+
 	# THIS IS THE MAIN METHOD FOR MAKING A PACKAGE
 	def package (self):
 		self.include_libgdiplus ()
 		self.generate_dsym ()
+		self.expand_pcfiledir ()
 		# must apply blacklist first here because PackageMaker follows symlinks :(
 		backtick (os.path.join (self.packaging_dir, 'mdk_blacklist.sh') + ' ' + self.release_root)
 		self.build_package ()
