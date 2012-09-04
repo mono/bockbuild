@@ -1,0 +1,57 @@
+From a5fa83a42594af8cee6c3c84ccda4fc49cb2cd1e Mon Sep 17 00:00:00 2001
+From: Michael Natterer <mitch@gimp.org>
+Date: Tue, 28 Aug 2012 12:54:28 +0200
+Subject: [PATCH 03/12] gtk: support gtk-range-jump-to-click in GtkRange
+
+---
+ gtk/gtkrange.c |   13 +++++++++----
+ 1 files changed, 9 insertions(+), 4 deletions(-)
+
+diff --git a/gtk/gtkrange.c b/gtk/gtkrange.c
+index 3932976..bb568cc 100644
+--- a/gtk/gtkrange.c
++++ b/gtk/gtkrange.c
+@@ -2310,7 +2310,12 @@ gtk_range_button_press (GtkWidget      *widget,
+ 			GdkEventButton *event)
+ {
+   GtkRange *range = GTK_RANGE (widget);
+-  
++  gboolean jump_to_click;
++
++  g_object_get (gtk_widget_get_settings (widget),
++                "gtk-range-jump-to-click", &jump_to_click,
++                NULL);
++
+   if (!gtk_widget_has_focus (widget))
+     gtk_widget_grab_focus (widget);
+ 
+@@ -2324,7 +2329,7 @@ gtk_range_button_press (GtkWidget      *widget,
+     gtk_widget_queue_draw (widget);
+     
+   if (range->layout->mouse_location == MOUSE_TROUGH  &&
+-      event->button == 1)
++      (event->button == 1 && !jump_to_click))
+     {
+       /* button 1 steps by page increment, as with button 2 on a stepper
+        */
+@@ -2369,7 +2374,7 @@ gtk_range_button_press (GtkWidget      *widget,
+       return TRUE;
+     }
+   else if ((range->layout->mouse_location == MOUSE_TROUGH &&
+-            event->button == 2) ||
++            (event->button == 2 || (event->button == 1 && jump_to_click))) ||
+            range->layout->mouse_location == MOUSE_SLIDER)
+     {
+       gboolean need_value_update = FALSE;
+@@ -2380,7 +2385,7 @@ gtk_range_button_press (GtkWidget      *widget,
+        * On button 2 press, we warp the slider to mouse position,
+        * then begin the slider drag.
+        */
+-      if (event->button == 2)
++      if (event->button == 2 || (event->button == 1 && jump_to_click))
+         {
+           gdouble slider_low_value, slider_high_value, new_value;
+           
+-- 
+1.7.5.4
+

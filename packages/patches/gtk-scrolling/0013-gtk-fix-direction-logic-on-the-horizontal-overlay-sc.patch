@@ -1,0 +1,39 @@
+From bb5eaf1e7f50d9a1e3683c5e46d0f36eafaf2773 Mon Sep 17 00:00:00 2001
+From: Michael Natterer <mitch@gimp.org>
+Date: Fri, 31 Aug 2012 16:16:22 +0200
+Subject: [PATCH 13/14] gtk: fix direction logic on the horizontal overlay
+ scrollbars
+
+---
+ gtk/gtkscrolledwindow.c |   10 +++++-----
+ 1 files changed, 5 insertions(+), 5 deletions(-)
+
+diff --git a/gtk/gtkscrolledwindow.c b/gtk/gtkscrolledwindow.c
+index 7ab9275..b0ae316 100644
+--- a/gtk/gtkscrolledwindow.c
++++ b/gtk/gtkscrolledwindow.c
+@@ -2785,16 +2785,16 @@ gtk_scrolled_window_captured_button_press_scrollbar (GtkWidget *widget,
+             {
+               priv->sb_drag_slider = TRUE;
+               priv->sb_grab_offset_x = bevent->x - hslider_rect.x;
+-
+-              if (bevent->x < hslider_rect.x)
+-                priv->sb_scroll_direction = -1;
+-              else
+-                priv->sb_scroll_direction = 1;
+             }
+           else
+             {
+               priv->sb_drag_slider = FALSE;
+               priv->sb_grab_offset_x = bevent->x - hbar_rect.x;
++
++              if (bevent->x < hslider_rect.x)
++                priv->sb_scroll_direction = -1;
++              else
++                priv->sb_scroll_direction = 1;
+             }
+         }
+ 
+-- 
+1.7.5.4
+

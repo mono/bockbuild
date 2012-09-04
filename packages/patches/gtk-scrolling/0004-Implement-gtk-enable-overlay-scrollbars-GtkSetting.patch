@@ -1,62 +1,38 @@
-From 2abc77a93c51aa70d0752353626eb518e7a2e1eb Mon Sep 17 00:00:00 2001
+From 594a25cfc4454a059d62be5bcd78a8eb3e4ccffb Mon Sep 17 00:00:00 2001
 From: Kristian Rietveld <kris@lanedo.com>
-Date: Sun, 29 Jul 2012 16:13:06 +0200
-Subject: [PATCH 1/3] Implement gtk-enable-overlay-scrollbars GtkSetting
+Date: Fri, 24 Aug 2012 12:12:04 +0200
+Subject: [PATCH 04/12] Implement gtk-enable-overlay-scrollbars GtkSetting
 
 And set this up such that on OS X
-NSPreferredScrollerStyleDidChangeNotification is followed.
+NSPreferredScrollerDidChangeNotification is followed.
 ---
- gdk/quartz/gdkevents-quartz.c |   87 +++++++++++++++++++++++++++++++++++++++++
- gtk/gtksettings.c             |   20 +++++++++-
- 2 files changed, 106 insertions(+), 1 deletions(-)
+ gdk/quartz/gdkevents-quartz.c |   56 ++++++++++++++++++++++++++++++++++++++++-
+ gtk/gtksettings.c             |   20 ++++++++++++++-
+ 2 files changed, 74 insertions(+), 2 deletions(-)
 
 diff --git a/gdk/quartz/gdkevents-quartz.c b/gdk/quartz/gdkevents-quartz.c
-index 0f3c160..2fba54b 100644
+index 432fd8c..abd3728 100644
 --- a/gdk/quartz/gdkevents-quartz.c
 +++ b/gdk/quartz/gdkevents-quartz.c
-@@ -71,6 +71,57 @@ gdk_quartz_event_get_nsevent (GdkEvent *event)
-   return ((GdkEventPrivate *) event)->windowing_data;
- }
- 
-+
-+static void
-+gdk_quartz_ns_notification_callback (CFNotificationCenterRef  center,
-+                                     void                    *observer,
-+                                     CFStringRef              name,
-+                                     const void              *object,
-+                                     CFDictionaryRef          userInfo)
-+{
-+  GdkEvent new_event;
-+
-+  new_event.type = GDK_SETTING;
-+  new_event.setting.window = gdk_screen_get_root_window (_gdk_screen);
-+  new_event.setting.send_event = FALSE;
-+  new_event.setting.action = GDK_SETTING_ACTION_CHANGED;
-+  new_event.setting.name = NULL;
-+
-+  /* Translate name */
-+  if (CFStringCompare (name,
-+                       CFSTR("NSPreferredScrollerStyleDidChangeNotification"),
-+                       0) == kCFCompareEqualTo)
+@@ -84,6 +84,10 @@ gdk_quartz_ns_notification_callback (CFNotificationCenterRef  center,
+                        CFSTR("AppleNoRedisplayAppearancePreferenceChanged"),
+                        0) == kCFCompareEqualTo)
+     new_event.setting.name = "gtk-range-jump-to-click";
++  else if (CFStringCompare (name,
++                            CFSTR("NSPreferredScrollerStyleDidChangeNotification"),
++                            0) == kCFCompareEqualTo)
 +    new_event.setting.name = "gtk-enable-overlay-scrollbars";
+ 
+   if (!new_event.setting.name)
+     return;
+@@ -113,6 +117,20 @@ gdk_quartz_events_init_notifications (void)
+                                    CFSTR ("AppleNoRedisplayAppearancePreferenceChanged"),
+                                    NULL,
+                                    CFNotificationSuspensionBehaviorDeliverImmediately);
 +
-+  if (!new_event.setting.name)
-+    return;
-+
-+  gdk_event_put (&new_event);
-+}
-+
-+static void
-+gdk_quartz_events_init_notifications (void)
-+{
-+  static gboolean notifications_initialized = FALSE;
-+
-+  if (notifications_initialized)
-+    return;
-+  notifications_initialized = TRUE;
-+
-+  /* Initializatize any handlers for notifications we want to push to GTK
-+   * through GdkEventSettings.
++  /* The preferred scroller notification and property are only available on Lion
++   * and higher. Also, beware that the notification will only start working after the
++   * property has been queried for the first time!.
 +   */
 +  if (gdk_quartz_osx_version () >= GDK_OSX_LION)
 +    {
@@ -67,15 +43,14 @@ index 0f3c160..2fba54b 100644
 +                                       NULL,
 +                                       CFNotificationSuspensionBehaviorDeliverImmediately);
 +    }
-+}
-+
+ }
+ 
  void
- _gdk_events_init (void)
- {
-@@ -1606,6 +1657,42 @@ gdk_screen_get_setting (GdkScreen   *screen,
+@@ -1633,7 +1651,43 @@ gdk_screen_get_setting (GdkScreen   *screen,
  
        return TRUE;
      }
+-  
 +  else if (strcmp (name, "gtk-enable-overlay-scrollbars") == 0)
 +    {
 +      gboolean enabled = FALSE;
@@ -112,27 +87,28 @@ index 0f3c160..2fba54b 100644
 +
 +      return TRUE;
 +    }
-   
++ 
    /* FIXME: Add more settings */
  
+   return FALSE;
 diff --git a/gtk/gtksettings.c b/gtk/gtksettings.c
-index c5f77fe..ef5737a 100644
+index aa64a04..2e030be 100644
 --- a/gtk/gtksettings.c
 +++ b/gtk/gtksettings.c
-@@ -125,7 +125,8 @@ enum {
-   PROP_ENABLE_TOOLTIPS,
+@@ -126,7 +126,8 @@ enum {
    PROP_TOOLBAR_STYLE,
    PROP_TOOLBAR_ICON_SIZE,
--  PROP_AUTO_MNEMONICS
-+  PROP_AUTO_MNEMONICS,
+   PROP_AUTO_MNEMONICS,
+-  PROP_RANGE_JUMP_TO_CLICK
++  PROP_RANGE_JUMP_TO_CLICK,
 +  PROP_ENABLE_OVERLAY_SCROLLBARS
  };
  
  
-@@ -1023,6 +1024,23 @@ gtk_settings_class_init (GtkSettingsClass *class)
-                                                                    GTK_PARAM_READWRITE),
+@@ -1042,6 +1043,23 @@ gtk_settings_class_init (GtkSettingsClass *class)
                                               NULL);
-   g_assert (result == PROP_AUTO_MNEMONICS);
+ 
+   g_assert (result == PROP_RANGE_JUMP_TO_CLICK);
 +
 +  /**
 +   * GtkSettings:gtk-enable-overlay-scrollbars:

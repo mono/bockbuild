@@ -1,7 +1,7 @@
-From 1e3252575fb545d67bd0273541ba0dd9a0ca7474 Mon Sep 17 00:00:00 2001
+From 5522f1013046180e8bb138a55fa2615e66a7745e Mon Sep 17 00:00:00 2001
 From: Michael Natterer <mitch@gimp.org>
 Date: Thu, 16 Aug 2012 09:35:53 +0200
-Subject: [PATCH 3/3] gtk: correctly handle toggling of the scrollbar
+Subject: [PATCH 12/12] gtk: correctly handle toggling of the scrollbar
  visibility setting
 
 By doing most things unconditionally, like connecting to signals
@@ -14,7 +14,7 @@ Unrelated: don't leak the priv->opacity adjustment.
  1 files changed, 119 insertions(+), 125 deletions(-)
 
 diff --git a/gtk/gtkscrolledwindow.c b/gtk/gtkscrolledwindow.c
-index 91c7afe..a4e5fb5 100644
+index 803a8cf..7ab9275 100644
 --- a/gtk/gtkscrolledwindow.c
 +++ b/gtk/gtkscrolledwindow.c
 @@ -530,29 +530,25 @@ gtk_scrolled_window_init (GtkScrolledWindow *scrolled_window)
@@ -270,7 +270,7 @@ index 91c7afe..a4e5fb5 100644
  
    scrollbar_spacing = _gtk_scrolled_window_get_scrollbar_spacing (scrolled_window);
    gtk_widget_style_get (widget, "scrollbars-within-bevel", &scrollbars_within_bevel, NULL);
-@@ -3095,12 +3090,9 @@ gtk_scrolled_window_add (GtkContainer *container,
+@@ -3101,12 +3096,9 @@ gtk_scrolled_window_add (GtkContainer *container,
      g_warning ("gtk_scrolled_window_add(): cannot add non scrollable widget "
  	       "use gtk_scrolled_window_add_with_viewport() instead");
  
@@ -286,7 +286,7 @@ index 91c7afe..a4e5fb5 100644
  }
  
  static void
-@@ -3115,12 +3107,9 @@ gtk_scrolled_window_remove (GtkContainer *container,
+@@ -3121,12 +3113,9 @@ gtk_scrolled_window_remove (GtkContainer *container,
  
    priv = GTK_SCROLLED_WINDOW_GET_PRIVATE (container);
  
@@ -302,7 +302,7 @@ index 91c7afe..a4e5fb5 100644
  
    gtk_widget_set_scroll_adjustments (child, NULL, NULL);
  
-@@ -3611,6 +3600,9 @@ gtk_scrolled_window_child_expose (GtkWidget         *widget,
+@@ -3617,6 +3606,9 @@ gtk_scrolled_window_child_expose (GtkWidget         *widget,
     GdkRectangle hslider_rect;
     cairo_t   *cr;
  
@@ -312,7 +312,7 @@ index 91c7afe..a4e5fb5 100644
     cr = gdk_cairo_create (eevent->window);
     gdk_cairo_region (cr, eevent->region);
     cairo_clip (cr);
-@@ -3756,27 +3748,32 @@ static void
+@@ -3762,27 +3754,32 @@ static void
  gtk_scrolled_window_expose_scrollbars (GtkAdjustment     *adj,
                                         GtkScrolledWindow *scrolled_window)
  {
@@ -363,7 +363,7 @@ index 91c7afe..a4e5fb5 100644
      }
  }
  
-@@ -3785,17 +3782,14 @@ gtk_scrolled_window_overlay_scrollbars_changed (GtkSettings *settings,
+@@ -3791,17 +3788,14 @@ gtk_scrolled_window_overlay_scrollbars_changed (GtkSettings *settings,
                                                  GParamSpec  *arg,
                                                  gpointer     user_data)
  {

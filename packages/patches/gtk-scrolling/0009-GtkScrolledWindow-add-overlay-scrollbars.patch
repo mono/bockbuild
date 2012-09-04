@@ -1,7 +1,7 @@
-From 4aaf91974986dd090b4c977a2c06538261207098 Mon Sep 17 00:00:00 2001
+From 8d726b8d8ff8fd19231fbf45ad4c519b41ea3898 Mon Sep 17 00:00:00 2001
 From: Michael Natterer <mitch@gimp.org>
 Date: Fri, 1 Jun 2012 13:08:26 +0200
-Subject: [PATCH 05/10] GtkScrolledWindow: add overlay scrollbars
+Subject: [PATCH 09/12] GtkScrolledWindow: add overlay scrollbars
 
 based on code from gnome-builder by Christian Hergert.
 ---
@@ -10,8 +10,8 @@ based on code from gnome-builder by Christian Hergert.
  gtk/gb-animation.h      |   87 ++++
  gtk/gb-frame-source.c   |  134 +++++++
  gtk/gb-frame-source.h   |   32 ++
- gtk/gtkscrolledwindow.c |  483 ++++++++++++++++++++++--
- 6 files changed, 1712 insertions(+), 26 deletions(-)
+ gtk/gtkscrolledwindow.c |  577 ++++++++++++++++++++++++++--
+ 6 files changed, 1806 insertions(+), 26 deletions(-)
  create mode 100644 gtk/gb-animation.c
  create mode 100644 gtk/gb-animation.h
  create mode 100644 gtk/gb-frame-source.c
@@ -41,7 +41,7 @@ index 908291f..b45553b 100644
  	gtksearchenginesimple.c	\
 diff --git a/gtk/gb-animation.c b/gtk/gb-animation.c
 new file mode 100644
-index 0000000..2618fb0
+index 0000000..9452b4a
 --- /dev/null
 +++ b/gtk/gb-animation.c
 @@ -0,0 +1,998 @@
@@ -71,7 +71,7 @@ index 0000000..2618fb0
 +#include "gb-animation.h"
 +#include "gb-frame-source.h"
 +
-+G_DEFINE_TYPE(GbAnimation, gb_animation, G_TYPE_INITIALLY_UNOWNED)
++G_DEFINE_TYPE(GbAnimation, _gb_animation, G_TYPE_INITIALLY_UNOWNED)
 +
 +typedef gdouble (*AlphaFunc) (gdouble       offset);
 +typedef void    (*TweenFunc) (const GValue *begin,
@@ -159,7 +159,7 @@ index 0000000..2618fb0
 +
 +
 +/**
-+ * gb_animation_alpha_ease_in_cubic:
++ * _gb_animation_alpha_ease_in_cubic:
 + * @offset: (in): The position within the animation; 0.0 to 1.0.
 + *
 + * An alpha function to transform the offset within the animation.
@@ -167,14 +167,14 @@ index 0000000..2618fb0
 + * cubic acceleration (x * x * x).
 + */
 +static gdouble
-+gb_animation_alpha_ease_in_cubic (gdouble offset)
++_gb_animation_alpha_ease_in_cubic (gdouble offset)
 +{
 +   return offset * offset * offset;
 +}
 +
 +
 +/**
-+ * gb_animation_alpha_linear:
++ * _gb_animation_alpha_linear:
 + * @offset: (in): The position within the animation; 0.0 to 1.0.
 + *
 + * An alpha function to transform the offset within the animation.
@@ -184,14 +184,14 @@ index 0000000..2618fb0
 + * Side effects: None.
 + */
 +static gdouble
-+gb_animation_alpha_linear (gdouble offset)
++_gb_animation_alpha_linear (gdouble offset)
 +{
 +   return offset;
 +}
 +
 +
 +/**
-+ * gb_animation_alpha_ease_in_quad:
++ * _gb_animation_alpha_ease_in_quad:
 + * @offset: (in): The position within the animation; 0.0 to 1.0.
 + *
 + * An alpha function to transform the offset within the animation.
@@ -202,14 +202,14 @@ index 0000000..2618fb0
 + * Side effects: None.
 + */
 +static gdouble
-+gb_animation_alpha_ease_in_quad (gdouble offset)
++_gb_animation_alpha_ease_in_quad (gdouble offset)
 +{
 +   return offset * offset;
 +}
 +
 +
 +/**
-+ * gb_animation_alpha_ease_out_quad:
++ * _gb_animation_alpha_ease_out_quad:
 + * @offset: (in): The position within the animation; 0.0 to 1.0.
 + *
 + * An alpha function to transform the offset within the animation.
@@ -220,14 +220,14 @@ index 0000000..2618fb0
 + * Side effects: None.
 + */
 +static gdouble
-+gb_animation_alpha_ease_out_quad (gdouble offset)
++_gb_animation_alpha_ease_out_quad (gdouble offset)
 +{
 +   return -1.0 * offset * (offset - 2.0);
 +}
 +
 +
 +/**
-+ * gb_animation_alpha_ease_in_out_quad:
++ * _gb_animation_alpha_ease_in_out_quad:
 + * @offset: (in): The position within the animation; 0.0 to 1.0.
 + *
 + * An alpha function to transform the offset within the animation.
@@ -239,7 +239,7 @@ index 0000000..2618fb0
 + * Side effects: None.
 + */
 +static gdouble
-+gb_animation_alpha_ease_in_out_quad (gdouble offset)
++_gb_animation_alpha_ease_in_out_quad (gdouble offset)
 +{
 +   offset *= 2.0;
 +   if (offset < 1.0) {
@@ -251,7 +251,7 @@ index 0000000..2618fb0
 +
 +
 +/**
-+ * gb_animation_load_begin_values:
++ * _gb_animation_load_begin_values:
 + * @animation: (in): A #GbAnimation.
 + *
 + * Load the begin values for all the properties we are about to
@@ -261,7 +261,7 @@ index 0000000..2618fb0
 + * Side effects: None.
 + */
 +static void
-+gb_animation_load_begin_values (GbAnimation *animation)
++_gb_animation_load_begin_values (GbAnimation *animation)
 +{
 +   GbAnimationPrivate *priv;
 +   GtkContainer *container;
@@ -289,7 +289,7 @@ index 0000000..2618fb0
 +
 +
 +/**
-+ * gb_animation_unload_begin_values:
++ * _gb_animation_unload_begin_values:
 + * @animation: (in): A #GbAnimation.
 + *
 + * Unloads the begin values for the animation. This might be particularly
@@ -299,7 +299,7 @@ index 0000000..2618fb0
 + * Side effects: None.
 + */
 +static void
-+gb_animation_unload_begin_values (GbAnimation *animation)
++_gb_animation_unload_begin_values (GbAnimation *animation)
 +{
 +   GbAnimationPrivate *priv;
 +   Tween *tween;
@@ -317,7 +317,7 @@ index 0000000..2618fb0
 +
 +
 +/**
-+ * gb_animation_get_offset:
++ * _gb_animation_get_offset:
 + * @animation: (in): A #GbAnimation.
 + *
 + * Retrieves the position within the animation from 0.0 to 1.0. This
@@ -328,7 +328,7 @@ index 0000000..2618fb0
 + * Side effects: None.
 + */
 +static gdouble
-+gb_animation_get_offset (GbAnimation *animation)
++_gb_animation_get_offset (GbAnimation *animation)
 +{
 +   GbAnimationPrivate *priv;
 +   GTimeVal now;
@@ -348,7 +348,7 @@ index 0000000..2618fb0
 +
 +
 +/**
-+ * gb_animation_update_property:
++ * _gb_animation_update_property:
 + * @animation: (in): A #GbAnimation.
 + * @target: (in): A #GObject.
 + * @tween: (in): a #Tween containing the property.
@@ -360,7 +360,7 @@ index 0000000..2618fb0
 + * Side effects: The property of @target is updated.
 + */
 +static void
-+gb_animation_update_property (GbAnimation *animation,
++_gb_animation_update_property (GbAnimation *animation,
 +                               gpointer      target,
 +                               Tween        *tween,
 +                               const GValue *value)
@@ -370,7 +370,7 @@ index 0000000..2618fb0
 +
 +
 +/**
-+ * gb_animation_update_child_property:
++ * _gb_animation_update_child_property:
 + * @animation: (in): A #GbAnimation.
 + * @target: (in): A #GObject.
 + * @tween: (in): A #Tween containing the property.
@@ -382,7 +382,7 @@ index 0000000..2618fb0
 + * Side effects: The property of @target<!-- -->'s parent widget is updated.
 + */
 +static void
-+gb_animation_update_child_property (GbAnimation *animation,
++_gb_animation_update_child_property (GbAnimation *animation,
 +                                     gpointer      target,
 +                                     Tween        *tween,
 +                                     const GValue *value)
@@ -394,7 +394,7 @@ index 0000000..2618fb0
 +
 +
 +/**
-+ * gb_animation_get_value_at_offset:
++ * _gb_animation_get_value_at_offset:
 + * @animation: (in): A #GbAnimation.
 + * @offset: (in): The offset in the animation from 0.0 to 1.0.
 + * @tween: (in): A #Tween containing the property.
@@ -406,7 +406,7 @@ index 0000000..2618fb0
 + * Side effects: None.
 + */
 +static void
-+gb_animation_get_value_at_offset (GbAnimation *animation,
++_gb_animation_get_value_at_offset (GbAnimation *animation,
 +                                   gdouble       offset,
 +                                   Tween        *tween,
 +                                   GValue       *value)
@@ -437,7 +437,7 @@ index 0000000..2618fb0
 +
 +
 +/**
-+ * gb_animation_tick:
++ * _gb_animation_tick:
 + * @animation: (in): A #GbAnimation.
 + *
 + * Moves the object properties to the next position in the animation.
@@ -446,7 +446,7 @@ index 0000000..2618fb0
 + * Side effects: None.
 + */
 +static gboolean
-+gb_animation_tick (GbAnimation *animation)
++_gb_animation_tick (GbAnimation *animation)
 +{
 +   GbAnimationPrivate *priv;
 +   GdkWindow *window;
@@ -461,7 +461,7 @@ index 0000000..2618fb0
 +   priv = animation->priv;
 +
 +   priv->frame_count++;
-+   offset = gb_animation_get_offset(animation);
++   offset = _gb_animation_get_offset(animation);
 +   alpha = gAlphaFuncs[priv->mode](offset);
 +
 +   /*
@@ -470,12 +470,12 @@ index 0000000..2618fb0
 +   for (i = 0; i < priv->tweens->len; i++) {
 +      tween = &g_array_index(priv->tweens, Tween, i);
 +      g_value_init(&value, tween->pspec->value_type);
-+      gb_animation_get_value_at_offset(animation, alpha, tween, &value);
++      _gb_animation_get_value_at_offset(animation, alpha, tween, &value);
 +      if (!tween->is_child) {
-+         gb_animation_update_property(animation, priv->target,
++         _gb_animation_update_property(animation, priv->target,
 +                                       tween, &value);
 +      } else {
-+         gb_animation_update_child_property(animation, priv->target,
++         _gb_animation_update_child_property(animation, priv->target,
 +                                             tween, &value);
 +      }
 +      g_value_unset(&value);
@@ -500,7 +500,7 @@ index 0000000..2618fb0
 +
 +
 +/**
-+ * gb_animation_timeout:
++ * _gb_animation_timeout:
 + * @data: (in): A #GbAnimation.
 + *
 + * Timeout from the main loop to move to the next step of the animation.
@@ -509,13 +509,13 @@ index 0000000..2618fb0
 + * Side effects: None.
 + */
 +static gboolean
-+gb_animation_timeout (gpointer data)
++_gb_animation_timeout (gpointer data)
 +{
 +   GbAnimation *animation = (GbAnimation *)data;
 +   gboolean ret;
 +
-+   if (!(ret = gb_animation_tick(animation))) {
-+      gb_animation_stop(animation);
++   if (!(ret = _gb_animation_tick(animation))) {
++      _gb_animation_stop(animation);
 +   }
 +
 +   return ret;
@@ -523,7 +523,7 @@ index 0000000..2618fb0
 +
 +
 +/**
-+ * gb_animation_start:
++ * _gb_animation_start:
 + * @animation: (in): A #GbAnimation.
 + *
 + * Start the animation. When the animation stops, the internal reference will
@@ -533,7 +533,7 @@ index 0000000..2618fb0
 + * Side effects: None.
 + */
 +void
-+gb_animation_start (GbAnimation *animation)
++_gb_animation_start (GbAnimation *animation)
 +{
 +   GbAnimationPrivate *priv;
 +   GTimeVal now;
@@ -545,17 +545,17 @@ index 0000000..2618fb0
 +
 +   g_get_current_time(&now);
 +   g_object_ref_sink(animation);
-+   gb_animation_load_begin_values(animation);
++   _gb_animation_load_begin_values(animation);
 +
 +   priv->begin_msec = TIMEVAL_TO_MSEC(now);
-+   priv->tween_handler = gb_frame_source_add(priv->frame_rate,
-+                                             gb_animation_timeout,
-+                                             animation);
++   priv->tween_handler = _gb_frame_source_add(priv->frame_rate,
++                                              _gb_animation_timeout,
++                                              animation);
 +}
 +
 +
 +/**
-+ * gb_animation_stop:
++ * _gb_animation_stop:
 + * @animation: (in): A #GbAnimation.
 + *
 + * Stops a running animation. The internal reference to the animation is
@@ -565,7 +565,7 @@ index 0000000..2618fb0
 + * Side effects: None.
 + */
 +void
-+gb_animation_stop (GbAnimation *animation)
++_gb_animation_stop (GbAnimation *animation)
 +{
 +   GbAnimationPrivate *priv;
 +
@@ -576,14 +576,14 @@ index 0000000..2618fb0
 +   if (priv->tween_handler) {
 +      g_source_remove(priv->tween_handler);
 +      priv->tween_handler = 0;
-+      gb_animation_unload_begin_values(animation);
++      _gb_animation_unload_begin_values(animation);
 +      g_object_unref(animation);
 +   }
 +}
 +
 +
 +/**
-+ * gb_animation_add_property:
++ * _gb_animation_add_property:
 + * @animation: (in): A #GbAnimation.
 + * @pspec: (in): A #ParamSpec of @target or a #GtkWidget<!-- -->'s parent.
 + * @value: (in): The new value for the property at the end of the animation.
@@ -595,9 +595,9 @@ index 0000000..2618fb0
 + * Side effects: None.
 + */
 +void
-+gb_animation_add_property (GbAnimation  *animation,
-+                           GParamSpec   *pspec,
-+                           const GValue *value)
++_gb_animation_add_property (GbAnimation  *animation,
++                            GParamSpec   *pspec,
++                            const GValue *value)
 +{
 +   GbAnimationPrivate *priv;
 +   Tween tween = { 0 };
@@ -631,7 +631,7 @@ index 0000000..2618fb0
 +
 +
 +/**
-+ * gb_animation_dispose:
++ * _gb_animation_dispose:
 + * @object: (in): A #GbAnimation.
 + *
 + * Releases any object references the animation contains.
@@ -640,7 +640,7 @@ index 0000000..2618fb0
 + * Side effects: None.
 + */
 +static void
-+gb_animation_dispose (GObject *object)
++_gb_animation_dispose (GObject *object)
 +{
 +   GbAnimationPrivate *priv = GB_ANIMATION(object)->priv;
 +   gpointer instance;
@@ -650,12 +650,12 @@ index 0000000..2618fb0
 +      g_object_unref(instance);
 +   }
 +
-+   G_OBJECT_CLASS(gb_animation_parent_class)->dispose(object);
++   G_OBJECT_CLASS(_gb_animation_parent_class)->dispose(object);
 +}
 +
 +
 +/**
-+ * gb_animation_finalize:
++ * _gb_animation_finalize:
 + * @object: (in): A #GbAnimation.
 + *
 + * Finalizes the object and releases any resources allocated.
@@ -664,7 +664,7 @@ index 0000000..2618fb0
 + * Side effects: None.
 + */
 +static void
-+gb_animation_finalize (GObject *object)
++_gb_animation_finalize (GObject *object)
 +{
 +   GbAnimationPrivate *priv = GB_ANIMATION(object)->priv;
 +   Tween *tween;
@@ -684,12 +684,12 @@ index 0000000..2618fb0
 +              priv->frame_count, priv->duration_msec);
 +   }
 +
-+   G_OBJECT_CLASS(gb_animation_parent_class)->finalize(object);
++   G_OBJECT_CLASS(_gb_animation_parent_class)->finalize(object);
 +}
 +
 +
 +/**
-+ * gb_animation_set_property:
++ * _gb_animation_set_property:
 + * @object: (in): A #GObject.
 + * @prop_id: (in): The property identifier.
 + * @value: (in): The given property.
@@ -698,10 +698,10 @@ index 0000000..2618fb0
 + * Set a given #GObject property.
 + */
 +static void
-+gb_animation_set_property (GObject      *object,
-+                           guint         prop_id,
-+                           const GValue *value,
-+                           GParamSpec   *pspec)
++_gb_animation_set_property (GObject      *object,
++                            guint         prop_id,
++                            const GValue *value,
++                            GParamSpec   *pspec)
 +{
 +   GbAnimation *animation = GB_ANIMATION(object);
 +
@@ -725,7 +725,7 @@ index 0000000..2618fb0
 +
 +
 +/**
-+ * gb_animation_class_init:
++ * _gb_animation_class_init:
 + * @klass: (in): A #GbAnimationClass.
 + *
 + * Initializes the GObjectClass.
@@ -734,16 +734,16 @@ index 0000000..2618fb0
 + * Side effects: Properties, signals, and vtables are initialized.
 + */
 +static void
-+gb_animation_class_init (GbAnimationClass *klass)
++_gb_animation_class_init (GbAnimationClass *klass)
 +{
 +   GObjectClass *object_class;
 +
 +   gDebug = !!g_getenv("GB_ANIMATION_DEBUG");
 +
 +   object_class = G_OBJECT_CLASS(klass);
-+   object_class->dispose = gb_animation_dispose;
-+   object_class->finalize = gb_animation_finalize;
-+   object_class->set_property = gb_animation_set_property;
++   object_class->dispose = _gb_animation_dispose;
++   object_class->finalize = _gb_animation_finalize;
++   object_class->set_property = _gb_animation_set_property;
 +   g_type_class_add_private(object_class, sizeof(GbAnimationPrivate));
 +
 +   /**
@@ -828,7 +828,7 @@ index 0000000..2618fb0
 +                                 0);
 +
 +#define SET_ALPHA(_T, _t) \
-+   gAlphaFuncs[GB_ANIMATION_##_T] = gb_animation_alpha_##_t
++   gAlphaFuncs[GB_ANIMATION_##_T] = _gb_animation_alpha_##_t
 +
 +   SET_ALPHA(LINEAR, linear);
 +   SET_ALPHA(EASE_IN_QUAD, ease_in_quad);
@@ -852,7 +852,7 @@ index 0000000..2618fb0
 +
 +
 +/**
-+ * gb_animation_init:
++ * _gb_animation_init:
 + * @animation: (in): A #GbAnimation.
 + *
 + * Initializes the #GbAnimation instance.
@@ -861,7 +861,7 @@ index 0000000..2618fb0
 + * Side effects: Everything.
 + */
 +static void
-+gb_animation_init (GbAnimation *animation)
++_gb_animation_init (GbAnimation *animation)
 +{
 +   GbAnimationPrivate *priv;
 +
@@ -877,7 +877,7 @@ index 0000000..2618fb0
 +
 +
 +/**
-+ * gb_animation_mode_get_type:
++ * _gb_animation_mode_get_type:
 + *
 + * Retrieves the GType for #GbAnimationMode.
 + *
@@ -885,7 +885,7 @@ index 0000000..2618fb0
 + * Side effects: GType registered on first call.
 + */
 +GType
-+gb_animation_mode_get_type (void)
++_gb_animation_mode_get_type (void)
 +{
 +   static GType type_id = 0;
 +   static const GEnumValue values[] = {
@@ -904,16 +904,16 @@ index 0000000..2618fb0
 +}
 +
 +/**
-+ * gb_object_animatev:
++ * _gb_object_animatev:
 + * Returns: (transfer none): A #GbAnimation.
 + */
 +GbAnimation*
-+gb_object_animatev (gpointer         object,
-+                    GbAnimationMode  mode,
-+                    guint            duration_msec,
-+                    guint            frame_rate,
-+                    const gchar     *first_property,
-+                    va_list          args)
++_gb_object_animatev (gpointer         object,
++                     GbAnimationMode  mode,
++                     guint            duration_msec,
++                     guint            frame_rate,
++                     const gchar     *first_property,
++                     va_list          args)
 +{
 +   GbAnimation *animation;
 +   GObjectClass *klass;
@@ -973,11 +973,11 @@ index 0000000..2618fb0
 +         goto failure;
 +      }
 +
-+      gb_animation_add_property(animation, pspec, &value);
++      _gb_animation_add_property(animation, pspec, &value);
 +      g_value_unset(&value);
 +   } while ((name = va_arg(args, const gchar *)));
 +
-+   gb_animation_start(animation);
++   _gb_animation_start(animation);
 +
 +   return animation;
 +
@@ -988,7 +988,7 @@ index 0000000..2618fb0
 +}
 +
 +/**
-+ * gb_object_animate:
++ * _gb_object_animate:
 + * @object: (in): A #GObject.
 + * @mode: (in): The animation mode.
 + * @duration_msec: (in): The duration in milliseconds.
@@ -1002,50 +1002,50 @@ index 0000000..2618fb0
 + * Side effects: None.
 + */
 +GbAnimation*
-+gb_object_animate (gpointer         object,
-+                   GbAnimationMode  mode,
-+                   guint            duration_msec,
-+                   const gchar     *first_property,
-+                   ...)
++_gb_object_animate (gpointer         object,
++                    GbAnimationMode  mode,
++                    guint            duration_msec,
++                    const gchar     *first_property,
++                    ...)
 +{
 +   GbAnimation *animation;
 +   va_list args;
 +
 +   va_start(args, first_property);
-+   animation = gb_object_animatev(object, mode, duration_msec, 0,
-+                                 first_property, args);
++   animation = _gb_object_animatev(object, mode, duration_msec, 0,
++                                   first_property, args);
 +   va_end(args);
 +   return animation;
 +}
 +
 +/**
-+ * gb_object_animate_full:
++ * _gb_object_animate_full:
 + *
 + * Return value: (transfer none): A #GbAnimation.
 + */
 +GbAnimation*
-+gb_object_animate_full (gpointer         object,
-+                        GbAnimationMode  mode,
-+                        guint            duration_msec,
-+                        guint            frame_rate,
-+                        GDestroyNotify   notify,
-+                        gpointer         notify_data,
-+                        const gchar     *first_property,
-+                        ...)
++_gb_object_animate_full (gpointer         object,
++                         GbAnimationMode  mode,
++                         guint            duration_msec,
++                         guint            frame_rate,
++                         GDestroyNotify   notify,
++                         gpointer         notify_data,
++                         const gchar     *first_property,
++                         ...)
 +{
 +   GbAnimation *animation;
 +   va_list args;
 +
 +   va_start(args, first_property);
-+   animation = gb_object_animatev(object, mode, duration_msec,
-+                                  frame_rate, first_property, args);
++   animation = _gb_object_animatev(object, mode, duration_msec,
++                                   frame_rate, first_property, args);
 +   va_end(args);
 +   g_object_weak_ref(G_OBJECT(animation), (GWeakNotify)notify, notify_data);
 +   return animation;
 +}
 diff --git a/gtk/gb-animation.h b/gtk/gb-animation.h
 new file mode 100644
-index 0000000..7884b15
+index 0000000..bf9268d
 --- /dev/null
 +++ b/gtk/gb-animation.h
 @@ -0,0 +1,87 @@
@@ -1074,8 +1074,8 @@ index 0000000..7884b15
 +
 +G_BEGIN_DECLS
 +
-+#define GB_TYPE_ANIMATION            (gb_animation_get_type())
-+#define GB_TYPE_ANIMATION_MODE       (gb_animation_mode_get_type())
++#define GB_TYPE_ANIMATION            (_gb_animation_get_type())
++#define GB_TYPE_ANIMATION_MODE       (_gb_animation_mode_get_type())
 +#define GB_ANIMATION(obj)            (G_TYPE_CHECK_INSTANCE_CAST ((obj), GB_TYPE_ANIMATION, GbAnimation))
 +#define GB_ANIMATION_CONST(obj)      (G_TYPE_CHECK_INSTANCE_CAST ((obj), GB_TYPE_ANIMATION, GbAnimation const))
 +#define GB_ANIMATION_CLASS(klass)    (G_TYPE_CHECK_CLASS_CAST ((klass),  GB_TYPE_ANIMATION, GbAnimationClass))
@@ -1112,33 +1112,33 @@ index 0000000..7884b15
 +	GInitiallyUnownedClass parent_class;
 +};
 +
-+GType gb_animation_get_type         (void) G_GNUC_CONST;
-+GType gb_animation_mode_get_type    (void) G_GNUC_CONST;
-+void  gb_animation_start            (GbAnimation      *animation);
-+void  gb_animation_stop             (GbAnimation      *animation);
-+void  gb_animation_add_property     (GbAnimation      *animation,
-+                                     GParamSpec       *pspec,
-+                                     const GValue     *value);
-+GbAnimation* gb_object_animate      (gpointer          object,
-+                                     GbAnimationMode   mode,
-+                                     guint             duration_msec,
-+                                     const gchar      *first_property,
-+                                     ...) G_GNUC_NULL_TERMINATED;
-+GbAnimation* gb_object_animate_full (gpointer          object,
-+                                     GbAnimationMode   mode,
-+                                     guint             duration_msec,
-+                                     guint             frame_rate,
-+                                     GDestroyNotify    notify,
-+                                     gpointer          notify_data,
-+                                     const gchar      *first_property,
-+                                     ...) G_GNUC_NULL_TERMINATED;
++GType _gb_animation_get_type         (void) G_GNUC_CONST;
++GType _gb_animation_mode_get_type    (void) G_GNUC_CONST;
++void  _gb_animation_start            (GbAnimation      *animation);
++void  _gb_animation_stop             (GbAnimation      *animation);
++void  _gb_animation_add_property     (GbAnimation      *animation,
++                                      GParamSpec       *pspec,
++                                      const GValue     *value);
++GbAnimation* _gb_object_animate      (gpointer          object,
++                                      GbAnimationMode   mode,
++                                      guint             duration_msec,
++                                      const gchar      *first_property,
++                                      ...) G_GNUC_NULL_TERMINATED;
++GbAnimation* _gb_object_animate_full (gpointer          object,
++                                      GbAnimationMode   mode,
++                                      guint             duration_msec,
++                                      guint             frame_rate,
++                                      GDestroyNotify    notify,
++                                      gpointer          notify_data,
++                                      const gchar      *first_property,
++                                      ...) G_GNUC_NULL_TERMINATED;
 +
 +G_END_DECLS
 +
 +#endif /* GB_ANIMATION_H */
 diff --git a/gtk/gb-frame-source.c b/gtk/gb-frame-source.c
 new file mode 100644
-index 0000000..3eb092d
+index 0000000..be04c1b
 --- /dev/null
 +++ b/gtk/gb-frame-source.c
 @@ -0,0 +1,134 @@
@@ -1252,9 +1252,9 @@ index 0000000..3eb092d
 + * Returns: A source id that can be removed with g_source_remove().
 + */
 +guint
-+gb_frame_source_add (guint       frames_per_sec,
-+                     GSourceFunc callback,
-+                     gpointer    user_data)
++_gb_frame_source_add (guint       frames_per_sec,
++                      GSourceFunc callback,
++                      gpointer    user_data)
 +{
 +   GbFrameSource *fsource;
 +   GSource *source;
@@ -1278,7 +1278,7 @@ index 0000000..3eb092d
 +}
 diff --git a/gtk/gb-frame-source.h b/gtk/gb-frame-source.h
 new file mode 100644
-index 0000000..4646e2e
+index 0000000..502d86e
 --- /dev/null
 +++ b/gtk/gb-frame-source.h
 @@ -0,0 +1,32 @@
@@ -1307,15 +1307,15 @@ index 0000000..4646e2e
 +
 +G_BEGIN_DECLS
 +
-+guint gb_frame_source_add (guint       frames_per_sec,
-+                           GSourceFunc callback,
-+                           gpointer    user_data);
++guint _gb_frame_source_add (guint       frames_per_sec,
++                            GSourceFunc callback,
++                            gpointer    user_data);
 +
 +G_END_DECLS
 +
 +#endif /* GB_FRAME_SOURCE_H */
 diff --git a/gtk/gtkscrolledwindow.c b/gtk/gtkscrolledwindow.c
-index 647f67d..7e9c0cc 100644
+index f78ad23..b015533 100644
 --- a/gtk/gtkscrolledwindow.c
 +++ b/gtk/gtkscrolledwindow.c
 @@ -32,6 +32,7 @@
@@ -1534,7 +1534,7 @@ index 647f67d..7e9c0cc 100644
        gtk_widget_unparent (scrolled_window->vscrollbar);
        gtk_widget_destroy (scrolled_window->vscrollbar);
        g_object_unref (scrolled_window->vscrollbar);
-@@ -1513,7 +1631,7 @@ gtk_scrolled_window_size_request (GtkWidget      *widget,
+@@ -1516,7 +1634,7 @@ gtk_scrolled_window_size_request (GtkWidget      *widget,
  
        if (scrolled_window->hscrollbar_policy == GTK_POLICY_NEVER)
  	requisition->width += child_requisition.width;
@@ -1543,7 +1543,7 @@ index 647f67d..7e9c0cc 100644
  	{
  	  GtkWidgetAuxInfo *aux_info = _gtk_widget_get_aux_info (bin->child, FALSE);
  
-@@ -1528,7 +1646,7 @@ gtk_scrolled_window_size_request (GtkWidget      *widget,
+@@ -1531,7 +1649,7 @@ gtk_scrolled_window_size_request (GtkWidget      *widget,
  
        if (scrolled_window->vscrollbar_policy == GTK_POLICY_NEVER)
  	requisition->height += child_requisition.height;
@@ -1552,7 +1552,7 @@ index 647f67d..7e9c0cc 100644
  	{
  	  GtkWidgetAuxInfo *aux_info = _gtk_widget_get_aux_info (bin->child, FALSE);
  
-@@ -1542,20 +1660,23 @@ gtk_scrolled_window_size_request (GtkWidget      *widget,
+@@ -1545,20 +1663,23 @@ gtk_scrolled_window_size_request (GtkWidget      *widget,
  	}
      }
  
@@ -1588,7 +1588,7 @@ index 647f67d..7e9c0cc 100644
      }
  
    requisition->width += GTK_CONTAINER (widget)->border_width * 2 + MAX (0, extra_width);
-@@ -1596,6 +1717,9 @@ gtk_scrolled_window_relative_allocation (GtkWidget     *widget,
+@@ -1599,6 +1720,9 @@ gtk_scrolled_window_relative_allocation (GtkWidget     *widget,
    allocation->width = MAX (1, (gint)widget->allocation.width - allocation->x * 2);
    allocation->height = MAX (1, (gint)widget->allocation.height - allocation->y * 2);
  
@@ -1598,7 +1598,7 @@ index 647f67d..7e9c0cc 100644
    if (scrolled_window->vscrollbar_visible)
      {
        GtkRequisition vscrollbar_requisition;
-@@ -1752,6 +1876,9 @@ gtk_scrolled_window_size_allocate (GtkWidget     *widget,
+@@ -1755,6 +1879,9 @@ gtk_scrolled_window_size_allocate (GtkWidget     *widget,
    scrolled_window = GTK_SCROLLED_WINDOW (widget);
    bin = GTK_BIN (scrolled_window);
  
@@ -1608,7 +1608,7 @@ index 647f67d..7e9c0cc 100644
    scrollbar_spacing = _gtk_scrolled_window_get_scrollbar_spacing (scrolled_window);
    gtk_widget_style_get (widget, "scrollbars-within-bevel", &scrollbars_within_bevel, NULL);
  
-@@ -1810,7 +1937,7 @@ gtk_scrolled_window_size_allocate (GtkWidget     *widget,
+@@ -1813,7 +1940,7 @@ gtk_scrolled_window_size_allocate (GtkWidget     *widget,
        gtk_scrolled_window_relative_allocation (widget, &relative_allocation);
      }
    
@@ -1617,7 +1617,7 @@ index 647f67d..7e9c0cc 100644
      {
        GtkRequisition hscrollbar_requisition;
        gtk_widget_get_child_requisition (scrolled_window->hscrollbar,
-@@ -1858,7 +1985,7 @@ gtk_scrolled_window_size_allocate (GtkWidget     *widget,
+@@ -1861,7 +1988,7 @@ gtk_scrolled_window_size_allocate (GtkWidget     *widget,
    else if (gtk_widget_get_visible (scrolled_window->hscrollbar))
      gtk_widget_hide (scrolled_window->hscrollbar);
  
@@ -1626,7 +1626,7 @@ index 647f67d..7e9c0cc 100644
      {
        GtkRequisition vscrollbar_requisition;
        if (!gtk_widget_get_visible (scrolled_window->vscrollbar))
-@@ -1928,7 +2055,7 @@ gtk_scrolled_window_scroll_event (GtkWidget      *widget,
+@@ -1931,7 +2058,7 @@ gtk_scrolled_window_scroll_event (GtkWidget      *widget,
    if (gdk_event_get_scroll_deltas ((GdkEvent *) event, &delta_x, &delta_y))
      {
        if (delta_x != 0.0 && scrolled_window->hscrollbar &&
@@ -1635,7 +1635,7 @@ index 647f67d..7e9c0cc 100644
          {
            GtkAdjustment *adj;
            gdouble new_value;
-@@ -1946,7 +2073,7 @@ gtk_scrolled_window_scroll_event (GtkWidget      *widget,
+@@ -1949,7 +2076,7 @@ gtk_scrolled_window_scroll_event (GtkWidget      *widget,
          }
  
        if (delta_y != 0.0 && scrolled_window->vscrollbar &&
@@ -1644,7 +1644,7 @@ index 647f67d..7e9c0cc 100644
          {
            GtkAdjustment *adj;
            gdouble new_value;
-@@ -1972,7 +2099,7 @@ gtk_scrolled_window_scroll_event (GtkWidget      *widget,
+@@ -1975,7 +2102,7 @@ gtk_scrolled_window_scroll_event (GtkWidget      *widget,
        else
          range = scrolled_window->hscrollbar;
  
@@ -1653,7 +1653,7 @@ index 647f67d..7e9c0cc 100644
          {
            GtkAdjustment *adj = GTK_RANGE (range)->adjustment;
            gdouble delta, new_value;
-@@ -2612,6 +2739,9 @@ gtk_scrolled_window_adjustment_changed (GtkAdjustment *adjustment,
+@@ -2615,6 +2742,9 @@ gtk_scrolled_window_adjustment_changed (GtkAdjustment *adjustment,
  	    gtk_widget_queue_resize (GTK_WIDGET (scrolled_win));
  	}
      }
@@ -1663,7 +1663,7 @@ index 647f67d..7e9c0cc 100644
  }
  
  static void
-@@ -2632,6 +2762,9 @@ gtk_scrolled_window_adjustment_value_changed (GtkAdjustment *adjustment,
+@@ -2635,6 +2765,9 @@ gtk_scrolled_window_adjustment_value_changed (GtkAdjustment *adjustment,
    else if (scrolled_window->hscrollbar &&
             adjustment == gtk_range_get_adjustment (GTK_RANGE (scrolled_window->hscrollbar)))
      priv->unclamped_hadj_value = gtk_adjustment_get_value (adjustment);
@@ -1673,7 +1673,7 @@ index 647f67d..7e9c0cc 100644
  }
  
  static void
-@@ -2656,10 +2789,17 @@ gtk_scrolled_window_add (GtkContainer *container,
+@@ -2659,10 +2792,17 @@ gtk_scrolled_window_add (GtkContainer *container,
  
    /* this is a temporary message */
    if (!gtk_widget_set_scroll_adjustments (child,
@@ -1693,7 +1693,7 @@ index 647f67d..7e9c0cc 100644
  }
  
  static void
-@@ -2669,7 +2809,14 @@ gtk_scrolled_window_remove (GtkContainer *container,
+@@ -2672,7 +2812,14 @@ gtk_scrolled_window_remove (GtkContainer *container,
    g_return_if_fail (GTK_IS_SCROLLED_WINDOW (container));
    g_return_if_fail (child != NULL);
    g_return_if_fail (GTK_BIN (container)->child == child);
@@ -1709,7 +1709,7 @@ index 647f67d..7e9c0cc 100644
    gtk_widget_set_scroll_adjustments (child, NULL, NULL);
  
    /* chain parent class handler to remove child */
-@@ -2869,5 +3016,289 @@ gtk_scrolled_window_grab_notify (GtkWidget *widget,
+@@ -2872,5 +3019,383 @@ gtk_scrolled_window_grab_notify (GtkWidget *widget,
      }
  }
  
@@ -1752,10 +1752,14 @@ index 647f67d..7e9c0cc 100644
 +  cairo_close_path (cr);
 +}
 +
-+static gboolean
-+gtk_scrolled_window_child_expose (GtkWidget         *widget,
-+                                  GdkEventExpose    *eevent,
-+                                  GtkScrolledWindow *scrolled_window)
++static void
++gtk_scrolled_window_get_child_scroll_areas (GtkScrolledWindow *scrolled_window,
++                                            GtkWidget         *child,
++                                            GdkWindow         *child_window,
++                                            GdkRectangle      *vbar_rect,
++                                            GdkRectangle      *vslider_rect,
++                                            GdkRectangle      *hbar_rect,
++                                            GdkRectangle      *hslider_rect)
 +{
 +   GtkScrolledWindowPrivate *priv = GTK_SCROLLED_WINDOW_GET_PRIVATE (scrolled_window);
 +   GtkAdjustment *adj;
@@ -1774,16 +1778,11 @@ index 647f67d..7e9c0cc 100644
 +   gint window_height;
 +   gint viewport_width;
 +   gint viewport_height;
-+   cairo_t   *cr;
 +
-+   cr = gdk_cairo_create (eevent->window);
-+   gdk_cairo_region (cr, eevent->region);
-+   cairo_clip (cr);
++   window_width = gdk_window_get_width (child_window);
++   window_height = gdk_window_get_height (child_window);
 +
-+   window_width = gdk_window_get_width (eevent->window);
-+   window_height = gdk_window_get_height (eevent->window);
-+
-+   gtk_widget_get_allocation (widget, &allocation);
++   gtk_widget_get_allocation (child, &allocation);
 +
 +   viewport_width = MIN (window_width, allocation.width);
 +   viewport_height = MIN (window_height, allocation.height);
@@ -1802,10 +1801,7 @@ index 647f67d..7e9c0cc 100644
 +       value_h = gtk_adjustment_get_value (adj);
 +     }
 +
-+   /*
-+    * Vertical scrolling.
-+    */
-+   if (scrolled_window->vscrollbar)
++   if ((vbar_rect || vslider_rect) && scrolled_window->vscrollbar)
 +     {
 +       adj = gtk_range_get_adjustment (GTK_RANGE (scrolled_window->vscrollbar));
 +
@@ -1832,19 +1828,43 @@ index 647f67d..7e9c0cc 100644
 +           if (window_height > allocation.height)
 +             y += value_v;
 +
-+           gtk_scrolled_window_rounded_rectangle (cr,
-+                                                  x, y,
-+                                                  priv->sb_width,
-+                                                  height,
-+                                                  priv->sb_radius,
-+                                                  priv->sb_radius);
++           if (vbar_rect)
++             {
++               vbar_rect->x = x - priv->sb_padding;
++               vbar_rect->y = 0;
++               vbar_rect->width = priv->sb_width + 2 * priv->sb_padding;
++               vbar_rect->height = viewport_height;
++             }
++
++           if (vslider_rect)
++             {
++               vslider_rect->x = x;
++               vslider_rect->y = y;
++               vslider_rect->width = priv->sb_width;
++               vslider_rect->height = height;
++             }
++         }
++       else
++         {
++           if (vbar_rect)
++             {
++               vbar_rect->x = 0;
++               vbar_rect->y = 0;
++               vbar_rect->width = 0;
++               vbar_rect->height = 0;
++             }
++
++           if (vslider_rect)
++             {
++               vslider_rect->x = 0;
++               vslider_rect->y = 0;
++               vslider_rect->width = 0;
++               vslider_rect->height = 0;
++             }
 +         }
 +     }
 +
-+   /*
-+    * Horizontal scrolling.
-+    */
-+   if (scrolled_window->hscrollbar)
++   if ((hbar_rect || hslider_rect) && scrolled_window->hscrollbar)
 +     {
 +       adj = gtk_range_get_adjustment (GTK_RANGE (scrolled_window->hscrollbar));
 +
@@ -1871,20 +1891,96 @@ index 647f67d..7e9c0cc 100644
 +           if (window_height > allocation.height)
 +             y += value_v;
 +
-+           gtk_scrolled_window_rounded_rectangle (cr,
-+                                                  x, y,
-+                                                  width,
-+                                                  priv->sb_width,
-+                                                  priv->sb_radius,
-+                                                  priv->sb_radius);
++           if (hbar_rect)
++             {
++               hbar_rect->x = 0;
++               hbar_rect->y = y - priv->sb_padding;
++               hbar_rect->width = viewport_width;
++               hbar_rect->height = priv->sb_width + 2 * priv->sb_padding;
++             }
++
++           if (hslider_rect)
++             {
++               hslider_rect->x = x;
++               hslider_rect->y = y;
++               hslider_rect->width = width;
++               hslider_rect->height = priv->sb_width;
++             }
++         }
++       else
++         {
++           if (hbar_rect)
++             {
++               hbar_rect->x = 0;
++               hbar_rect->y = 0;
++               hbar_rect->width = 0;
++               hbar_rect->height = 0;
++             }
++
++           if (hslider_rect)
++             {
++               hslider_rect->x = 0;
++               hslider_rect->y = 0;
++               hslider_rect->width = 0;
++               hslider_rect->height = 0;
++             }
 +         }
 +     }
++}
 +
-+   /*
-+    * Paint.
-+    */
-+   cairo_set_source_rgba (cr, 0, 0, 0,
-+                          gtk_adjustment_get_value (priv->opacity));
++static gboolean
++gtk_scrolled_window_child_expose (GtkWidget         *widget,
++                                  GdkEventExpose    *eevent,
++                                  GtkScrolledWindow *scrolled_window)
++{
++   GtkScrolledWindowPrivate *priv = GTK_SCROLLED_WINDOW_GET_PRIVATE (scrolled_window);
++   GdkRectangle vbar_rect;
++   GdkRectangle vslider_rect;
++   GdkRectangle hbar_rect;
++   GdkRectangle hslider_rect;
++   cairo_t   *cr;
++
++   cr = gdk_cairo_create (eevent->window);
++   gdk_cairo_region (cr, eevent->region);
++   cairo_clip (cr);
++
++   gtk_scrolled_window_get_child_scroll_areas (scrolled_window,
++                                               gtk_bin_get_child (GTK_BIN (scrolled_window)),
++                                               eevent->window,
++                                               &vbar_rect, &vslider_rect,
++                                               &hbar_rect, &hslider_rect);
++
++   if (TRUE)
++     {
++       if (scrolled_window->vscrollbar && vbar_rect.width > 0)
++         gdk_cairo_rectangle (cr, &vbar_rect);
++
++       if (scrolled_window->hscrollbar && hbar_rect.width > 0)
++         gdk_cairo_rectangle (cr, &hbar_rect);
++
++       cairo_set_source_rgba (cr, 0, 0, 0, 0.2);
++       cairo_fill (cr);
++     }
++
++   if (scrolled_window->vscrollbar && vslider_rect.width > 0)
++     gtk_scrolled_window_rounded_rectangle (cr,
++                                            vslider_rect.x,
++                                            vslider_rect.y,
++                                            vslider_rect.width,
++                                            vslider_rect.height,
++                                            priv->sb_radius,
++                                            priv->sb_radius);
++
++   if (scrolled_window->hscrollbar && hslider_rect.width > 0)
++     gtk_scrolled_window_rounded_rectangle (cr,
++                                            hslider_rect.x,
++                                            hslider_rect.y,
++                                            hslider_rect.width,
++                                            hslider_rect.height,
++                                            priv->sb_radius,
++                                            priv->sb_radius);
++
++   cairo_set_source_rgba (cr, 0, 0, 0, gtk_adjustment_get_value (priv->opacity));
 +   cairo_fill (cr);
 +
 +   cairo_destroy (cr);
@@ -1903,7 +1999,7 @@ index 647f67d..7e9c0cc 100644
 +      priv->opacity_anim = NULL;
 +      g_object_remove_weak_pointer (G_OBJECT (anim),
 +                                    (gpointer *) &priv->opacity_anim);
-+      gb_animation_stop (anim);
++      _gb_animation_stop (anim);
 +    }
 +
 +  if (priv->sb_fade_out_id)
@@ -1918,8 +2014,6 @@ index 647f67d..7e9c0cc 100644
 +static gboolean
 +gtk_scrolled_window_fade_out_timeout (GtkScrolledWindow *scrolled_window)
 +{
-+  GtkScrolledWindowPrivate *priv = GTK_SCROLLED_WINDOW_GET_PRIVATE (scrolled_window);
-+
 +  gtk_scrolled_window_start_fade_out_animation (scrolled_window);
 +
 +  return FALSE;
@@ -1939,11 +2033,11 @@ index 647f67d..7e9c0cc 100644
 +  priv->sb_fading_in = TRUE;
 +
 +  upper = gtk_adjustment_get_upper (priv->opacity);
-+  priv->opacity_anim = gb_object_animate (priv->opacity,
-+                                          GB_ANIMATION_EASE_OUT_QUAD,
-+                                          100,
-+                                          "value", upper,
-+                                          NULL);
++  priv->opacity_anim = _gb_object_animate (priv->opacity,
++                                           GB_ANIMATION_EASE_OUT_QUAD,
++                                           100,
++                                           "value", upper,
++                                           NULL);
 +  g_object_add_weak_pointer (G_OBJECT (priv->opacity_anim),
 +                             (gpointer *) &priv->opacity_anim);
 +
@@ -1960,11 +2054,11 @@ index 647f67d..7e9c0cc 100644
 +
 +  gtk_scrolled_window_cancel_animation (scrolled_window);
 +
-+  priv->opacity_anim = gb_object_animate (priv->opacity,
-+                                          GB_ANIMATION_EASE_IN_QUAD,
-+                                          300,
-+                                          "value", 0.0,
-+                                          NULL);
++  priv->opacity_anim = _gb_object_animate (priv->opacity,
++                                           GB_ANIMATION_EASE_IN_QUAD,
++                                           300,
++                                           "value", 0.0,
++                                           NULL);
 +  g_object_add_weak_pointer (G_OBJECT (priv->opacity_anim),
 +                             (gpointer *) &priv->opacity_anim);
 +}

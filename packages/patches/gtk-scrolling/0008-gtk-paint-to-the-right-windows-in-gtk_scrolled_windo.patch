@@ -1,7 +1,7 @@
-From 087c3fba95afd7853e45f220575b145f703a6aba Mon Sep 17 00:00:00 2001
+From eed8c49f9c1ca598a6f162ae72d6c21a44a1dbdc Mon Sep 17 00:00:00 2001
 From: Michael Natterer <mitch@gimp.org>
 Date: Thu, 14 Jun 2012 09:27:09 +0200
-Subject: [PATCH 06/10] gtk: paint to the right windows in
+Subject: [PATCH 08/12] gtk: paint to the right windows in
  gtk_scrolled_window_expose()
 
 so we don't paint everything twice.
@@ -10,10 +10,10 @@ so we don't paint everything twice.
  1 files changed, 6 insertions(+), 3 deletions(-)
 
 diff --git a/gtk/gtkscrolledwindow.c b/gtk/gtkscrolledwindow.c
-index 7e9c0cc..39584c5 100644
+index 647f67d..f78ad23 100644
 --- a/gtk/gtkscrolledwindow.c
 +++ b/gtk/gtkscrolledwindow.c
-@@ -1429,11 +1429,14 @@ static gboolean
+@@ -1311,11 +1311,14 @@ static gboolean
  gtk_scrolled_window_expose (GtkWidget      *widget,
  			    GdkEventExpose *event)
  {

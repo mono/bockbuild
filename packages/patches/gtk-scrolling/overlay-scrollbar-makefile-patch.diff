@@ -1,0 +1,121 @@
+--- gtk+-2.24.10.orig/gtk/Makefile.in	2012-06-02 18:44:51.000000000 +0200
++++ gtk+-2.24.10/gtk/Makefile.in	2012-07-20 21:46:50.000000000 +0200
+@@ -124,7 +124,8 @@ am__DEPENDENCIES_1 =
+ @HAVE_INCLUDED_IMMMODULES_TRUE@	$(am__DEPENDENCIES_1)
+ am__DEPENDENCIES_3 = $(top_builddir)/gdk/$(gdktargetlib) \
+ 	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_2)
+-am__libgtk_directfb_2_0_la_SOURCES_DIST = gtkquery.c gtksearchengine.c \
++am__libgtk_directfb_2_0_la_SOURCES_DIST = gb-animation.c \
++	gb-frame-source.c gtkquery.c gtksearchengine.c \
+ 	gtksearchenginesimple.c fnmatch.c gtkaboutdialog.c \
+ 	gtkaccelgroup.c gtkaccellabel.c gtkaccelmap.c gtkaccessible.c \
+ 	gtkaction.c gtkactiongroup.c gtkactivatable.c gtkadjustment.c \
+@@ -209,7 +210,7 @@ am__libgtk_directfb_2_0_la_SOURCES_DIST 
+ @USE_QUARTZ_FALSE@am__objects_1 = gtkclipboard.lo gtkdnd.lo
+ @USE_QUARTZ_TRUE@am__objects_1 = gtkclipboard-quartz.lo \
+ @USE_QUARTZ_TRUE@	gtkdnd-quartz.lo gtkquartz.lo
+-am__objects_2 = gtkquery.lo gtksearchengine.lo \
++am__objects_2 = gb-animation.lo gb-frame-source.lo gtkquery.lo gtksearchengine.lo \
+ 	gtksearchenginesimple.lo fnmatch.lo gtkaboutdialog.lo \
+ 	gtkaccelgroup.lo gtkaccellabel.lo gtkaccelmap.lo \
+ 	gtkaccessible.lo gtkaction.lo gtkactiongroup.lo \
+@@ -316,7 +317,8 @@ libgtk_directfb_2_0_la_LINK = $(LIBTOOL)
+ 	$(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=link $(CCLD) \
+ 	$(AM_CFLAGS) $(CFLAGS) $(libgtk_directfb_2_0_la_LDFLAGS) \
+ 	$(LDFLAGS) -o $@
+-am__libgtk_quartz_2_0_la_SOURCES_DIST = gtkquery.c gtksearchengine.c \
++am__libgtk_quartz_2_0_la_SOURCES_DIST = gb-animation.c \
++	gb-frame-source.c gtkquery.c gtksearchengine.c \
+ 	gtksearchenginesimple.c fnmatch.c gtkaboutdialog.c \
+ 	gtkaccelgroup.c gtkaccellabel.c gtkaccelmap.c gtkaccessible.c \
+ 	gtkaction.c gtkactiongroup.c gtkactivatable.c gtkadjustment.c \
+@@ -405,7 +407,9 @@ am__libgtk_quartz_2_0_la_SOURCES_DIST = 
+ @USE_QUARTZ_TRUE@	libgtk_quartz_2_0_la-gtkclipboard-quartz.lo \
+ @USE_QUARTZ_TRUE@	libgtk_quartz_2_0_la-gtkdnd-quartz.lo \
+ @USE_QUARTZ_TRUE@	libgtk_quartz_2_0_la-gtkquartz.lo
+-am__objects_17 = libgtk_quartz_2_0_la-gtkquery.lo \
++am__objects_17 = libgtk_quartz_2_0_la-gb-animation.lo \
++	libgtk_quartz_2_0_la-gb-frame-source.lo \
++	libgtk_quartz_2_0_la-gtkquery.lo \
+ 	libgtk_quartz_2_0_la-gtksearchengine.lo \
+ 	libgtk_quartz_2_0_la-gtksearchenginesimple.lo \
+ 	libgtk_quartz_2_0_la-fnmatch.lo \
+@@ -688,7 +692,8 @@ libgtk_quartz_2_0_la_LINK = $(LIBTOOL) $
+ 	$(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=link $(CCLD) \
+ 	$(libgtk_quartz_2_0_la_CFLAGS) $(CFLAGS) \
+ 	$(libgtk_quartz_2_0_la_LDFLAGS) $(LDFLAGS) -o $@
+-am__libgtk_win32_2_0_la_SOURCES_DIST = gtkquery.c gtksearchengine.c \
++am__libgtk_win32_2_0_la_SOURCES_DIST = gb-animation.c \
++	gb-frame-source.c gtkquery.c gtksearchengine.c \
+ 	gtksearchenginesimple.c fnmatch.c gtkaboutdialog.c \
+ 	gtkaccelgroup.c gtkaccellabel.c gtkaccelmap.c gtkaccessible.c \
+ 	gtkaction.c gtkactiongroup.c gtkactivatable.c gtkadjustment.c \
+@@ -776,7 +781,8 @@ libgtk_win32_2_0_la_LINK = $(LIBTOOL) $(
+ 	$(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=link $(CCLD) \
+ 	$(AM_CFLAGS) $(CFLAGS) $(libgtk_win32_2_0_la_LDFLAGS) \
+ 	$(LDFLAGS) -o $@
+-am__libgtk_x11_2_0_la_SOURCES_DIST = gtkquery.c gtksearchengine.c \
++am__libgtk_x11_2_0_la_SOURCES_DIST = gb-animation.c gb-frame-source.c \
++	gtkquery.c gtksearchengine.c \
+ 	gtksearchenginesimple.c fnmatch.c gtkaboutdialog.c \
+ 	gtkaccelgroup.c gtkaccellabel.c gtkaccelmap.c gtkaccessible.c \
+ 	gtkaction.c gtkactiongroup.c gtkactivatable.c gtkadjustment.c \
+@@ -1379,7 +1385,8 @@ gtk_semi_private_h_sources = \
+ 
+ 
+ # GTK+ header files that don't get installed
+-gtk_private_h_sources = gtkquery.h gtksearchengine.h \
++gtk_private_h_sources = gb-animation.h gb-frame-source.h \
++	gtkquery.h gtksearchengine.h \
+ 	gtksearchenginesimple.h gtkdndcursors.h gtkentryprivate.h \
+ 	gtkbuilderprivate.h gtkcustompaperunixdialog.h \
+ 	gtkfilechooserdefault.h gtkfilechooserembed.h \
+@@ -1401,7 +1408,8 @@ gtk_private_h_sources = gtkquery.h gtkse
+ 	$(am__append_8) $(am__append_10) $(am__append_12)
+ 
+ # GTK+ C sources to build the library from
+-gtk_base_c_sources = gtkquery.c gtksearchengine.c \
++gtk_base_c_sources = gb-animation.c gb-frame-source.c \
++	gtkquery.c gtksearchengine.c \
+ 	gtksearchenginesimple.c fnmatch.c gtkaboutdialog.c \
+ 	gtkaccelgroup.c gtkaccellabel.c gtkaccelmap.c gtkaccessible.c \
+ 	gtkaction.c gtkactiongroup.c gtkactivatable.c gtkadjustment.c \
+@@ -2083,6 +2091,8 @@ distclean-compile:
+ 	-rm -f *.tab.c
+ 
+ @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/fnmatch.Plo@am__quote@
++@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/gb-animation.Plo@am__quote@
++@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/gb-frame-source.Plo@am__quote@
+ @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/gtkaboutdialog.Plo@am__quote@
+ @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/gtkaccelgroup.Plo@am__quote@
+ @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/gtkaccellabel.Plo@am__quote@
+@@ -2354,6 +2364,8 @@ distclean-compile:
+ @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/gtkwindow.Plo@am__quote@
+ @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/gtkxembed.Plo@am__quote@
+ @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libgtk_quartz_2_0_la-fnmatch.Plo@am__quote@
++@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libgtk_quartz_2_0_la-gb-animation.Plo@am__quote@
++@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libgtk_quartz_2_0_la-gb-frame-source.Plo@am__quote@
+ @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libgtk_quartz_2_0_la-gtkaboutdialog.Plo@am__quote@
+ @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libgtk_quartz_2_0_la-gtkaccelgroup.Plo@am__quote@
+ @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libgtk_quartz_2_0_la-gtkaccellabel.Plo@am__quote@
+@@ -2648,6 +2660,20 @@ distclean-compile:
+ @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+ @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LTCOMPILE) -c -o $@ $<
+ 
++libgtk_quartz_2_0_la-gb-animation.lo: gb-animation.c
++@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libgtk_quartz_2_0_la_CFLAGS) $(CFLAGS) -MT libgtk_quartz_2_0_la-gb-animation.lo -MD -MP -MF $(DEPDIR)/libgtk_quartz_2_0_la-gb-animation.Tpo -c -o libgtk_quartz_2_0_la-gb-animation.lo `test -f 'gb-animation.c' || echo '$(srcdir)/'`gb-animation.c
++@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libgtk_quartz_2_0_la-gb-animation.Tpo $(DEPDIR)/libgtk_quartz_2_0_la-gb-animation.Plo
++@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='gb-animation.c' object='libgtk_quartz_2_0_la-gb-animation.lo' libtool=yes @AMDEPBACKSLASH@
++@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
++@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libgtk_quartz_2_0_la_CFLAGS) $(CFLAGS) -c -o libgtk_quartz_2_0_la-gb-animation.lo `test -f 'gb-animation.c' || echo '$(srcdir)/'`gb-animation.c
++
++libgtk_quartz_2_0_la-gb-frame-source.lo: gb-frame-source.c
++@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libgtk_quartz_2_0_la_CFLAGS) $(CFLAGS) -MT libgtk_quartz_2_0_la-gb-frame-source.lo -MD -MP -MF $(DEPDIR)/libgtk_quartz_2_0_la-gb-frame-source.Tpo -c -o libgtk_quartz_2_0_la-gb-frame-source.lo `test -f 'gb-frame-source.c' || echo '$(srcdir)/'`gb-frame-source.c
++@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libgtk_quartz_2_0_la-gb-frame-source.Tpo $(DEPDIR)/libgtk_quartz_2_0_la-gb-frame-source.Plo
++@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='gb-frame-source.c' object='libgtk_quartz_2_0_la-gb-frame-source.lo' libtool=yes @AMDEPBACKSLASH@
++@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
++@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libgtk_quartz_2_0_la_CFLAGS) $(CFLAGS) -c -o libgtk_quartz_2_0_la-gb-frame-source.lo `test -f 'gb-frame-source.c' || echo '$(srcdir)/'`gb-frame-source.c
++
+ libgtk_quartz_2_0_la-gtkquery.lo: gtkquery.c
+ @am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libgtk_quartz_2_0_la_CFLAGS) $(CFLAGS) -MT libgtk_quartz_2_0_la-gtkquery.lo -MD -MP -MF $(DEPDIR)/libgtk_quartz_2_0_la-gtkquery.Tpo -c -o libgtk_quartz_2_0_la-gtkquery.lo `test -f 'gtkquery.c' || echo '$(srcdir)/'`gtkquery.c
+ @am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libgtk_quartz_2_0_la-gtkquery.Tpo $(DEPDIR)/libgtk_quartz_2_0_la-gtkquery.Plo

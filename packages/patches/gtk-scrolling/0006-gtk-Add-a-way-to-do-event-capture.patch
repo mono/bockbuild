@@ -1,7 +1,7 @@
-From 35a33c33b7cc26f81b058a0bb4042873280c7b84 Mon Sep 17 00:00:00 2001
+From 5c85ce59be147131f0143cfe1ab5056b6d0ca009 Mon Sep 17 00:00:00 2001
 From: Carlos Garcia Campos <cgarcia@igalia.com>
 Date: Tue, 8 Feb 2011 14:49:31 +0100
-Subject: [PATCH 02/10] gtk: Add a way to do event capture
+Subject: [PATCH 06/12] gtk: Add a way to do event capture
 
 This patch adds a capture phase to GTK+'s event propagation
 model. Events are first propagated from the toplevel (or the

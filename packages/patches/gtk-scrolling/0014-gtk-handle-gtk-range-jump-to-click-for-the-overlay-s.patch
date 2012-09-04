@@ -1,0 +1,76 @@
+From fba56984d68b6718e276b97281287096f2abd7e2 Mon Sep 17 00:00:00 2001
+From: Michael Natterer <mitch@gimp.org>
+Date: Fri, 31 Aug 2012 16:24:07 +0200
+Subject: [PATCH 14/14] gtk: handle gtk-range-jump-to-click for the overlay
+ scrollbars
+
+---
+ gtk/gtkscrolledwindow.c |   37 ++++++++++++++++++++++++++++++++-----
+ 1 files changed, 32 insertions(+), 5 deletions(-)
+
+diff --git a/gtk/gtkscrolledwindow.c b/gtk/gtkscrolledwindow.c
+index b0ae316..d28c689 100644
+--- a/gtk/gtkscrolledwindow.c
++++ b/gtk/gtkscrolledwindow.c
+@@ -2726,6 +2726,10 @@ gtk_scrolled_window_scroll_step_timeout (gpointer data)
+ }
+ 
+ static gboolean
++gtk_scrolled_window_captured_motion_notify_scrollbar (GtkWidget *widget,
++                                                      GdkEvent  *event);
++
++static gboolean
+ gtk_scrolled_window_captured_button_press_scrollbar (GtkWidget *widget,
+                                                      GdkEvent  *event)
+ {
+@@ -2745,6 +2749,11 @@ gtk_scrolled_window_captured_button_press_scrollbar (GtkWidget *widget,
+       GdkRectangle vslider_rect;
+       GdkRectangle hbar_rect;
+       GdkRectangle hslider_rect;
++      gboolean     jump_to_click;
++
++      g_object_get (gtk_widget_get_settings (widget),
++                    "gtk-range-jump-to-click", &jump_to_click,
++                    NULL);
+ 
+       priv->sb_pointer_grabbed = TRUE;
+       gtk_grab_add (widget);
+@@ -2801,12 +2810,30 @@ gtk_scrolled_window_captured_button_press_scrollbar (GtkWidget *widget,
+       if ((priv->sb_grab_vscroll || priv->sb_grab_hscroll) &&
+           !priv->sb_drag_slider)
+         {
+-          gtk_scrolled_window_scroll_step (scrolled_window);
++          if (jump_to_click)
++            {
++              GdkEventMotion mevent = { 0, };
++
++              priv->sb_drag_slider = TRUE;
++              priv->sb_grab_offset_x = hslider_rect.width / 2;
++              priv->sb_grab_offset_y = vslider_rect.height / 2;
+ 
+-          priv->sb_scroll_timeout_id =
+-            gdk_threads_add_timeout (SCROLL_INTERVAL_INITIAL,
+-                                     gtk_scrolled_window_scroll_step_timeout,
+-                                     scrolled_window);
++              mevent.window = bevent->window;
++              mevent.x = bevent->x;
++              mevent.y = bevent->y;
++
++              gtk_scrolled_window_captured_motion_notify_scrollbar (widget,
++                                                                    (GdkEvent *) &mevent);
++            }
++          else
++            {
++              gtk_scrolled_window_scroll_step (scrolled_window);
++
++              priv->sb_scroll_timeout_id =
++                gdk_threads_add_timeout (SCROLL_INTERVAL_INITIAL,
++                                         gtk_scrolled_window_scroll_step_timeout,
++                                         scrolled_window);
++            }
+         }
+ 
+       return TRUE;
+-- 
+1.7.5.4
+

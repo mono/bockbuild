@@ -1,7 +1,7 @@
-From 6e173395230ec561e1676604e1bf938db3232872 Mon Sep 17 00:00:00 2001
+From 69c7aacadb4d34d2c97b4d31ae410e0547e01b62 Mon Sep 17 00:00:00 2001
 From: Kristian Rietveld <kris@lanedo.com>
 Date: Sun, 29 Jul 2012 16:14:09 +0200
-Subject: [PATCH 2/3] Use gtk-enable-overlay-scrollbars in GtkScrolledWindow
+Subject: [PATCH 11/12] Use gtk-enable-overlay-scrollbars in GtkScrolledWindow
 
 And listen for changes to this setting.  Move overlay_scrollbars variable
 to GtkScrolledWindowPrivate, because we are going to have to monitor for
@@ -12,7 +12,7 @@ signal.
  1 files changed, 72 insertions(+), 25 deletions(-)
 
 diff --git a/gtk/gtkscrolledwindow.c b/gtk/gtkscrolledwindow.c
-index 80920f7..91c7afe 100644
+index 22811e5..803a8cf 100644
 --- a/gtk/gtkscrolledwindow.c
 +++ b/gtk/gtkscrolledwindow.c
 @@ -140,6 +140,8 @@ typedef struct {
@@ -285,7 +285,7 @@ index 80920f7..91c7afe 100644
          {
            GtkAdjustment *adj = GTK_RANGE (range)->adjustment;
            gdouble delta, new_value;
-@@ -2981,11 +3004,13 @@ gtk_scrolled_window_adjustment_changed (GtkAdjustment *adjustment,
+@@ -2987,11 +3010,13 @@ gtk_scrolled_window_adjustment_changed (GtkAdjustment *adjustment,
  					gpointer       data)
  {
    GtkScrolledWindow *scrolled_win;
@@ -299,7 +299,7 @@ index 80920f7..91c7afe 100644
  
    if (scrolled_win->hscrollbar &&
        adjustment == gtk_range_get_adjustment (GTK_RANGE (scrolled_win->hscrollbar)))
-@@ -3016,7 +3041,7 @@ gtk_scrolled_window_adjustment_changed (GtkAdjustment *adjustment,
+@@ -3022,7 +3047,7 @@ gtk_scrolled_window_adjustment_changed (GtkAdjustment *adjustment,
  	}
      }
  
@@ -308,7 +308,7 @@ index 80920f7..91c7afe 100644
      gtk_scrolled_window_start_fade_in_animation (scrolled_win);
  }
  
-@@ -3039,7 +3064,7 @@ gtk_scrolled_window_adjustment_value_changed (GtkAdjustment *adjustment,
+@@ -3045,7 +3070,7 @@ gtk_scrolled_window_adjustment_value_changed (GtkAdjustment *adjustment,
             adjustment == gtk_range_get_adjustment (GTK_RANGE (scrolled_window->hscrollbar)))
      priv->unclamped_hadj_value = gtk_adjustment_get_value (adjustment);
  
@@ -317,7 +317,7 @@ index 80920f7..91c7afe 100644
      gtk_scrolled_window_start_fade_in_animation (scrolled_window);
  }
  
-@@ -3070,7 +3095,7 @@ gtk_scrolled_window_add (GtkContainer *container,
+@@ -3076,7 +3101,7 @@ gtk_scrolled_window_add (GtkContainer *container,
      g_warning ("gtk_scrolled_window_add(): cannot add non scrollable widget "
  	       "use gtk_scrolled_window_add_with_viewport() instead");
  
@@ -326,7 +326,7 @@ index 80920f7..91c7afe 100644
      {
        g_signal_connect_after (child, "expose-event",
                                G_CALLBACK (gtk_scrolled_window_child_expose),
-@@ -3082,11 +3107,15 @@ static void
+@@ -3088,11 +3113,15 @@ static void
  gtk_scrolled_window_remove (GtkContainer *container,
  			    GtkWidget    *child)
  {
@@ -343,7 +343,7 @@ index 80920f7..91c7afe 100644
      {
        g_signal_handlers_disconnect_by_func (child,
                                              gtk_scrolled_window_child_expose,
-@@ -3751,5 +3780,23 @@ gtk_scrolled_window_expose_scrollbars (GtkAdjustment     *adj,
+@@ -3757,5 +3786,23 @@ gtk_scrolled_window_expose_scrollbars (GtkAdjustment     *adj,
      }
  }
  
