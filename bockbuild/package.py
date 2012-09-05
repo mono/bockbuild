@@ -159,7 +159,7 @@ class Package:
 			command = expand_macros (command, self)
 			log (1, command)
 			if not Package.profile.verbose:
-				command = '( %s ) &>/dev/null' % command
+				command = '( %s ) > /dev/null 2>&1' % command
 			run_shell (command)
 
 	def cd (self, dir):
