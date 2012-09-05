@@ -31,8 +31,9 @@ class PangoPackage (GnomeXzPackage):
 	def prep (self):
 		GnomePackage.prep (self)
 		self.sh ('patch -p0 < "%{sources[1]}"')
+		self.sh ('patch -p1 < "%{sources[2]}"')
 		if Package.profile.name == 'darwin':
-			for p in range (2, len (self.sources)):
+			for p in range (3, len (self.sources)):
 				self.sh ('patch -p1 < "%{sources[' + str (p) + ']}"')
 
 PangoPackage ()
