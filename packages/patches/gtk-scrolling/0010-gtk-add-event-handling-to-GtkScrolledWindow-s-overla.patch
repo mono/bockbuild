@@ -1,7 +1,7 @@
-From 79a9ceca1d822850bc9ed88eaaedefd96ce3d919 Mon Sep 17 00:00:00 2001
+From 339acc5d9d4e4bd968f499f633aad374a0252d0f Mon Sep 17 00:00:00 2001
 From: Michael Natterer <mitch@gimp.org>
 Date: Tue, 10 Jul 2012 14:33:45 +0200
-Subject: [PATCH 10/12] gtk: add event handling to GtkScrolledWindow's overlay
+Subject: [PATCH 10/16] gtk: add event handling to GtkScrolledWindow's overlay
  scrollbars
 
 ---
@@ -9,7 +9,7 @@ Subject: [PATCH 10/12] gtk: add event handling to GtkScrolledWindow's overlay
  1 files changed, 395 insertions(+), 35 deletions(-)
 
 diff --git a/gtk/gtkscrolledwindow.c b/gtk/gtkscrolledwindow.c
-index b015533..22811e5 100644
+index b015533..82e5611 100644
 --- a/gtk/gtkscrolledwindow.c
 +++ b/gtk/gtkscrolledwindow.c
 @@ -84,6 +84,10 @@
@@ -205,16 +205,16 @@ index b015533..22811e5 100644
 +            {
 +              priv->sb_drag_slider = TRUE;
 +              priv->sb_grab_offset_x = bevent->x - hslider_rect.x;
-+
-+              if (bevent->x < hslider_rect.x)
-+                priv->sb_scroll_direction = -1;
-+              else
-+                priv->sb_scroll_direction = 1;
 +            }
 +          else
 +            {
 +              priv->sb_drag_slider = FALSE;
 +              priv->sb_grab_offset_x = bevent->x - hbar_rect.x;
++
++              if (bevent->x < hslider_rect.x)
++                priv->sb_scroll_direction = -1;
++              else
++                priv->sb_scroll_direction = 1;
 +            }
 +        }
 +

@@ -1,7 +1,7 @@
-From 5c85ce59be147131f0143cfe1ab5056b6d0ca009 Mon Sep 17 00:00:00 2001
+From 120f841d845972709ed7501b4ece438266bf3560 Mon Sep 17 00:00:00 2001
 From: Carlos Garcia Campos <cgarcia@igalia.com>
 Date: Tue, 8 Feb 2011 14:49:31 +0100
-Subject: [PATCH 06/12] gtk: Add a way to do event capture
+Subject: [PATCH 06/16] gtk: Add a way to do event capture
 
 This patch adds a capture phase to GTK+'s event propagation
 model. Events are first propagated from the toplevel (or the
@@ -397,7 +397,7 @@ index 6386c32..3865a67 100644
  
  #endif /* __GTK_PRIVATE_H__ */
 diff --git a/gtk/gtkwidget.c b/gtk/gtkwidget.c
-index 9a43d27..0186b54 100644
+index 1d1f6bb..8e38ee1 100644
 --- a/gtk/gtkwidget.c
 +++ b/gtk/gtkwidget.c
 @@ -351,6 +351,7 @@ static void gtk_widget_set_usize_internal (GtkWidget *widget,
@@ -408,7 +408,7 @@ index 9a43d27..0186b54 100644
  
  
  /* --- variables --- */
-@@ -4781,6 +4782,58 @@ gtk_widget_event (GtkWidget *widget,
+@@ -4807,6 +4808,58 @@ gtk_widget_event (GtkWidget *widget,
    return gtk_widget_event_internal (widget, event);
  }
  

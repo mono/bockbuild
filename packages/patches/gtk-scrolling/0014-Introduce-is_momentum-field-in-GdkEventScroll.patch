@@ -1,0 +1,121 @@
+From 74b71ceb925fa8b9f372063ce7ee93d54e1dd314 Mon Sep 17 00:00:00 2001
+From: Kristian Rietveld <kris@lanedo.com>
+Date: Sun, 2 Sep 2012 14:16:45 +0200
+Subject: [PATCH 14/16] Introduce is_momentum field in GdkEventScroll
+
+Using the is_momentum field it is possible to distinguish between
+events generated while the user is performing a gesture and
+momentum events that are generated after the gesture has been
+finished.
+---
+ gdk/gdkevents.c               |    1 +
+ gdk/gdkevents.h               |    1 +
+ gdk/gdkwindow.c               |    1 +
+ gdk/quartz/gdkevents-quartz.c |   12 +++++++++---
+ 4 files changed, 12 insertions(+), 3 deletions(-)
+
+diff --git a/gdk/gdkevents.c b/gdk/gdkevents.c
+index 0f8bba2..fcc25cc 100644
+--- a/gdk/gdkevents.c
++++ b/gdk/gdkevents.c
+@@ -394,6 +394,7 @@ gdk_event_new (GdkEventType type)
+       new_event->scroll.y_root = 0.;
+       new_event->scroll.delta_x = 0.;
+       new_event->scroll.delta_y = 0.;
++      new_event->scroll.is_momentum = FALSE;
+       break;
+     case GDK_ENTER_NOTIFY:
+     case GDK_LEAVE_NOTIFY:
+diff --git a/gdk/gdkevents.h b/gdk/gdkevents.h
+index e0802eb..d697a61 100644
+--- a/gdk/gdkevents.h
++++ b/gdk/gdkevents.h
+@@ -340,6 +340,7 @@ struct _GdkEventScroll
+   gboolean has_deltas;
+   gdouble delta_x;
+   gdouble delta_y;
++  gboolean is_momentum;
+ };
+ 
+ struct _GdkEventKey
+diff --git a/gdk/gdkwindow.c b/gdk/gdkwindow.c
+index 13d4d46..0cda10b 100644
+--- a/gdk/gdkwindow.c
++++ b/gdk/gdkwindow.c
+@@ -10797,6 +10797,7 @@ proxy_button_event (GdkEvent *source_event,
+       event->scroll.has_deltas = source_event->scroll.has_deltas;
+       event->scroll.delta_x = source_event->scroll.delta_x;
+       event->scroll.delta_y = source_event->scroll.delta_y;
++      event->scroll.is_momentum = source_event->scroll.is_momentum;
+       return TRUE;
+ 
+     default:
+diff --git a/gdk/quartz/gdkevents-quartz.c b/gdk/quartz/gdkevents-quartz.c
+index 673c379..ac74c7d 100644
+--- a/gdk/quartz/gdkevents-quartz.c
++++ b/gdk/quartz/gdkevents-quartz.c
+@@ -61,6 +61,7 @@ static GdkWindow *find_toplevel_under_pointer   (GdkDisplay *display,
+ - (BOOL) hasPreciseScrollingDeltas;
+ - (CGFloat) scrollingDeltaX;
+ - (CGFloat) scrollingDeltaY;
++- (int) phase;
+ @end
+ 
+ 
+@@ -950,6 +951,7 @@ fill_scroll_event (GdkWindow          *window,
+                    gboolean            has_deltas,
+                    gdouble             delta_x,
+                    gdouble             delta_y,
++                   gboolean            is_momentum,
+                    GdkScrollDirection  direction)
+ {
+   GdkWindowObject *private;
+@@ -972,6 +974,7 @@ fill_scroll_event (GdkWindow          *window,
+   event->scroll.has_deltas = has_deltas;
+   event->scroll.delta_x = delta_x;
+   event->scroll.delta_y = delta_y;
++  event->scroll.is_momentum = is_momentum;
+ }
+ 
+ static void
+@@ -1440,6 +1443,7 @@ gdk_event_translate (GdkEvent *event,
+ 	if (gdk_quartz_osx_version() >= GDK_OSX_LION &&
+ 	    [(id <PreciseDeltas>) nsevent hasPreciseScrollingDeltas])
+ 	  {
++            gboolean is_momentum;
+ 	    dx = [(id <PreciseDeltas>) nsevent scrollingDeltaX];
+ 	    dy = [(id <PreciseDeltas>) nsevent scrollingDeltaY];
+ 
+@@ -1458,8 +1462,10 @@ gdk_event_translate (GdkEvent *event,
+                   direction = GDK_SCROLL_LEFT;
+               }
+ 
++            is_momentum = [(id <PreciseDeltas>) nsevent phase] == 0;
++
+             fill_scroll_event (window, event, nsevent, x, y, x_root, y_root,
+-                               TRUE, -dx, -dy, direction);
++                               TRUE, -dx, -dy, is_momentum, direction);
+ 	  }
+ 	else
+ 	  {
+@@ -1474,7 +1480,7 @@ gdk_event_translate (GdkEvent *event,
+                   direction = GDK_SCROLL_UP;
+ 
+                 fill_scroll_event (window, event, nsevent, x, y, x_root, y_root,
+-                                   FALSE, 0.0, fabs (dy), direction);
++                                   FALSE, 0.0, fabs (dy), FALSE, direction);
+               }
+             else if (dx != 0.0)
+               {
+@@ -1484,7 +1490,7 @@ gdk_event_translate (GdkEvent *event,
+                   direction = GDK_SCROLL_LEFT;
+ 
+                 fill_scroll_event (window, event, nsevent, x, y, x_root, y_root,
+-                                   FALSE, fabs (dx), 0.0, direction);
++                                   FALSE, fabs (dx), 0.0, FALSE, direction);
+               }
+           }
+       }
+-- 
+1.7.5.4
+

@@ -1,7 +1,7 @@
-From 69c7aacadb4d34d2c97b4d31ae410e0547e01b62 Mon Sep 17 00:00:00 2001
+From bce2ad6b175ede8d1e10e277faf770a7a6b48bc4 Mon Sep 17 00:00:00 2001
 From: Kristian Rietveld <kris@lanedo.com>
 Date: Sun, 29 Jul 2012 16:14:09 +0200
-Subject: [PATCH 11/12] Use gtk-enable-overlay-scrollbars in GtkScrolledWindow
+Subject: [PATCH 11/16] Use gtk-enable-overlay-scrollbars in GtkScrolledWindow
 
 And listen for changes to this setting.  Move overlay_scrollbars variable
 to GtkScrolledWindowPrivate, because we are going to have to monitor for
@@ -12,7 +12,7 @@ signal.
  1 files changed, 72 insertions(+), 25 deletions(-)
 
 diff --git a/gtk/gtkscrolledwindow.c b/gtk/gtkscrolledwindow.c
-index 22811e5..803a8cf 100644
+index 82e5611..4532ad2 100644
 --- a/gtk/gtkscrolledwindow.c
 +++ b/gtk/gtkscrolledwindow.c
 @@ -140,6 +140,8 @@ typedef struct {

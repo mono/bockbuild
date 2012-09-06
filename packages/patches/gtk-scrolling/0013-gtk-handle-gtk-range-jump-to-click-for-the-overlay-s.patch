@@ -1,7 +1,7 @@
-From fba56984d68b6718e276b97281287096f2abd7e2 Mon Sep 17 00:00:00 2001
+From 4d144aa4c43f7fae0f36cc684dc7a7f56b28bb66 Mon Sep 17 00:00:00 2001
 From: Michael Natterer <mitch@gimp.org>
 Date: Fri, 31 Aug 2012 16:24:07 +0200
-Subject: [PATCH 14/14] gtk: handle gtk-range-jump-to-click for the overlay
+Subject: [PATCH 13/16] gtk: handle gtk-range-jump-to-click for the overlay
  scrollbars
 
 ---

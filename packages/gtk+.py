@@ -2,7 +2,7 @@ class GtkPackage (GnomeXzPackage):
 	def __init__ (self):
 		GnomeXzPackage.__init__ (self, 'gtk+',
 			version_major = '2.24',
-			version_minor = '11',
+			version_minor = '12',
 			configure_flags = [
 				'--with-gdktarget=%{gdk_target}',
 				'--prefix="%{prefix}"'
@@ -18,14 +18,6 @@ class GtkPackage (GnomeXzPackage):
 				# Custom gtkrc
 				'patches/gtkrc',
 
-				# post 2.24.11 commits
-				# Bug 681784 Colorspaces used in gtk+ and cairo quartz backends do not match
-				'http://git.gnome.org/browse/gtk+/patch/?id=48547aadef8547686ae43cb317caeb882ecc2699',
-				# quartz: add evil casting to make sure time wraps correctly on 32bit machines
-				'http://git.gnome.org/browse/gtk+/patch/?id=c0c3085128b0af739c73db31f9330508aad8f2e6',
-				# quartz: fix corruption during scrolling in some cases
-				'http://git.gnome.org/browse/gtk+/patch/?id=3d5cd6e0553131bf7bec30e0524a66a4d481821b',
-
 				# smooth scrolling, scrollbars, overscroll
 				'patches/gtk-scrolling/0001-gtk-paint-only-the-exposed-region-in-gdk_window_expo.patch',
 				'patches/gtk-scrolling/0002-Implement-new-gtk-range-jump-to-click-GtkSetting-for.patch',
@@ -39,8 +31,10 @@ class GtkPackage (GnomeXzPackage):
 				'patches/gtk-scrolling/0010-gtk-add-event-handling-to-GtkScrolledWindow-s-overla.patch',
 				'patches/gtk-scrolling/0011-Use-gtk-enable-overlay-scrollbars-in-GtkScrolledWind.patch',
 				'patches/gtk-scrolling/0012-gtk-correctly-handle-toggling-of-the-scrollbar-visib.patch',
-				'patches/gtk-scrolling/0013-gtk-fix-direction-logic-on-the-horizontal-overlay-sc.patch',
-				'patches/gtk-scrolling/0014-gtk-handle-gtk-range-jump-to-click-for-the-overlay-s.patch',
+				'patches/gtk-scrolling/0013-gtk-handle-gtk-range-jump-to-click-for-the-overlay-s.patch',
+				'patches/gtk-scrolling/0014-Introduce-is_momentum-field-in-GdkEventScroll.patch',
+				'patches/gtk-scrolling/0015-Introduce-a-background-window.patch',
+				'patches/gtk-scrolling/0016-Make-scrolled-window-work-well-with-Mac-touchpad.patch',
 				'patches/gtk-scrolling/overlay-scrollbar-makefile-patch.diff',
 
 				# make new modifier behviour opt-in, so as not to break old versions of MonoDevelop

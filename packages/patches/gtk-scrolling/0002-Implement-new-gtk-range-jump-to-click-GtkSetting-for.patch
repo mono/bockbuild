@@ -1,7 +1,7 @@
-From d9a8ae13f68cfe2efb4ef7b30ab993c28dfd120d Mon Sep 17 00:00:00 2001
+From d9b67f5f29047ecdbd6c96ac892e5d9d528fe022 Mon Sep 17 00:00:00 2001
 From: Kristian Rietveld <kris@lanedo.com>
 Date: Fri, 24 Aug 2012 11:49:43 +0200
-Subject: [PATCH 02/12] Implement new gtk-range-jump-to-click GtkSetting for
+Subject: [PATCH 02/16] Implement new gtk-range-jump-to-click GtkSetting for
  OS X
 
 This proxies the "click in the scroll bar to" property from the

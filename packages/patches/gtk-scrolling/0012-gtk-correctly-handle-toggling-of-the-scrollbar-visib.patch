@@ -1,7 +1,7 @@
-From 5522f1013046180e8bb138a55fa2615e66a7745e Mon Sep 17 00:00:00 2001
+From 0ab3e44866e39fd353c8951c5332b9fd8345202f Mon Sep 17 00:00:00 2001
 From: Michael Natterer <mitch@gimp.org>
 Date: Thu, 16 Aug 2012 09:35:53 +0200
-Subject: [PATCH 12/12] gtk: correctly handle toggling of the scrollbar
+Subject: [PATCH 12/16] gtk: correctly handle toggling of the scrollbar
  visibility setting
 
 By doing most things unconditionally, like connecting to signals
@@ -14,7 +14,7 @@ Unrelated: don't leak the priv->opacity adjustment.
  1 files changed, 119 insertions(+), 125 deletions(-)
 
 diff --git a/gtk/gtkscrolledwindow.c b/gtk/gtkscrolledwindow.c
-index 803a8cf..7ab9275 100644
+index 4532ad2..b0ae316 100644
 --- a/gtk/gtkscrolledwindow.c
 +++ b/gtk/gtkscrolledwindow.c
 @@ -530,29 +530,25 @@ gtk_scrolled_window_init (GtkScrolledWindow *scrolled_window)
