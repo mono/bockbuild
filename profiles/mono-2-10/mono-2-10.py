@@ -154,11 +154,11 @@ class MonoReleaseProfile (DarwinProfile, MonoReleasePackages):
 		for path, dirs, files in os.walk (self.prefix):
 			for name in files:
 				f = os.path.join (path, name)
-				file_type = backtick ("file %s" % f)
+				file_type = backtick ('file "%s"' % f)
 				if "dSYM" in f: continue
 				if "Mach-O" in "".join (file_type):
 					print "Generating dsyms for %s" % f
-					backtick ('dsymutil %s' % f)
+					backtick ('dsymutil "%s"' % f)
 
 	# Expand $(pcfiledir) in the .pcfiles to full paths
 	def expand_pcfiledir (self):
