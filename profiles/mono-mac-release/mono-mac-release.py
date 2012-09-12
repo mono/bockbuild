@@ -40,22 +40,6 @@ class MonoReleaseProfile (DarwinProfile, MonoReleasePackages):
 	def framework_path (self, subdir):
 		return os.path.join (self.prefix, subdir)
 
-	def include_libgdiplus (self):
-		config = os.path.join (self.prefix, "etc", "mono", "config")
-		temp = config + ".tmp"
-		lib = self.framework_path("lib")
-		with open(config) as c:
-			with open(temp, "w") as output:
-				for line in c:
-					if re.search(r'</configuration>', line):
-						# Insert libgdiplus entries before the end of the file
-						gdipluspath = os.path.join (lib, "libgdiplus.dylib")
-						output.write('\t<dllmap dll="gdiplus" target="%s" />\n' % gdipluspath)
-						output.write('\t<dllmap dll="gdiplus.dll" target="%s" />\n' % gdipluspath)
-					output.write(line)
-
-		os.rename(temp, config)
-
 	def make_package_symlinks(self, root):
 		os.symlink (self.prefix, os.path.join (root, "Versions", "Current"))
 		currentlink = os.path.join (self.MONO_ROOT, "Versions", "Current")
@@ -178,7 +162,6 @@ class MonoReleaseProfile (DarwinProfile, MonoReleasePackages):
 
 	# THIS IS THE MAIN METHOD FOR MAKING A PACKAGE
 	def package (self):
-		self.include_libgdiplus ()
 		self.generate_dsym ()
 		# must apply blacklist first here because PackageMaker follows symlinks :(
 		backtick (os.path.join (self.packaging_dir, 'mdk_blacklist.sh') + ' ' + self.release_root)
