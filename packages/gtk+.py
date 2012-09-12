@@ -76,7 +76,8 @@ class GtkPackage (GnomeXzPackage):
 
 	def install(self):
 		Package.install(self)
-		self.install_gtkrc ()
+		if Package.profile.name == 'darwin':
+			self.install_gtkrc ()
 
 	def install_gtkrc(self):
 		origin = os.path.join (self.package_dest_dir (), os.path.basename (self.sources[1]))

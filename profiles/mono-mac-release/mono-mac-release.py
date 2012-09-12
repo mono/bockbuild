@@ -11,7 +11,7 @@ from packages import MonoReleasePackages
 class MonoReleaseProfile (DarwinProfile, MonoReleasePackages):
 	def __init__ (self):
 		self.MONO_ROOT = "/Library/Frameworks/Mono.framework"
-		self.RELEASE_VERSION = "2.11.4" # REMEMBER TO UPDATE
+		self.RELEASE_VERSION = "2.11.5" # REMEMBER TO UPDATE
 		self.BUILD_NUMBER = "0"
 		self.MRE_GUID = "432959f9-ce1b-47a7-94d3-eb99cb2e1aa8"
 		self.MDK_GUID = "964ebddd-1ffe-47e7-8128-5ce17ffffb05"
@@ -39,22 +39,6 @@ class MonoReleaseProfile (DarwinProfile, MonoReleasePackages):
 
 	def framework_path (self, subdir):
 		return os.path.join (self.prefix, subdir)
-
-	def include_libgdiplus (self):
-		config = os.path.join (self.prefix, "etc", "mono", "config")
-		temp = config + ".tmp"
-		lib = self.framework_path("lib")
-		with open(config) as c:
-			with open(temp, "w") as output:
-				for line in c:
-					if re.search(r'</configuration>', line):
-						# Insert libgdiplus entries before the end of the file
-						gdipluspath = os.path.join (lib, "libgdiplus.dylib")
-						output.write('\t<dllmap dll="gdiplus" target="%s" />\n' % gdipluspath)
-						output.write('\t<dllmap dll="gdiplus.dll" target="%s" />\n' % gdipluspath)
-					output.write(line)
-
-		os.rename(temp, config)
 
 	def make_package_symlinks(self, root):
 		os.symlink (self.prefix, os.path.join (root, "Versions", "Current"))
@@ -178,7 +162,6 @@ class MonoReleaseProfile (DarwinProfile, MonoReleasePackages):
 
 	# THIS IS THE MAIN METHOD FOR MAKING A PACKAGE
 	def package (self):
-		self.include_libgdiplus ()
 		self.generate_dsym ()
 		# must apply blacklist first here because PackageMaker follows symlinks :(
 		backtick (os.path.join (self.packaging_dir, 'mdk_blacklist.sh') + ' ' + self.release_root)

@@ -70,7 +70,7 @@ public abstract class Item
     {
         if (!String.IsNullOrEmpty (ProcessTools.RealConfinementRoot) &&
             item.File.FullName.StartsWith (ProcessTools.RealConfinementRoot)) {
-            string path = file.FullName.Replace (ProcessTools.RealConfinementRoot, Confinement.ConfinementRoot);
+            string path = item.File.FullName.Replace (ProcessTools.RealConfinementRoot, Confinement.ConfinementRoot);
             item.File = new FileInfo (path);
         }
 
