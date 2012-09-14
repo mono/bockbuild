@@ -157,7 +157,7 @@ class MonoReleaseProfile (DarwinProfile, MonoReleasePackages):
 					print "Generating dsyms for %s" % f
 					backtick ('dsymutil "%s"' % f)
 
-	def fix_libMonoPosixHelper ():
+	def fix_libMonoPosixHelper (self):
 		config = os.path.join (self.prefix, "etc", "mono", "config")
 		install_root = os.path.join (self.MONO_ROOT, "Versions", self.RELEASE_VERSION)
 		temp = config + ".tmp"
