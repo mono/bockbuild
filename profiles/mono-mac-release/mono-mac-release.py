@@ -37,9 +37,6 @@ class MonoReleaseProfile (DarwinProfile, MonoReleasePackages):
 		if not os.path.exists(aclocal_dir):
 			os.makedirs (aclocal_dir)
 
-	def framework_path (self, subdir):
-		return os.path.join (self.prefix, subdir)
-
 	def make_package_symlinks(self, root):
 		os.symlink (self.prefix, os.path.join (root, "Versions", "Current"))
 		currentlink = os.path.join (self.MONO_ROOT, "Versions", "Current")
@@ -160,8 +157,22 @@ class MonoReleaseProfile (DarwinProfile, MonoReleasePackages):
 					print "Generating dsyms for %s" % f
 					backtick ('dsymutil "%s"' % f)
 
+	def fix_libMonoPosixHelper (self):
+		config = os.path.join (self.prefix, "etc", "mono", "config")
+		install_root = os.path.join (self.MONO_ROOT, "Versions", self.RELEASE_VERSION)
+		temp = config + ".tmp"
+		with open(config) as c:
+			with open(temp, "w") as output:
+				for line in c:
+					if re.search(r'MonoPosixHelper', line):
+						output.write (line.replace ('libMonoPosixHelper.dylib', '%s/lib/libMonoPosixHelper.dylib' % install_root))
+					else:
+						output.write(line)
+		os.rename(temp, config)
+
 	# THIS IS THE MAIN METHOD FOR MAKING A PACKAGE
 	def package (self):
+		self.fix_libMonoPosixHelper ()
 		self.generate_dsym ()
 		# must apply blacklist first here because PackageMaker follows symlinks :(
 		backtick (os.path.join (self.packaging_dir, 'mdk_blacklist.sh') + ' ' + self.release_root)
