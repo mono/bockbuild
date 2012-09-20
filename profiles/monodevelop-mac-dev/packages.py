@@ -47,7 +47,9 @@ class MonoDevelopMacDevPackages:
 
 		# Mono
 		self.packages.extend ([
-			'mono.py',
+			'libgdiplus-2-10.py',
+			'mono-llvm-2-10.py',
+			'mono-2-10.py',
 			'gtk-sharp.py',
 			'mono-addins.py',
 		])
