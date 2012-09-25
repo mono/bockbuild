@@ -1,7 +1,7 @@
-From 74b71ceb925fa8b9f372063ce7ee93d54e1dd314 Mon Sep 17 00:00:00 2001
+From fb93dcbb8c84ed790c52af61248307d6d4dd4ce1 Mon Sep 17 00:00:00 2001
 From: Kristian Rietveld <kris@lanedo.com>
 Date: Sun, 2 Sep 2012 14:16:45 +0200
-Subject: [PATCH 14/16] Introduce is_momentum field in GdkEventScroll
+Subject: [PATCH 12/14] Introduce is_momentum field in GdkEventScroll
 
 Using the is_momentum field it is possible to distinguish between
 events generated while the user is performing a gesture and
@@ -51,7 +51,7 @@ index 13d4d46..0cda10b 100644
  
      default:
 diff --git a/gdk/quartz/gdkevents-quartz.c b/gdk/quartz/gdkevents-quartz.c
-index 673c379..ac74c7d 100644
+index b0be780..f0e6562 100644
 --- a/gdk/quartz/gdkevents-quartz.c
 +++ b/gdk/quartz/gdkevents-quartz.c
 @@ -61,6 +61,7 @@ static GdkWindow *find_toplevel_under_pointer   (GdkDisplay *display,

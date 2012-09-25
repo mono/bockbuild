@@ -1,7 +1,7 @@
-From 1cb7d4e217a75883050a146f7879db5cc42882c4 Mon Sep 17 00:00:00 2001
+From 297b1256d95b7e6caaef2762589294f1ec36f8e4 Mon Sep 17 00:00:00 2001
 From: Michael Natterer <mitch@gimp.org>
 Date: Tue, 8 May 2012 14:11:50 +0200
-Subject: [PATCH 05/16] Smooth scrolling
+Subject: [PATCH 03/14] Smooth scrolling
 
 ---
  gdk/gdkevents.c               |   32 ++++++++++++++++
@@ -102,7 +102,7 @@ index d20b424..13d4d46 100644
  
      default:
 diff --git a/gdk/quartz/gdkevents-quartz.c b/gdk/quartz/gdkevents-quartz.c
-index abd3728..673c379 100644
+index cc9d97f..b0be780 100644
 --- a/gdk/quartz/gdkevents-quartz.c
 +++ b/gdk/quartz/gdkevents-quartz.c
 @@ -56,6 +56,13 @@ static GdkWindow *find_toplevel_under_pointer   (GdkDisplay *display,
@@ -218,10 +218,10 @@ index abd3728..673c379 100644
        }
        break;
 diff --git a/gtk/gtkrange.c b/gtk/gtkrange.c
-index 81ed8e1..3c0fd52 100644
+index 245fbf6..d39f045 100644
 --- a/gtk/gtkrange.c
 +++ b/gtk/gtkrange.c
-@@ -2572,7 +2572,7 @@ gtk_range_button_release (GtkWidget      *widget,
+@@ -2561,7 +2561,7 @@ gtk_range_button_release (GtkWidget      *widget,
  /**
   * _gtk_range_get_wheel_delta:
   * @range: a #GtkRange
@@ -230,7 +230,7 @@ index 81ed8e1..3c0fd52 100644
   * 
   * Returns a good step value for the mouse wheel.
   * 
-@@ -2581,27 +2581,52 @@ gtk_range_button_release (GtkWidget      *widget,
+@@ -2570,27 +2570,52 @@ gtk_range_button_release (GtkWidget      *widget,
   * Since: 2.4
   **/
  gdouble
@@ -294,7 +294,7 @@ index 81ed8e1..3c0fd52 100644
  static gboolean
  gtk_range_scroll_event (GtkWidget      *widget,
  			GdkEventScroll *event)
-@@ -2614,7 +2639,7 @@ gtk_range_scroll_event (GtkWidget      *widget,
+@@ -2603,7 +2628,7 @@ gtk_range_scroll_event (GtkWidget      *widget,
        gdouble delta;
        gboolean handled;
  

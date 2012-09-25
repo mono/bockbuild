@@ -1,7 +1,7 @@
-From b043ccf3fc9b7a04bf8171e10ea0087180aa1c4c Mon Sep 17 00:00:00 2001
+From 88388ac1766cb45f94748e93ff7170228e3e1d7d Mon Sep 17 00:00:00 2001
 From: Kristian Rietveld <kris@lanedo.com>
 Date: Fri, 24 Aug 2012 12:12:04 +0200
-Subject: [PATCH 04/16] Implement gtk-enable-overlay-scrollbars GtkSetting
+Subject: [PATCH 02/14] Implement gtk-enable-overlay-scrollbars GtkSetting
 
 And set this up such that on OS X
 NSPreferredScrollerDidChangeNotification is followed.
@@ -11,13 +11,13 @@ NSPreferredScrollerDidChangeNotification is followed.
  2 files changed, 74 insertions(+), 2 deletions(-)
 
 diff --git a/gdk/quartz/gdkevents-quartz.c b/gdk/quartz/gdkevents-quartz.c
-index 432fd8c..abd3728 100644
+index 0810962..cc9d97f 100644
 --- a/gdk/quartz/gdkevents-quartz.c
 +++ b/gdk/quartz/gdkevents-quartz.c
 @@ -84,6 +84,10 @@ gdk_quartz_ns_notification_callback (CFNotificationCenterRef  center,
                         CFSTR("AppleNoRedisplayAppearancePreferenceChanged"),
                         0) == kCFCompareEqualTo)
-     new_event.setting.name = "gtk-range-jump-to-click";
+     new_event.setting.name = "gtk-primary-button-warps-slider";
 +  else if (CFStringCompare (name,
 +                            CFSTR("NSPreferredScrollerStyleDidChangeNotification"),
 +                            0) == kCFCompareEqualTo)
@@ -46,7 +46,7 @@ index 432fd8c..abd3728 100644
  }
  
  void
-@@ -1633,7 +1651,43 @@ gdk_screen_get_setting (GdkScreen   *screen,
+@@ -1630,7 +1648,43 @@ gdk_screen_get_setting (GdkScreen   *screen,
  
        return TRUE;
      }
@@ -92,15 +92,15 @@ index 432fd8c..abd3728 100644
  
    return FALSE;
 diff --git a/gtk/gtksettings.c b/gtk/gtksettings.c
-index aa64a04..2e030be 100644
+index 7015e48..5a88ac7 100644
 --- a/gtk/gtksettings.c
 +++ b/gtk/gtksettings.c
 @@ -126,7 +126,8 @@ enum {
    PROP_TOOLBAR_STYLE,
    PROP_TOOLBAR_ICON_SIZE,
    PROP_AUTO_MNEMONICS,
--  PROP_RANGE_JUMP_TO_CLICK
-+  PROP_RANGE_JUMP_TO_CLICK,
+-  PROP_PRIMARY_BUTTON_WARPS_SLIDER
++  PROP_PRIMARY_BUTTON_WARPS_SLIDER,
 +  PROP_ENABLE_OVERLAY_SCROLLBARS
  };
  
@@ -108,7 +108,7 @@ index aa64a04..2e030be 100644
 @@ -1042,6 +1043,23 @@ gtk_settings_class_init (GtkSettingsClass *class)
                                               NULL);
  
-   g_assert (result == PROP_RANGE_JUMP_TO_CLICK);
+   g_assert (result == PROP_PRIMARY_BUTTON_WARPS_SLIDER);
 +
 +  /**
 +   * GtkSettings:gtk-enable-overlay-scrollbars:
