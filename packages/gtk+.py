@@ -2,7 +2,7 @@ class GtkPackage (GnomeXzPackage):
 	def __init__ (self):
 		GnomeXzPackage.__init__ (self, 'gtk+',
 			version_major = '2.24',
-			version_minor = '12',
+			version_minor = '13',
 			configure_flags = [
 				'--with-gdktarget=%{gdk_target}',
 				'--prefix="%{prefix}"'
