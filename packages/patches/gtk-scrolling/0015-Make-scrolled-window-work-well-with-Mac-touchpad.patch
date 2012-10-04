@@ -1,7 +1,7 @@
-From 3a96330ee31f4420316a3484dbd6dce5ac11a03e Mon Sep 17 00:00:00 2001
+From 3b8bf243549c8ede8c9ac13dbe89740bd916d6fc Mon Sep 17 00:00:00 2001
 From: Kristian Rietveld <kris@lanedo.com>
 Date: Mon, 3 Sep 2012 10:45:13 +0200
-Subject: [PATCH 14/14] Make scrolled window work well with Mac touchpad
+Subject: [PATCH 15/20] Make scrolled window work well with Mac touchpad
 
 Modify the scrolled window code to work with a Mac touchpad as you
 would expect. When precise deltas are received from the Mac touchpad,
@@ -16,11 +16,11 @@ Other changes made are:
  - Removed everything related to handling kinetic scrolling by making
  drag gestures. We don't need this code.
 ---
- gtk/gtkscrolledwindow.c |  678 +++++++++++------------------------------------
- 1 files changed, 156 insertions(+), 522 deletions(-)
+ gtk/gtkscrolledwindow.c |  679 +++++++++++------------------------------------
+ 1 files changed, 157 insertions(+), 522 deletions(-)
 
 diff --git a/gtk/gtkscrolledwindow.c b/gtk/gtkscrolledwindow.c
-index 9f672c4..9c58f9a 100644
+index 9f672c4..9bf0df1 100644
 --- a/gtk/gtkscrolledwindow.c
 +++ b/gtk/gtkscrolledwindow.c
 @@ -79,7 +79,7 @@
@@ -282,7 +282,7 @@ index 9f672c4..9c58f9a 100644
      default:
        G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
        break;
-@@ -2153,40 +1999,145 @@ gtk_scrolled_window_scroll_event (GtkWidget      *widget,
+@@ -2153,40 +1999,146 @@ gtk_scrolled_window_scroll_event (GtkWidget      *widget,
  
    if (gdk_event_get_scroll_deltas ((GdkEvent *) event, &delta_x, &delta_y))
      {
@@ -292,6 +292,7 @@ index 9f672c4..9c58f9a 100644
 +      gint old_overshoot_x, old_overshoot_y;
 +      gboolean start_snap_back = FALSE;
 +      gboolean is_overshot = FALSE;
++      gboolean is_momentum_event = event->phase == GDK_EVENT_SCROLL_PHASE_NONE;
 +
 +      _gtk_scrolled_window_get_overshoot (scrolled_window,
 +                                          &old_overshoot_x, &old_overshoot_y);
@@ -305,7 +306,7 @@ index 9f672c4..9c58f9a 100644
 +       * gesture has started. In case we are still in snapping back
 +       * state we can reset this (because the snapback has ended).
 +       */
-+      if (!is_overshot && priv->deceleration_id == 0 && !event->is_momentum)
++      if (!is_overshot && priv->deceleration_id == 0 && !is_momentum_event)
 +        priv->is_snapping_back = FALSE;
 +
 +      /* Scroll events are handled in two cases:
@@ -318,7 +319,7 @@ index 9f672c4..9c58f9a 100644
 +       * that particular scrollbar is actually visible.
 +       */
 +      if ((!is_overshot && !priv->is_snapping_back) ||
-+          (is_overshot && !event->is_momentum))
++          (is_overshot && !is_momentum_event))
          {
 -          GtkAdjustment *adj;
 -          gdouble new_value;
@@ -424,7 +425,7 @@ index 9f672c4..9c58f9a 100644
 +       *  also signals that the user's gesture has ended.
 +       */
 +      if (is_overshot &&
-+          ((delta_x == 0.0 && delta_y == 0.0) || event->is_momentum))
++          ((delta_x == 0.0 && delta_y == 0.0) || is_momentum_event))
 +        start_snap_back = TRUE;
  
 -          gtk_adjustment_set_value (adj, new_value);
@@ -451,7 +452,7 @@ index 9f672c4..9c58f9a 100644
          }
      }
    else
-@@ -2370,18 +2321,6 @@ scrolled_window_deceleration_cb (gpointer user_data)
+@@ -2370,18 +2322,6 @@ scrolled_window_deceleration_cb (gpointer user_data)
  }
  
  static void
@@ -470,7 +471,7 @@ index 9f672c4..9c58f9a 100644
  gtk_scrolled_window_start_deceleration (GtkScrolledWindow *scrolled_window)
  {
    GtkScrolledWindowPrivate *priv = GTK_SCROLLED_WINDOW_GET_PRIVATE (scrolled_window);
-@@ -2409,327 +2348,36 @@ gtk_scrolled_window_start_deceleration (GtkScrolledWindow *scrolled_window)
+@@ -2409,327 +2349,36 @@ gtk_scrolled_window_start_deceleration (GtkScrolledWindow *scrolled_window)
  }
  
  static gboolean
@@ -807,7 +808,7 @@ index 9f672c4..9c58f9a 100644
  static void
  gtk_scrolled_window_scroll_step (GtkScrolledWindow *scrolled_window)
  {
-@@ -3012,22 +2660,14 @@ gtk_scrolled_window_captured_event (GtkWidget *widget,
+@@ -3012,22 +2661,14 @@ gtk_scrolled_window_captured_event (GtkWidget *widget,
      {
      case GDK_BUTTON_PRESS:
        retval = gtk_scrolled_window_captured_button_press_scrollbar (widget, event);
@@ -830,7 +831,7 @@ index 9f672c4..9c58f9a 100644
        break;
      case GDK_LEAVE_NOTIFY:
        if (!priv->in_drag && !priv->sb_pointer_grabbed)
-@@ -3440,19 +3080,6 @@ gtk_scrolled_window_grab_notify (GtkWidget *widget,
+@@ -3440,19 +3081,6 @@ gtk_scrolled_window_grab_notify (GtkWidget *widget,
        gdk_pointer_ungrab (gtk_get_current_event_time ());
        priv->pointer_grabbed = FALSE;
        priv->in_drag = FALSE;
@@ -850,7 +851,7 @@ index 9f672c4..9c58f9a 100644
      }
  
    if (priv->sb_pointer_grabbed && !was_grabbed)
-@@ -3924,6 +3551,13 @@ gtk_scrolled_window_expose_scrollbars (GtkAdjustment     *adj,
+@@ -3924,6 +3552,13 @@ gtk_scrolled_window_expose_scrollbars (GtkAdjustment     *adj,
  }
  
  static void

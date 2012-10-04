@@ -18,6 +18,10 @@ class GtkPackage (GnomeXzPackage):
 				# Custom gtkrc
 				'patches/gtkrc',
 
+				#post 2.24.13 patches
+				# Fix garbage content when windows are initially mapped
+				'http://git.gnome.org/browse/gtk+/patch/?id=92ea94af5f1a4d0970628b58997192ccf74cab36',
+
 				# smooth scrolling, scrollbars, overscroll
 				'patches/gtk-scrolling/0001-gtk-paint-only-the-exposed-region-in-gdk_window_expo.patch',
 				'patches/gtk-scrolling/0002-Implement-gtk-enable-overlay-scrollbars-GtkSetting.patch',
@@ -31,8 +35,15 @@ class GtkPackage (GnomeXzPackage):
 				'patches/gtk-scrolling/0010-gtk-correctly-handle-toggling-of-the-scrollbar-visib.patch',
 				'patches/gtk-scrolling/0011-gtk-handle-gtk-primary-button-warps-slider-for-the-o.patch',
 				'patches/gtk-scrolling/0012-Introduce-is_momentum-field-in-GdkEventScroll.patch',
-				'patches/gtk-scrolling/0013-Introduce-a-background-window.patch',
-				'patches/gtk-scrolling/0014-Make-scrolled-window-work-well-with-Mac-touchpad.patch',
+				'patches/gtk-scrolling/0013-Replace-is_momentum-field-with-phase-field.patch',
+				'patches/gtk-scrolling/0014-Introduce-a-background-window.patch',
+				'patches/gtk-scrolling/0015-Make-scrolled-window-work-well-with-Mac-touchpad.patch',
+				'patches/gtk-scrolling/0016-Use-start-end-phase-in-event-handling.patch',
+				'patches/gtk-scrolling/0017-Improve-overshooting-behavior.patch',
+				'patches/gtk-scrolling/0018-Cancel-out-smaller-delta-component.patch',
+				'patches/gtk-scrolling/0019-gtk-port-overlay-scrollbars-to-native-CALayers.patch',
+				'patches/gtk-scrolling/0020-quartz-Actually-use-the-window-background-PATTERN-co.patch',
+
 				'patches/gtk-scrolling/overlay-scrollbar-makefile-patch.diff',
 
 				# make new modifier behviour opt-in, so as not to break old versions of MonoDevelop

@@ -1,57 +1,72 @@
-From fb93dcbb8c84ed790c52af61248307d6d4dd4ce1 Mon Sep 17 00:00:00 2001
+From b5316155597d1fb24527f8c39761ac3590b1ff61 Mon Sep 17 00:00:00 2001
 From: Kristian Rietveld <kris@lanedo.com>
 Date: Sun, 2 Sep 2012 14:16:45 +0200
-Subject: [PATCH 12/14] Introduce is_momentum field in GdkEventScroll
+Subject: [PATCH 12/20] Introduce phase field in GdkEventScroll
 
-Using the is_momentum field it is possible to distinguish between
+Using the phase field it is possible to distinguish between
 events generated while the user is performing a gesture and
 momentum events that are generated after the gesture has been
 finished.
 ---
  gdk/gdkevents.c               |    1 +
- gdk/gdkevents.h               |    1 +
+ gdk/gdkevents.h               |    9 +++++++++
  gdk/gdkwindow.c               |    1 +
- gdk/quartz/gdkevents-quartz.c |   12 +++++++++---
- 4 files changed, 12 insertions(+), 3 deletions(-)
+ gdk/quartz/gdkevents-quartz.c |   36 +++++++++++++++++++++++++++++++++---
+ 4 files changed, 44 insertions(+), 3 deletions(-)
 
 diff --git a/gdk/gdkevents.c b/gdk/gdkevents.c
-index 0f8bba2..fcc25cc 100644
+index 0f8bba2..d3d67db 100644
 --- a/gdk/gdkevents.c
 +++ b/gdk/gdkevents.c
 @@ -394,6 +394,7 @@ gdk_event_new (GdkEventType type)
        new_event->scroll.y_root = 0.;
        new_event->scroll.delta_x = 0.;
        new_event->scroll.delta_y = 0.;
-+      new_event->scroll.is_momentum = FALSE;
++      new_event->scroll.phase = GDK_EVENT_SCROLL_PHASE_NONE;
        break;
      case GDK_ENTER_NOTIFY:
      case GDK_LEAVE_NOTIFY:
 diff --git a/gdk/gdkevents.h b/gdk/gdkevents.h
-index e0802eb..d697a61 100644
+index e0802eb..f888c91 100644
 --- a/gdk/gdkevents.h
 +++ b/gdk/gdkevents.h
-@@ -340,6 +340,7 @@ struct _GdkEventScroll
+@@ -263,6 +263,14 @@ typedef enum
+   GDK_OWNER_CHANGE_CLOSE
+ } GdkOwnerChange;
+ 
++typedef enum
++{
++  GDK_EVENT_SCROLL_PHASE_NONE,
++  GDK_EVENT_SCROLL_PHASE_START,
++  GDK_EVENT_SCROLL_PHASE_ACTIVE,
++  GDK_EVENT_SCROLL_PHASE_END
++} GdkEventScrollPhase;
++
+ struct _GdkEventAny
+ {
+   GdkEventType type;
+@@ -340,6 +348,7 @@ struct _GdkEventScroll
    gboolean has_deltas;
    gdouble delta_x;
    gdouble delta_y;
-+  gboolean is_momentum;
++  GdkEventScrollPhase phase;
  };
  
  struct _GdkEventKey
 diff --git a/gdk/gdkwindow.c b/gdk/gdkwindow.c
-index 13d4d46..0cda10b 100644
+index 13d4d46..6150472 100644
 --- a/gdk/gdkwindow.c
 +++ b/gdk/gdkwindow.c
 @@ -10797,6 +10797,7 @@ proxy_button_event (GdkEvent *source_event,
        event->scroll.has_deltas = source_event->scroll.has_deltas;
        event->scroll.delta_x = source_event->scroll.delta_x;
        event->scroll.delta_y = source_event->scroll.delta_y;
-+      event->scroll.is_momentum = source_event->scroll.is_momentum;
++      event->scroll.phase = source_event->scroll.phase;
        return TRUE;
  
      default:
 diff --git a/gdk/quartz/gdkevents-quartz.c b/gdk/quartz/gdkevents-quartz.c
-index b0be780..f0e6562 100644
+index b0be780..96d5341 100644
 --- a/gdk/quartz/gdkevents-quartz.c
 +++ b/gdk/quartz/gdkevents-quartz.c
 @@ -61,6 +61,7 @@ static GdkWindow *find_toplevel_under_pointer   (GdkDisplay *display,
@@ -66,7 +81,7 @@ index b0be780..f0e6562 100644
                     gboolean            has_deltas,
                     gdouble             delta_x,
                     gdouble             delta_y,
-+                   gboolean            is_momentum,
++                   GdkEventScrollPhase phase,
                     GdkScrollDirection  direction)
  {
    GdkWindowObject *private;
@@ -74,45 +89,76 @@ index b0be780..f0e6562 100644
    event->scroll.has_deltas = has_deltas;
    event->scroll.delta_x = delta_x;
    event->scroll.delta_y = delta_y;
-+  event->scroll.is_momentum = is_momentum;
++  event->scroll.phase = phase;
  }
  
  static void
-@@ -1440,6 +1443,7 @@ gdk_event_translate (GdkEvent *event,
+@@ -1262,6 +1265,28 @@ test_resize (NSEvent *event, GdkWindow *toplevel, gint x, gint y)
+   return FALSE;
+ }
+ 
++static GdkEventScrollPhase
++gdk_event_scroll_phase_from_ns_event_phase (NSUInteger phase)
++{
++  switch (phase)
++    {
++      case 0:
++        return GDK_EVENT_SCROLL_PHASE_NONE;
++
++      case 1 << 0:
++        return GDK_EVENT_SCROLL_PHASE_START;
++
++      case 1 << 1:
++      case 1 << 2:
++        return GDK_EVENT_SCROLL_PHASE_ACTIVE;
++
++      case 1 << 3:
++        return GDK_EVENT_SCROLL_PHASE_END;
++    }
++
++  return GDK_EVENT_SCROLL_PHASE_NONE;
++}
++
+ static gboolean
+ gdk_event_translate (GdkEvent *event,
+                      NSEvent  *nsevent)
+@@ -1440,6 +1465,7 @@ gdk_event_translate (GdkEvent *event,
  	if (gdk_quartz_osx_version() >= GDK_OSX_LION &&
  	    [(id <PreciseDeltas>) nsevent hasPreciseScrollingDeltas])
  	  {
-+            gboolean is_momentum;
++            GdkEventScrollPhase phase;
  	    dx = [(id <PreciseDeltas>) nsevent scrollingDeltaX];
  	    dy = [(id <PreciseDeltas>) nsevent scrollingDeltaY];
  
-@@ -1458,8 +1462,10 @@ gdk_event_translate (GdkEvent *event,
+@@ -1458,8 +1484,10 @@ gdk_event_translate (GdkEvent *event,
                    direction = GDK_SCROLL_LEFT;
                }
  
-+            is_momentum = [(id <PreciseDeltas>) nsevent phase] == 0;
++            phase = gdk_event_scroll_phase_from_ns_event_phase ([(id <PreciseDeltas>) nsevent phase]);
 +
              fill_scroll_event (window, event, nsevent, x, y, x_root, y_root,
 -                               TRUE, -dx, -dy, direction);
-+                               TRUE, -dx, -dy, is_momentum, direction);
++                               TRUE, -dx, -dy, phase, direction);
  	  }
  	else
  	  {
-@@ -1474,7 +1480,7 @@ gdk_event_translate (GdkEvent *event,
+@@ -1474,7 +1502,8 @@ gdk_event_translate (GdkEvent *event,
                    direction = GDK_SCROLL_UP;
  
                  fill_scroll_event (window, event, nsevent, x, y, x_root, y_root,
 -                                   FALSE, 0.0, fabs (dy), direction);
-+                                   FALSE, 0.0, fabs (dy), FALSE, direction);
++                                   FALSE, 0.0, fabs (dy), GDK_EVENT_SCROLL_PHASE_NONE,
++                                   direction);
                }
              else if (dx != 0.0)
                {
-@@ -1484,7 +1490,7 @@ gdk_event_translate (GdkEvent *event,
+@@ -1484,7 +1513,8 @@ gdk_event_translate (GdkEvent *event,
                    direction = GDK_SCROLL_LEFT;
  
                  fill_scroll_event (window, event, nsevent, x, y, x_root, y_root,
 -                                   FALSE, fabs (dx), 0.0, direction);
-+                                   FALSE, fabs (dx), 0.0, FALSE, direction);
++                                   FALSE, fabs (dx), 0.0, GDK_EVENT_SCROLL_PHASE_NONE,
++                                   direction);
                }
            }
        }
