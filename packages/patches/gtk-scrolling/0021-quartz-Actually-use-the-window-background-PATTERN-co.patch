@@ -1,7 +1,7 @@
-From 79f25f44baee972907a80da679c3596660594860 Mon Sep 17 00:00:00 2001
+From 20893b91210566ed881ce186c2531b8ac30c983e Mon Sep 17 00:00:00 2001
 From: Kristian Rietveld <kris@lanedo.com>
 Date: Thu, 4 Oct 2012 09:06:01 +0200
-Subject: [PATCH 20/20] quartz: Actually use the window background PATTERN
+Subject: [PATCH 21/21] quartz: Actually use the window background PATTERN
  color
 
 Before we used a window's background color, which resulted in corrupted
@@ -12,7 +12,7 @@ pattern. This patch seems to eliminate the observed corruption.
  1 files changed, 1 insertions(+), 1 deletions(-)
 
 diff --git a/gdk/quartz/GdkQuartzView.c b/gdk/quartz/GdkQuartzView.c
-index 2a75da9..77ff5d7 100644
+index 56307b9..dd7b998 100644
 --- a/gdk/quartz/GdkQuartzView.c
 +++ b/gdk/quartz/GdkQuartzView.c
 @@ -97,7 +97,7 @@

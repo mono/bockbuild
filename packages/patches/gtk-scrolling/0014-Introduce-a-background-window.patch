@@ -1,7 +1,7 @@
 From cf7c0ce17a9b63c2ff7c52928c7c4cb1b1a516f2 Mon Sep 17 00:00:00 2001
 From: Kristian Rietveld <kris@lanedo.com>
 Date: Sun, 2 Sep 2012 21:21:51 +0200
-Subject: [PATCH 14/20] Introduce a background window
+Subject: [PATCH 14/21] Introduce a background window
 
 The background window covers the part left uncovered by the overshoot
 window. Two background windows are used to be able to cover an "L shape"

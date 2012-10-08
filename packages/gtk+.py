@@ -41,9 +41,11 @@ class GtkPackage (GnomeXzPackage):
 				'patches/gtk-scrolling/0016-Use-start-end-phase-in-event-handling.patch',
 				'patches/gtk-scrolling/0017-Improve-overshooting-behavior.patch',
 				'patches/gtk-scrolling/0018-Cancel-out-smaller-delta-component.patch',
-				'patches/gtk-scrolling/0019-gtk-port-overlay-scrollbars-to-native-CALayers.patch',
-				'patches/gtk-scrolling/0020-quartz-Actually-use-the-window-background-PATTERN-co.patch',
+				'patches/gtk-scrolling/0019-quartz-enable-the-CALayer-for-each-toplevel-window.patch',
+				'patches/gtk-scrolling/0020-gtk-port-overlay-scrollbars-to-native-CALayers.patch',
+				'patches/gtk-scrolling/0021-quartz-Actually-use-the-window-background-PATTERN-co.patch',
 
+				'patches/gtk-scrolling/fix-overlay-scrollbar-crash.patch',
 				'patches/gtk-scrolling/overlay-scrollbar-makefile-patch.diff',
 
 				# make new modifier behviour opt-in, so as not to break old versions of MonoDevelop

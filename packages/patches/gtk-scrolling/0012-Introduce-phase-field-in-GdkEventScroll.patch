@@ -1,7 +1,7 @@
 From b5316155597d1fb24527f8c39761ac3590b1ff61 Mon Sep 17 00:00:00 2001
 From: Kristian Rietveld <kris@lanedo.com>
 Date: Sun, 2 Sep 2012 14:16:45 +0200
-Subject: [PATCH 12/20] Introduce phase field in GdkEventScroll
+Subject: [PATCH 12/21] Introduce phase field in GdkEventScroll
 
 Using the phase field it is possible to distinguish between
 events generated while the user is performing a gesture and
