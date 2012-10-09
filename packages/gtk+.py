@@ -72,7 +72,7 @@ class GtkPackage (GnomeXzPackage):
 				'patches/gtk-gestures.patch',
 
 				# Bug 2158 - [GTK] crash in find_window_for_ns_event
-				'https://bugzilla.xamarin.com/attachment.cgi?id=2182',
+				'https://bugzilla.xamarin.com/attachment.cgi?id=2717',
 
 				# Bug 6156 - [gtk] Quitting the application with unsaved file and answering Cancel results in crash
 				'https://bugzilla.xamarin.com/attachment.cgi?id=2214',
