@@ -1,7 +1,7 @@
-From 6fd2023f75bd71b4392224b8e5ccac0e6ec8d46a Mon Sep 17 00:00:00 2001
+From f6b22df4ad24a02d26c1c7a8bcb13e608c3c4782 Mon Sep 17 00:00:00 2001
 From: Kristian Rietveld <kris@lanedo.com>
 Date: Fri, 24 Aug 2012 12:12:04 +0200
-Subject: [PATCH 02/21] Implement gtk-enable-overlay-scrollbars GtkSetting
+Subject: [PATCH 02/22] Implement gtk-enable-overlay-scrollbars GtkSetting
 
 And set this up such that on OS X
 NSPreferredScrollerDidChangeNotification is followed.

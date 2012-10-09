@@ -21,6 +21,8 @@ class GtkPackage (GnomeXzPackage):
 				#post 2.24.13 patches
 				# Fix garbage content when windows are initially mapped
 				'http://git.gnome.org/browse/gtk+/patch/?id=92ea94af5f1a4d0970628b58997192ccf74cab36',
+				# quartz: Actually use the window background PATTERN color
+				'http://git.gnome.org/browse/gtk+/patch/?id=0e42cf81f1dad319489e447c6c4e640bed2ab915',
 
 				# smooth scrolling, scrollbars, overscroll
 				'patches/gtk-scrolling/0001-gtk-paint-only-the-exposed-region-in-gdk_window_expo.patch',
@@ -43,9 +45,9 @@ class GtkPackage (GnomeXzPackage):
 				'patches/gtk-scrolling/0018-Cancel-out-smaller-delta-component.patch',
 				'patches/gtk-scrolling/0019-quartz-enable-the-CALayer-for-each-toplevel-window.patch',
 				'patches/gtk-scrolling/0020-gtk-port-overlay-scrollbars-to-native-CALayers.patch',
-				'patches/gtk-scrolling/0021-quartz-Actually-use-the-window-background-PATTERN-co.patch',
+				'patches/gtk-scrolling/0021-Refrain-from-starting-fading-out-while-a-gesture-is-.patch',
+				'patches/gtk-scrolling/0022-Add-weak-references-on-the-cached-event-and-pointer-.patch',
 
-				'patches/gtk-scrolling/fix-overlay-scrollbar-crash.patch',
 				'patches/gtk-scrolling/overlay-scrollbar-makefile-patch.diff',
 
 				# make new modifier behviour opt-in, so as not to break old versions of MonoDevelop

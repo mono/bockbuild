@@ -1,7 +1,7 @@
-From be8e47acf22b93c4b9072d63d3c6778502df0f44 Mon Sep 17 00:00:00 2001
+From 45e2ee66eb0167ae9b833e16bcb86d82be76523b Mon Sep 17 00:00:00 2001
 From: Michael Natterer <mitch@gimp.org>
 Date: Fri, 5 Oct 2012 12:10:15 +0200
-Subject: [PATCH 19/21] quartz: enable the CALayer for each toplevel window
+Subject: [PATCH 19/22] quartz: enable the CALayer for each toplevel window
 
 Enabling it later triggers ugly artifacts.
 ---
@@ -10,7 +10,7 @@ Enabling it later triggers ugly artifacts.
  2 files changed, 3 insertions(+), 0 deletions(-)
 
 diff --git a/gdk/quartz/GdkQuartzView.c b/gdk/quartz/GdkQuartzView.c
-index 2a75da9..56307b9 100644
+index 77ff5d7..dd7b998 100644
 --- a/gdk/quartz/GdkQuartzView.c
 +++ b/gdk/quartz/GdkQuartzView.c
 @@ -136,6 +136,8 @@
