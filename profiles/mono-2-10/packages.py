@@ -47,7 +47,7 @@ class MonoReleasePackages:
 				'gtk-engines.py',
 				'murrine.py',
 				'xamarin-gtk-theme.py',
-				# 'gtk-quartz-engine.py'
+				'gtk-quartz-engine.py'
 				])
 
 		# Mono
