@@ -1,0 +1,116 @@
+From b61e0e99a48019c0403dc973aee7b9530171fe67 Mon Sep 17 00:00:00 2001
+From: Kristian Rietveld <kris@lanedo.com>
+Date: Fri, 26 Oct 2012 18:00:39 +0200
+Subject: [PATCH] Add a dummy NSView serving as layer view
+
+By doing this, the GdkQuartzView does not have to be marked as layer
+backed, such that the disadvantages that come with that (not being able
+to copy pixels and large redraw areas) no longer apply.
+---
+ gdk/quartz/GdkQuartzView.c    |    4 ++++
+ gdk/quartz/gdkquartz.h        |    1 +
+ gdk/quartz/gdkwindow-quartz.c |   17 ++++++++++++++++-
+ gdk/quartz/gdkwindow-quartz.h |    1 +
+ gtk/gtkscrolledwindow.c       |    6 +++---
+ 5 files changed, 25 insertions(+), 4 deletions(-)
+
+diff --git a/gdk/quartz/GdkQuartzView.c b/gdk/quartz/GdkQuartzView.c
+index 56307b9..3328d1b 100644
+--- a/gdk/quartz/GdkQuartzView.c
++++ b/gdk/quartz/GdkQuartzView.c
+@@ -196,7 +196,11 @@
+ 
+ -(void)setFrame:(NSRect)frame
+ {
++  GdkWindowObject *private = GDK_WINDOW_OBJECT (gdk_window);
++  GdkWindowImplQuartz *impl = GDK_WINDOW_IMPL_QUARTZ (private->impl);
++
+   [super setFrame:frame];
++  [impl->layer_view setFrame:frame];
+ 
+   if ([self window])
+     [self updateTrackingRect];
+diff --git a/gdk/quartz/gdkquartz.h b/gdk/quartz/gdkquartz.h
+index 742d651..e3e0d31 100644
+--- a/gdk/quartz/gdkquartz.h
++++ b/gdk/quartz/gdkquartz.h
+@@ -53,6 +53,7 @@ typedef enum
+ 
+ NSWindow *gdk_quartz_window_get_nswindow                        (GdkWindow      *window);
+ NSView   *gdk_quartz_window_get_nsview                          (GdkWindow      *window);
++NSView   *gdk_quartz_window_get_layer_view                      (GdkWindow      *window);
+ NSImage  *gdk_quartz_pixbuf_to_ns_image_libgtk_only             (GdkPixbuf      *pixbuf);
+ id        gdk_quartz_drag_context_get_dragging_info_libgtk_only (GdkDragContext *context);
+ NSEvent  *gdk_quartz_event_get_nsevent                          (GdkEvent       *event);
+diff --git a/gdk/quartz/gdkwindow-quartz.c b/gdk/quartz/gdkwindow-quartz.c
+index e0f78e0..d48f1db 100644
+--- a/gdk/quartz/gdkwindow-quartz.c
++++ b/gdk/quartz/gdkwindow-quartz.c
+@@ -68,6 +68,17 @@ gdk_quartz_window_get_nsview (GdkWindow *window)
+   return ((GdkWindowImplQuartz *)private->impl)->view;
+ }
+ 
++NSView *
++gdk_quartz_window_get_layer_view (GdkWindow *window)
++{
++  GdkWindowObject *private = (GdkWindowObject *)window;
++
++  if (GDK_WINDOW_DESTROYED (window))
++    return NULL;
++
++  return ((GdkWindowImplQuartz *)private->impl)->layer_view;
++}
++
+ NSWindow *
+ gdk_quartz_window_get_nswindow (GdkWindow *window)
+ {
+@@ -1003,10 +1014,14 @@ _gdk_window_impl_new (GdkWindow     *window,
+         content_rect.origin.y = 0;
+ 
+ 	impl->view = [[GdkQuartzView alloc] initWithFrame:content_rect];
+-        [impl->view setWantsLayer:YES];
+ 	[impl->view setGdkWindow:window];
+ 	[impl->toplevel setContentView:impl->view];
+ 	[impl->view release];
++
++        impl->layer_view = [[NSView alloc] initWithFrame:content_rect];
++        [impl->view addSubview:impl->layer_view];
++        [impl->layer_view setWantsLayer:YES];
++        [impl->layer_view release];
+       }
+       break;
+ 
+diff --git a/gdk/quartz/gdkwindow-quartz.h b/gdk/quartz/gdkwindow-quartz.h
+index 4a0e27a..f35238b 100644
+--- a/gdk/quartz/gdkwindow-quartz.h
++++ b/gdk/quartz/gdkwindow-quartz.h
+@@ -47,6 +47,7 @@ struct _GdkWindowImplQuartz
+   NSWindow *toplevel;
+   NSTrackingRectTag tracking_rect;
+   GdkQuartzView *view;
++  NSView *layer_view;
+ 
+   GdkWindowTypeHint type_hint;
+ 
+diff --git a/gtk/gtkscrolledwindow.c b/gtk/gtkscrolledwindow.c
+index 7a8bdd7..962ac23 100644
+--- a/gtk/gtkscrolledwindow.c
++++ b/gtk/gtkscrolledwindow.c
+@@ -3204,11 +3204,11 @@ gtk_scrolled_window_realize (GtkWidget *widget)
+   gtk_scrolled_window_compute_viewport_allocation (scrolled_window);
+ 
+   GdkWindow *parent_window = gtk_widget_get_window (gtk_widget_get_toplevel (widget));
+-  NSView    *parent_view;
++  NSView    *layer_view;
+   CALayer   *parent_layer;
+ 
+-  parent_view = gdk_quartz_window_get_nsview (parent_window);
+-  parent_layer = [parent_view layer];
++  layer_view = gdk_quartz_window_get_layer_view (parent_window);
++  parent_layer = [layer_view layer];
+ 
+   priv->vbar_layer = [[CALayer layer] init];
+   priv->vbar_layer.backgroundColor = CGColorCreateGenericRGB (0.0, 0.0, 0.0, 0.5);
+-- 
+1.7.4.4
+

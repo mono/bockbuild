@@ -47,6 +47,9 @@ class GtkPackage (GnomeXzPackage):
 				'patches/gtk-scrolling/0020-gtk-port-overlay-scrollbars-to-native-CALayers.patch',
 				'patches/gtk-scrolling/0021-Refrain-from-starting-fading-out-while-a-gesture-is-.patch',
 				'patches/gtk-scrolling/0022-Add-weak-references-on-the-cached-event-and-pointer-.patch',
+				'patches/gtk-scrolling/0023-Add-a-dummy-NSView-serving-as-layer-view.patch',
+				'patches/gtk-scrolling/0024-Add-_gdk_quartz_window_set_needs_display_in_region.patch',
+				'patches/gtk-scrolling/0025-quartz-Fix-up-gdk_draw_drawable.patch',
 
 				'patches/gtk-scrolling/overlay-scrollbar-makefile-patch.diff',
 
@@ -67,6 +70,7 @@ class GtkPackage (GnomeXzPackage):
 				'patches/gtk-embedded-nsview/0003-gdk-add-signal-GdkWindow-native-child-event.patch',
 				'patches/gtk-embedded-nsview/0004-tests-add-a-GtkEntry-to-testnsview-so-we-can-test-fo.patch',
 				'patches/gtk-embedded-nsview/0005-gtk-connect-to-GdkWindow-native-child-event-to-imple.patch',
+				'patches/gtk-embedded-nsview/fix-for-embedded-nsviews.patch',
 
 				# Zoom, rotate, swipe events
 				'patches/gtk-gestures.patch',
