@@ -1,7 +1,7 @@
-From be949d42e239afa040315b1773de656d67f8c61e Mon Sep 17 00:00:00 2001
+From 3c761b735e797cdde549370d45246ea11479faac Mon Sep 17 00:00:00 2001
 From: Kristian Rietveld <kris@lanedo.com>
 Date: Sat, 27 Oct 2012 17:11:59 +0200
-Subject: [PATCH 2/2] quartz: Fix up gdk_draw_drawable
+Subject: [PATCH 02/25] quartz: Fix up gdk_draw_drawable
 
 ---
  gdk/quartz/gdkdrawable-quartz.c |   76 ++++++++++++++++++++++++++++++++++-----
@@ -93,5 +93,5 @@ index 1bbf7c9..db72cf5 100644
        else
          g_warning ("Drawing with window source != dest is not supported");
 -- 
-1.7.4.4
+1.7.5.4
 

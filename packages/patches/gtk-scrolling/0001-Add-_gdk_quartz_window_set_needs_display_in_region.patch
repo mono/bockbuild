@@ -1,7 +1,7 @@
-From 06dbbc329b141b89a2308dc5d677a85eaae3ec90 Mon Sep 17 00:00:00 2001
+From f8b757c4c19ae42648319381b03030e0825e8e24 Mon Sep 17 00:00:00 2001
 From: Kristian Rietveld <kris@lanedo.com>
 Date: Sat, 27 Oct 2012 17:11:26 +0200
-Subject: [PATCH 1/2] Add _gdk_quartz_window_set_needs_display_in_region
+Subject: [PATCH 01/25] Add _gdk_quartz_window_set_needs_display_in_region
 
 ---
  gdk/quartz/gdkprivate-quartz.h |    2 ++
@@ -22,10 +22,10 @@ index c1b3083..03bba91 100644
  void       _gdk_quartz_window_update_position           (GdkWindow    *window);
  
 diff --git a/gdk/quartz/gdkwindow-quartz.c b/gdk/quartz/gdkwindow-quartz.c
-index d48f1db..477c41a 100644
+index 8e12ae6..17d8090 100644
 --- a/gdk/quartz/gdkwindow-quartz.c
 +++ b/gdk/quartz/gdkwindow-quartz.c
-@@ -384,12 +384,37 @@ _gdk_quartz_window_set_needs_display_in_rect (GdkWindow    *window,
+@@ -373,12 +373,37 @@ _gdk_quartz_window_set_needs_display_in_rect (GdkWindow    *window,
  }
  
  void
@@ -65,7 +65,7 @@ index d48f1db..477c41a 100644
    /* Make sure to only flush each toplevel at most once if we're called
     * from process_all_updates.
     */
-@@ -421,14 +446,7 @@ _gdk_windowing_window_process_updates_recurse (GdkWindow *window,
+@@ -410,14 +435,7 @@ _gdk_windowing_window_process_updates_recurse (GdkWindow *window,
      }
  
    if (WINDOW_IS_TOPLEVEL (window))
@@ -82,5 +82,5 @@ index d48f1db..477c41a 100644
      _gdk_window_process_updates_recurse (window, region);
  
 -- 
-1.7.4.4
+1.7.5.4
 

@@ -1,7 +1,7 @@
-From 935220e0fb01cf96ba707e306249e14d232498f3 Mon Sep 17 00:00:00 2001
+From 9cbe1f3d8af7f307072edbd4a77c6ba270f5b8d3 Mon Sep 17 00:00:00 2001
 From: Michael Natterer <mitch@gimp.org>
 Date: Fri, 1 Jun 2012 13:08:26 +0200
-Subject: [PATCH 07/22] GtkScrolledWindow: add overlay scrollbars
+Subject: [PATCH 09/25] GtkScrolledWindow: add overlay scrollbars
 
 based on code from gnome-builder by Christian Hergert.
 ---

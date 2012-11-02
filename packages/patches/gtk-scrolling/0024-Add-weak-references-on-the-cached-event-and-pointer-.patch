@@ -1,7 +1,7 @@
-From d992bec2709e1a9b2637461eeef982238f641f90 Mon Sep 17 00:00:00 2001
+From a03f15a8a824ed94ef7cc57936b1399b881ad9e3 Mon Sep 17 00:00:00 2001
 From: Kristian Rietveld <kris@lanedo.com>
 Date: Mon, 8 Oct 2012 11:24:34 +0200
-Subject: [PATCH 22/22] Add weak references on the cached event and pointer
+Subject: [PATCH 24/25] Add weak references on the cached event and pointer
  windosw
 
 ---

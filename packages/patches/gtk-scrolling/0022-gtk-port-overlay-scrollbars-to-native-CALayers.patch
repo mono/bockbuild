@@ -1,14 +1,14 @@
-From f7cd4757660c8dfedcd74830062ac912b4c130f5 Mon Sep 17 00:00:00 2001
+From 98a4336e81d17f6fe649022af1f1a8806bfcf8d1 Mon Sep 17 00:00:00 2001
 From: Michael Natterer <mitch@gimp.org>
 Date: Thu, 27 Sep 2012 17:03:47 +0200
-Subject: [PATCH 20/22] gtk: port overlay scrollbars to native CALayers
+Subject: [PATCH 22/25] gtk: port overlay scrollbars to native CALayers
 
 ---
  gtk/gtkscrolledwindow.c |  679 ++++++++++++++++++++++++++---------------------
  1 files changed, 379 insertions(+), 300 deletions(-)
 
 diff --git a/gtk/gtkscrolledwindow.c b/gtk/gtkscrolledwindow.c
-index dc2cc9d..ecec3ab 100644
+index dc2cc9d..ed5e15d 100644
 --- a/gtk/gtkscrolledwindow.c
 +++ b/gtk/gtkscrolledwindow.c
 @@ -36,8 +36,12 @@
@@ -659,11 +659,11 @@ index dc2cc9d..ecec3ab 100644
 +  gtk_scrolled_window_compute_viewport_allocation (scrolled_window);
 +
 +  GdkWindow *parent_window = gtk_widget_get_window (gtk_widget_get_toplevel (widget));
-+  NSView    *parent_view;
++  NSView    *layer_view;
 +  CALayer   *parent_layer;
 +
-+  parent_view = gdk_quartz_window_get_nsview (parent_window);
-+  parent_layer = [parent_view layer];
++  layer_view = gdk_quartz_window_get_layer_view (parent_window);
++  parent_layer = [layer_view layer];
 +
 +  priv->vbar_layer = [[CALayer layer] init];
 +  priv->vbar_layer.backgroundColor = CGColorCreateGenericRGB (0.0, 0.0, 0.0, 0.5);
