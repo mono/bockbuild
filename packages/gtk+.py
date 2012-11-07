@@ -82,6 +82,14 @@ class GtkPackage (GnomeXzPackage):
 
 				# Bug 3457 - [GTK] Support more standard keyboard shortcuts in dialogs
 				'https://bugzilla.xamarin.com/attachment.cgi?id=2240',
+
+				# BXC 7465 - user is unable to click 'Breakpoint properties' option after right clicking on
+				#     breakpoint circle when break point is set on last line
+				# BGO 672193 - windows (including menus) shown multiple times don't get enter event if under mouse
+				'http://bugzilla-attachments.gnome.org/attachment.cgi?id=228303',
+
+				# BXC 6830 - no cursor in the search textfield
+				'patches/gtk-show-retina-cursor.patch',
 			])
 
 	def prep (self):

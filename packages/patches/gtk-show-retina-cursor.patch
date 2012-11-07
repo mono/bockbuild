@@ -1,0 +1,26 @@
+From 8dab525d8fc440052c7faa0edd34e860df294c84 Mon Sep 17 00:00:00 2001
+From: Kristian Rietveld <kris@lanedo.com>
+Date: Sat, 3 Nov 2012 20:29:52 +0100
+Subject: [PATCH] Enforce minimum line width of 1.0
+
+Lines with width 0.0 do not appear on HiDPI displays.
+---
+ gdk/quartz/gdkgc-quartz.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
+
+diff --git a/gdk/quartz/gdkgc-quartz.c b/gdk/quartz/gdkgc-quartz.c
+index d54ad52..1e64972 100644
+--- a/gdk/quartz/gdkgc-quartz.c
++++ b/gdk/quartz/gdkgc-quartz.c
+@@ -551,7 +551,7 @@ _gdk_quartz_gc_update_cg_context (GdkGC                      *gc,
+       CGContextSetStrokeColorWithColor (context, color);
+       CGColorRelease (color);
+ 
+-      CGContextSetLineWidth (context, MAX (G_MINFLOAT, private->line_width));
++      CGContextSetLineWidth (context, MAX (1.0, private->line_width));
+ 
+       switch (private->line_style)
+ 	{
+-- 
+1.7.4.4
+
