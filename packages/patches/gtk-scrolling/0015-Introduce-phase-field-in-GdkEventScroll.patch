@@ -1,7 +1,7 @@
-From d4f3938fc659de30d7793ff5dd647030e89f0330 Mon Sep 17 00:00:00 2001
+From d57b05e62bae67c978d53f01bb24027d72235cb9 Mon Sep 17 00:00:00 2001
 From: Kristian Rietveld <kris@lanedo.com>
 Date: Sun, 2 Sep 2012 14:16:45 +0200
-Subject: [PATCH 14/25] Introduce phase field in GdkEventScroll
+Subject: [PATCH 15/27] Introduce phase field in GdkEventScroll
 
 Using the phase field it is possible to distinguish between
 events generated while the user is performing a gesture and
@@ -66,7 +66,7 @@ index 13d4d46..6150472 100644
  
      default:
 diff --git a/gdk/quartz/gdkevents-quartz.c b/gdk/quartz/gdkevents-quartz.c
-index b0be780..96d5341 100644
+index 3d40a84..4bb5e8b 100644
 --- a/gdk/quartz/gdkevents-quartz.c
 +++ b/gdk/quartz/gdkevents-quartz.c
 @@ -61,6 +61,7 @@ static GdkWindow *find_toplevel_under_pointer   (GdkDisplay *display,
@@ -77,7 +77,7 @@ index b0be780..96d5341 100644
  @end
  
  
-@@ -950,6 +951,7 @@ fill_scroll_event (GdkWindow          *window,
+@@ -919,6 +920,7 @@ fill_scroll_event (GdkWindow          *window,
                     gboolean            has_deltas,
                     gdouble             delta_x,
                     gdouble             delta_y,
@@ -85,7 +85,7 @@ index b0be780..96d5341 100644
                     GdkScrollDirection  direction)
  {
    GdkWindowObject *private;
-@@ -972,6 +974,7 @@ fill_scroll_event (GdkWindow          *window,
+@@ -941,6 +943,7 @@ fill_scroll_event (GdkWindow          *window,
    event->scroll.has_deltas = has_deltas;
    event->scroll.delta_x = delta_x;
    event->scroll.delta_y = delta_y;
@@ -93,7 +93,7 @@ index b0be780..96d5341 100644
  }
  
  static void
-@@ -1262,6 +1265,28 @@ test_resize (NSEvent *event, GdkWindow *toplevel, gint x, gint y)
+@@ -1231,6 +1234,28 @@ test_resize (NSEvent *event, GdkWindow *toplevel, gint x, gint y)
    return FALSE;
  }
  
@@ -122,7 +122,7 @@ index b0be780..96d5341 100644
  static gboolean
  gdk_event_translate (GdkEvent *event,
                       NSEvent  *nsevent)
-@@ -1440,6 +1465,7 @@ gdk_event_translate (GdkEvent *event,
+@@ -1409,6 +1434,7 @@ gdk_event_translate (GdkEvent *event,
  	if (gdk_quartz_osx_version() >= GDK_OSX_LION &&
  	    [(id <PreciseDeltas>) nsevent hasPreciseScrollingDeltas])
  	  {
@@ -130,7 +130,7 @@ index b0be780..96d5341 100644
  	    dx = [(id <PreciseDeltas>) nsevent scrollingDeltaX];
  	    dy = [(id <PreciseDeltas>) nsevent scrollingDeltaY];
  
-@@ -1458,8 +1484,10 @@ gdk_event_translate (GdkEvent *event,
+@@ -1427,8 +1453,10 @@ gdk_event_translate (GdkEvent *event,
                    direction = GDK_SCROLL_LEFT;
                }
  
@@ -142,7 +142,7 @@ index b0be780..96d5341 100644
  	  }
  	else
  	  {
-@@ -1474,7 +1502,8 @@ gdk_event_translate (GdkEvent *event,
+@@ -1443,7 +1471,8 @@ gdk_event_translate (GdkEvent *event,
                    direction = GDK_SCROLL_UP;
  
                  fill_scroll_event (window, event, nsevent, x, y, x_root, y_root,
@@ -152,7 +152,7 @@ index b0be780..96d5341 100644
                }
              else if (dx != 0.0)
                {
-@@ -1484,7 +1513,8 @@ gdk_event_translate (GdkEvent *event,
+@@ -1453,7 +1482,8 @@ gdk_event_translate (GdkEvent *event,
                    direction = GDK_SCROLL_LEFT;
  
                  fill_scroll_event (window, event, nsevent, x, y, x_root, y_root,

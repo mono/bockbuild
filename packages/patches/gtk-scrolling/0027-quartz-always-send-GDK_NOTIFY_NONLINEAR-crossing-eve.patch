@@ -1,0 +1,57 @@
+From 4609e68cbe364beb642b8110204937623fbe6e6d Mon Sep 17 00:00:00 2001
+From: Michael Natterer <mitch@gimp.org>
+Date: Fri, 9 Nov 2012 17:12:30 +0100
+Subject: [PATCH 27/27] quartz: always send GDK_NOTIFY_NONLINEAR crossing
+ events
+
+so GtkMenu works properly. This is not right, but also not
+more wront than always sending GDK_NOTIFY_ANCESTOR either.
+---
+ gdk/quartz/gdkevents-quartz.c |   14 ++++++--------
+ 1 files changed, 6 insertions(+), 8 deletions(-)
+
+diff --git a/gdk/quartz/gdkevents-quartz.c b/gdk/quartz/gdkevents-quartz.c
+index 4bb5e8b..865c1a2 100644
+--- a/gdk/quartz/gdkevents-quartz.c
++++ b/gdk/quartz/gdkevents-quartz.c
+@@ -1085,8 +1085,9 @@ synthesize_crossing_event (GdkWindow *window,
+   switch ([nsevent type])
+     {
+     case NSMouseEntered:
+-      /* Enter events are considered always to be from the root window as we
+-       * can't know for sure from what window we enter.
++      /* Enter events are considered always to be from another toplevel
++       * window, this shouldn't negatively affect any app or gtk code,
++       * and is the only way to make GtkMenu work. EEK EEK EEK.
+        */
+       if (!(private->event_mask & GDK_ENTER_NOTIFY_MASK))
+         return FALSE;
+@@ -1096,14 +1097,11 @@ synthesize_crossing_event (GdkWindow *window,
+                            x_root, y_root,
+                            GDK_ENTER_NOTIFY,
+                            GDK_CROSSING_NORMAL,
+-                           GDK_NOTIFY_ANCESTOR);
++                           GDK_NOTIFY_NONLINEAR);
+       return TRUE;
+ 
+     case NSMouseExited:
+-      /* Exited always is to the root window as far as we are concerned,
+-       * since there is no way to reliably get information about what new
+-       * window is entered when exiting one.
+-       */
++      /* See above */
+       if (!(private->event_mask & GDK_LEAVE_NOTIFY_MASK))
+         return FALSE;
+ 
+@@ -1112,7 +1110,7 @@ synthesize_crossing_event (GdkWindow *window,
+                            x_root, y_root,
+                            GDK_LEAVE_NOTIFY,
+                            GDK_CROSSING_NORMAL,
+-                           GDK_NOTIFY_ANCESTOR);
++                           GDK_NOTIFY_NONLINEAR);
+       return TRUE;
+ 
+     default:
+-- 
+1.7.5.4
+

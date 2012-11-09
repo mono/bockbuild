@@ -1,7 +1,7 @@
-From ad2407d3959ec0207063ed4f335848ff9770e3aa Mon Sep 17 00:00:00 2001
+From 1be35946aebb4ed3f8924345b6e839247087ab5b Mon Sep 17 00:00:00 2001
 From: Michael Natterer <mitch@gimp.org>
 Date: Tue, 8 May 2012 14:11:50 +0200
-Subject: [PATCH 05/25] Smooth scrolling
+Subject: [PATCH 06/27] Smooth scrolling
 
 ---
  gdk/gdkevents.c               |   32 ++++++++++++++++
@@ -102,7 +102,7 @@ index d20b424..13d4d46 100644
  
      default:
 diff --git a/gdk/quartz/gdkevents-quartz.c b/gdk/quartz/gdkevents-quartz.c
-index cc9d97f..b0be780 100644
+index 881f601..3d40a84 100644
 --- a/gdk/quartz/gdkevents-quartz.c
 +++ b/gdk/quartz/gdkevents-quartz.c
 @@ -56,6 +56,13 @@ static GdkWindow *find_toplevel_under_pointer   (GdkDisplay *display,
@@ -119,7 +119,7 @@ index cc9d97f..b0be780 100644
  
  NSEvent *
  gdk_quartz_event_get_nsevent (GdkEvent *event)
-@@ -940,6 +947,9 @@ fill_scroll_event (GdkWindow          *window,
+@@ -909,6 +916,9 @@ fill_scroll_event (GdkWindow          *window,
                     gint                y,
                     gint                x_root,
                     gint                y_root,
@@ -129,7 +129,7 @@ index cc9d97f..b0be780 100644
                     GdkScrollDirection  direction)
  {
    GdkWindowObject *private;
-@@ -959,6 +969,9 @@ fill_scroll_event (GdkWindow          *window,
+@@ -928,6 +938,9 @@ fill_scroll_event (GdkWindow          *window,
    event->scroll.state = get_keyboard_modifiers_from_ns_event (nsevent);
    event->scroll.direction = direction;
    event->scroll.device = _gdk_display->core_pointer;
@@ -139,7 +139,7 @@ index cc9d97f..b0be780 100644
  }
  
  static void
-@@ -1420,28 +1433,59 @@ gdk_event_translate (GdkEvent *event,
+@@ -1389,28 +1402,59 @@ gdk_event_translate (GdkEvent *event,
  
      case NSScrollWheel:
        {

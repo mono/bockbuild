@@ -23,33 +23,37 @@ class GtkPackage (GnomeXzPackage):
 				'http://git.gnome.org/browse/gtk+/patch/?id=92ea94af5f1a4d0970628b58997192ccf74cab36',
 				# quartz: Actually use the window background PATTERN color
 				'http://git.gnome.org/browse/gtk+/patch/?id=0e42cf81f1dad319489e447c6c4e640bed2ab915',
+				# quartz: _gdk_quartz_gc_update_cg_context(): the minimum line width is 1.0
+				'http://git.gnome.org/browse/gtk+/patch/?id=5934ad2e22dd04deb823abebeb2815f73522fd5d',
 
 				# smooth scrolling, scrollbars, overscroll
-				'patches/gtk-scrolling/0001-Add-_gdk_quartz_window_set_needs_display_in_region.patch',
-				'patches/gtk-scrolling/0002-quartz-Fix-up-gdk_draw_drawable.patch',
-				'patches/gtk-scrolling/0003-gtk-paint-only-the-exposed-region-in-gdk_window_expo.patch',
-				'patches/gtk-scrolling/0004-Implement-gtk-enable-overlay-scrollbars-GtkSetting.patch',
-				'patches/gtk-scrolling/0005-Smooth-scrolling.patch',
-				'patches/gtk-scrolling/0006-gtk-Add-a-way-to-do-event-capture.patch',
-				'patches/gtk-scrolling/0007-scrolledwindow-Kinetic-scrolling-support.patch',
-				'patches/gtk-scrolling/0008-gtk-paint-to-the-right-windows-in-gtk_scrolled_windo.patch',
-				'patches/gtk-scrolling/0009-GtkScrolledWindow-add-overlay-scrollbars.patch',
-				'patches/gtk-scrolling/0010-gtk-add-event-handling-to-GtkScrolledWindow-s-overla.patch',
-				'patches/gtk-scrolling/0011-Use-gtk-enable-overlay-scrollbars-in-GtkScrolledWind.patch',
-				'patches/gtk-scrolling/0012-gtk-correctly-handle-toggling-of-the-scrollbar-visib.patch',
-				'patches/gtk-scrolling/0013-gtk-handle-gtk-primary-button-warps-slider-for-the-o.patch',
-				'patches/gtk-scrolling/0014-Introduce-phase-field-in-GdkEventScroll.patch',
-				'patches/gtk-scrolling/0015-Add-hack-to-lock-flow-of-scroll-events-to-window-whe.patch',
-				'patches/gtk-scrolling/0016-Introduce-a-background-window.patch',
-				'patches/gtk-scrolling/0017-Make-scrolled-window-work-well-with-Mac-touchpad.patch',
-				'patches/gtk-scrolling/0018-Use-start-end-phase-in-event-handling.patch',
-				'patches/gtk-scrolling/0019-Improve-overshooting-behavior.patch',
-				'patches/gtk-scrolling/0020-Cancel-out-smaller-delta-component.patch',
-				'patches/gtk-scrolling/0021-quartz-Add-a-dummy-NSView-serving-as-layer-view.patch',
-				'patches/gtk-scrolling/0022-gtk-port-overlay-scrollbars-to-native-CALayers.patch',
-				'patches/gtk-scrolling/0023-Refrain-from-starting-fading-out-while-a-gesture-is-.patch',
-				'patches/gtk-scrolling/0024-Add-weak-references-on-the-cached-event-and-pointer-.patch',
+				'patches/gtk-scrolling/0001-Bug-672193-windows-including-menus-shown-multiple-ti.patch',
+				'patches/gtk-scrolling/0002-Add-_gdk_quartz_window_set_needs_display_in_region.patch',
+				'patches/gtk-scrolling/0003-quartz-Fix-up-gdk_draw_drawable.patch',
+				'patches/gtk-scrolling/0004-gtk-paint-only-the-exposed-region-in-gdk_window_expo.patch',
+				'patches/gtk-scrolling/0005-Implement-gtk-enable-overlay-scrollbars-GtkSetting.patch',
+				'patches/gtk-scrolling/0006-Smooth-scrolling.patch',
+				'patches/gtk-scrolling/0007-gtk-Add-a-way-to-do-event-capture.patch',
+				'patches/gtk-scrolling/0008-scrolledwindow-Kinetic-scrolling-support.patch',
+				'patches/gtk-scrolling/0009-gtk-paint-to-the-right-windows-in-gtk_scrolled_windo.patch',
+				'patches/gtk-scrolling/0010-GtkScrolledWindow-add-overlay-scrollbars.patch',
+				'patches/gtk-scrolling/0011-gtk-add-event-handling-to-GtkScrolledWindow-s-overla.patch',
+				'patches/gtk-scrolling/0012-Use-gtk-enable-overlay-scrollbars-in-GtkScrolledWind.patch',
+				'patches/gtk-scrolling/0013-gtk-correctly-handle-toggling-of-the-scrollbar-visib.patch',
+				'patches/gtk-scrolling/0014-gtk-handle-gtk-primary-button-warps-slider-for-the-o.patch',
+				'patches/gtk-scrolling/0015-Introduce-phase-field-in-GdkEventScroll.patch',
+				'patches/gtk-scrolling/0016-Add-hack-to-lock-flow-of-scroll-events-to-window-whe.patch',
+				'patches/gtk-scrolling/0017-Introduce-a-background-window.patch',
+				'patches/gtk-scrolling/0018-Make-scrolled-window-work-well-with-Mac-touchpad.patch',
+				'patches/gtk-scrolling/0019-Use-start-end-phase-in-event-handling.patch',
+				'patches/gtk-scrolling/0020-Improve-overshooting-behavior.patch',
+				'patches/gtk-scrolling/0021-Cancel-out-smaller-delta-component.patch',
+				'patches/gtk-scrolling/0022-quartz-Add-a-dummy-NSView-serving-as-layer-view.patch',
+				'patches/gtk-scrolling/0023-gtk-port-overlay-scrollbars-to-native-CALayers.patch',
+				'patches/gtk-scrolling/0024-Refrain-from-starting-fading-out-while-a-gesture-is-.patch',
 				'patches/gtk-scrolling/0025-gtk-don-t-show-the-olverlay-scrollbars-if-only-the-s.patch',
+				'patches/gtk-scrolling/0026-Reclamp-unclamped-adjustments-after-resize.patch',
+				'patches/gtk-scrolling/0027-quartz-always-send-GDK_NOTIFY_NONLINEAR-crossing-eve.patch',
 				'patches/gtk-scrolling/overlay-scrollbar-makefile-patch.diff',
 
 				# make new modifier behviour opt-in, so as not to break old versions of MonoDevelop
@@ -82,14 +86,6 @@ class GtkPackage (GnomeXzPackage):
 
 				# Bug 3457 - [GTK] Support more standard keyboard shortcuts in dialogs
 				'https://bugzilla.xamarin.com/attachment.cgi?id=2240',
-
-				# BXC 7465 - user is unable to click 'Breakpoint properties' option after right clicking on
-				#     breakpoint circle when break point is set on last line
-				# BGO 672193 - windows (including menus) shown multiple times don't get enter event if under mouse
-				'http://bugzilla-attachments.gnome.org/attachment.cgi?id=228303',
-
-				# BXC 6830 - no cursor in the search textfield
-				'patches/gtk-show-retina-cursor.patch',
 			])
 
 	def prep (self):

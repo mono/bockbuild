@@ -1,7 +1,7 @@
-From f8b757c4c19ae42648319381b03030e0825e8e24 Mon Sep 17 00:00:00 2001
+From f25fc4df0bc6fe0208ad7b077e96e966ca84e470 Mon Sep 17 00:00:00 2001
 From: Kristian Rietveld <kris@lanedo.com>
 Date: Sat, 27 Oct 2012 17:11:26 +0200
-Subject: [PATCH 01/25] Add _gdk_quartz_window_set_needs_display_in_region
+Subject: [PATCH 02/27] Add _gdk_quartz_window_set_needs_display_in_region
 
 ---
  gdk/quartz/gdkprivate-quartz.h |    2 ++
@@ -9,7 +9,7 @@ Subject: [PATCH 01/25] Add _gdk_quartz_window_set_needs_display_in_region
  2 files changed, 30 insertions(+), 10 deletions(-)
 
 diff --git a/gdk/quartz/gdkprivate-quartz.h b/gdk/quartz/gdkprivate-quartz.h
-index c1b3083..03bba91 100644
+index 6131a93..af0931a 100644
 --- a/gdk/quartz/gdkprivate-quartz.h
 +++ b/gdk/quartz/gdkprivate-quartz.h
 @@ -160,6 +160,8 @@ void       _gdk_quartz_window_debug_highlight       (GdkWindow *window,

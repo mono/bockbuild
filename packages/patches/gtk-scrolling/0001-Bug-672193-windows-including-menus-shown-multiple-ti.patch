@@ -1,0 +1,142 @@
+From e211004915adeda47296fa97736461a299b962f6 Mon Sep 17 00:00:00 2001
+From: Michael Natterer <mitch@lanedo.com>
+Date: Thu, 8 Nov 2012 15:11:55 +0100
+Subject: [PATCH 01/27] Bug 672193 - windows (including menus) shown multiple
+ times don't...
+
+Based on a patch from Paul Davis, inject synthetic enter events directly
+into the Quartz event stream, instead of trying to synthesize them in GDK.
+
+This seems to magically fix all combo box popup weirdness, I guess
+some code is relying on a specfic order of events, or any other state
+imposed by the "proper" code path of events coming in the usual way.
+
+The patch also removes _gdk_quartz_events_send_enter_notify_event()
+which is now obsolete.
+---
+ gdk/quartz/GdkQuartzWindow.c   |   23 +++++++++++++++++++++--
+ gdk/quartz/gdkevents-quartz.c  |   33 +--------------------------------
+ gdk/quartz/gdkprivate-quartz.h |    1 -
+ 3 files changed, 22 insertions(+), 35 deletions(-)
+
+diff --git a/gdk/quartz/GdkQuartzWindow.c b/gdk/quartz/GdkQuartzWindow.c
+index 06d11cf..6f9da95 100644
+--- a/gdk/quartz/GdkQuartzWindow.c
++++ b/gdk/quartz/GdkQuartzWindow.c
+@@ -144,6 +144,10 @@
+ 
+ -(void)checkSendEnterNotify
+ {
++  GdkWindow *window = [[self contentView] gdkWindow];
++  GdkWindowObject *private = (GdkWindowObject *)window;
++  GdkWindowImplQuartz *impl = GDK_WINDOW_IMPL_QUARTZ (private->impl);
++
+   /* When a new window has been created, and the mouse
+    * is in the window area, we will not receive an NSMouseEntered
+    * event.  Therefore, we synthesize an enter notify event manually.
+@@ -154,8 +158,19 @@
+ 
+       if (NSPointInRect ([NSEvent mouseLocation], [self frame]))
+         {
+-          GdkWindow *window = [[self contentView] gdkWindow];
+-          _gdk_quartz_events_send_enter_notify_event (window);
++          NSEvent *event;
++
++          event = [NSEvent enterExitEventWithType: NSMouseEntered
++                                         location: NSMakePoint(0, 0)
++                                    modifierFlags: 0
++                                        timestamp: [[NSApp currentEvent] timestamp]
++                                     windowNumber: [impl->toplevel windowNumber]
++                                          context: NULL
++                                      eventNumber: 0
++                                   trackingNumber: [impl->view trackingRect]
++                                         userData: nil];
++
++          [NSApp postEvent:event atStart:NO];
+         }
+     }
+ }
+@@ -311,6 +326,8 @@
+     [impl->toplevel orderFront:nil];
+ 
+   inShowOrHide = NO;
++
++  [self checkSendEnterNotify];
+ }
+ 
+ - (void)hide
+@@ -322,6 +339,8 @@
+   inShowOrHide = YES;
+   [impl->toplevel orderOut:nil];
+   inShowOrHide = NO;
++
++  initialPositionKnown = NO;
+ }
+ 
+ - (BOOL)trackManualMove
+diff --git a/gdk/quartz/gdkevents-quartz.c b/gdk/quartz/gdkevents-quartz.c
+index 0810962..927bff9 100644
+--- a/gdk/quartz/gdkevents-quartz.c
++++ b/gdk/quartz/gdkevents-quartz.c
+@@ -527,7 +527,7 @@ generate_motion_event (GdkWindow *window)
+ 
+   event->any.type = GDK_MOTION_NOTIFY;
+   event->motion.window = window;
+-  event->motion.time = GDK_CURRENT_TIME;
++  event->motion.time = get_time_from_ns_event ([NSApp currentEvent]);
+   event->motion.x = x;
+   event->motion.y = y;
+   event->motion.x_root = x_root;
+@@ -587,37 +587,6 @@ _gdk_quartz_events_update_focus_window (GdkWindow *window,
+ }
+ 
+ void
+-_gdk_quartz_events_send_enter_notify_event (GdkWindow *window)
+-{
+-  NSPoint screen_point;
+-  GdkEvent *event;
+-  gint x, y, x_root, y_root;
+-
+-  event = gdk_event_new (GDK_ENTER_NOTIFY);
+-  event->any.window = NULL;
+-  event->any.send_event = FALSE;
+-
+-  screen_point = [NSEvent mouseLocation];
+-
+-  _gdk_quartz_window_nspoint_to_gdk_xy (screen_point, &x_root, &y_root);
+-  get_window_point_from_screen_point (window, screen_point, &x, &y);
+-
+-  event->crossing.window = window;
+-  event->crossing.subwindow = NULL;
+-  event->crossing.time = GDK_CURRENT_TIME;
+-  event->crossing.x = x;
+-  event->crossing.y = y;
+-  event->crossing.x_root = x_root;
+-  event->crossing.y_root = y_root;
+-  event->crossing.mode = GDK_CROSSING_NORMAL;
+-  event->crossing.detail = GDK_NOTIFY_ANCESTOR;
+-  event->crossing.state = _gdk_quartz_events_get_current_keyboard_modifiers () |
+-                          _gdk_quartz_events_get_current_mouse_modifiers ();
+-
+-  append_event (event, TRUE);
+-}
+-
+-void
+ _gdk_quartz_events_send_map_event (GdkWindow *window)
+ {
+   GdkWindowObject *private = (GdkWindowObject *)window;
+diff --git a/gdk/quartz/gdkprivate-quartz.h b/gdk/quartz/gdkprivate-quartz.h
+index c1b3083..6131a93 100644
+--- a/gdk/quartz/gdkprivate-quartz.h
++++ b/gdk/quartz/gdkprivate-quartz.h
+@@ -176,7 +176,6 @@ GdkEventMask _gdk_quartz_events_get_current_event_mask (void);
+ GdkModifierType _gdk_quartz_events_get_current_keyboard_modifiers (void);
+ GdkModifierType _gdk_quartz_events_get_current_mouse_modifiers    (void);
+ 
+-void         _gdk_quartz_events_send_enter_notify_event (GdkWindow *window);
+ void         _gdk_quartz_events_break_all_grabs         (guint32    time);
+ 
+ /* Event loop */
+-- 
+1.7.5.4
+
