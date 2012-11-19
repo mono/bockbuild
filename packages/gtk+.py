@@ -25,11 +25,17 @@ class GtkPackage (GnomeXzPackage):
 				'http://git.gnome.org/browse/gtk+/patch/?id=0e42cf81f1dad319489e447c6c4e640bed2ab915',
 				# quartz: _gdk_quartz_gc_update_cg_context(): the minimum line width is 1.0
 				'http://git.gnome.org/browse/gtk+/patch/?id=5934ad2e22dd04deb823abebeb2815f73522fd5d',
+				# quartz: move SPLASHSCREEN-hinted windows to NSStatusWindowLevel
+				'http://git.gnome.org/browse/gtk+/patch/?id=47f0e3f1e1cd6b0ae61ec7ced48cc9802f1a95a4',
+				# quartz: filter out button press events on the window frame
+				'http://git.gnome.org/browse/gtk+/patch/?id=43e1354b71640d3fb7a47b997a436dc65bbd922f',
+				# quartz: add _gdk_quartz_window_set_needs_display_in_region
+				'http://git.gnome.org/browse/gtk+/patch/?id=4d01c56d8953d2b9f30625c32a5a8f223c0539d0',
+				# quartz: correct deficiencies in the gdk_draw_drawable() implementationgtk
+				'http://git.gnome.org/browse/gtk+/patch/?id=e982461ad63c7ce1f052378dbf5c28f7208f396a',
 
 				# smooth scrolling, scrollbars, overscroll
 				'patches/gtk-scrolling/0001-Bug-672193-windows-including-menus-shown-multiple-ti.patch',
-				'patches/gtk-scrolling/0002-Add-_gdk_quartz_window_set_needs_display_in_region.patch',
-				'patches/gtk-scrolling/0003-quartz-Fix-up-gdk_draw_drawable.patch',
 				'patches/gtk-scrolling/0004-gtk-paint-only-the-exposed-region-in-gdk_window_expo.patch',
 				'patches/gtk-scrolling/0005-Implement-gtk-enable-overlay-scrollbars-GtkSetting.patch',
 				'patches/gtk-scrolling/0006-Smooth-scrolling.patch',
@@ -77,9 +83,6 @@ class GtkPackage (GnomeXzPackage):
 
 				# Zoom, rotate, swipe events
 				'patches/gtk-gestures.patch',
-
-				# Bug 2158 - [GTK] crash in find_window_for_ns_event
-				'https://bugzilla.xamarin.com/attachment.cgi?id=2717',
 
 				# Bug 6156 - [gtk] Quitting the application with unsaved file and answering Cancel results in crash
 				'https://bugzilla.xamarin.com/attachment.cgi?id=2214',
