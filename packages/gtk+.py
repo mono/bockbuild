@@ -84,6 +84,9 @@ class GtkPackage (GnomeXzPackage):
 				# Zoom, rotate, swipe events
 				'patches/gtk-gestures.patch',
 
+				# Fix gtk_window_begin_move_drag on Quartz
+				'patches/gtk-quartz-move-drag.patch',
+
 				# Bug 6156 - [gtk] Quitting the application with unsaved file and answering Cancel results in crash
 				'https://bugzilla.xamarin.com/attachment.cgi?id=2214',
 
