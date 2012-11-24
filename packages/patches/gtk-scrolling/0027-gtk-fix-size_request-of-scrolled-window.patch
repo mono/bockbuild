@@ -1,0 +1,62 @@
+From c5a1802f68202c84c4dbd6b5c60e6d65a197ea66 Mon Sep 17 00:00:00 2001
+From: Michael Natterer <mitch@gimp.org>
+Date: Thu, 22 Nov 2012 19:49:20 +0100
+Subject: [PATCH 27/27] gtk: fix size_request() of scrolled window
+
+---
+ gtk/gtkscrolledwindow.c |   20 ++++++++++----------
+ 1 files changed, 10 insertions(+), 10 deletions(-)
+
+diff --git a/gtk/gtkscrolledwindow.c b/gtk/gtkscrolledwindow.c
+index 1896d2e..03fa54d 100644
+--- a/gtk/gtkscrolledwindow.c
++++ b/gtk/gtkscrolledwindow.c
+@@ -1608,7 +1608,7 @@ gtk_scrolled_window_size_request (GtkWidget      *widget,
+ 
+       if (scrolled_window->hscrollbar_policy == GTK_POLICY_NEVER)
+ 	requisition->width += child_requisition.width;
+-      else if (! priv->overlay_scrollbars)
++      else
+ 	{
+ 	  GtkWidgetAuxInfo *aux_info = _gtk_widget_get_aux_info (bin->child, FALSE);
+ 
+@@ -1617,15 +1617,15 @@ gtk_scrolled_window_size_request (GtkWidget      *widget,
+ 	      requisition->width += aux_info->width;
+ 	      extra_width = -1;
+ 	    }
+-	  else
++	  else if (! priv->overlay_scrollbars)
+ 	    requisition->width += vscrollbar_requisition.width;
+-	}
+-      else
+-        requisition->width += priv->sb_width + 2 * priv->sb_padding;
++          else
++            requisition->width += priv->sb_width + 2 * priv->sb_padding;
++        }
+ 
+       if (scrolled_window->vscrollbar_policy == GTK_POLICY_NEVER)
+ 	requisition->height += child_requisition.height;
+-      else if (! priv->overlay_scrollbars)
++      else
+ 	{
+ 	  GtkWidgetAuxInfo *aux_info = _gtk_widget_get_aux_info (bin->child, FALSE);
+ 
+@@ -1634,11 +1634,11 @@ gtk_scrolled_window_size_request (GtkWidget      *widget,
+ 	      requisition->height += aux_info->height;
+ 	      extra_height = -1;
+ 	    }
+-	  else
++	  else if (! priv->overlay_scrollbars)
+ 	    requisition->height += hscrollbar_requisition.height;
+-	}
+-      else
+-        requisition->height += priv->sb_width + 2 * priv->sb_padding;
++          else
++            requisition->height += priv->sb_width + 2 * priv->sb_padding;
++        }
+     }
+ 
+   if (! priv->overlay_scrollbars)
+-- 
+1.7.5.4
+

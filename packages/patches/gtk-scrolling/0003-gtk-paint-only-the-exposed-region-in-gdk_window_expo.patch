@@ -1,7 +1,7 @@
-From 781c7a04b859fcb52df92203360ed555f57e094d Mon Sep 17 00:00:00 2001
+From dec2ed64f16530218496cddfb97803ad56f6aac2 Mon Sep 17 00:00:00 2001
 From: Michael Natterer <mitch@gimp.org>
 Date: Sun, 27 May 2012 22:51:33 +0200
-Subject: [PATCH 04/27] gtk: paint only the exposed region in
+Subject: [PATCH 03/27] gtk: paint only the exposed region in
  gdk_window_expose()
 
 ---
@@ -9,7 +9,7 @@ Subject: [PATCH 04/27] gtk: paint only the exposed region in
  1 files changed, 17 insertions(+), 2 deletions(-)
 
 diff --git a/gtk/gtkwindow.c b/gtk/gtkwindow.c
-index 4de3215..fca94dc 100644
+index 71ab501..33f5c3d 100644
 --- a/gtk/gtkwindow.c
 +++ b/gtk/gtkwindow.c
 @@ -6626,13 +6626,28 @@ gtk_window_paint (GtkWidget     *widget,

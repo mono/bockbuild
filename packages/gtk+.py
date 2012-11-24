@@ -31,15 +31,35 @@ class GtkPackage (GnomeXzPackage):
 				'http://git.gnome.org/browse/gtk+/patch/?id=43e1354b71640d3fb7a47b997a436dc65bbd922f',
 				# quartz: add _gdk_quartz_window_set_needs_display_in_region
 				'http://git.gnome.org/browse/gtk+/patch/?id=4d01c56d8953d2b9f30625c32a5a8f223c0539d0',
-				# quartz: correct deficiencies in the gdk_draw_drawable() implementationgtk
+				# quartz: correct deficiencies in the gdk_draw_drawable() implementation
 				'http://git.gnome.org/browse/gtk+/patch/?id=e982461ad63c7ce1f052378dbf5c28f7208f396a',
+				# quartz: move tooltips window to the topmost level
+				'http://git.gnome.org/browse/gtk+/patch/?id=1a2509a6ab7f35caae758c2b31f40ef90d4fa94a',
+				# quartz: use the real current event time for generated motion events
+				'http://git.gnome.org/browse/gtk+/patch/?id=b4a30877a9315ade584858f7259729dbda614bab',
+				# Avoid infinite recursion in the ime input module
+				'http://git.gnome.org/browse/gtk+/patch/?id=53f3e5ee9417624ed6e878528b3670127b238dea',
+				# Bug 672193 - windows (including menus) shown multiple times don't...
+				'http://git.gnome.org/browse/gtk+/patch/?id=979e5061a040f8896f505ffbd230f52af2d61ded',
+				# quartz: always send GDK_NOTIFY_NONLINEAR crossing events
+				'http://git.gnome.org/browse/gtk+/patch/?id=35a9322e45bb403d34c9e4da036d9d8d559419fb',
+				# Avoid a crash in gtk_im_context_ime_reset
+				'http://git.gnome.org/browse/gtk+/patch/?id=2a24ee075657c39c907332ab6ce62e87f272ccef',
+				# quartz: fix the mapping of GDK_KP_Enter in known_numeric_keys[]
+				'http://git.gnome.org/browse/gtk+/patch/?id=27f3fcf12c39d551532872cf26823993c93eb04d',
+				# 688710 - splashscreen shouldn't be always on top on OS X
+				'http://git.gnome.org/browse/gtk+/patch/?id=0596f5591f36f57b99103914ba03abbed5765e8b',
+				# Bug 668239 - texts disappear when notebook switch page at zh_CN locate
+				'http://git.gnome.org/browse/gtk+/patch/?id=f357151cc60003000865252135905c6417504dd6',
 
 				# smooth scrolling, scrollbars, overscroll
-				'patches/gtk-scrolling/0001-Bug-672193-windows-including-menus-shown-multiple-ti.patch',
-				'patches/gtk-scrolling/0004-gtk-paint-only-the-exposed-region-in-gdk_window_expo.patch',
-				'patches/gtk-scrolling/0005-Implement-gtk-enable-overlay-scrollbars-GtkSetting.patch',
-				'patches/gtk-scrolling/0006-Smooth-scrolling.patch',
-				'patches/gtk-scrolling/0007-gtk-Add-a-way-to-do-event-capture.patch',
+				'patches/gtk-scrolling/0001-Add-gdk_screen_get_monitor_workarea-and-use-it-all-o.patch',
+				'patches/gtk-scrolling/0002-gtk-don-t-scroll-combo-box-menus-if-less-than-3-item.patch',
+				'patches/gtk-scrolling/0003-gtk-paint-only-the-exposed-region-in-gdk_window_expo.patch',
+				'patches/gtk-scrolling/0004-Implement-gtk-enable-overlay-scrollbars-GtkSetting.patch',
+				'patches/gtk-scrolling/0005-Smooth-scrolling.patch',
+				'patches/gtk-scrolling/0006-gtk-Add-a-way-to-do-event-capture.patch',
+				'patches/gtk-scrolling/0007-gtk-don-t-let-insensitive-children-eat-scroll-events.patch',
 				'patches/gtk-scrolling/0008-scrolledwindow-Kinetic-scrolling-support.patch',
 				'patches/gtk-scrolling/0009-gtk-paint-to-the-right-windows-in-gtk_scrolled_windo.patch',
 				'patches/gtk-scrolling/0010-GtkScrolledWindow-add-overlay-scrollbars.patch',
@@ -59,7 +79,7 @@ class GtkPackage (GnomeXzPackage):
 				'patches/gtk-scrolling/0024-Refrain-from-starting-fading-out-while-a-gesture-is-.patch',
 				'patches/gtk-scrolling/0025-gtk-don-t-show-the-olverlay-scrollbars-if-only-the-s.patch',
 				'patches/gtk-scrolling/0026-Reclamp-unclamped-adjustments-after-resize.patch',
-				'patches/gtk-scrolling/0027-quartz-always-send-GDK_NOTIFY_NONLINEAR-crossing-eve.patch',
+				'patches/gtk-scrolling/0027-gtk-fix-size_request-of-scrolled-window.patch',
 				'patches/gtk-scrolling/overlay-scrollbar-makefile-patch.diff',
 
 				# make new modifier behviour opt-in, so as not to break old versions of MonoDevelop
@@ -68,10 +88,6 @@ class GtkPackage (GnomeXzPackage):
 				# attempt to work around 2158 - [GTK] crash triggering context menu
 				# also prints some warnings that may help to debug the real issue
 				'https://bugzilla.xamarin.com/attachment.cgi?id=1644',
-
-				# Backport of gdk_screen_get_monitor_workarea
-				# Tooltip etc now honor menu and dock when positioning
-				'patches/gtk-monitor-workarea.patch',
 
 				# Embedded NSViews
 				'patches/gtk-embedded-nsview/0001-gtk-add-new-widget-GtkNSView-which-alows-to-embed-an.patch',

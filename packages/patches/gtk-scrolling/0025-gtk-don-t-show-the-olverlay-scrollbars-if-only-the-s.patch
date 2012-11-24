@@ -1,4 +1,4 @@
-From 4d56c9caec16b6d857b476139d7095ea92af7d70 Mon Sep 17 00:00:00 2001
+From 1f414b72fe7930e22a992e0ed206361167918624 Mon Sep 17 00:00:00 2001
 From: Michael Natterer <mitch@gimp.org>
 Date: Fri, 2 Nov 2012 16:02:32 +0100
 Subject: [PATCH 25/27] gtk: don't show the olverlay scrollbars if only the

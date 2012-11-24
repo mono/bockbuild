@@ -1,3 +1,31 @@
+From 7b9c60544794f9f893c82fac69bb3f60df2ac91f Mon Sep 17 00:00:00 2001
+From: Michael Natterer <mitch@gimp.org>
+Date: Fri, 23 Nov 2012 15:24:36 +0100
+Subject: [PATCH 01/27] Add gdk_screen_get_monitor_workarea() and use it all
+ over the place
+
+---
+ gdk/gdk.symbols               |    1 +
+ gdk/gdkscreen.h               |    3 +++
+ gdk/quartz/gdkscreen-quartz.c |   30 ++++++++++++++++++++++++++++++
+ gtk/gtkcombobox.c             |    4 ++--
+ gtk/gtkentry.c                |    2 +-
+ gtk/gtkentrycompletion.c      |    2 +-
+ gtk/gtkfilechooserdefault.c   |    2 +-
+ gtk/gtklinkbutton.c           |    2 +-
+ gtk/gtkmenu.c                 |    6 +++---
+ gtk/gtkmenuitem.c             |    2 +-
+ gtk/gtkmenutoolbutton.c       |    2 +-
+ gtk/gtkrecentchooserdefault.c |    4 ++--
+ gtk/gtkscalebutton.c          |    2 +-
+ gtk/gtkstatusicon.c           |    4 ++--
+ gtk/gtktextview.c             |    2 +-
+ gtk/gtktoolbar.c              |    2 +-
+ gtk/gtktooltip.c              |    2 +-
+ gtk/gtktreeview.c             |    2 +-
+ gtk/gtkwindow.c               |    6 +++---
+ 19 files changed, 57 insertions(+), 23 deletions(-)
+
 diff --git a/gdk/gdk.symbols b/gdk/gdk.symbols
 index d4f2072..feed787 100644
 --- a/gdk/gdk.symbols
@@ -114,10 +142,10 @@ index 2fa7b56..a8deace 100644
    
  
 diff --git a/gtk/gtkfilechooserdefault.c b/gtk/gtkfilechooserdefault.c
-index d05de4f..19708d1 100644
+index 3e4458c..a0b595d 100644
 --- a/gtk/gtkfilechooserdefault.c
 +++ b/gtk/gtkfilechooserdefault.c
-@@ -4048,7 +4048,7 @@ popup_position_func (GtkMenu   *menu,
+@@ -4047,7 +4047,7 @@ popup_position_func (GtkMenu   *menu,
  
    monitor_num = gdk_screen_get_monitor_at_point (screen, *x, *y);
    gtk_menu_set_monitor (menu, monitor_num);
@@ -280,10 +308,10 @@ index b2c4b15..fc1e588 100644
    gdk_window_get_origin (GTK_BUTTON (priv->arrow_button)->event_window, x, y);
    if (toolbar->orientation == GTK_ORIENTATION_HORIZONTAL)
 diff --git a/gtk/gtktooltip.c b/gtk/gtktooltip.c
-index 62811c3..48451d6 100644
+index 9918165..fb6e869 100644
 --- a/gtk/gtktooltip.c
 +++ b/gtk/gtktooltip.c
-@@ -949,7 +949,7 @@ gtk_tooltip_position (GtkTooltip *tooltip,
+@@ -1139,7 +1139,7 @@ gtk_tooltip_position (GtkTooltip *tooltip,
                                 &requisition);
  
        monitor_num = gdk_screen_get_monitor_at_point (screen, x, y);
@@ -293,10 +321,10 @@ index 62811c3..48451d6 100644
        if (x + requisition.width > monitor.x + monitor.width)
          x -= x - (monitor.x + monitor.width) + requisition.width;
 diff --git a/gtk/gtktreeview.c b/gtk/gtktreeview.c
-index 75e1215..d700abe 100644
+index 85d9ea7..0928ed0 100644
 --- a/gtk/gtktreeview.c
 +++ b/gtk/gtktreeview.c
-@@ -14248,7 +14248,7 @@ gtk_tree_view_search_position_func (GtkTreeView *tree_view,
+@@ -14249,7 +14249,7 @@ gtk_tree_view_search_position_func (GtkTreeView *tree_view,
    GdkRectangle monitor;
  
    monitor_num = gdk_screen_get_monitor_at_window (screen, tree_window);
@@ -336,3 +364,6 @@ index 4de3215..71ab501 100644
                  clamp_window_to_rectangle (&x, &y, w, h, &monitor);
                }
            }
+-- 
+1.7.5.4
+

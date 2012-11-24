@@ -1,4 +1,4 @@
-From f8f784431dae0e0968307631805ffb3248c58054 Mon Sep 17 00:00:00 2001
+From 42db5daabd634dc9e8f089e74a6e9c811c929779 Mon Sep 17 00:00:00 2001
 From: Kristian Rietveld <kris@lanedo.com>
 Date: Wed, 19 Sep 2012 07:22:39 +0200
 Subject: [PATCH 20/27] Improve overshooting behavior

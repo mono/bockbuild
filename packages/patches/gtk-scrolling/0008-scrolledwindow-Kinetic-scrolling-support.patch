@@ -1,4 +1,4 @@
-From 68dedebaa06344ab916787619d36e7347cbc3fca Mon Sep 17 00:00:00 2001
+From f0bf594c63fbcbfde116de9011407ac00944d93e Mon Sep 17 00:00:00 2001
 From: Carlos Garcia Campos <cgarcia@igalia.com>
 Date: Fri, 11 Feb 2011 13:43:56 +0100
 Subject: [PATCH 08/27] scrolledwindow: Kinetic scrolling support

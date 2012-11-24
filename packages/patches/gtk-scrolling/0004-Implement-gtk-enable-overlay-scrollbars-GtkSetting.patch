@@ -1,7 +1,7 @@
-From 429138fd1b5adfd01437eeb961d47243618aa4c0 Mon Sep 17 00:00:00 2001
+From 0e10a794f8295831d77e7bb17f1d4e40303a28e8 Mon Sep 17 00:00:00 2001
 From: Kristian Rietveld <kris@lanedo.com>
 Date: Fri, 24 Aug 2012 12:12:04 +0200
-Subject: [PATCH 05/27] Implement gtk-enable-overlay-scrollbars GtkSetting
+Subject: [PATCH 04/27] Implement gtk-enable-overlay-scrollbars GtkSetting
 
 And set this up such that on OS X
 NSPreferredScrollerDidChangeNotification is followed.
@@ -11,7 +11,7 @@ NSPreferredScrollerDidChangeNotification is followed.
  2 files changed, 74 insertions(+), 2 deletions(-)
 
 diff --git a/gdk/quartz/gdkevents-quartz.c b/gdk/quartz/gdkevents-quartz.c
-index 927bff9..881f601 100644
+index f853392..4f5d06d 100644
 --- a/gdk/quartz/gdkevents-quartz.c
 +++ b/gdk/quartz/gdkevents-quartz.c
 @@ -84,6 +84,10 @@ gdk_quartz_ns_notification_callback (CFNotificationCenterRef  center,
@@ -46,7 +46,7 @@ index 927bff9..881f601 100644
  }
  
  void
-@@ -1599,7 +1617,43 @@ gdk_screen_get_setting (GdkScreen   *screen,
+@@ -1667,7 +1685,43 @@ gdk_screen_get_setting (GdkScreen   *screen,
  
        return TRUE;
      }

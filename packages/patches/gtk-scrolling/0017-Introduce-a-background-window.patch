@@ -1,4 +1,4 @@
-From 7925518752c688a22bacbc49dd85a199351e49ae Mon Sep 17 00:00:00 2001
+From 1465920004c4d1af2d9ec2296bcf15a22318f1a4 Mon Sep 17 00:00:00 2001
 From: Kristian Rietveld <kris@lanedo.com>
 Date: Sun, 2 Sep 2012 21:21:51 +0200
 Subject: [PATCH 17/27] Introduce a background window

@@ -1,4 +1,4 @@
-From b68317815aea387c7d12d0ed498d72a71e112544 Mon Sep 17 00:00:00 2001
+From c1fece2d0be6dcf8e96bc94a5e9fd6cac93fa038 Mon Sep 17 00:00:00 2001
 From: Michael Natterer <mitch@gimp.org>
 Date: Tue, 10 Jul 2012 14:33:45 +0200
 Subject: [PATCH 11/27] gtk: add event handling to GtkScrolledWindow's overlay

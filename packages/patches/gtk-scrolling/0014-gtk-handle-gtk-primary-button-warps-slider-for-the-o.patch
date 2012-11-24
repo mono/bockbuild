@@ -1,4 +1,4 @@
-From 56ddc21bb047eff1da174ab97a8c6796c544dc53 Mon Sep 17 00:00:00 2001
+From 09fb4aad2b738cf9720196a33ba72f2d929501fa Mon Sep 17 00:00:00 2001
 From: Michael Natterer <mitch@gimp.org>
 Date: Fri, 31 Aug 2012 16:24:07 +0200
 Subject: [PATCH 14/27] gtk: handle gtk-primary-button-warps-slider for the

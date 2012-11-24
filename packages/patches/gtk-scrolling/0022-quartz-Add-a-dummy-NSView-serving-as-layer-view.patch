@@ -1,4 +1,4 @@
-From c6d2d5aadf6ac152a6b1095195853145073396e3 Mon Sep 17 00:00:00 2001
+From 333c27a4112324d2b203a55058420295a0fb33ee Mon Sep 17 00:00:00 2001
 From: Michael Natterer <mitch@gimp.org>
 Date: Fri, 5 Oct 2012 12:10:15 +0200
 Subject: [PATCH 22/27] quartz: Add a dummy NSView serving as layer view
@@ -51,7 +51,7 @@ index 742d651..e3e0d31 100644
  id        gdk_quartz_drag_context_get_dragging_info_libgtk_only (GdkDragContext *context);
  NSEvent  *gdk_quartz_event_get_nsevent                          (GdkEvent       *event);
 diff --git a/gdk/quartz/gdkwindow-quartz.c b/gdk/quartz/gdkwindow-quartz.c
-index 17d8090..477c41a 100644
+index 792092e..273dbbf 100644
 --- a/gdk/quartz/gdkwindow-quartz.c
 +++ b/gdk/quartz/gdkwindow-quartz.c
 @@ -68,6 +68,17 @@ gdk_quartz_window_get_nsview (GdkWindow *window)

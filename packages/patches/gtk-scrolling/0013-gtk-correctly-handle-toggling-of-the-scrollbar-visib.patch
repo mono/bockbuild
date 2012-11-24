@@ -1,4 +1,4 @@
-From 37b686c9341ea0fe879726fd294e6ecc2a00cf7a Mon Sep 17 00:00:00 2001
+From 55ca06564d362720c618d6b3276c6feebad2478f Mon Sep 17 00:00:00 2001
 From: Michael Natterer <mitch@gimp.org>
 Date: Thu, 16 Aug 2012 09:35:53 +0200
 Subject: [PATCH 13/27] gtk: correctly handle toggling of the scrollbar

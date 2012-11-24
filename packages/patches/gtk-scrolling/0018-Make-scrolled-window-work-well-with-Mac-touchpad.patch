@@ -1,4 +1,4 @@
-From 084c92d34117cb9416c5daa036618ac6d7d75c94 Mon Sep 17 00:00:00 2001
+From 93c5f762936950657e4df23bc8d330488668a97b Mon Sep 17 00:00:00 2001
 From: Kristian Rietveld <kris@lanedo.com>
 Date: Mon, 3 Sep 2012 10:45:13 +0200
 Subject: [PATCH 18/27] Make scrolled window work well with Mac touchpad
