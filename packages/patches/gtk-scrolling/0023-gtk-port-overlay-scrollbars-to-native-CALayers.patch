@@ -665,19 +665,19 @@ index dc2cc9d..ed5e15d 100644
 +  layer_view = gdk_quartz_window_get_layer_view (parent_window);
 +  parent_layer = [layer_view layer];
 +
-+  priv->vbar_layer = [[CALayer layer] init];
++  priv->vbar_layer = [[CALayer layer] release];
 +  priv->vbar_layer.backgroundColor = CGColorCreateGenericRGB (0.0, 0.0, 0.0, 0.5);
 +  priv->vbar_layer.hidden = YES;
 +
-+  priv->vslider_layer = [[CALayer layer] init];
++  priv->vslider_layer = [[CALayer layer] release];
 +  priv->vslider_layer.backgroundColor = CGColorCreateGenericRGB (0.0, 0.0, 0.0, 1.0);
 +  priv->vslider_layer.hidden = YES;
 +
-+  priv->hbar_layer = [[CALayer layer] init];
++  priv->hbar_layer = [[CALayer layer] release];
 +  priv->hbar_layer.backgroundColor = CGColorCreateGenericRGB (0.0, 0.0, 0.0, 0.5);
 +  priv->hbar_layer.hidden = YES;
 +
-+  priv->hslider_layer = [[CALayer layer] init];
++  priv->hslider_layer = [[CALayer layer] release];
 +  priv->hslider_layer.backgroundColor = CGColorCreateGenericRGB (0.0, 0.0, 0.0, 1.0);
 +  priv->hslider_layer.hidden = YES;
 +
