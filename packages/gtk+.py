@@ -2,7 +2,7 @@ class GtkPackage (GnomeXzPackage):
 	def __init__ (self):
 		GnomeXzPackage.__init__ (self, 'gtk+',
 			version_major = '2.24',
-			version_minor = '13',
+			version_minor = '14',
 			configure_flags = [
 				'--with-gdktarget=%{gdk_target}',
 				'--prefix="%{prefix}"'
@@ -18,39 +18,9 @@ class GtkPackage (GnomeXzPackage):
 				# Custom gtkrc
 				'patches/gtkrc',
 
-				#post 2.24.13 patches
-				# Fix garbage content when windows are initially mapped
-				'http://git.gnome.org/browse/gtk+/patch/?id=92ea94af5f1a4d0970628b58997192ccf74cab36',
-				# quartz: Actually use the window background PATTERN color
-				'http://git.gnome.org/browse/gtk+/patch/?id=0e42cf81f1dad319489e447c6c4e640bed2ab915',
-				# quartz: _gdk_quartz_gc_update_cg_context(): the minimum line width is 1.0
-				'http://git.gnome.org/browse/gtk+/patch/?id=5934ad2e22dd04deb823abebeb2815f73522fd5d',
-				# quartz: move SPLASHSCREEN-hinted windows to NSStatusWindowLevel
-				'http://git.gnome.org/browse/gtk+/patch/?id=47f0e3f1e1cd6b0ae61ec7ced48cc9802f1a95a4',
-				# quartz: filter out button press events on the window frame
-				'http://git.gnome.org/browse/gtk+/patch/?id=43e1354b71640d3fb7a47b997a436dc65bbd922f',
-				# quartz: add _gdk_quartz_window_set_needs_display_in_region
-				'http://git.gnome.org/browse/gtk+/patch/?id=4d01c56d8953d2b9f30625c32a5a8f223c0539d0',
-				# quartz: correct deficiencies in the gdk_draw_drawable() implementation
-				'http://git.gnome.org/browse/gtk+/patch/?id=e982461ad63c7ce1f052378dbf5c28f7208f396a',
-				# quartz: move tooltips window to the topmost level
-				'http://git.gnome.org/browse/gtk+/patch/?id=1a2509a6ab7f35caae758c2b31f40ef90d4fa94a',
-				# quartz: use the real current event time for generated motion events
-				'http://git.gnome.org/browse/gtk+/patch/?id=b4a30877a9315ade584858f7259729dbda614bab',
-				# Avoid infinite recursion in the ime input module
-				'http://git.gnome.org/browse/gtk+/patch/?id=53f3e5ee9417624ed6e878528b3670127b238dea',
-				# Bug 672193 - windows (including menus) shown multiple times don't...
-				'http://git.gnome.org/browse/gtk+/patch/?id=979e5061a040f8896f505ffbd230f52af2d61ded',
-				# quartz: always send GDK_NOTIFY_NONLINEAR crossing events
-				'http://git.gnome.org/browse/gtk+/patch/?id=35a9322e45bb403d34c9e4da036d9d8d559419fb',
-				# Avoid a crash in gtk_im_context_ime_reset
-				'http://git.gnome.org/browse/gtk+/patch/?id=2a24ee075657c39c907332ab6ce62e87f272ccef',
-				# quartz: fix the mapping of GDK_KP_Enter in known_numeric_keys[]
-				'http://git.gnome.org/browse/gtk+/patch/?id=27f3fcf12c39d551532872cf26823993c93eb04d',
-				# 688710 - splashscreen shouldn't be always on top on OS X
-				'http://git.gnome.org/browse/gtk+/patch/?id=0596f5591f36f57b99103914ba03abbed5765e8b',
-				# Bug 668239 - texts disappear when notebook switch page at zh_CN locate
-				'http://git.gnome.org/browse/gtk+/patch/?id=f357151cc60003000865252135905c6417504dd6',
+				#post 2.24.14 patches
+				# quartz: fix crash in the recent clipboard "fix", and really fix it
+				'http://git.gnome.org/browse/gtk+/patch/?id=4a8df7a33c298d22bf78b947d0e861fc03ec70e1',
 
 				# smooth scrolling, scrollbars, overscroll
 				'patches/gtk-scrolling/0001-Add-gdk_screen_get_monitor_workarea-and-use-it-all-o.patch',

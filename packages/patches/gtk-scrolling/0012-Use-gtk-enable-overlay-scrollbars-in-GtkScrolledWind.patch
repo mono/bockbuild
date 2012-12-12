@@ -1,4 +1,4 @@
-From ed17ce0dd133337e0ecd4fa6c84d982662522a9e Mon Sep 17 00:00:00 2001
+From 5b21cd52574a9fa79fd55501f6b44f10367ade0f Mon Sep 17 00:00:00 2001
 From: Kristian Rietveld <kris@lanedo.com>
 Date: Sun, 29 Jul 2012 16:14:09 +0200
 Subject: [PATCH 12/27] Use gtk-enable-overlay-scrollbars in GtkScrolledWindow

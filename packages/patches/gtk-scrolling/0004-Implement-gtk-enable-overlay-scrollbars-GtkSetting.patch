@@ -1,4 +1,4 @@
-From 0e10a794f8295831d77e7bb17f1d4e40303a28e8 Mon Sep 17 00:00:00 2001
+From 320c3b4b56c6275cc63cbeb231311118ef2a8408 Mon Sep 17 00:00:00 2001
 From: Kristian Rietveld <kris@lanedo.com>
 Date: Fri, 24 Aug 2012 12:12:04 +0200
 Subject: [PATCH 04/27] Implement gtk-enable-overlay-scrollbars GtkSetting
@@ -11,10 +11,10 @@ NSPreferredScrollerDidChangeNotification is followed.
  2 files changed, 74 insertions(+), 2 deletions(-)
 
 diff --git a/gdk/quartz/gdkevents-quartz.c b/gdk/quartz/gdkevents-quartz.c
-index f853392..4f5d06d 100644
+index 53f1962..c99a2c9 100644
 --- a/gdk/quartz/gdkevents-quartz.c
 +++ b/gdk/quartz/gdkevents-quartz.c
-@@ -84,6 +84,10 @@ gdk_quartz_ns_notification_callback (CFNotificationCenterRef  center,
+@@ -85,6 +85,10 @@ gdk_quartz_ns_notification_callback (CFNotificationCenterRef  center,
                         CFSTR("AppleNoRedisplayAppearancePreferenceChanged"),
                         0) == kCFCompareEqualTo)
      new_event.setting.name = "gtk-primary-button-warps-slider";
@@ -25,7 +25,7 @@ index f853392..4f5d06d 100644
  
    if (!new_event.setting.name)
      return;
-@@ -113,6 +117,20 @@ gdk_quartz_events_init_notifications (void)
+@@ -114,6 +118,20 @@ gdk_quartz_events_init_notifications (void)
                                     CFSTR ("AppleNoRedisplayAppearancePreferenceChanged"),
                                     NULL,
                                     CFNotificationSuspensionBehaviorDeliverImmediately);
@@ -46,7 +46,7 @@ index f853392..4f5d06d 100644
  }
  
  void
-@@ -1667,7 +1685,43 @@ gdk_screen_get_setting (GdkScreen   *screen,
+@@ -1686,7 +1704,43 @@ gdk_screen_get_setting (GdkScreen   *screen,
  
        return TRUE;
      }

@@ -1,4 +1,4 @@
-From dec2ed64f16530218496cddfb97803ad56f6aac2 Mon Sep 17 00:00:00 2001
+From bc21d0898090dc5013f4d355e389d3ff2deed8ac Mon Sep 17 00:00:00 2001
 From: Michael Natterer <mitch@gimp.org>
 Date: Sun, 27 May 2012 22:51:33 +0200
 Subject: [PATCH 03/27] gtk: paint only the exposed region in

@@ -1,4 +1,4 @@
-From 553e28861ddf1a74cd7582cc0e0ac740352e1392 Mon Sep 17 00:00:00 2001
+From f03cf2be0fc77ef0b4c1bb2868b894e951cd87c2 Mon Sep 17 00:00:00 2001
 From: Michael Natterer <mitch@lanedo.com>
 Date: Thu, 22 Nov 2012 13:37:58 +0100
 Subject: [PATCH 07/27] gtk: don't let insensitive children eat scroll events

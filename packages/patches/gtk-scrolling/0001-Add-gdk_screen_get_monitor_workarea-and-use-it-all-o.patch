@@ -1,4 +1,4 @@
-From 7b9c60544794f9f893c82fac69bb3f60df2ac91f Mon Sep 17 00:00:00 2001
+From 6f8192657604c18574d873a2fde67cece5205491 Mon Sep 17 00:00:00 2001
 From: Michael Natterer <mitch@gimp.org>
 Date: Fri, 23 Nov 2012 15:24:36 +0100
 Subject: [PATCH 01/27] Add gdk_screen_get_monitor_workarea() and use it all
@@ -142,10 +142,10 @@ index 2fa7b56..a8deace 100644
    
  
 diff --git a/gtk/gtkfilechooserdefault.c b/gtk/gtkfilechooserdefault.c
-index 3e4458c..a0b595d 100644
+index cf8f1d9..0e2c63c 100644
 --- a/gtk/gtkfilechooserdefault.c
 +++ b/gtk/gtkfilechooserdefault.c
-@@ -4047,7 +4047,7 @@ popup_position_func (GtkMenu   *menu,
+@@ -4102,7 +4102,7 @@ popup_position_func (GtkMenu   *menu,
  
    monitor_num = gdk_screen_get_monitor_at_point (screen, *x, *y);
    gtk_menu_set_monitor (menu, monitor_num);

@@ -1,54 +1,59 @@
-From ac32c07b04d67e8dbdb866c25a46dde43a35bf18 Mon Sep 17 00:00:00 2001
+From d42b5483d32375b342f30a5248d7cffdbeaf3f06 Mon Sep 17 00:00:00 2001
 From: Michael Natterer <mitch@gimp.org>
 Date: Fri, 23 Nov 2012 15:28:26 +0100
 Subject: [PATCH 02/27] gtk: don't scroll combo box menus if less than 3
  itemss are visible
 
 ---
- gtk/gtkcombobox.c |   33 +++++++++++++++++++++++++++++++++
- 1 files changed, 33 insertions(+), 0 deletions(-)
+ gtk/gtkcombobox.c |   38 ++++++++++++++++++++++++++++++++++++++
+ 1 files changed, 38 insertions(+), 0 deletions(-)
 
 diff --git a/gtk/gtkcombobox.c b/gtk/gtkcombobox.c
-index e1541c4..9a8cfe4 100644
+index e1541c4..f68b7a4 100644
 --- a/gtk/gtkcombobox.c
 +++ b/gtk/gtkcombobox.c
-@@ -1781,6 +1781,39 @@ gtk_combo_box_menu_position (GtkMenu  *menu,
+@@ -1781,6 +1781,44 @@ gtk_combo_box_menu_position (GtkMenu  *menu,
  				    menu_item);
  
        gtk_combo_box_menu_position_over (menu, x, y, push_in, user_data);
 +
-+      {
-+        GdkScreen *screen;
-+        GtkWidget *widget = GTK_WIDGET (combo_box);
-+        gint monitor_num;
-+        GdkRectangle monitor;
-+        gint px, py;
-+        gint menu_height;
-+        gint scroll_offset = 0;
++      if (menu_item)
++        {
++          GdkScreen *screen;
++          GtkWidget *widget = GTK_WIDGET (combo_box);
++          gint monitor_num;
++          GdkRectangle monitor;
++          gint px, py;
++          gint menu_height;
++          gint scroll_offset = 0;
 +
-+        screen = gtk_widget_get_screen (widget);
-+        gdk_display_get_pointer (gdk_screen_get_display (screen),
-+                                 NULL, &px, &py, NULL);
++          screen = gtk_widget_get_screen (widget);
++          gdk_display_get_pointer (gdk_screen_get_display (screen),
++                                   NULL, &px, &py, NULL);
 +
-+        monitor_num = gdk_screen_get_monitor_at_point (screen, px, py);
++          monitor_num = gdk_screen_get_monitor_at_point (screen, px, py);
 +
-+        gdk_screen_get_monitor_workarea (screen, monitor_num, &monitor);
++          gdk_screen_get_monitor_workarea (screen, monitor_num, &monitor);
 +
-+        menu_height = GTK_WIDGET (menu)->requisition.height;
++          menu_height = GTK_WIDGET (menu)->requisition.height;
 +
-+        if (*y + menu_height > monitor.y + monitor.height)
-+          {
-+            scroll_offset -= *y + menu_height - (monitor.y + monitor.height);
-+          }
-+        else if (*y < monitor.y)
-+          {
-+            scroll_offset += monitor.y - *y;
-+          }
++          if (*y + menu_height > monitor.y + monitor.height)
++            {
++              scroll_offset -= *y + menu_height - (monitor.y + monitor.height);
++            }
++          else if (*y < monitor.y)
++            {
++              scroll_offset += monitor.y - *y;
++            }
 +
-+        if (menu->toplevel->requisition.height - ABS (scroll_offset) <
-+            3 * menu_item->requisition.height)
-+          gtk_combo_box_menu_position_below (menu, x, y, push_in, user_data);
-+      }
++          /* don't scroll the menu if less than 3 items would be visible,
++           * use 4 to roughly take the scroll buttons into account
++           */
++          if (scroll_offset != 0 &&
++              (menu->toplevel->requisition.height - ABS (scroll_offset) <
++               5 * menu_item->requisition.height))
++            gtk_combo_box_menu_position_below (menu, x, y, push_in, user_data);
++        }
      }
  
    if (!gtk_widget_get_visible (GTK_MENU (priv->popup_widget)->toplevel))

@@ -1,17 +1,32 @@
-From c5a1802f68202c84c4dbd6b5c60e6d65a197ea66 Mon Sep 17 00:00:00 2001
+From d50cca4663a7f9e93d91ddb90e5367fbb50dc588 Mon Sep 17 00:00:00 2001
 From: Michael Natterer <mitch@gimp.org>
 Date: Thu, 22 Nov 2012 19:49:20 +0100
 Subject: [PATCH 27/27] gtk: fix size_request() of scrolled window
 
 ---
- gtk/gtkscrolledwindow.c |   20 ++++++++++----------
- 1 files changed, 10 insertions(+), 10 deletions(-)
+ gtk/gtkscrolledwindow.c |   41 ++++++++++++++++-------------------------
+ 1 files changed, 16 insertions(+), 25 deletions(-)
 
 diff --git a/gtk/gtkscrolledwindow.c b/gtk/gtkscrolledwindow.c
-index 1896d2e..03fa54d 100644
+index 1896d2e..3b7073b 100644
 --- a/gtk/gtkscrolledwindow.c
 +++ b/gtk/gtkscrolledwindow.c
-@@ -1608,7 +1608,7 @@ gtk_scrolled_window_size_request (GtkWidget      *widget,
+@@ -1581,14 +1581,12 @@ gtk_scrolled_window_size_request (GtkWidget      *widget,
+   GtkRequisition hscrollbar_requisition;
+   GtkRequisition vscrollbar_requisition;
+   GtkRequisition child_requisition;
+-  GtkScrolledWindowPrivate *priv;
+ 
+   g_return_if_fail (GTK_IS_SCROLLED_WINDOW (widget));
+   g_return_if_fail (requisition != NULL);
+ 
+   scrolled_window = GTK_SCROLLED_WINDOW (widget);
+   bin = GTK_BIN (scrolled_window);
+-  priv = GTK_SCROLLED_WINDOW_GET_PRIVATE (scrolled_window);
+ 
+   scrollbar_spacing = _gtk_scrolled_window_get_scrollbar_spacing (scrolled_window);
+ 
+@@ -1608,7 +1606,7 @@ gtk_scrolled_window_size_request (GtkWidget      *widget,
  
        if (scrolled_window->hscrollbar_policy == GTK_POLICY_NEVER)
  	requisition->width += child_requisition.width;
@@ -20,18 +35,13 @@ index 1896d2e..03fa54d 100644
  	{
  	  GtkWidgetAuxInfo *aux_info = _gtk_widget_get_aux_info (bin->child, FALSE);
  
-@@ -1617,15 +1617,15 @@ gtk_scrolled_window_size_request (GtkWidget      *widget,
- 	      requisition->width += aux_info->width;
- 	      extra_width = -1;
+@@ -1619,13 +1617,11 @@ gtk_scrolled_window_size_request (GtkWidget      *widget,
  	    }
--	  else
-+	  else if (! priv->overlay_scrollbars)
+ 	  else
  	    requisition->width += vscrollbar_requisition.width;
 -	}
 -      else
 -        requisition->width += priv->sb_width + 2 * priv->sb_padding;
-+          else
-+            requisition->width += priv->sb_width + 2 * priv->sb_padding;
 +        }
  
        if (scrolled_window->vscrollbar_policy == GTK_POLICY_NEVER)
@@ -41,22 +51,48 @@ index 1896d2e..03fa54d 100644
  	{
  	  GtkWidgetAuxInfo *aux_info = _gtk_widget_get_aux_info (bin->child, FALSE);
  
-@@ -1634,11 +1634,11 @@ gtk_scrolled_window_size_request (GtkWidget      *widget,
- 	      requisition->height += aux_info->height;
- 	      extra_height = -1;
+@@ -1636,28 +1632,23 @@ gtk_scrolled_window_size_request (GtkWidget      *widget,
  	    }
--	  else
-+	  else if (! priv->overlay_scrollbars)
+ 	  else
  	    requisition->height += hscrollbar_requisition.height;
 -	}
 -      else
 -        requisition->height += priv->sb_width + 2 * priv->sb_padding;
-+          else
-+            requisition->height += priv->sb_width + 2 * priv->sb_padding;
 +        }
      }
  
-   if (! priv->overlay_scrollbars)
+-  if (! priv->overlay_scrollbars)
++  if (scrolled_window->hscrollbar_policy == GTK_POLICY_AUTOMATIC ||
++      scrolled_window->hscrollbar_policy == GTK_POLICY_ALWAYS)
+     {
+-      if (scrolled_window->hscrollbar_policy == GTK_POLICY_AUTOMATIC ||
+-          scrolled_window->hscrollbar_policy == GTK_POLICY_ALWAYS)
+-        {
+-          requisition->width = MAX (requisition->width, hscrollbar_requisition.width);
+-          if (!extra_height || scrolled_window->hscrollbar_policy == GTK_POLICY_ALWAYS)
+-            extra_height = scrollbar_spacing + hscrollbar_requisition.height;
+-        }
++      requisition->width = MAX (requisition->width, hscrollbar_requisition.width);
++      if (!extra_height || scrolled_window->hscrollbar_policy == GTK_POLICY_ALWAYS)
++        extra_height = scrollbar_spacing + hscrollbar_requisition.height;
++    }
+ 
+-      if (scrolled_window->vscrollbar_policy == GTK_POLICY_AUTOMATIC ||
+-          scrolled_window->vscrollbar_policy == GTK_POLICY_ALWAYS)
+-        {
+-          requisition->height = MAX (requisition->height, vscrollbar_requisition.height);
+-          if (!extra_height || scrolled_window->vscrollbar_policy == GTK_POLICY_ALWAYS)
+-            extra_width = scrollbar_spacing + vscrollbar_requisition.width;
+-        }
++  if (scrolled_window->vscrollbar_policy == GTK_POLICY_AUTOMATIC ||
++      scrolled_window->vscrollbar_policy == GTK_POLICY_ALWAYS)
++    {
++      requisition->height = MAX (requisition->height, vscrollbar_requisition.height);
++      if (!extra_height || scrolled_window->vscrollbar_policy == GTK_POLICY_ALWAYS)
++        extra_width = scrollbar_spacing + vscrollbar_requisition.width;
+     }
+ 
+   requisition->width += GTK_CONTAINER (widget)->border_width * 2 + MAX (0, extra_width);
 -- 
 1.7.5.4
 

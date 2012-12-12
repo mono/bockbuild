@@ -1,4 +1,4 @@
-From 40219b9f54278bb6376c0f2935fa87471e9e4cd9 Mon Sep 17 00:00:00 2001
+From a0556e817dc12b62d82dca770320bac642f39905 Mon Sep 17 00:00:00 2001
 From: Michael Natterer <mitch@gimp.org>
 Date: Thu, 27 Sep 2012 17:03:47 +0200
 Subject: [PATCH 23/27] gtk: port overlay scrollbars to native CALayers

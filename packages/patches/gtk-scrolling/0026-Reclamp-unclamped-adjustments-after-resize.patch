@@ -1,4 +1,4 @@
-From 478fef14c8658b51a27538c648dd2bfa9d1a73ef Mon Sep 17 00:00:00 2001
+From e05981e8dcabb3e398039f0e44df759c4e1cbacf Mon Sep 17 00:00:00 2001
 From: Michael Natterer <mitch@gimp.org>
 Date: Thu, 8 Nov 2012 15:54:13 +0100
 Subject: [PATCH 26/27] Reclamp unclamped adjustments after resize

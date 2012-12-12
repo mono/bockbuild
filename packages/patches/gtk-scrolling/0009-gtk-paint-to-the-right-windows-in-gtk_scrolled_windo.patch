@@ -1,4 +1,4 @@
-From 54216ee97cdee26697cb03974ccbd873eaa89d7b Mon Sep 17 00:00:00 2001
+From db76b2cc263258850574bf053c3829e3209b601e Mon Sep 17 00:00:00 2001
 From: Michael Natterer <mitch@gimp.org>
 Date: Thu, 14 Jun 2012 09:27:09 +0200
 Subject: [PATCH 09/27] gtk: paint to the right windows in
