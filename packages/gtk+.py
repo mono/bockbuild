@@ -21,6 +21,8 @@ class GtkPackage (GnomeXzPackage):
 				#post 2.24.14 patches
 				# quartz: fix crash in the recent clipboard "fix", and really fix it
 				'http://git.gnome.org/browse/gtk+/patch/?id=4a8df7a33c298d22bf78b947d0e861fc03ec70e1',
+				# gtk: fix scrolling in modal dialogs when event_widget is insensitive
+				'http://git.gnome.org/browse/gtk+/patch/?id=31ae1a0b5bb257c86cc2393e065ded8506b4ef4a',
 
 				# smooth scrolling, scrollbars, overscroll
 				'patches/gtk-scrolling/0001-Add-gdk_screen_get_monitor_workarea-and-use-it-all-o.patch',
