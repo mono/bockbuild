@@ -53,6 +53,7 @@ class GtkPackage (GnomeXzPackage):
 				'patches/gtk-scrolling/0026-Reclamp-unclamped-adjustments-after-resize.patch',
 				'patches/gtk-scrolling/0027-gtk-fix-size_request-of-scrolled-window.patch',
 				'patches/gtk-scrolling/overlay-scrollbar-makefile-patch.diff',
+				'patches/gtk-scrolling/fix-overlay-scrollbar-grab.diff',
 
 				# make new modifier behviour opt-in, so as not to break old versions of MonoDevelop
 				'patches/gdk-quartz-set-fix-modifiers-hack-v3.patch',
