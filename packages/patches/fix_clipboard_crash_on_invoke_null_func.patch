@@ -1,0 +1,21 @@
+commit f1c105b94fc3c3572a234c93c47252a3ff82218b
+Author: Michael Natterer <mitch@gimp.org>
+Date:   Thu Dec 20 23:37:06 2012 +0100
+
+    quartz: don't call a NULL get_func() in gtk_clipboard_store()
+    
+    Assume the clipboard is not set and bail out silently (bug #626499).
+
+diff --git a/gtk/gtkclipboard-quartz.c b/gtk/gtkclipboard-quartz.c
+index 464cc95..0cf5356 100644
+--- a/gtk/gtkclipboard-quartz.c
++++ b/gtk/gtkclipboard-quartz.c
+@@ -1047,7 +1047,7 @@ gtk_clipboard_store (GtkClipboard *clipboard)
+ 
+   g_return_if_fail (GTK_IS_CLIPBOARD (clipboard));
+ 
+-  if (!clipboard->target_list)
++  if (!clipboard->target_list || !clipboard->get_func)
+     return;
+ 
+   /* We simply store all targets into the OS X clipboard. We should be

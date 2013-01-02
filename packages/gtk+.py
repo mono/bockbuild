@@ -19,6 +19,8 @@ class GtkPackage (GnomeXzPackage):
 				'patches/gtkrc',
 
 				#post 2.24.14 patches
+				# gtk: really really fix the crash in the clipboard fix
+				'patches/fix_clipboard_crash_on_invoke_null_func.patch',
 				# quartz: fix crash in the recent clipboard "fix", and really fix it
 				'http://git.gnome.org/browse/gtk+/patch/?id=4a8df7a33c298d22bf78b947d0e861fc03ec70e1',
 				# gtk: fix scrolling in modal dialogs when event_widget is insensitive
