@@ -145,6 +145,9 @@ class Package:
 
 		self._fetch_sources (package_dir, self.package_dest_dir (profile.build_root))
 
+		print '\n\nPATH=%s\n\n' % (os.getenv ('PATH'))
+		print '\n\nMONO VERSION: %s\n\n' % (self.sh ('mono --version'))
+
 		os.chdir (package_build_dir)
 
 		for phase in Package.profile.run_phases:
