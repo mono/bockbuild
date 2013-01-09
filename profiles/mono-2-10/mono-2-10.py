@@ -11,7 +11,7 @@ from packages import MonoReleasePackages
 class MonoReleaseProfile (DarwinProfile, MonoReleasePackages):
 	def __init__ (self):
 		self.MONO_ROOT = "/Library/Frameworks/Mono.framework"
-		self.RELEASE_VERSION = "2.10.10" # REMEMBER TO UPDATE
+		self.RELEASE_VERSION = "2.10.11" # REMEMBER TO UPDATE
 		self.BUILD_NUMBER = "0"
 		self.MRE_GUID = "432959f9-ce1b-47a7-94d3-eb99cb2e1aa8"
 		self.MDK_GUID = "964ebddd-1ffe-47e7-8128-5ce17ffffb05"
