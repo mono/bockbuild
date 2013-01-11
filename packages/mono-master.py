@@ -23,6 +23,10 @@ class MonoMasterPackage(Package):
 
 		self.configure = './autogen.sh'
 
+	def build (self):
+		self.sh ('{git} clean -xfd')
+		Package.build (self)
+
 	def install(self):
 		Package.install(self)
 
