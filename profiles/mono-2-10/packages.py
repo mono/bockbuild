@@ -56,7 +56,7 @@ class MonoReleasePackages:
 				'mono-2-10.py',
 				'libgdiplus-2-10.py',
 				'xsp.py',
-				'gtk-sharp.py',
+				'gtk-sharp-2.12-release.py',
 				'boo.py',
 				# 'nant.py',
 				'ironlangs.py',
