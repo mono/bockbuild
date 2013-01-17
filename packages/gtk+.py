@@ -25,8 +25,6 @@ class GtkPackage (GnomeXzPackage):
 				'http://git.gnome.org/browse/gtk+/patch/?id=31ae1a0b5bb257c86cc2393e065ded8506b4ef4a',
 				# quartz: make setting_same_owner member of GtkClipboardOwner @public
 				'http://git.gnome.org/browse/gtk+/patch/?id=e3e055f8551ac8ee033f361261c849c612554184',
-				# quartz: really don't call a NULL function in gtk_clipboard_store()
-				'http://git.gnome.org/browse/gtk+/patch/?id=bc3f1893aa26761c0009ddc993b48623bcfbe4ed',
 				# quartz: don't call a NULL get_func() in gtk_clipboard_store()
 				'http://git.gnome.org/browse/gtk+/patch/?id=f1c105b94fc3c3572a234c93c47252a3ff82218b',
 				# Move single-include guards inside include guards
@@ -39,6 +37,8 @@ class GtkPackage (GnomeXzPackage):
 				'http://git.gnome.org/browse/gtk+/patch/?id=30deba453a045107eadd4deea572e29192c298c1',
 				# quartz: retain content view when switching over toplevel
 				'http://git.gnome.org/browse/gtk+/patch/?id=184407309f83a06b9215c8123091263d483edc8b',
+				# quartz: really don't call a NULL function in gtk_clipboard_store()
+				'http://git.gnome.org/browse/gtk+/patch/?id=bc3f1893aa26761c0009ddc993b48623bcfbe4ed',
 
 				# smooth scrolling, scrollbars, overscroll
 				'patches/gtk-scrolling/0001-Add-gdk_screen_get_monitor_workarea-and-use-it-all-o.patch',
