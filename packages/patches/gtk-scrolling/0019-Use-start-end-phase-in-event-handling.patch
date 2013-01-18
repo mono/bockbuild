@@ -1,12 +1,12 @@
-From 0bcc2ebd266dde487d13ac6ee08770a5a161c85c Mon Sep 17 00:00:00 2001
+From 9c28504f9a040cba0d25a222f82d70d9789ebe6e Mon Sep 17 00:00:00 2001
 From: Kristian Rietveld <kris@lanedo.com>
 Date: Fri, 28 Sep 2012 06:18:49 +0200
-Subject: [PATCH 19/27] Use start/end phase in event handling
+Subject: [PATCH 19/29] Use start/end phase in event handling
 
 Should make things work better on Mountain Lion.
 ---
  gtk/gtkscrolledwindow.c |   13 +++++--------
- 1 files changed, 5 insertions(+), 8 deletions(-)
+ 1 file changed, 5 insertions(+), 8 deletions(-)
 
 diff --git a/gtk/gtkscrolledwindow.c b/gtk/gtkscrolledwindow.c
 index 9bf0df1..f353e7d 100644
@@ -45,5 +45,5 @@ index 9bf0df1..f353e7d 100644
  
        /* If we should start a snap back and no current deceleration
 -- 
-1.7.5.4
+1.7.10.2 (Apple Git-33)
 

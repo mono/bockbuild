@@ -1,12 +1,12 @@
-From aa550ea33cf78c9188575196a285ba4b03d3c45c Mon Sep 17 00:00:00 2001
+From 8f065442ad9ab10621265eee9d8684395f9bb470 Mon Sep 17 00:00:00 2001
 From: Michael Natterer <mitch@gimp.org>
 Date: Fri, 31 Aug 2012 16:24:07 +0200
-Subject: [PATCH 14/27] gtk: handle gtk-primary-button-warps-slider for the
+Subject: [PATCH 14/29] gtk: handle gtk-primary-button-warps-slider for the
  overlay scrollbars
 
 ---
  gtk/gtkscrolledwindow.c |   38 +++++++++++++++++++++++++++++++++-----
- 1 files changed, 33 insertions(+), 5 deletions(-)
+ 1 file changed, 33 insertions(+), 5 deletions(-)
 
 diff --git a/gtk/gtkscrolledwindow.c b/gtk/gtkscrolledwindow.c
 index 4792c11..5fe9196 100644
@@ -66,5 +66,5 @@ index 4792c11..5fe9196 100644
  
        return TRUE;
 -- 
-1.7.5.4
+1.7.10.2 (Apple Git-33)
 

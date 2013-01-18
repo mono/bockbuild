@@ -1,17 +1,17 @@
-From 5491c550296315639d61d9b8abd21275b9589657 Mon Sep 17 00:00:00 2001
+From 0659b3472f050e95f1d4cf47125c2f8cdfdb1447 Mon Sep 17 00:00:00 2001
 From: Michael Natterer <mitch@gimp.org>
 Date: Fri, 2 Nov 2012 16:02:32 +0100
-Subject: [PATCH 25/27] gtk: don't show the olverlay scrollbars if only the
+Subject: [PATCH 25/29] gtk: don't show the olverlay scrollbars if only the
  size of the content changes
 
 This commit also optimizes away many signal connections and thus
 double and triple updates.
 ---
- gtk/gtkscrolledwindow.c |   57 +++++++++++++++++++---------------------------
- 1 files changed, 24 insertions(+), 33 deletions(-)
+ gtk/gtkscrolledwindow.c |   57 ++++++++++++++++++++---------------------------
+ 1 file changed, 24 insertions(+), 33 deletions(-)
 
 diff --git a/gtk/gtkscrolledwindow.c b/gtk/gtkscrolledwindow.c
-index 962ac23..4cf8d69 100644
+index b59d406..8870e84 100644
 --- a/gtk/gtkscrolledwindow.c
 +++ b/gtk/gtkscrolledwindow.c
 @@ -628,9 +628,6 @@ gtk_scrolled_window_set_hadjustment (GtkScrolledWindow *scrolled_window,
@@ -176,5 +176,5 @@ index 962ac23..4cf8d69 100644
  
  static void
 -- 
-1.7.5.4
+1.7.10.2 (Apple Git-33)
 

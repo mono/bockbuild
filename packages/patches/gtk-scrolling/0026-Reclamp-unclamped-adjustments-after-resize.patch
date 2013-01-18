@@ -1,14 +1,14 @@
-From e05981e8dcabb3e398039f0e44df759c4e1cbacf Mon Sep 17 00:00:00 2001
+From ab0a82432f49870fdc786e50a95c0308674a3fa2 Mon Sep 17 00:00:00 2001
 From: Michael Natterer <mitch@gimp.org>
 Date: Thu, 8 Nov 2012 15:54:13 +0100
-Subject: [PATCH 26/27] Reclamp unclamped adjustments after resize
+Subject: [PATCH 26/29] Reclamp unclamped adjustments after resize
 
 ---
  gtk/gtkscrolledwindow.c |   28 ++++++++++++++++++++++++++++
- 1 files changed, 28 insertions(+), 0 deletions(-)
+ 1 file changed, 28 insertions(+)
 
 diff --git a/gtk/gtkscrolledwindow.c b/gtk/gtkscrolledwindow.c
-index 4cf8d69..1896d2e 100644
+index 8870e84..2d0cc0e 100644
 --- a/gtk/gtkscrolledwindow.c
 +++ b/gtk/gtkscrolledwindow.c
 @@ -1928,6 +1928,7 @@ gtk_scrolled_window_size_allocate (GtkWidget     *widget,
@@ -61,5 +61,5 @@ index 4cf8d69..1896d2e 100644
     * actually changed, not if only the content changed
     */
 -- 
-1.7.5.4
+1.7.10.2 (Apple Git-33)
 

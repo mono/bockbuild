@@ -1,16 +1,16 @@
-From 45bb174bca4b396ab9da36a245d513d55a68401f Mon Sep 17 00:00:00 2001
+From 5ed0e25b2aae0c4d4e1b44e0f7ceaa36391c4620 Mon Sep 17 00:00:00 2001
 From: Michael Natterer <mitch@gimp.org>
 Date: Fri, 1 Jun 2012 13:08:26 +0200
-Subject: [PATCH 10/27] GtkScrolledWindow: add overlay scrollbars
+Subject: [PATCH 10/29] GtkScrolledWindow: add overlay scrollbars
 
 based on code from gnome-builder by Christian Hergert.
 ---
  gtk/Makefile.am         |    4 +
  gtk/gb-animation.c      |  998 +++++++++++++++++++++++++++++++++++++++++++++++
- gtk/gb-animation.h      |   87 ++++
+ gtk/gb-animation.h      |   87 +++++
  gtk/gb-frame-source.c   |  134 +++++++
  gtk/gb-frame-source.h   |   32 ++
- gtk/gtkscrolledwindow.c |  577 ++++++++++++++++++++++++++--
+ gtk/gtkscrolledwindow.c |  577 +++++++++++++++++++++++++--
  6 files changed, 1806 insertions(+), 26 deletions(-)
  create mode 100644 gtk/gb-animation.c
  create mode 100644 gtk/gb-animation.h
@@ -2094,5 +2094,5 @@ index f78ad23..b015533 100644
  #define __GTK_SCROLLED_WINDOW_C__
  #include "gtkaliasdef.c"
 -- 
-1.7.5.4
+1.7.10.2 (Apple Git-33)
 

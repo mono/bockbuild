@@ -1,7 +1,7 @@
-From c750351e53aade44b4b4caec2ab9d11edd5485f7 Mon Sep 17 00:00:00 2001
+From 15464607df223e20102aca8f5ce1068ffe328445 Mon Sep 17 00:00:00 2001
 From: Michael Natterer <mitch@gimp.org>
 Date: Fri, 5 Oct 2012 12:10:15 +0200
-Subject: [PATCH 22/27] quartz: Add a dummy NSView serving as layer view
+Subject: [PATCH 22/29] quartz: Add a dummy NSView serving as layer view
 
 By doing this, the GdkQuartzView does not have to be marked as layer
 backed, such that the disadvantages that come with that (not being able
@@ -11,7 +11,7 @@ to copy pixels and large redraw areas) no longer apply.
  gdk/quartz/gdkquartz.h        |    1 +
  gdk/quartz/gdkwindow-quartz.c |   16 ++++++++++++++++
  gdk/quartz/gdkwindow-quartz.h |    1 +
- 4 files changed, 24 insertions(+), 0 deletions(-)
+ 4 files changed, 24 insertions(+)
 
 diff --git a/gdk/quartz/GdkQuartzView.c b/gdk/quartz/GdkQuartzView.c
 index 77ff5d7..2c3805e 100644
@@ -51,7 +51,7 @@ index f7d3497..1526256 100644
  id        gdk_quartz_drag_context_get_dragging_info_libgtk_only (GdkDragContext *context);
  NSEvent  *gdk_quartz_event_get_nsevent                          (GdkEvent       *event);
 diff --git a/gdk/quartz/gdkwindow-quartz.c b/gdk/quartz/gdkwindow-quartz.c
-index 792092e..273dbbf 100644
+index 7302090..a59c433 100644
 --- a/gdk/quartz/gdkwindow-quartz.c
 +++ b/gdk/quartz/gdkwindow-quartz.c
 @@ -68,6 +68,17 @@ gdk_quartz_window_get_nsview (GdkWindow *window)
@@ -97,5 +97,5 @@ index 4a0e27a..f35238b 100644
    GdkWindowTypeHint type_hint;
  
 -- 
-1.7.5.4
+1.7.10.2 (Apple Git-33)
 

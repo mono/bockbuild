@@ -68,6 +68,9 @@ class GtkPackage (GnomeXzPackage):
 				'patches/gtk-scrolling/0025-gtk-don-t-show-the-olverlay-scrollbars-if-only-the-s.patch',
 				'patches/gtk-scrolling/0026-Reclamp-unclamped-adjustments-after-resize.patch',
 				'patches/gtk-scrolling/0027-gtk-fix-size_request-of-scrolled-window.patch',
+				'patches/gtk-scrolling/0028-Hackish-fix-for-bug-8493-Min-size-of-GtkScrolledWind.patch',
+				'patches/gtk-scrolling/0029-quartz-add-gdk_window_get_scale_factor.patch',
+
 				'patches/gtk-scrolling/overlay-scrollbar-makefile-patch.diff',
 				'patches/gtk-scrolling/fix-overlay-scrollbar-grab.diff',
 

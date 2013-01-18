@@ -1,7 +1,7 @@
-From f03cf2be0fc77ef0b4c1bb2868b894e951cd87c2 Mon Sep 17 00:00:00 2001
+From a7264170a9e4f6f089475578b70b287f5256c30b Mon Sep 17 00:00:00 2001
 From: Michael Natterer <mitch@lanedo.com>
 Date: Thu, 22 Nov 2012 13:37:58 +0100
-Subject: [PATCH 07/27] gtk: don't let insensitive children eat scroll events
+Subject: [PATCH 07/29] gtk: don't let insensitive children eat scroll events
  when bubbling down
 
 When event capturing is enabled, stop propagating scroll events
@@ -9,10 +9,10 @@ at insensitive widgets, but don't handle them (don't return TRUE),
 so they can bubble up again and reach their handling widgets.
 ---
  gtk/gtkmain.c |   10 +++++++++-
- 1 files changed, 9 insertions(+), 1 deletions(-)
+ 1 file changed, 9 insertions(+), 1 deletion(-)
 
 diff --git a/gtk/gtkmain.c b/gtk/gtkmain.c
-index e85b7b5..66ceede 100644
+index 21345ed..5ca0993 100644
 --- a/gtk/gtkmain.c
 +++ b/gtk/gtkmain.c
 @@ -2482,7 +2482,15 @@ propagate_event_down (GtkWidget *widget,
@@ -33,5 +33,5 @@ index e85b7b5..66ceede 100644
          handled_event = _gtk_widget_captured_event (widget, event);
      }
 -- 
-1.7.5.4
+1.7.10.2 (Apple Git-33)
 

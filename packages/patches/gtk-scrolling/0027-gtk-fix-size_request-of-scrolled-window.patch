@@ -1,14 +1,14 @@
-From d50cca4663a7f9e93d91ddb90e5367fbb50dc588 Mon Sep 17 00:00:00 2001
+From 46eeed47f20654659013a87d0ca19ae55609f5d1 Mon Sep 17 00:00:00 2001
 From: Michael Natterer <mitch@gimp.org>
 Date: Thu, 22 Nov 2012 19:49:20 +0100
-Subject: [PATCH 27/27] gtk: fix size_request() of scrolled window
+Subject: [PATCH 27/29] gtk: fix size_request() of scrolled window
 
 ---
  gtk/gtkscrolledwindow.c |   41 ++++++++++++++++-------------------------
- 1 files changed, 16 insertions(+), 25 deletions(-)
+ 1 file changed, 16 insertions(+), 25 deletions(-)
 
 diff --git a/gtk/gtkscrolledwindow.c b/gtk/gtkscrolledwindow.c
-index 1896d2e..3b7073b 100644
+index 2d0cc0e..84103a6 100644
 --- a/gtk/gtkscrolledwindow.c
 +++ b/gtk/gtkscrolledwindow.c
 @@ -1581,14 +1581,12 @@ gtk_scrolled_window_size_request (GtkWidget      *widget,
@@ -94,5 +94,5 @@ index 1896d2e..3b7073b 100644
  
    requisition->width += GTK_CONTAINER (widget)->border_width * 2 + MAX (0, extra_width);
 -- 
-1.7.5.4
+1.7.10.2 (Apple Git-33)
 

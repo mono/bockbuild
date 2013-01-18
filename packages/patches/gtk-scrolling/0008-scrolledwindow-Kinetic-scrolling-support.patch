@@ -1,7 +1,7 @@
-From d1f51d337f82d10e9c32782b71027c686880c90a Mon Sep 17 00:00:00 2001
+From 3b1139f76654750bc0c000a398aacdb3f3d12217 Mon Sep 17 00:00:00 2001
 From: Carlos Garcia Campos <cgarcia@igalia.com>
 Date: Fri, 11 Feb 2011 13:43:56 +0100
-Subject: [PATCH 08/27] scrolledwindow: Kinetic scrolling support
+Subject: [PATCH 08/29] scrolledwindow: Kinetic scrolling support
 
 If the scrolling doesn't start after a long press, the scrolling is
 cancelled and events are handled by child widgets normally.
@@ -1311,7 +1311,7 @@ index 999df18..647f67d 100644
  #define __GTK_SCROLLED_WINDOW_C__
  #include "gtkaliasdef.c"
 diff --git a/gtk/gtkscrolledwindow.h b/gtk/gtkscrolledwindow.h
-index a82b3b0..ab984f5 100644
+index 5407547..1f555e0 100644
 --- a/gtk/gtkscrolledwindow.h
 +++ b/gtk/gtkscrolledwindow.h
 @@ -127,6 +127,14 @@ GtkShadowType  gtk_scrolled_window_get_shadow_type   (GtkScrolledWindow *scrolle
@@ -1330,5 +1330,5 @@ index a82b3b0..ab984f5 100644
  
  
 -- 
-1.7.5.4
+1.7.10.2 (Apple Git-33)
 

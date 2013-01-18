@@ -1,7 +1,7 @@
-From c1eae9fa775385c0986449591c9799c33f98f3c2 Mon Sep 17 00:00:00 2001
+From 99c7fda9d2aba13392ccf63ee5a5b443f1df06f0 Mon Sep 17 00:00:00 2001
 From: Kristian Rietveld <kris@lanedo.com>
 Date: Sun, 2 Sep 2012 14:16:45 +0200
-Subject: [PATCH 15/27] Introduce phase field in GdkEventScroll
+Subject: [PATCH 15/29] Introduce phase field in GdkEventScroll
 
 Using the phase field it is possible to distinguish between
 events generated while the user is performing a gesture and
@@ -27,7 +27,7 @@ index 0f8bba2..d3d67db 100644
      case GDK_ENTER_NOTIFY:
      case GDK_LEAVE_NOTIFY:
 diff --git a/gdk/gdkevents.h b/gdk/gdkevents.h
-index e0802eb..f888c91 100644
+index f6b4e04..765b520 100644
 --- a/gdk/gdkevents.h
 +++ b/gdk/gdkevents.h
 @@ -263,6 +263,14 @@ typedef enum
@@ -163,5 +163,5 @@ index e7d97dc..bb4da70 100644
            }
        }
 -- 
-1.7.5.4
+1.7.10.2 (Apple Git-33)
 

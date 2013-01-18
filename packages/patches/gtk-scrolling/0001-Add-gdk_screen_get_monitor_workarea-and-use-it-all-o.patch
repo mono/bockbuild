@@ -1,7 +1,7 @@
-From 6f8192657604c18574d873a2fde67cece5205491 Mon Sep 17 00:00:00 2001
+From c4b954cffea02aa0140e361b075dfddba1522b1f Mon Sep 17 00:00:00 2001
 From: Michael Natterer <mitch@gimp.org>
 Date: Fri, 23 Nov 2012 15:24:36 +0100
-Subject: [PATCH 01/27] Add gdk_screen_get_monitor_workarea() and use it all
+Subject: [PATCH 01/29] Add gdk_screen_get_monitor_workarea() and use it all
  over the place
 
 ---
@@ -39,7 +39,7 @@ index d4f2072..feed787 100644
  gdk_screen_get_monitor_height_mm
  gdk_screen_get_monitor_plug_name
 diff --git a/gdk/gdkscreen.h b/gdk/gdkscreen.h
-index 02e83b0..3b8e84e 100644
+index 418cecf..d3d4fe9 100644
 --- a/gdk/gdkscreen.h
 +++ b/gdk/gdkscreen.h
 @@ -95,6 +95,9 @@ gint          gdk_screen_get_primary_monitor   (GdkScreen *screen);
@@ -365,5 +365,5 @@ index 4de3215..71ab501 100644
                }
            }
 -- 
-1.7.5.4
+1.7.10.2 (Apple Git-33)
 

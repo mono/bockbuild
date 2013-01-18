@@ -1,7 +1,7 @@
-From 3f30cad72e2b549b9f99aca3c0daa8a1f8fbf218 Mon Sep 17 00:00:00 2001
+From da19820af6ae5809fd31aeebc6348a5ff2f5a459 Mon Sep 17 00:00:00 2001
 From: Kristian Rietveld <kris@lanedo.com>
 Date: Fri, 28 Sep 2012 08:24:05 +0200
-Subject: [PATCH 16/27] Add hack to lock flow of scroll events to window where
+Subject: [PATCH 16/29] Add hack to lock flow of scroll events to window where
  scroll started
 
 A bit evil but there is probably no other way, because this is very
@@ -12,7 +12,7 @@ window in the same process and click, the click won't be processed until
 the folow of momentum events has ended.
 ---
  gdk/gdkwindow.c |   94 +++++++++++++++++++++++++++++++++++++++++++++++++++++++
- 1 files changed, 94 insertions(+), 0 deletions(-)
+ 1 file changed, 94 insertions(+)
 
 diff --git a/gdk/gdkwindow.c b/gdk/gdkwindow.c
 index 6150472..68e4c70 100644
@@ -141,5 +141,5 @@ index 6150472..68e4c70 100644
      return TRUE;
  
 -- 
-1.7.5.4
+1.7.10.2 (Apple Git-33)
 

@@ -1,16 +1,16 @@
-From c797bc5f549729c36684ecaa7c01105cdcc478d5 Mon Sep 17 00:00:00 2001
+From 7242fff156da639202a4a2700d4bb76372f6eb31 Mon Sep 17 00:00:00 2001
 From: Michael Natterer <mitch@gimp.org>
 Date: Tue, 8 May 2012 14:11:50 +0200
-Subject: [PATCH 05/27] Smooth scrolling
+Subject: [PATCH 05/29] Smooth scrolling
 
 ---
- gdk/gdkevents.c               |   32 ++++++++++++++++
- gdk/gdkevents.h               |    6 +++
+ gdk/gdkevents.c               |   32 +++++++++++++++++
+ gdk/gdkevents.h               |    6 ++++
  gdk/gdkwindow.c               |    3 ++
- gdk/quartz/gdkevents-quartz.c |   80 +++++++++++++++++++++++++++++++---------
+ gdk/quartz/gdkevents-quartz.c |   80 +++++++++++++++++++++++++++++++----------
  gtk/gtkrange.c                |   51 +++++++++++++++++++-------
- gtk/gtkrange.h                |    4 +-
- gtk/gtkscrolledwindow.c       |   74 ++++++++++++++++++++++++++++++-------
+ gtk/gtkrange.h                |    4 +--
+ gtk/gtkscrolledwindow.c       |   74 ++++++++++++++++++++++++++++++--------
  7 files changed, 203 insertions(+), 47 deletions(-)
 
 diff --git a/gdk/gdkevents.c b/gdk/gdkevents.c
@@ -64,7 +64,7 @@ index 53833a0..0f8bba2 100644
   * gdk_event_get_axis:
   * @event: a #GdkEvent
 diff --git a/gdk/gdkevents.h b/gdk/gdkevents.h
-index e6c516c..e0802eb 100644
+index 0602bd0..f6b4e04 100644
 --- a/gdk/gdkevents.h
 +++ b/gdk/gdkevents.h
 @@ -337,6 +337,9 @@ struct _GdkEventScroll
@@ -304,7 +304,7 @@ index 245fbf6..d39f045 100644
        g_signal_emit (range, signals[CHANGE_VALUE], 0,
                       GTK_SCROLL_JUMP, adj->value + delta,
 diff --git a/gtk/gtkrange.h b/gtk/gtkrange.h
-index a708879..3131fbe 100644
+index 5463140..c672acb 100644
 --- a/gtk/gtkrange.h
 +++ b/gtk/gtkrange.h
 @@ -199,8 +199,8 @@ gint                gtk_range_get_round_digits             (GtkRange      *range
@@ -415,5 +415,5 @@ index 05389fa..999df18 100644
  
  static gboolean
 -- 
-1.7.5.4
+1.7.10.2 (Apple Git-33)
 

@@ -1,14 +1,14 @@
-From a0556e817dc12b62d82dca770320bac642f39905 Mon Sep 17 00:00:00 2001
+From da61ffafb99c90cc90cd7fcf8fa2607c2d453517 Mon Sep 17 00:00:00 2001
 From: Michael Natterer <mitch@gimp.org>
 Date: Thu, 27 Sep 2012 17:03:47 +0200
-Subject: [PATCH 23/27] gtk: port overlay scrollbars to native CALayers
+Subject: [PATCH 23/29] gtk: port overlay scrollbars to native CALayers
 
 ---
  gtk/gtkscrolledwindow.c |  679 ++++++++++++++++++++++++++---------------------
- 1 files changed, 379 insertions(+), 300 deletions(-)
+ 1 file changed, 379 insertions(+), 300 deletions(-)
 
 diff --git a/gtk/gtkscrolledwindow.c b/gtk/gtkscrolledwindow.c
-index dc2cc9d..ed5e15d 100644
+index dc2cc9d..749dbf7 100644
 --- a/gtk/gtkscrolledwindow.c
 +++ b/gtk/gtkscrolledwindow.c
 @@ -36,8 +36,12 @@
@@ -1096,5 +1096,5 @@ index dc2cc9d..ed5e15d 100644
  #define __GTK_SCROLLED_WINDOW_C__
  #include "gtkaliasdef.c"
 -- 
-1.7.5.4
+1.7.10.2 (Apple Git-33)
 

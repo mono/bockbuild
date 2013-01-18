@@ -1,12 +1,12 @@
-From d42b5483d32375b342f30a5248d7cffdbeaf3f06 Mon Sep 17 00:00:00 2001
+From 627f0a4f15438fd907878002c2d04fbe617aca87 Mon Sep 17 00:00:00 2001
 From: Michael Natterer <mitch@gimp.org>
 Date: Fri, 23 Nov 2012 15:28:26 +0100
-Subject: [PATCH 02/27] gtk: don't scroll combo box menus if less than 3
+Subject: [PATCH 02/29] gtk: don't scroll combo box menus if less than 3
  itemss are visible
 
 ---
  gtk/gtkcombobox.c |   38 ++++++++++++++++++++++++++++++++++++++
- 1 files changed, 38 insertions(+), 0 deletions(-)
+ 1 file changed, 38 insertions(+)
 
 diff --git a/gtk/gtkcombobox.c b/gtk/gtkcombobox.c
 index e1541c4..f68b7a4 100644
@@ -58,5 +58,5 @@ index e1541c4..f68b7a4 100644
  
    if (!gtk_widget_get_visible (GTK_MENU (priv->popup_widget)->toplevel))
 -- 
-1.7.5.4
+1.7.10.2 (Apple Git-33)
 

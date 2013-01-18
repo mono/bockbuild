@@ -1,7 +1,7 @@
-From 1a49e4822950485e7d9946ebc08af961075ab813 Mon Sep 17 00:00:00 2001
+From 5173a538219c977ad656d0bd7a7efb5620f30505 Mon Sep 17 00:00:00 2001
 From: Kristian Rietveld <kris@lanedo.com>
 Date: Sun, 2 Sep 2012 21:21:51 +0200
-Subject: [PATCH 17/27] Introduce a background window
+Subject: [PATCH 17/29] Introduce a background window
 
 The background window covers the part left uncovered by the overshoot
 window. Two background windows are used to be able to cover an "L shape"
@@ -12,7 +12,7 @@ specific background pattern/gradient (if the window is configured as
 INPUT/OUTPUT window).
 ---
  gtk/gtkscrolledwindow.c |  104 +++++++++++++++++++++++++++++++++++++++++++++++
- 1 files changed, 104 insertions(+), 0 deletions(-)
+ 1 file changed, 104 insertions(+)
 
 diff --git a/gtk/gtkscrolledwindow.c b/gtk/gtkscrolledwindow.c
 index 5fe9196..9f672c4 100644
@@ -186,5 +186,5 @@ index 5fe9196..9f672c4 100644
    GTK_WIDGET_CLASS (gtk_scrolled_window_parent_class)->unmap (widget);
  }
 -- 
-1.7.5.4
+1.7.10.2 (Apple Git-33)
 

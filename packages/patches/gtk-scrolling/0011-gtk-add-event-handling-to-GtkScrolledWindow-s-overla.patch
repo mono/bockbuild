@@ -1,12 +1,12 @@
-From acbf39d1bc25bd2e9816454faa6418ede27f63eb Mon Sep 17 00:00:00 2001
+From d23ce5ff43d9f880a0bd1e9617d2da7deb9af7b4 Mon Sep 17 00:00:00 2001
 From: Michael Natterer <mitch@gimp.org>
 Date: Tue, 10 Jul 2012 14:33:45 +0200
-Subject: [PATCH 11/27] gtk: add event handling to GtkScrolledWindow's overlay
+Subject: [PATCH 11/29] gtk: add event handling to GtkScrolledWindow's overlay
  scrollbars
 
 ---
  gtk/gtkscrolledwindow.c |  438 +++++++++++++++++++++++++++++++++++++++++++----
- 1 files changed, 403 insertions(+), 35 deletions(-)
+ 1 file changed, 403 insertions(+), 35 deletions(-)
 
 diff --git a/gtk/gtkscrolledwindow.c b/gtk/gtkscrolledwindow.c
 index b015533..bf26969 100644
@@ -610,5 +610,5 @@ index b015533..bf26969 100644
  
  static void
 -- 
-1.7.5.4
+1.7.10.2 (Apple Git-33)
 

@@ -1,11 +1,11 @@
-From dd7460bf7acb26dff142ff49883d87d6bdfb656f Mon Sep 17 00:00:00 2001
+From 85051bbadb601453546e79c2b332667933c48632 Mon Sep 17 00:00:00 2001
 From: Kristian Rietveld <kris@lanedo.com>
 Date: Wed, 19 Sep 2012 07:28:20 +0200
-Subject: [PATCH 21/27] Cancel out smaller delta component.
+Subject: [PATCH 21/29] Cancel out smaller delta component.
 
 ---
  gtk/gtkscrolledwindow.c |    8 ++++++++
- 1 files changed, 8 insertions(+), 0 deletions(-)
+ 1 file changed, 8 insertions(+)
 
 diff --git a/gtk/gtkscrolledwindow.c b/gtk/gtkscrolledwindow.c
 index fa38da4..dc2cc9d 100644
@@ -27,5 +27,5 @@ index fa38da4..dc2cc9d 100644
         *  1) We are not overshot and not snapping back, so scroll as
         *  usual and also handle momentum events.
 -- 
-1.7.5.4
+1.7.10.2 (Apple Git-33)
 

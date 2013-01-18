@@ -1,7 +1,7 @@
-From b23439998ba49ffba0e17a6a570b0023c53bf5ae Mon Sep 17 00:00:00 2001
+From 9a222dcb20945243ccafb4e44039fb0cb24806ec Mon Sep 17 00:00:00 2001
 From: Carlos Garcia Campos <cgarcia@igalia.com>
 Date: Tue, 8 Feb 2011 14:49:31 +0100
-Subject: [PATCH 06/27] gtk: Add a way to do event capture
+Subject: [PATCH 06/29] gtk: Add a way to do event capture
 
 This patch adds a capture phase to GTK+'s event propagation
 model. Events are first propagated from the toplevel (or the
@@ -37,7 +37,7 @@ Conflicts:
  3 files changed, 241 insertions(+), 94 deletions(-)
 
 diff --git a/gtk/gtkmain.c b/gtk/gtkmain.c
-index 5a88679..e85b7b5 100644
+index 56c92db..21345ed 100644
 --- a/gtk/gtkmain.c
 +++ b/gtk/gtkmain.c
 @@ -1490,7 +1490,8 @@ void
@@ -468,5 +468,5 @@ index 1d1f6bb..8e38ee1 100644
  /**
   * gtk_widget_send_expose:
 -- 
-1.7.5.4
+1.7.10.2 (Apple Git-33)
 

@@ -1,7 +1,7 @@
-From b729b9f07c8e80c656d7b5d1a750e85947938681 Mon Sep 17 00:00:00 2001
+From 303de51e3693659397ba02bbcaf6e8ce2515a571 Mon Sep 17 00:00:00 2001
 From: Kristian Rietveld <kris@lanedo.com>
 Date: Mon, 3 Sep 2012 10:45:13 +0200
-Subject: [PATCH 18/27] Make scrolled window work well with Mac touchpad
+Subject: [PATCH 18/29] Make scrolled window work well with Mac touchpad
 
 Modify the scrolled window code to work with a Mac touchpad as you
 would expect. When precise deltas are received from the Mac touchpad,
@@ -17,7 +17,7 @@ Other changes made are:
  drag gestures. We don't need this code.
 ---
  gtk/gtkscrolledwindow.c |  679 +++++++++++------------------------------------
- 1 files changed, 157 insertions(+), 522 deletions(-)
+ 1 file changed, 157 insertions(+), 522 deletions(-)
 
 diff --git a/gtk/gtkscrolledwindow.c b/gtk/gtkscrolledwindow.c
 index 9f672c4..9bf0df1 100644
@@ -866,5 +866,5 @@ index 9f672c4..9bf0df1 100644
                                                  GParamSpec  *arg,
                                                  gpointer     user_data)
 -- 
-1.7.5.4
+1.7.10.2 (Apple Git-33)
 

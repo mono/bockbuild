@@ -1,7 +1,7 @@
-From 5b21cd52574a9fa79fd55501f6b44f10367ade0f Mon Sep 17 00:00:00 2001
+From 3863f21ef85d0ea49fc122da3d412576b1be38d6 Mon Sep 17 00:00:00 2001
 From: Kristian Rietveld <kris@lanedo.com>
 Date: Sun, 29 Jul 2012 16:14:09 +0200
-Subject: [PATCH 12/27] Use gtk-enable-overlay-scrollbars in GtkScrolledWindow
+Subject: [PATCH 12/29] Use gtk-enable-overlay-scrollbars in GtkScrolledWindow
 
 And listen for changes to this setting.  Move overlay_scrollbars variable
 to GtkScrolledWindowPrivate, because we are going to have to monitor for
@@ -9,7 +9,7 @@ each scrolled window whether it has transformed itself in response to the
 signal.
 ---
  gtk/gtkscrolledwindow.c |   97 +++++++++++++++++++++++++++++++++++------------
- 1 files changed, 72 insertions(+), 25 deletions(-)
+ 1 file changed, 72 insertions(+), 25 deletions(-)
 
 diff --git a/gtk/gtkscrolledwindow.c b/gtk/gtkscrolledwindow.c
 index bf26969..c05d7b5 100644
@@ -368,5 +368,5 @@ index bf26969..c05d7b5 100644
  #define __GTK_SCROLLED_WINDOW_C__
  #include "gtkaliasdef.c"
 -- 
-1.7.5.4
+1.7.10.2 (Apple Git-33)
 

@@ -1,15 +1,15 @@
-From 046b66b61c47cebc77f7060b4286c030c29533ad Mon Sep 17 00:00:00 2001
+From 01010408df2037efba6054db4c77979aa75a4035 Mon Sep 17 00:00:00 2001
 From: Kristian Rietveld <kris@lanedo.com>
 Date: Mon, 8 Oct 2012 11:48:38 +0200
-Subject: [PATCH 24/27] Refrain from starting fading out while a gesture is in
+Subject: [PATCH 24/29] Refrain from starting fading out while a gesture is in
  progress
 
 ---
  gtk/gtkscrolledwindow.c |   20 ++++++++++++++++----
- 1 files changed, 16 insertions(+), 4 deletions(-)
+ 1 file changed, 16 insertions(+), 4 deletions(-)
 
 diff --git a/gtk/gtkscrolledwindow.c b/gtk/gtkscrolledwindow.c
-index ed5e15d..962ac23 100644
+index 749dbf7..b59d406 100644
 --- a/gtk/gtkscrolledwindow.c
 +++ b/gtk/gtkscrolledwindow.c
 @@ -153,6 +153,7 @@ typedef struct {
@@ -66,5 +66,5 @@ index ed5e15d..962ac23 100644
  
  static void
 -- 
-1.7.5.4
+1.7.10.2 (Apple Git-33)
 
