@@ -100,6 +100,9 @@ class GtkPackage (GnomeXzPackage):
 
 				# Bug 3457 - [GTK] Support more standard keyboard shortcuts in dialogs
 				'https://bugzilla.xamarin.com/attachment.cgi?id=2240',
+
+				# Fixes the build for Snow Leopard
+				'patches/scale-factor-protocol.patch',
 			])
 
 	def prep (self):
