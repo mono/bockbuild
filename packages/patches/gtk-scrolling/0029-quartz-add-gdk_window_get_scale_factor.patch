@@ -87,7 +87,7 @@ index a59c433..0bb5449 100644
 +  impl = GDK_WINDOW_IMPL_QUARTZ (GDK_WINDOW_OBJECT (window)->impl);
 +
 +  if ([impl->toplevel respondsToSelector:@selector(backingScaleFactor)])
-+    return (CGFloat) [impl->toplevel backingScaleFactor];
++    return [impl->toplevel backingScaleFactor];
 +
 +  return 1.0;
 +}
