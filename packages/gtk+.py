@@ -82,11 +82,9 @@ class GtkPackage (GnomeXzPackage):
 				'https://bugzilla.xamarin.com/attachment.cgi?id=1644',
 
 				# Embedded NSViews
-				'patches/gtk-embedded-nsview/0001-gtk-add-new-widget-GtkNSView-which-alows-to-embed-an.patch',
-				'patches/gtk-embedded-nsview/0002-quartz-return-events-on-embedded-foreign-NSViews-bac.patch',
-				'patches/gtk-embedded-nsview/0003-gdk-add-signal-GdkWindow-native-child-event.patch',
-				'patches/gtk-embedded-nsview/0004-tests-add-a-GtkEntry-to-testnsview-so-we-can-test-fo.patch',
-				'patches/gtk-embedded-nsview/0005-gtk-connect-to-GdkWindow-native-child-event-to-imple.patch',
+				'patches/gtk-embedded-nsview/0001-quartz-return-events-on-embedded-foreign-NSViews-bac.patch',
+				'patches/gtk-embedded-nsview/0002-gtk-add-new-widget-GtkNSView-which-alows-to-embed-an.patch',
+				'patches/gtk-embedded-nsview/include-in-build.diff',
 				'patches/gtk-embedded-nsview/fix-for-embedded-nsviews.patch',
 
 				# Zoom, rotate, swipe events

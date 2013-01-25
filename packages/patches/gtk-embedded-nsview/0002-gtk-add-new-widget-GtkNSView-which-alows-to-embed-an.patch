@@ -1,24 +1,25 @@
-From 9b9897426ff05f3f1408c7cb7d72cc018bf0b2b0 Mon Sep 17 00:00:00 2001
+From 5ffd2709875a5423aafc5338f7501000a547d15f Mon Sep 17 00:00:00 2001
 From: Michael Natterer <mitch@lanedo.com>
 Date: Tue, 29 Nov 2011 16:09:31 +0100
-Subject: [PATCH 1/5] gtk: add new widget GtkNSView which alows to embed an
+Subject: [PATCH 2/2] gtk: add new widget GtkNSView which alows to embed an
  NSView
 
 ---
  gtk/Makefile.am    |    2 +
  gtk/gtk.h          |    4 +
- gtk/gtknsview.c    |  291 ++++++++++++++++++++++++++++++++++++++++++++++++++++
- gtk/gtknsview.h    |   62 +++++++++++
- tests/Makefile.am  |   10 ++-
- tests/testnsview.c |  160 ++++++++++++++++++++++++++++
- 6 files changed, 528 insertions(+), 1 deletions(-)
+ gtk/gtknsview.c    |  461 ++++++++++++++++++++++++++++++++++++++++++++++++++++
+ gtk/gtknsview.h    |   62 +++++++
+ tests/Makefile.am  |   10 +-
+ tests/testnsview.c |  170 +++++++++++++++++++
+ 6 files changed, 708 insertions(+), 1 deletion(-)
  create mode 100644 gtk/gtknsview.c
  create mode 100644 gtk/gtknsview.h
  create mode 100644 tests/testnsview.c
 
-diff -urNp a/gtk/Makefile.am b/gtk/Makefile.am
---- a/gtk/Makefile.am	2012-01-10 19:06:05.000000000 -0500
-+++ b/gtk/Makefile.am	2012-04-11 12:01:27.000000000 -0400
+diff --git a/gtk/Makefile.am b/gtk/Makefile.am
+index 908291f..20e9876 100644
+--- a/gtk/Makefile.am
++++ b/gtk/Makefile.am
 @@ -731,6 +731,7 @@ gtk_use_win32_c_sources = \
  	gtkwin32embedwidget.c \
  	gtkmountoperation-stub.c
@@ -35,192 +36,10 @@ diff -urNp a/gtk/Makefile.am b/gtk/Makefile.am
  gtk_c_sources += $(gtk_use_quartz_c_sources)
  else
  gtk_c_sources += $(gtk_use_stub_c_sources)
-diff -urNp a/gtk/Makefile.in b/gtk/Makefile.in
---- a/gtk/Makefile.in	2012-02-06 10:34:27.000000000 -0500
-+++ b/gtk/Makefile.in	2012-04-11 12:09:45.000000000 -0400
-@@ -66,14 +66,15 @@ DIST_COMMON = $(am__gtkunixprintinclude_
- @USE_WIN32_TRUE@@USE_X11_FALSE@am__append_10 = gtkwin32embed.h gtkwin32embedwidget.h
- @USE_WIN32_TRUE@@USE_X11_FALSE@am__append_11 = $(gtk_use_win32_c_sources)
- @USE_QUARTZ_TRUE@@USE_WIN32_FALSE@@USE_X11_FALSE@am__append_12 = gtksearchenginequartz.h
--@USE_QUARTZ_TRUE@@USE_WIN32_FALSE@@USE_X11_FALSE@am__append_13 = $(gtk_use_quartz_c_sources)
--@USE_QUARTZ_FALSE@@USE_WIN32_FALSE@@USE_X11_FALSE@am__append_14 = $(gtk_use_stub_c_sources)
--@HAVE_INTROSPECTION_TRUE@@USE_X11_TRUE@am__append_15 = --add-include-path=$(top_builddir)/gdk/x11
--@HAVE_INTROSPECTION_TRUE@am__append_16 = Gtk-2.0.gir
--@HAVE_INTROSPECTION_TRUE@am__append_17 = $(gir_DATA) $(typelibs_DATA)
-+@USE_QUARTZ_TRUE@@USE_WIN32_FALSE@@USE_X11_FALSE@am__append_13 = gtknsview.h
-+@USE_QUARTZ_TRUE@@USE_WIN32_FALSE@@USE_X11_FALSE@am__append_14 = $(gtk_use_quartz_c_sources)
-+@USE_QUARTZ_FALSE@@USE_WIN32_FALSE@@USE_X11_FALSE@am__append_15 = $(gtk_use_stub_c_sources)
-+@HAVE_INTROSPECTION_TRUE@@USE_X11_TRUE@am__append_16 = --add-include-path=$(top_builddir)/gdk/x11
-+@HAVE_INTROSPECTION_TRUE@am__append_17 = Gtk-2.0.gir
-+@HAVE_INTROSPECTION_TRUE@am__append_18 = $(gir_DATA) $(typelibs_DATA)
- bin_PROGRAMS = gtk-query-immodules-2.0$(EXEEXT) \
- 	gtk-update-icon-cache$(EXEEXT)
--@OS_WIN32_TRUE@am__append_18 = \
-+@OS_WIN32_TRUE@am__append_19 = \
- @OS_WIN32_TRUE@	$(GTK_UPDATE_ICON_CACHE_MANIFEST)
- 
- subdir = gtk
-@@ -203,7 +204,7 @@ am__libgtk_directfb_2_0_la_SOURCES_DIST 
- 	gtkprintoperation-win32.c gtkplug-x11.c gtksocket-x11.c \
- 	gtkxembed.c gtktrayicon-x11.c gtkmountoperation-x11.c \
- 	gtkplug-win32.c gtksocket-win32.c gtkwin32embed.c \
--	gtkwin32embedwidget.c gtkmountoperation-stub.c \
-+	gtkwin32embedwidget.c gtkmountoperation-stub.c gtknsview.c \
- 	gtksearchenginequartz.c gtkplug-stub.c gtksocket-stub.c
- @USE_QUARTZ_FALSE@am__objects_1 = gtkclipboard.lo gtkdnd.lo
- @USE_QUARTZ_TRUE@am__objects_1 = gtkclipboard-quartz.lo \
-@@ -298,7 +298,7 @@
- am__objects_9 = gtkplug-win32.lo gtksocket-win32.lo gtkwin32embed.lo \
- 	gtkwin32embedwidget.lo gtkmountoperation-stub.lo
- @USE_WIN32_TRUE@@USE_X11_FALSE@am__objects_10 = $(am__objects_9)
--am__objects_11 = gtksearchenginequartz.lo gtkplug-stub.lo \
-+am__objects_11 = gtknsview.lo gtksearchenginequartz.lo gtkplug-stub.lo \
- 	gtksocket-stub.lo gtkmountoperation-stub.lo
- @USE_QUARTZ_TRUE@@USE_WIN32_FALSE@@USE_X11_FALSE@am__objects_12 = $(am__objects_11)
- am__objects_13 = gtkplug-stub.lo gtksocket-stub.lo \
-@@ -395,7 +396,7 @@ am__libgtk_quartz_2_0_la_SOURCES_DIST = 
- 	gtkprintoperation-win32.c gtkplug-x11.c gtksocket-x11.c \
- 	gtkxembed.c gtktrayicon-x11.c gtkmountoperation-x11.c \
- 	gtkplug-win32.c gtksocket-win32.c gtkwin32embed.c \
--	gtkwin32embedwidget.c gtkmountoperation-stub.c \
-+	gtkwin32embedwidget.c gtkmountoperation-stub.c gtknsview.c \
- 	gtksearchenginequartz.c gtkplug-stub.c gtksocket-stub.c
- @USE_QUARTZ_FALSE@am__objects_16 =  \
- @USE_QUARTZ_FALSE@	libgtk_quartz_2_0_la-gtkclipboard.lo \
-@@ -670,7 +670,7 @@
- 	libgtk_quartz_2_0_la-gtkwin32embedwidget.lo \
- 	libgtk_quartz_2_0_la-gtkmountoperation-stub.lo
- @USE_WIN32_TRUE@@USE_X11_FALSE@am__objects_25 = $(am__objects_24)
--am__objects_26 = libgtk_quartz_2_0_la-gtksearchenginequartz.lo \
-+am__objects_26 = libgtk_quartz_2_0_la-gtknsview.lo libgtk_quartz_2_0_la-gtksearchenginequartz.lo \
- 	libgtk_quartz_2_0_la-gtkplug-stub.lo \
- 	libgtk_quartz_2_0_la-gtksocket-stub.lo \
- 	libgtk_quartz_2_0_la-gtkmountoperation-stub.lo
-@@ -767,7 +768,7 @@ am__libgtk_win32_2_0_la_SOURCES_DIST = g
- 	gtkprintoperation-win32.c gtkplug-x11.c gtksocket-x11.c \
- 	gtkxembed.c gtktrayicon-x11.c gtkmountoperation-x11.c \
- 	gtkplug-win32.c gtksocket-win32.c gtkwin32embed.c \
--	gtkwin32embedwidget.c gtkmountoperation-stub.c \
-+	gtkwin32embedwidget.c gtkmountoperation-stub.c gtknsview.c \
- 	gtksearchenginequartz.c gtkplug-stub.c gtksocket-stub.c
- am_libgtk_win32_2_0_la_OBJECTS = $(am__objects_15)
- libgtk_win32_2_0_la_OBJECTS = $(am_libgtk_win32_2_0_la_OBJECTS)
-@@ -855,7 +856,7 @@ am__libgtk_x11_2_0_la_SOURCES_DIST = gtk
- 	gtkprintoperation-win32.c gtkplug-x11.c gtksocket-x11.c \
- 	gtkxembed.c gtktrayicon-x11.c gtkmountoperation-x11.c \
- 	gtkplug-win32.c gtksocket-win32.c gtkwin32embed.c \
--	gtkwin32embedwidget.c gtkmountoperation-stub.c \
-+	gtkwin32embedwidget.c gtkmountoperation-stub.c gtknsview.c \
- 	gtksearchenginequartz.c gtkplug-stub.c gtksocket-stub.c
- am_libgtk_x11_2_0_la_OBJECTS = $(am__objects_15)
- libgtk_x11_2_0_la_OBJECTS = $(am_libgtk_x11_2_0_la_OBJECTS)
-@@ -1200,7 +1201,7 @@ EXTRA_DIST = gtkquartz.h $(gtk_private_h
- 	tree_minus.xbm tree_minus.xpm tree_plus.xpm gtk.def \
- 	gtk-builder-convert gtk-win32.rc gtk-win32.rc.in \
- 	gtkwin32embed.h gtkwin32embedwidget.h gtkwin32embedwidget.c \
--	gtkprint-win32.h gtkprint-win32.c gtksearchenginequartz.h \
-+	gtkprint-win32.h gtkprint-win32.c gtknsview.h gtksearchenginequartz.h \
- 	gtkrc.default gtkrc.key.default gtkrc.key.emacs gtkrc.key.mac \
- 	makefile.msc makefile.msc.in makegtkalias.pl \
- 	aliasfilescheck.sh abicheck.sh pltcheck.sh \
-@@ -1230,7 +1231,7 @@ XVFB_START = \
- 	|| { echo "Gtk+Tests:ERROR: Failed to start Xvfb environment for X11 target tests."; exit 1; } \
- 	&& DISPLAY=:$$XID && export DISPLAY
- 
--INTROSPECTION_GIRS = $(am__append_16)
-+INTROSPECTION_GIRS = $(am__append_17)
- INTROSPECTION_SCANNER_ARGS = \
- 	--add-include-path=../gdk
- 
-@@ -1362,7 +1363,7 @@ gtk_public_h_sources = gtk.h gtkaboutdia
- 	gtkgamma.h gtkinputdialog.h gtkitemfactory.h gtklist.h \
- 	gtklistitem.h gtkoldeditable.h gtkoptionmenu.h gtkpixmap.h \
- 	gtkpreview.h gtkprogress.h gtksignal.h gtktipsquery.h \
--	gtktooltips.h
-+	gtktooltips.h $(am__append_13)
- @OS_UNIX_TRUE@gtk_unix_print_public_h_sources = \
- @OS_UNIX_TRUE@	gtkpagesetupunixdialog.h	\
- @OS_UNIX_TRUE@	gtkprintunixdialog.h		\
-@@ -1473,8 +1474,8 @@ gtk_base_c_sources = gtkquery.c gtksearc
- 	gtkpreview.c gtkprogress.c gtksignal.c gtktipsquery.c \
- 	gtktooltips.c
- gtk_c_sources = $(gtk_base_c_sources) $(am__append_5) $(am__append_7) \
--	$(am__append_9) $(am__append_11) $(am__append_13) \
--	$(am__append_14)
-+	$(am__append_9) $(am__append_11) $(am__append_14) \
-+	$(am__append_15)
- gtk_all_c_sources = $(gtk_base_c_sources) $(gtk_os_unix_c_sources) \
- 	$(gtk_os_win32_c_sources) $(gtk_use_x11_c_sources) \
- 	$(gtk_use_win32_c_sources) $(gtk_use_stub_c_sources)
-@@ -1511,6 +1512,7 @@ gtk_use_win32_c_sources = \
- 	gtkmountoperation-stub.c
- 
- gtk_use_quartz_c_sources = \
-+	gtknsview.c		\
- 	gtksearchenginequartz.c	\
- 	gtkplug-stub.c		\
- 	gtksocket-stub.c	\
-@@ -1585,7 +1587,7 @@ EXTRA_HEADERS = 
- #
- # setup autogeneration dependencies
- gen_sources = xgen-gdef xgen-gtbh xgen-gtic xgen-gmh xgen-gmc xgen-gmlh xgen-gmlc xgen-gtfsrc.c xgen-gtf
--CLEANFILES = $(gen_sources) $(am__append_17)
-+CLEANFILES = $(gen_sources) $(am__append_18)
- BUILT_SOURCES = $(gtk_built_sources)
- 
- # target platform:
-@@ -1627,7 +1629,7 @@ LDADDS = \
- 
- @HAVE_INTROSPECTION_TRUE@Gtk_2_0_gir_SCANNERFLAGS = --warn-all \
- @HAVE_INTROSPECTION_TRUE@	--add-include-path=$(top_builddir)/gdk \
--@HAVE_INTROSPECTION_TRUE@	$(am__append_15)
-+@HAVE_INTROSPECTION_TRUE@	$(am__append_16)
- @HAVE_INTROSPECTION_TRUE@Gtk_2_0_gir_INCLUDES = Atk-1.0 Gdk-2.0
- @HAVE_INTROSPECTION_TRUE@Gtk_2_0_gir_CFLAGS = \
- @HAVE_INTROSPECTION_TRUE@		$(INCLUDES) \
-@@ -1641,7 +1643,7 @@ LDADDS = \
- @HAVE_INTROSPECTION_TRUE@gir_DATA = $(INTROSPECTION_GIRS)
- @HAVE_INTROSPECTION_TRUE@typelibsdir = $(libdir)/girepository-1.0
- @HAVE_INTROSPECTION_TRUE@typelibs_DATA = $(INTROSPECTION_GIRS:.gir=.typelib)
--bin_SCRIPTS = gtk-builder-convert $(am__append_18)
-+bin_SCRIPTS = gtk-builder-convert $(am__append_19)
- 
- # Workaround for UAC silliness: programs with "update" in their name
- # are believed to be installers and require elevated privileges to be
-@@ -2209,6 +2209,7 @@
- @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/gtkmountoperation-stub.Plo@am__quote@
- @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/gtkmountoperation-x11.Plo@am__quote@
- @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/gtkmountoperation.Plo@am__quote@
-+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/gtknsview.Plo@am__quote@
- @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/gtknotebook.Plo@am__quote@
- @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/gtkobject.Plo@am__quote@
- @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/gtkoffscreenwindow.Plo@am__quote@
-@@ -2480,6 +2481,7 @@
- @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libgtk_quartz_2_0_la-gtkmountoperation-stub.Plo@am__quote@
- @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libgtk_quartz_2_0_la-gtkmountoperation-x11.Plo@am__quote@
- @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libgtk_quartz_2_0_la-gtkmountoperation.Plo@am__quote@
-+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libgtk_quartz_2_0_la-gtknsview.Plo@am__quote@
- @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libgtk_quartz_2_0_la-gtknotebook.Plo@am__quote@
- @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libgtk_quartz_2_0_la-gtkobject.Plo@am__quote@
- @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libgtk_quartz_2_0_la-gtkoffscreenwindow.Plo@am__quote@
-@@ -4522,6 +4524,14 @@ libgtk_quartz_2_0_la-gtkmountoperation-s
- @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
- @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libgtk_quartz_2_0_la_CFLAGS) $(CFLAGS) -c -o libgtk_quartz_2_0_la-gtkmountoperation-stub.lo `test -f 'gtkmountoperation-stub.c' || echo '$(srcdir)/'`gtkmountoperation-stub.c
- 
-+libgtk_quartz_2_0_la-gtknsview.lo: gtknsview.c
-+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libgtk_quartz_2_0_la_CFLAGS) $(CFLAGS) -MT libgtk_quartz_2_0_la-gtknsview.lo -MD -MP -MF $(DEPDIR)/libgtk_quartz_2_0_la-gtknsview.Tpo -c -o libgtk_quartz_2_0_la-gtknsview.lo `test -f 'gtknsview.c' || echo '$(srcdir)/'`gtknsview.c
-+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libgtk_quartz_2_0_la-gtknsview.Tpo $(DEPDIR)/libgtk_quartz_2_0_la-gtknsview.Plo
-+@am__fastdepCC_FALSE@	$(AM_V_CC) @AM_BACKSLASH@
-+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='gtknsview.c' object='libgtk_quartz_2_0_la-gtknsview.lo' libtool=yes @AMDEPBACKSLASH@
-+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-+@am__fastdepCC_FALSE@	$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libgtk_quartz_2_0_la_CFLAGS) $(CFLAGS) -c -o libgtk_quartz_2_0_la-gtknsview.lo `test -f 'gtknsview.c' || echo '$(srcdir)/'`gtknsview.c
-+
- libgtk_quartz_2_0_la-gtksearchenginequartz.lo: gtksearchenginequartz.c
- @am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libgtk_quartz_2_0_la_CFLAGS) $(CFLAGS) -MT libgtk_quartz_2_0_la-gtksearchenginequartz.lo -MD -MP -MF $(DEPDIR)/libgtk_quartz_2_0_la-gtksearchenginequartz.Tpo -c -o libgtk_quartz_2_0_la-gtksearchenginequartz.lo `test -f 'gtksearchenginequartz.c' || echo '$(srcdir)/'`gtksearchenginequartz.c
- @am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libgtk_quartz_2_0_la-gtksearchenginequartz.Tpo $(DEPDIR)/libgtk_quartz_2_0_la-gtksearchenginequartz.Plo
-diff -urNp a/gtk/gtk.h b/gtk/gtk.h
---- a/gtk/gtk.h	2011-08-15 22:30:52.000000000 -0400
-+++ b/gtk/gtk.h	2012-04-11 12:01:27.000000000 -0400
+diff --git a/gtk/gtk.h b/gtk/gtk.h
+index 94e0b61..cc5834a 100644
+--- a/gtk/gtk.h
++++ b/gtk/gtk.h
 @@ -218,6 +218,10 @@
  #include <gtk/gtkwidget.h>
  #include <gtk/gtkwindow.h>
@@ -232,10 +51,12 @@ diff -urNp a/gtk/gtk.h b/gtk/gtk.h
  /* Broken */
  #include <gtk/gtktext.h>
  #include <gtk/gtktree.h>
-diff -urNp a/gtk/gtknsview.c b/gtk/gtknsview.c
---- a/gtk/gtknsview.c	1969-12-31 19:00:00.000000000 -0500
-+++ b/gtk/gtknsview.c	2012-04-11 12:01:27.000000000 -0400
-@@ -0,0 +1,291 @@
+diff --git a/gtk/gtknsview.c b/gtk/gtknsview.c
+new file mode 100644
+index 0000000..911d409
+--- /dev/null
++++ b/gtk/gtknsview.c
+@@ -0,0 +1,461 @@
 +/* GTK - The GIMP Toolkit
 + * Copyright (C) 1995-1997 Peter Mattis, Spencer Kimball and Josh MacDonald
 + *
@@ -261,12 +82,17 @@ diff -urNp a/gtk/gtknsview.c b/gtk/gtknsview.c
 +#include "config.h"
 +
 +#include <gdk/gdk.h>
++#include <gdk/gdkkeysyms.h>
 +#include <gdk/quartz/gdkquartz.h>
++#include <objc/runtime.h>
 +
 +#include "gtknsview.h"
 +#include "gtkprivate.h"
 +#include "gtkintl.h"
 +#include "gtkalias.h"
++
++
++/* #define DEBUG_FOCUS 1 */
 +
 +
 +enum
@@ -294,6 +120,8 @@ diff -urNp a/gtk/gtknsview.c b/gtk/gtknsview.c
 +                                             guint           prop_id,
 +                                             GValue         *value,
 +                                             GParamSpec     *pspec);
++static void       gtk_ns_view_notify        (GObject        *object,
++                                             GParamSpec     *pspec);
 +
 +static void       gtk_ns_view_map           (GtkWidget      *widget);
 +static void       gtk_ns_view_unmap         (GtkWidget      *widget);
@@ -301,10 +129,18 @@ diff -urNp a/gtk/gtknsview.c b/gtk/gtknsview.c
 +                                             GtkRequisition *requisition);
 +static void       gtk_ns_view_size_allocate (GtkWidget      *widget,
 +                                             GtkAllocation  *allocation);
++static void       gtk_ns_view_grab_focus    (GtkWidget      *widget);
 +static gboolean   gtk_ns_view_key_press     (GtkWidget      *widget,
 +                                             GdkEventKey    *event);
 +static gboolean   gtk_ns_view_key_release   (GtkWidget      *widget,
 +                                             GdkEventKey    *event);
++
++static void       gtk_ns_view_native_child_event (GdkWindow     *window,
++                                                  NSView        *view,
++                                                  NSEvent       *event,
++                                                  GtkNSView     *ns_view);
++static gboolean   gtk_ns_view_forward_event      (GtkWidget     *widget,
++                                                  GdkEventKey   *event);
 +
 +
 +G_DEFINE_TYPE (GtkNSView, gtk_ns_view, GTK_TYPE_WIDGET)
@@ -321,11 +157,13 @@ diff -urNp a/gtk/gtknsview.c b/gtk/gtknsview.c
 +  object_class->dispose = gtk_ns_view_dispose;
 +  object_class->set_property = gtk_ns_view_set_property;
 +  object_class->get_property = gtk_ns_view_get_property;
++  object_class->notify = gtk_ns_view_notify;
 +
 +  widget_class->map = gtk_ns_view_map;
 +  widget_class->unmap = gtk_ns_view_unmap;
 +  widget_class->size_request = gtk_ns_view_size_request;
 +  widget_class->size_allocate = gtk_ns_view_size_allocate;
++  widget_class->grab_focus = gtk_ns_view_grab_focus;
 +  widget_class->key_press_event = gtk_ns_view_key_press;
 +  widget_class->key_release_event = gtk_ns_view_key_release;
 +
@@ -384,6 +222,12 @@ diff -urNp a/gtk/gtknsview.c b/gtk/gtknsview.c
 +          [ns_view->priv->view retain];
 +          gtk_widget_set_can_focus (GTK_WIDGET (ns_view),
 +                                    [ns_view->priv->view acceptsFirstResponder]);
++
++#if DEBUG_FOCUS
++          g_printerr ("%s can focus: %d\n",
++                      class_getName ([ns_view->priv->view class]),
++                      gtk_widget_get_can_focus (GTK_WIDGET (ns_view)));
++#endif
 +        }
 +      break;
 +
@@ -410,6 +254,32 @@ diff -urNp a/gtk/gtknsview.c b/gtk/gtknsview.c
 +    default:
 +      G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
 +      break;
++    }
++}
++
++static void
++gtk_ns_view_notify (GObject    *object,
++                    GParamSpec *pspec)
++{
++  GtkNSView *ns_view = GTK_NS_VIEW (object);
++
++  if (G_OBJECT_CLASS (gtk_ns_view_parent_class)->notify)
++    G_OBJECT_CLASS (gtk_ns_view_parent_class)->notify (object, pspec);
++
++  if (!strcmp (pspec->name, "has-focus"))
++    {
++      NSWindow *ns_window = [ns_view->priv->view window];
++
++#if DEBUG_FOCUS
++      g_printerr ("%s has-focus: %d\n",
++                  class_getName ([ns_view->priv->view class]),
++                  gtk_widget_has_focus (GTK_WIDGET (object)));
++#endif
++
++      if (gtk_widget_has_focus (GTK_WIDGET (object)))
++        [ns_window makeFirstResponder:ns_view->priv->view];
++      else
++        [ns_window makeFirstResponder:nil];
 +    }
 +}
 +
@@ -449,6 +319,7 @@ diff -urNp a/gtk/gtknsview.c b/gtk/gtknsview.c
 +gtk_ns_view_map (GtkWidget *widget)
 +{
 +  GtkNSView *ns_view = GTK_NS_VIEW (widget);
++  GtkWidget *toplevel = gtk_widget_get_toplevel (widget);
 +  GtkAllocation allocation;
 +  NSView *parent_view;
 +
@@ -458,6 +329,12 @@ diff -urNp a/gtk/gtknsview.c b/gtk/gtknsview.c
 +  parent_view = gdk_quartz_window_get_nsview (gtk_widget_get_window (widget));
 +  [parent_view addSubview:ns_view->priv->view];
 +
++  [ns_view->priv->view setNextKeyView:nil];
++
++  g_signal_connect (gtk_widget_get_window (toplevel), "native-child-event",
++                    G_CALLBACK (gtk_ns_view_native_child_event),
++                    widget);
++
 +  GTK_WIDGET_CLASS (gtk_ns_view_parent_class)->map (widget);
 +}
 +
@@ -465,6 +342,11 @@ diff -urNp a/gtk/gtknsview.c b/gtk/gtknsview.c
 +gtk_ns_view_unmap (GtkWidget *widget)
 +{
 +  GtkNSView *ns_view = GTK_NS_VIEW (widget);
++  GtkWidget *toplevel = gtk_widget_get_toplevel (widget);
++
++  g_signal_handlers_disconnect_by_func (gtk_widget_get_window (toplevel),
++                                        gtk_ns_view_native_child_event,
++                                        widget);
 +
 +  [ns_view->priv->view removeFromSuperview];
 +
@@ -491,16 +373,35 @@ diff -urNp a/gtk/gtknsview.c b/gtk/gtknsview.c
 +    gtk_ns_view_position_view (ns_view, allocation);
 +}
 +
++static void
++gtk_ns_view_grab_focus (GtkWidget *widget)
++{
++  GtkNSView *ns_view = GTK_NS_VIEW (widget);
++  NSWindow *ns_window;
++
++  GTK_WIDGET_CLASS (gtk_ns_view_parent_class)->grab_focus (widget);
++
++  ns_window = [ns_view->priv->view window];
++  [ns_window makeFirstResponder:ns_view->priv->view];
++}
++
 +static gboolean
 +gtk_ns_view_key_press (GtkWidget   *widget,
 +                       GdkEventKey *event)
 +{
 +  GtkNSView *ns_view = GTK_NS_VIEW (widget);
 +  NSEvent *nsevent = gdk_quartz_event_get_nsevent ((GdkEvent *) event);
++  NSWindow *ns_window;
 +
-+  /* FIXME: why doesn't cursor navigation work? */
++  if (gtk_ns_view_forward_event (widget, event))
++    {
++      ns_window = [ns_view->priv->view window];
++      [ns_window sendEvent:nsevent];
 +
-+  return [ns_view->priv->view performKeyEquivalent:nsevent];
++      return TRUE;
++    }
++
++  return GTK_WIDGET_CLASS (gtk_ns_view_parent_class)->key_press_event (widget, event);
 +}
 +
 +static gboolean
@@ -509,10 +410,100 @@ diff -urNp a/gtk/gtknsview.c b/gtk/gtknsview.c
 +{
 +  GtkNSView *ns_view = GTK_NS_VIEW (widget);
 +  NSEvent *nsevent = gdk_quartz_event_get_nsevent ((GdkEvent *) event);
++  NSWindow *ns_window;
 +
-+  /* FIXME: see press */
++  if (gtk_ns_view_forward_event (widget, event))
++    {
++      ns_window = [ns_view->priv->view window];
++      [ns_window sendEvent:nsevent];
 +
-+  return [ns_view->priv->view performKeyEquivalent:nsevent];
++      return TRUE;
++    }
++
++  return GTK_WIDGET_CLASS (gtk_ns_view_parent_class)->key_release_event (widget, event);
++}
++
++static void
++gtk_ns_view_native_child_event (GdkWindow *window,
++                                NSView    *view,
++                                NSEvent   *event,
++                                GtkNSView *ns_view)
++{
++  if (view == ns_view->priv->view)
++    {
++#if 0
++      g_printerr ("native child event on %s\n",
++                  class_getName ([ns_view->priv->view class]));
++#endif
++
++      switch ([event type])
++        {
++        case NSLeftMouseDown:
++          if (! gtk_widget_has_focus (GTK_WIDGET (ns_view)) &&
++
++              /*  other code can set can-focus, so check for both  */
++              gtk_widget_get_can_focus (GTK_WIDGET (ns_view)) &&
++              [ns_view->priv->view acceptsFirstResponder])
++            {
++              NSWindow *ns_window;
++
++#if DEBUG_FOCUS
++              g_printerr ("grabbing focus on %s\n",
++                          class_getName ([ns_view->priv->view class]));
++#endif
++
++              gtk_widget_grab_focus (GTK_WIDGET (ns_view));
++            }
++          break;
++
++        default:
++          break;
++        }
++    }
++}
++
++static gboolean
++gtk_ns_view_forward_event (GtkWidget   *widget,
++                           GdkEventKey *event)
++{
++  GtkNSView *ns_view = GTK_NS_VIEW (widget);
++  NSWindow *ns_window;
++  NSResponder *first_responder;
++  NSView *next_key_view;
++
++  if (event->type != GDK_KEY_PRESS ||
++      (event->keyval != GDK_KEY_Tab &&
++       event->keyval != GDK_KEY_ISO_Left_Tab))
++    {
++      return TRUE;
++    }
++
++  ns_window = [ns_view->priv->view window];
++  first_responder = [ns_window firstResponder];
++
++#if DEBUG_FOCUS
++  g_printerr ("first reponder: %p  %s\n", first_responder,
++              class_getName ([first_responder class]));
++#endif
++
++  if (event->keyval == GDK_KEY_Tab)
++    next_key_view = [first_responder nextValidKeyView];
++  else
++    next_key_view = [first_responder previousValidKeyView];
++
++#if DEBUG_FOCUS
++  g_printerr ("next key view: %p  %s\n", next_key_view,
++              class_getName ([next_key_view class]));
++#endif
++
++  if (next_key_view &&
++      next_key_view != ns_view->priv->view &&
++      [next_key_view isDescendantOf:ns_view->priv->view])
++    {
++      return TRUE;
++    }
++
++  return FALSE;
 +}
 +
 +GtkWidget *
@@ -527,9 +518,11 @@ diff -urNp a/gtk/gtknsview.c b/gtk/gtknsview.c
 +
 +#define __GTK_NS_VIEW_C__
 +#include "gtkaliasdef.c"
-diff -urNp a/gtk/gtknsview.h b/gtk/gtknsview.h
---- a/gtk/gtknsview.h	1969-12-31 19:00:00.000000000 -0500
-+++ b/gtk/gtknsview.h	2012-04-11 12:01:27.000000000 -0400
+diff --git a/gtk/gtknsview.h b/gtk/gtknsview.h
+new file mode 100644
+index 0000000..2c0aab7
+--- /dev/null
++++ b/gtk/gtknsview.h
 @@ -0,0 +1,62 @@
 +/* GTK - The GIMP Toolkit
 + * Copyright (C) 1995-1997 Peter Mattis, Spencer Kimball and Josh MacDonald
@@ -553,12 +546,12 @@ diff -urNp a/gtk/gtknsview.h b/gtk/gtknsview.h
 + * Boston, MA 02111-1307, USA.
 + */
 +
++#ifndef __GTK_NS_VIEW_H__
++#define __GTK_NS_VIEW_H__
++
 +#if defined(GTK_DISABLE_SINGLE_INCLUDES) && !defined (__GTK_H_INSIDE__) && !defined (GTK_COMPILATION)
 +#error "Only <gtk/gtk.h> can be included directly."
 +#endif
-+
-+#ifndef __GTK_NS_VIEW_H__
-+#define __GTK_NS_VIEW_H__
 +
 +#include <gtk/gtkwidget.h>
 +
@@ -593,9 +586,10 @@ diff -urNp a/gtk/gtknsview.h b/gtk/gtknsview.h
 +G_END_DECLS
 +
 +#endif /* __GTK_NS_VIEW_H__ */
-diff -urNp a/tests/Makefile.am b/tests/Makefile.am
---- a/tests/Makefile.am	2011-08-15 22:30:53.000000000 -0400
-+++ b/tests/Makefile.am	2012-04-11 12:01:27.000000000 -0400
+diff --git a/tests/Makefile.am b/tests/Makefile.am
+index 3888826..af098f6 100644
+--- a/tests/Makefile.am
++++ b/tests/Makefile.am
 @@ -8,7 +8,8 @@ INCLUDES =				\
  	-DGDK_DISABLE_DEPRECATED	\
  	-DGTK_DISABLE_DEPRECATED	\
@@ -614,7 +608,7 @@ diff -urNp a/tests/Makefile.am b/tests/Makefile.am
  	testoffscreen			\
  	testoffscreenwindow		\
  	testorientable			\
-@@ -134,6 +136,7 @@ testmultidisplay_DEPENDENCIES = $(TEST_D
+@@ -134,6 +136,7 @@ testmultidisplay_DEPENDENCIES = $(TEST_DEPS)
  testmultiscreen_DEPENDENCIES = $(TEST_DEPS)
  testnotebookdnd_DEPENDENCIES = $(TEST_DEPS)
  testnouiprint_DEPENDENCIES = $(TEST_DEPS)
@@ -622,16 +616,16 @@ diff -urNp a/tests/Makefile.am b/tests/Makefile.am
  testoffscreen_DEPENDENCIES = $(TEST_DEPS)
  testoffscreenwindow_DEPENDENCIES = $(TEST_DEPS)
  testorientable_DEPENDENCIES = $(TEST_DEPS)
-@@ -233,6 +236,8 @@ testvolumebutton_LDADD = $(LDADDS)
- testwindows_LDADD = $(LDADDS)
- 
+@@ -166,6 +169,8 @@ testtooltips_DEPENDENCIES = $(TEST_DEPS)
+ testvolumebutton_DEPENDENCIES = $(TEST_DEPS)
+ testwindows_DEPENDENCIES = $(TEST_DEPS)
  
 +testnsview_LDFLAGS = -framework WebKit
 +
  testentrycompletion_SOURCES = 	\
  	prop-editor.c		\
  	testentrycompletion.c
-@@ -329,6 +334,9 @@ testrecentchoosermenu_SOURCES =	\
+@@ -262,6 +267,9 @@ testrecentchoosermenu_SOURCES =	\
  testvolumebutton_SOURCES =	\
  	testvolumebutton.c
  
@@ -641,10 +635,12 @@ diff -urNp a/tests/Makefile.am b/tests/Makefile.am
  testoffscreen_SOURCES = 	\
  	gtkoffscreenbox.c	\
  	gtkoffscreenbox.h	\
-diff -urNp a/tests/testnsview.c b/tests/testnsview.c
---- a/tests/testnsview.c	1969-12-31 19:00:00.000000000 -0500
-+++ b/tests/testnsview.c	2012-04-11 12:01:27.000000000 -0400
-@@ -0,0 +1,160 @@
+diff --git a/tests/testnsview.c b/tests/testnsview.c
+new file mode 100644
+index 0000000..85bad7c
+--- /dev/null
++++ b/tests/testnsview.c
+@@ -0,0 +1,170 @@
 +/* testnsview.c
 + * Copyright (C) 2011 Michael Natterer <mitch@lanedo.com>
 + *
@@ -799,6 +795,16 @@ diff -urNp a/tests/testnsview.c b/tests/testnsview.c
 +    [text_field release];
 +  }
 +
++  /* and a normal GtkEntry to check focus */
++  {
++    GtkWidget *entry;
++
++    entry = gtk_entry_new ();
++    gtk_entry_set_text (GTK_ENTRY (entry), "Normal GTK+ entry");
++    gtk_box_pack_start (GTK_BOX (vbox), entry, FALSE, FALSE, 0);
++    gtk_widget_show (entry);
++  }
++
 +  gtk_widget_show (window);
 +
 +  gtk_main ();
@@ -806,5 +812,5 @@ diff -urNp a/tests/testnsview.c b/tests/testnsview.c
 +  return 0;
 +}
 -- 
-1.7.5.4
+1.7.10.2 (Apple Git-33)
 
