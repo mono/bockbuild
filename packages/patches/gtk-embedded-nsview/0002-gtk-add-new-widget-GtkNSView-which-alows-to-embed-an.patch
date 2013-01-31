@@ -1,4 +1,4 @@
-From 5ffd2709875a5423aafc5338f7501000a547d15f Mon Sep 17 00:00:00 2001
+From 5b6cbbef6307efde33203471fe44fd82594bcdd5 Mon Sep 17 00:00:00 2001
 From: Michael Natterer <mitch@lanedo.com>
 Date: Tue, 29 Nov 2011 16:09:31 +0100
 Subject: [PATCH 2/2] gtk: add new widget GtkNSView which alows to embed an
@@ -7,11 +7,11 @@ Subject: [PATCH 2/2] gtk: add new widget GtkNSView which alows to embed an
 ---
  gtk/Makefile.am    |    2 +
  gtk/gtk.h          |    4 +
- gtk/gtknsview.c    |  461 ++++++++++++++++++++++++++++++++++++++++++++++++++++
+ gtk/gtknsview.c    |  470 ++++++++++++++++++++++++++++++++++++++++++++++++++++
  gtk/gtknsview.h    |   62 +++++++
  tests/Makefile.am  |   10 +-
- tests/testnsview.c |  170 +++++++++++++++++++
- 6 files changed, 708 insertions(+), 1 deletion(-)
+ tests/testnsview.c |  190 +++++++++++++++++++++
+ 6 files changed, 737 insertions(+), 1 deletion(-)
  create mode 100644 gtk/gtknsview.c
  create mode 100644 gtk/gtknsview.h
  create mode 100644 tests/testnsview.c
@@ -53,10 +53,10 @@ index 94e0b61..cc5834a 100644
  #include <gtk/gtktree.h>
 diff --git a/gtk/gtknsview.c b/gtk/gtknsview.c
 new file mode 100644
-index 0000000..911d409
+index 0000000..40c6a9b
 --- /dev/null
 +++ b/gtk/gtknsview.c
-@@ -0,0 +1,461 @@
+@@ -0,0 +1,470 @@
 +/* GTK - The GIMP Toolkit
 + * Copyright (C) 1995-1997 Peter Mattis, Spencer Kimball and Josh MacDonald
 + *
@@ -111,7 +111,7 @@ index 0000000..911d409
 +                                      GTK_TYPE_NS_VIEW, GtkNSViewPrivate))
 +
 +
-+static void       gtk_ns_view_dispose       (GObject        *object);
++static void       gtk_ns_view_finalize      (GObject        *object);
 +static void       gtk_ns_view_set_property  (GObject        *object,
 +                                             guint           prop_id,
 +                                             const GValue   *value,
@@ -123,6 +123,7 @@ index 0000000..911d409
 +static void       gtk_ns_view_notify        (GObject        *object,
 +                                             GParamSpec     *pspec);
 +
++static void       gtk_ns_view_unrealize     (GtkWidget      *widget);
 +static void       gtk_ns_view_map           (GtkWidget      *widget);
 +static void       gtk_ns_view_unmap         (GtkWidget      *widget);
 +static void       gtk_ns_view_size_request  (GtkWidget      *widget,
@@ -154,11 +155,12 @@ index 0000000..911d409
 +
 +  g_type_class_add_private (klass, sizeof (GtkNSViewPrivate));
 +
-+  object_class->dispose = gtk_ns_view_dispose;
++  object_class->finalize = gtk_ns_view_finalize;
 +  object_class->set_property = gtk_ns_view_set_property;
 +  object_class->get_property = gtk_ns_view_get_property;
 +  object_class->notify = gtk_ns_view_notify;
 +
++  widget_class->unrealize = gtk_ns_view_unrealize;
 +  widget_class->map = gtk_ns_view_map;
 +  widget_class->unmap = gtk_ns_view_unmap;
 +  widget_class->size_request = gtk_ns_view_size_request;
@@ -192,7 +194,7 @@ index 0000000..911d409
 +}
 +
 +static void
-+gtk_ns_view_dispose (GObject *object)
++gtk_ns_view_finalize (GObject *object)
 +{
 +  GtkNSView *ns_view = GTK_NS_VIEW (object);
 +
@@ -202,7 +204,7 @@ index 0000000..911d409
 +      ns_view->priv->view = NULL;
 +    }
 +
-+  G_OBJECT_CLASS (gtk_ns_view_parent_class)->dispose (object);
++  G_OBJECT_CLASS (gtk_ns_view_parent_class)->finalize (object);
 +}
 +
 +static void
@@ -316,6 +318,15 @@ index 0000000..911d409
 +}
 +
 +static void
++gtk_ns_view_unrealize (GtkWidget *widget)
++{
++  if (gtk_widget_get_mapped (widget))
++    gtk_widget_unmap (widget);
++
++  GTK_WIDGET_CLASS (gtk_ns_view_parent_class)->unrealize (widget);
++}
++
++static void
 +gtk_ns_view_map (GtkWidget *widget)
 +{
 +  GtkNSView *ns_view = GTK_NS_VIEW (widget);
@@ -331,9 +342,9 @@ index 0000000..911d409
 +
 +  [ns_view->priv->view setNextKeyView:nil];
 +
-+  g_signal_connect (gtk_widget_get_window (toplevel), "native-child-event",
-+                    G_CALLBACK (gtk_ns_view_native_child_event),
-+                    widget);
++  g_signal_connect_object (gtk_widget_get_window (toplevel), "native-child-event",
++                           G_CALLBACK (gtk_ns_view_native_child_event),
++                           G_OBJECT (widget), 0);
 +
 +  GTK_WIDGET_CLASS (gtk_ns_view_parent_class)->map (widget);
 +}
@@ -445,8 +456,6 @@ index 0000000..911d409
 +              gtk_widget_get_can_focus (GTK_WIDGET (ns_view)) &&
 +              [ns_view->priv->view acceptsFirstResponder])
 +            {
-+              NSWindow *ns_window;
-+
 +#if DEBUG_FOCUS
 +              g_printerr ("grabbing focus on %s\n",
 +                          class_getName ([ns_view->priv->view class]));
@@ -637,10 +646,10 @@ index 3888826..af098f6 100644
  	gtkoffscreenbox.h	\
 diff --git a/tests/testnsview.c b/tests/testnsview.c
 new file mode 100644
-index 0000000..85bad7c
+index 0000000..7c9ccb7
 --- /dev/null
 +++ b/tests/testnsview.c
-@@ -0,0 +1,170 @@
+@@ -0,0 +1,190 @@
 +/* testnsview.c
 + * Copyright (C) 2011 Michael Natterer <mitch@lanedo.com>
 + *
@@ -744,6 +753,26 @@ index 0000000..85bad7c
 +  gtk_widget_show (ns_view);
 +
 +  [webview release];
++
++  {
++    GtkWidget *button;
++
++    button = gtk_button_new_with_label ("hide webview");
++    gtk_box_pack_end (GTK_BOX (vbox), button, FALSE, FALSE, 0);
++    gtk_widget_show (button);
++
++    g_signal_connect_swapped (button, "clicked",
++                              G_CALLBACK (gtk_widget_hide),
++                              ns_view);
++
++    button = gtk_button_new_with_label ("show webview");
++    gtk_box_pack_end (GTK_BOX (vbox), button, FALSE, FALSE, 0);
++    gtk_widget_show (button);
++
++    g_signal_connect_swapped (button, "clicked",
++                              G_CALLBACK (gtk_widget_show),
++                              ns_view);
++  }
 +
 +  /* add an entry in an event box to test living inside another gdkwindow */
 +  {
