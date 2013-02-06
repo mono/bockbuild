@@ -20,11 +20,19 @@ class MonoTwoTenPackage(Package):
 					'--build=i386-apple-darwin11.2.0',
 					'--enable-loadedllvm'
 					])
-			self.sources.extend(['patches/pkg-config'])
+
+			self.sources.extend ([
+					# Fixes up pkg-config usage on the Mac
+					'patches/mcs-pkgconfig.patch'
+					])
 
 		self.configure = './autogen.sh'
 
-	def install(self):
-		Package.install(self)
+	def prep (self):
+		Package.prep (self)
+		if Package.profile.name == 'darwin':
+			for p in range (1, len (self.sources)):
+				self.sh ('patch -p1 < "%{sources[' + str (p) + ']}"')
+
 
 MonoTwoTenPackage()

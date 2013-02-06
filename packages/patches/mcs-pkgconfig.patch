@@ -1,0 +1,9 @@
+diff --git a/scripts/mcs.in b/scripts/mcs.in
+index 32498fa..c15087e 100644
+--- a/scripts/mcs.in
++++ b/scripts/mcs.in
+@@ -1,2 +1,4 @@
+ #!/bin/sh
++export PATH=$PATH:/Library/Frameworks/Mono.framework/Versions/@mono_version@/bin
++export PKG_CONFIG_PATH=/Library/Frameworks/Mono.framework/External/pkgconfig:/Library/Frameworks/Mono.framework/Versions/@mono_version@/lib/pkgconfig:/Library/Frameworks/Mono.framework/Versions/@mono_version@/share/pkgconfig:$PKG_CONFIG_PATH
+ exec @bindir@/mono $MONO_OPTIONS @mono_instdir@/2.0/mcs.exe -lib:@mono_instdir@/2.0 -lib:@mono_instdir@/3.5 "$@"
