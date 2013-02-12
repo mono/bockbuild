@@ -119,4 +119,3 @@ xsd
 xsp
 xsp2
 xsp4
-pkg-config
