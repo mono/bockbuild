@@ -2,7 +2,7 @@ class GtkPackage (GnomeXzPackage):
 	def __init__ (self):
 		GnomeXzPackage.__init__ (self, 'gtk+',
 			version_major = '2.24',
-			version_minor = '15',
+			version_minor = '14',
 			configure_flags = [
 				'--with-gdktarget=%{gdk_target}',
 				'--prefix="%{prefix}"'
@@ -18,9 +18,27 @@ class GtkPackage (GnomeXzPackage):
 				# Custom gtkrc
 				'patches/gtkrc',
 
-				#post 2.24.15 patches
-				# gtk: reliably stop spinning when a GtkSpinButton is hidden
-				'http://git.gnome.org/browse/gtk+/patch/?id=5de08612dc8cf6970d2c795ec204482c18101c9d',
+				#post 2.24.14 patches
+				# quartz: fix crash in the recent clipboard "fix", and really fix it
+				'http://git.gnome.org/browse/gtk+/patch/?id=4a8df7a33c298d22bf78b947d0e861fc03ec70e1',
+				# gtk: fix scrolling in modal dialogs when event_widget is insensitive
+				'http://git.gnome.org/browse/gtk+/patch/?id=31ae1a0b5bb257c86cc2393e065ded8506b4ef4a',
+				# quartz: make setting_same_owner member of GtkClipboardOwner @public
+				'http://git.gnome.org/browse/gtk+/patch/?id=e3e055f8551ac8ee033f361261c849c612554184',
+				# quartz: don't call a NULL get_func() in gtk_clipboard_store()
+				'http://git.gnome.org/browse/gtk+/patch/?id=f1c105b94fc3c3572a234c93c47252a3ff82218b',
+				# Move single-include guards inside include guards
+				'http://git.gnome.org/browse/gtk+/patch/?id=1f0f3994694ec3f1baa43932c186db78814b2abd',
+				# quartz: ensure window being (un)fullscreened is visible
+				'http://git.gnome.org/browse/gtk+/patch/?id=62f1d871b70a8e08b899942827386d6f3222c986',
+				# quartz: make sure all old properties are set on the new toplevel
+				'http://git.gnome.org/browse/gtk+/patch/?id=a8008b796f14444dff3ac46af884238fc4f214f6',
+				# quartz: Make sure the old toplevel is closed on recreation
+				'http://git.gnome.org/browse/gtk+/patch/?id=30deba453a045107eadd4deea572e29192c298c1',
+				# quartz: retain content view when switching over toplevel
+				'http://git.gnome.org/browse/gtk+/patch/?id=184407309f83a06b9215c8123091263d483edc8b',
+				# quartz: really don't call a NULL function in gtk_clipboard_store()
+				'http://git.gnome.org/browse/gtk+/patch/?id=bc3f1893aa26761c0009ddc993b48623bcfbe4ed',
 
 				# smooth scrolling, scrollbars, overscroll
 				'patches/gtk-scrolling/0001-Add-gdk_screen_get_monitor_workarea-and-use-it-all-o.patch',
