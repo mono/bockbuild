@@ -1,15 +1,11 @@
-class GtkPackage (GnomeXzPackage):
+class GtkPackage (GnomeGitPackage):
 	def __init__ (self):
-		GnomeXzPackage.__init__ (self, 'gtk+',
-			version_major = '2.24',
-			version_minor = '15',
+		GnomeGitPackage.__init__ (self, 'gtk+', '2.24', '0004fe6cd44bf1033f606c0f9fe9a3784eeb4e73',
 			configure_flags = [
 				'--with-gdktarget=%{gdk_target}',
-				'--prefix="%{prefix}"'
 #				'--disable-cups',
 			]
 		)
-		self.configure = './configure'
 		self.gdk_target = 'x11'
 
 		if Package.profile.name == 'darwin':
@@ -17,10 +13,6 @@ class GtkPackage (GnomeXzPackage):
 			self.sources.extend ([
 				# Custom gtkrc
 				'patches/gtkrc',
-
-				#post 2.24.15 patches
-				# gtk: reliably stop spinning when a GtkSpinButton is hidden
-				'http://git.gnome.org/browse/gtk+/patch/?id=5de08612dc8cf6970d2c795ec204482c18101c9d',
 
 				# smooth scrolling, scrollbars, overscroll
 				'patches/gtk-scrolling/0001-Add-gdk_screen_get_monitor_workarea-and-use-it-all-o.patch',
@@ -53,9 +45,6 @@ class GtkPackage (GnomeXzPackage):
 				'patches/gtk-scrolling/0028-Hackish-fix-for-bug-8493-Min-size-of-GtkScrolledWind.patch',
 				'patches/gtk-scrolling/0029-quartz-add-gdk_window_get_scale_factor.patch',
 
-				'patches/gtk-scrolling/overlay-scrollbar-makefile-patch.diff',
-				'patches/gtk-scrolling/fix-overlay-scrollbar-grab.diff',
-
 				# make new modifier behviour opt-in, so as not to break old versions of MonoDevelop
 				'patches/gdk-quartz-set-fix-modifiers-hack-v3.patch',
 
@@ -66,7 +55,6 @@ class GtkPackage (GnomeXzPackage):
 				# Embedded NSViews
 				'patches/gtk-embedded-nsview/0001-quartz-return-events-on-embedded-foreign-NSViews-bac.patch',
 				'patches/gtk-embedded-nsview/0002-gtk-add-new-widget-GtkNSView-which-alows-to-embed-an.patch',
-				'patches/gtk-embedded-nsview/include-in-build.diff',
 				'patches/gtk-embedded-nsview/fix-for-embedded-nsviews.patch',
 
 				# Zoom, rotate, swipe events

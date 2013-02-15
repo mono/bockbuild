@@ -240,6 +240,20 @@ GnomeXzPackage.default_sources = [
 	'http://ftp.gnome.org/pub/gnome/sources/%{name}/%{version_major}/%{name}-%{version}.tar.xz'
 ]
 
+class GnomeGitPackage (Package):
+	def __init__ (self, name, version, revision,
+		configure_flags = None, sources = None, override_properties = None):
+		Package.__init__ (self, name, version,
+			configure = './autogen.sh --prefix="%{prefix}"',
+			configure_flags = configure_flags,
+			sources = sources,
+			override_properties = override_properties,
+			revision = revision)
+
+GnomeGitPackage.default_sources = [
+	'git://git.gnome.org/%{name}'
+]
+
 class GnuPackage (Package): pass
 GnuPackage.default_sources = [
 	'http://ftp.gnu.org/gnu/%{name}/%{name}-%{version}.tar.gz'

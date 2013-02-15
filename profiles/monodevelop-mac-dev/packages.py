@@ -14,6 +14,12 @@ class MonoDevelopMacDevPackages:
 			'pkg-config.py'
 		])
 
+		#needed to autogen gtk+
+		self.packages.extend ([
+			'gtk-doc.py',
+			'gtk-osx-docbook.py',
+		])
+
 		# Base Libraries
 		self.packages.extend ([
 			'libpng.py',

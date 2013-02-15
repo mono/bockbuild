@@ -5,15 +5,21 @@ class MonoReleasePackages:
 	def __init__(self):
 
 		# Toolchain
-		self.packages.extend([
-				# 'autoconf.py',
-				# 'automake.py',
-				# 'libtool.py',
-				'xz.py',
-				'tar.py',
-				'gettext.py',
-				'pkg-config.py'
-				])
+		self.packages.extend ([
+			'xz.py',
+			'tar.py',
+			'autoconf.py',
+			'automake.py',
+			'libtool.py',
+			'gettext.py',
+			'pkg-config.py'
+		])
+
+		#needed to autogen gtk+
+		self.packages.extend ([
+			'gtk-doc.py',
+			'gtk-osx-docbook.py',
+		])
 
 		# # Base Libraries
 		self.packages.extend([
