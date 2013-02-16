@@ -1,7 +1,7 @@
-From 5ed0e25b2aae0c4d4e1b44e0f7ceaa36391c4620 Mon Sep 17 00:00:00 2001
+From 2df704d8327aaf02bf147267e411881cc1f194ce Mon Sep 17 00:00:00 2001
 From: Michael Natterer <mitch@gimp.org>
 Date: Fri, 1 Jun 2012 13:08:26 +0200
-Subject: [PATCH 10/29] GtkScrolledWindow: add overlay scrollbars
+Subject: [PATCH 10/36] GtkScrolledWindow: add overlay scrollbars
 
 based on code from gnome-builder by Christian Hergert.
 ---
@@ -18,10 +18,10 @@ based on code from gnome-builder by Christian Hergert.
  create mode 100644 gtk/gb-frame-source.h
 
 diff --git a/gtk/Makefile.am b/gtk/Makefile.am
-index 908291f..b45553b 100644
+index 9aeada7..104768f 100644
 --- a/gtk/Makefile.am
 +++ b/gtk/Makefile.am
-@@ -359,6 +359,8 @@ gtk_semi_private_h_sources =    \
+@@ -361,6 +361,8 @@ gtk_semi_private_h_sources =    \
  
  # GTK+ header files that don't get installed
  gtk_private_h_sources =		\
@@ -30,7 +30,7 @@ index 908291f..b45553b 100644
  	gtkquery.h		\
  	gtksearchengine.h	\
  	gtksearchenginesimple.h	\
-@@ -409,6 +411,8 @@ gtk_private_h_sources =		\
+@@ -411,6 +413,8 @@ gtk_private_h_sources =		\
  
  # GTK+ C sources to build the library from
  gtk_base_c_sources =            \

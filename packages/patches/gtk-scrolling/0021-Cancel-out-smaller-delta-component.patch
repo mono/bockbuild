@@ -1,7 +1,7 @@
-From 85051bbadb601453546e79c2b332667933c48632 Mon Sep 17 00:00:00 2001
+From 3fbfdc76c4a9c42be391407b0d4ee242605eb373 Mon Sep 17 00:00:00 2001
 From: Kristian Rietveld <kris@lanedo.com>
 Date: Wed, 19 Sep 2012 07:28:20 +0200
-Subject: [PATCH 21/29] Cancel out smaller delta component.
+Subject: [PATCH 21/36] Cancel out smaller delta component.
 
 ---
  gtk/gtkscrolledwindow.c |    8 ++++++++

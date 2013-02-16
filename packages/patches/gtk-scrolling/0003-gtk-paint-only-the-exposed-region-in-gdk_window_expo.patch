@@ -1,7 +1,7 @@
-From 94c0f6e1f07f76e880f77cba8fdc06d6075fc104 Mon Sep 17 00:00:00 2001
+From 25e6707b5f1df485ed862865ef1c6021d2d027ee Mon Sep 17 00:00:00 2001
 From: Michael Natterer <mitch@gimp.org>
 Date: Sun, 27 May 2012 22:51:33 +0200
-Subject: [PATCH 03/29] gtk: paint only the exposed region in
+Subject: [PATCH 03/36] gtk: paint only the exposed region in
  gdk_window_expose()
 
 ---

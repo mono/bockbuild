@@ -1,7 +1,7 @@
-From 036b7c2a82dd8a1e457f7f90fa2e7fb380d564ef Mon Sep 17 00:00:00 2001
+From 8fed38c0577c19b0dfe62f6ee19db074c135dc73 Mon Sep 17 00:00:00 2001
 From: Michael Natterer <mitch@gimp.org>
 Date: Tue, 15 Jan 2013 14:56:29 +0100
-Subject: [PATCH 28/29] Hackish fix for bug 8493 - Min size of
+Subject: [PATCH 28/36] Hackish fix for bug 8493 - Min size of
  GtkScrolledWindow is too small
 
 In gtk_scrollbar_size_allocate(), pretend the scrollbar

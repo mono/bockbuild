@@ -1,7 +1,7 @@
-From 8f065442ad9ab10621265eee9d8684395f9bb470 Mon Sep 17 00:00:00 2001
+From a2e0ff7f282873efe555b137104ef36d27ddee04 Mon Sep 17 00:00:00 2001
 From: Michael Natterer <mitch@gimp.org>
 Date: Fri, 31 Aug 2012 16:24:07 +0200
-Subject: [PATCH 14/29] gtk: handle gtk-primary-button-warps-slider for the
+Subject: [PATCH 14/36] gtk: handle gtk-primary-button-warps-slider for the
  overlay scrollbars
 
 ---

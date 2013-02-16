@@ -43,7 +43,15 @@ class GtkPackage (GnomeGitPackage):
 				'patches/gtk-scrolling/0026-Reclamp-unclamped-adjustments-after-resize.patch',
 				'patches/gtk-scrolling/0027-gtk-fix-size_request-of-scrolled-window.patch',
 				'patches/gtk-scrolling/0028-Hackish-fix-for-bug-8493-Min-size-of-GtkScrolledWind.patch',
-				'patches/gtk-scrolling/0029-quartz-add-gdk_window_get_scale_factor.patch',
+				'patches/gtk-scrolling/0029-quartz-add-gdk_screen_-and-gdk_window_get_scale_fact.patch',
+				'patches/gtk-scrolling/0030-gtk-add-gtk_widget_get_scale_factor.patch',
+				'patches/gtk-scrolling/0031-iconfactory-Add-_scaled-variants.patch',
+				'patches/gtk-scrolling/0032-widget-Add-_scaled-variants-for-icon-rendering.patch',
+				'patches/gtk-scrolling/0033-image-Use-scaled-icons-on-windows-with-a-scaling-fac.patch',
+				'patches/gtk-scrolling/0034-cellrendererpixbuf-Use-scaled-icons-on-windows-with-.patch',
+				'patches/gtk-scrolling/0035-entry-Use-scaled-icons-on-windows-with-a-scale-facto.patch',
+				'patches/gtk-scrolling/0036-gtk-use-gtk_widget_get_scale_factor-and-cache-scaled.patch',
+				'patches/gtk-scrolling/fix-overlay-scrollbar-grab.diff',
 
 				# make new modifier behviour opt-in, so as not to break old versions of MonoDevelop
 				'patches/gdk-quartz-set-fix-modifiers-hack-v3.patch',
@@ -68,9 +76,6 @@ class GtkPackage (GnomeGitPackage):
 
 				# Bug 3457 - [GTK] Support more standard keyboard shortcuts in dialogs
 				'https://bugzilla.xamarin.com/attachment.cgi?id=2240',
-
-				# Fixes the build for Snow Leopard
-				'patches/scale-factor-protocol.patch',
 			])
 
 	def prep (self):

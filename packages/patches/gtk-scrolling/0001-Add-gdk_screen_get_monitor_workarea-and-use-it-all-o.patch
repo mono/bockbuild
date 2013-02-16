@@ -1,7 +1,7 @@
-From c4b954cffea02aa0140e361b075dfddba1522b1f Mon Sep 17 00:00:00 2001
+From 0715ba819efac0163037c3504f005942ab37cbe3 Mon Sep 17 00:00:00 2001
 From: Michael Natterer <mitch@gimp.org>
 Date: Fri, 23 Nov 2012 15:24:36 +0100
-Subject: [PATCH 01/29] Add gdk_screen_get_monitor_workarea() and use it all
+Subject: [PATCH 01/36] Add gdk_screen_get_monitor_workarea() and use it all
  over the place
 
 ---
@@ -116,10 +116,10 @@ index be968d6..e1541c4 100644
    if (*x < monitor.x)
      *x = monitor.x;
 diff --git a/gtk/gtkentry.c b/gtk/gtkentry.c
-index 2c9c5a4..71dc1df 100644
+index aaeb87c..165840d 100644
 --- a/gtk/gtkentry.c
 +++ b/gtk/gtkentry.c
-@@ -8636,7 +8636,7 @@ popup_position_func (GtkMenu   *menu,
+@@ -8631,7 +8631,7 @@ popup_position_func (GtkMenu   *menu,
      monitor_num = 0;
    gtk_menu_set_monitor (menu, monitor_num);
  
@@ -142,10 +142,10 @@ index 2fa7b56..a8deace 100644
    
  
 diff --git a/gtk/gtkfilechooserdefault.c b/gtk/gtkfilechooserdefault.c
-index cf8f1d9..0e2c63c 100644
+index 5ca5ffc..0db0b40 100644
 --- a/gtk/gtkfilechooserdefault.c
 +++ b/gtk/gtkfilechooserdefault.c
-@@ -4102,7 +4102,7 @@ popup_position_func (GtkMenu   *menu,
+@@ -4099,7 +4099,7 @@ popup_position_func (GtkMenu   *menu,
  
    monitor_num = gdk_screen_get_monitor_at_point (screen, *x, *y);
    gtk_menu_set_monitor (menu, monitor_num);
