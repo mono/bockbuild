@@ -79,17 +79,12 @@ class Package:
 				local_sources.pop ()
 				local_sources.append (local_dest_file)
 				pwd = os.getcwd ()
-				checkout_exists = False
 				if os.path.isdir (os.path.join (local_dest_file, '.git')):
-					try:
-						self.cd (local_dest_file)
-						self.sh ('%{git} reset --hard')
-						self.sh ('%{git} clean -xfd')
-						self.sh ('%{git} pull --rebase')
-						checkout_exists = True
-					except:
-						pass
-				if not checkout_exists:
+					self.cd (local_dest_file)
+					self.sh ('%{git} reset --hard')
+					self.sh ('%{git} clean -xfd')
+					self.sh ('%{git} fetch')
+				else:
 					self.cd (os.path.dirname (local_dest_file))
 					shutil.rmtree (local_dest_file, ignore_errors = True)
 					self.sh ('%' + '{git} clone "%s" "%s"' % (source, os.path.basename (local_dest_file)))
