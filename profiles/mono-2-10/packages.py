@@ -17,8 +17,8 @@ class MonoReleasePackages:
 
 		#needed to autogen gtk+
 		self.packages.extend ([
-			'gtk-doc.py',
 			'gtk-osx-docbook.py',
+			'gtk-doc.py',
 		])
 
 		# # Base Libraries
