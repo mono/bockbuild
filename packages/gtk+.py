@@ -52,6 +52,9 @@ class GtkPackage (GnomeGitPackage):
 				'patches/gtk-scrolling/0035-entry-Use-scaled-icons-on-windows-with-a-scale-facto.patch',
 				'patches/gtk-scrolling/0036-gtk-use-gtk_widget_get_scale_factor-and-cache-scaled.patch',
 				'patches/gtk-scrolling/fix-overlay-scrollbar-grab.diff',
+				'patches/gtk-scrolling/fix-mouse-events-1.patch',
+				'patches/gtk-scrolling/fix-mouse-events-2.patch',
+
 
 				# make new modifier behviour opt-in, so as not to break old versions of MonoDevelop
 				'patches/gdk-quartz-set-fix-modifiers-hack-v3.patch',

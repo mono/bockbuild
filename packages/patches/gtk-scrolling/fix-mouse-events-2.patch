@@ -1,0 +1,80 @@
+From cbc884d13e75b3eee6e3fc7a07225e1009d3ae39 Mon Sep 17 00:00:00 2001
+From: Kristian Rietveld <kris@lanedo.com>
+Date: Sun, 17 Feb 2013 13:08:14 +0100
+Subject: [PATCH 2/2] Do not start overshooting without observing a gesture
+
+Doing overshooting properly relies on the detection of gestures.
+For legacy devices that do emit precise deltas but no (gesture) phase,
+simply disallow overshooting so that the state machine does not get
+stuck.
+---
+ gtk/gtkscrolledwindow.c |   19 +++++++++++++------
+ 1 files changed, 13 insertions(+), 6 deletions(-)
+
+diff --git a/gtk/gtkscrolledwindow.c b/gtk/gtkscrolledwindow.c
+index 84103a6..e8674dc 100644
+--- a/gtk/gtkscrolledwindow.c
++++ b/gtk/gtkscrolledwindow.c
+@@ -154,6 +154,7 @@ typedef struct {
+   gboolean       overlay_scrollbars;
+   gboolean       is_snapping_back;
+   gboolean       gesture_in_progress;
++  gboolean       gesture_completed;
+ } GtkScrolledWindowPrivate;
+ 
+ #define GTK_SCROLLED_WINDOW_GET_PRIVATE(obj) (G_TYPE_INSTANCE_GET_PRIVATE ((obj), GTK_TYPE_SCROLLED_WINDOW, GtkScrolledWindowPrivate))
+@@ -2159,6 +2160,7 @@ gtk_scrolled_window_scroll_event (GtkWidget      *widget,
+         {
+           priv->is_snapping_back = FALSE;
+           priv->gesture_in_progress = TRUE;
++          priv->gesture_completed = FALSE;
+         }
+ 
+       if (is_momentum_event && !is_overshot)
+@@ -2191,12 +2193,14 @@ gtk_scrolled_window_scroll_event (GtkWidget      *widget,
+               GtkAdjustment *adj;
+ 
+               /* Overshooting is allowed once the adjustment has reached
+-               * the left/right.
++               * the left/right and a gesture is in progress or a gesture
++               * has been completed.
+                */
+               adj = gtk_range_get_adjustment (GTK_RANGE (scrolled_window->hscrollbar));
+               gdouble max_adj = gtk_adjustment_get_upper (adj) - gtk_adjustment_get_page_size (adj);
+-              if (gtk_adjustment_get_value (adj) < 1.0 ||
+-                  gtk_adjustment_get_value (adj) > max_adj - 1.0)
++              if ((priv->gesture_in_progress || priv->gesture_completed) &&
++                  (gtk_adjustment_get_value (adj) < 1.0 ||
++                   gtk_adjustment_get_value (adj) > max_adj - 1.0))
+                 may_overshoot = TRUE;
+ 
+               if (scrolled_window->hscrollbar_visible && (is_overshot || may_overshoot))
+@@ -2238,12 +2242,14 @@ gtk_scrolled_window_scroll_event (GtkWidget      *widget,
+               GtkAdjustment *adj;
+ 
+               /* Overshooting is allowed once the adjustment has reached
+-               * the top/bottom.
++               * the top/bottom and a gesture is in progress or a gesture
++               * has been completed.
+                */
+               adj = gtk_range_get_adjustment (GTK_RANGE (scrolled_window->vscrollbar));
+               gdouble max_adj = gtk_adjustment_get_upper (adj) - gtk_adjustment_get_page_size (adj);
+-              if (gtk_adjustment_get_value (adj) < 1.0 ||
+-                    gtk_adjustment_get_value (adj) > max_adj - 1.0)
++              if ((priv->gesture_in_progress || priv->gesture_completed) &&
++                  (gtk_adjustment_get_value (adj) < 1.0 ||
++                   gtk_adjustment_get_value (adj) > max_adj - 1.0))
+                 may_overshoot = TRUE;
+ 
+               if (scrolled_window->vscrollbar_visible && (is_overshot || may_overshoot))
+@@ -2300,6 +2306,7 @@ gtk_scrolled_window_scroll_event (GtkWidget      *widget,
+        if (event->phase == GDK_EVENT_SCROLL_PHASE_END)
+          {
+            priv->gesture_in_progress = FALSE;
++           priv->gesture_completed = TRUE;
+ 
+            priv->x_force = 0.0;
+            priv->y_force = 0.0;
+-- 
+1.7.4.4
+

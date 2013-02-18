@@ -1,0 +1,63 @@
+From ae6fe992fc9a1cb74adf176b3115fde6cd9f9433 Mon Sep 17 00:00:00 2001
+From: Kristian Rietveld <kris@lanedo.com>
+Date: Sun, 17 Feb 2013 13:06:59 +0100
+Subject: [PATCH 1/2] Never intervene in the event stream if a gesture was
+ never observed
+
+This is necessary for devices (e.g. Mighty Mouse) which do emit
+precise deltas but no phase.
+---
+ gdk/gdkwindow.c |   18 +++++++++++++++++-
+ 1 files changed, 17 insertions(+), 1 deletions(-)
+
+diff --git a/gdk/gdkwindow.c b/gdk/gdkwindow.c
+index 1a081dc..b7689bb 100644
+--- a/gdk/gdkwindow.c
++++ b/gdk/gdkwindow.c
+@@ -437,6 +437,7 @@ static GQuark quark_pointer_window = 0;
+ #ifdef GDK_WINDOWING_QUARTZ
+ static GQuark quark_last_scroll_pointer_window = 0;
+ static GQuark quark_last_scroll_event_window = 0;
++static GQuark quark_start_phase_seen = 0;
+ #endif /* GDK_WINDOWING_QUARTZ */
+ 
+ static void
+@@ -487,6 +488,8 @@ gdk_window_class_init (GdkWindowObjectClass *klass)
+       g_quark_from_static_string ("gtk-last-scroll-pointer-window");
+   quark_last_scroll_event_window =
+       g_quark_from_static_string ("gtk-last-scroll-event-window");
++  quark_start_phase_seen =
++      g_quark_from_static_string ("gtk-start-phase-seen");
+ #endif /* GDK_WINDOWING_QUARTZ */
+ 
+ 
+@@ -10843,12 +10846,25 @@ proxy_button_event (GdkEvent *source_event,
+    */
+   if (type == GDK_SCROLL && source_event->scroll.has_deltas)
+     {
++      gboolean start_phase_seen =
++          GPOINTER_TO_INT (g_object_get_qdata (G_OBJECT (display),
++                                               quark_start_phase_seen));
++
+       if (source_event->scroll.phase == GDK_EVENT_SCROLL_PHASE_START)
+         {
+           set_last_scroll_event_windows (display, pointer_window, event_win);
++
++          g_object_set_qdata (G_OBJECT (display),
++                              quark_start_phase_seen, GINT_TO_POINTER (1));
+         }
+-      else
++      else if (start_phase_seen)
+         {
++          /* If a start phase was ever observed, override the pointer
++           * and event windows. If this state was *never* observed, the
++           * device is not capable of detecting gestures (and likely neither
++           * of momentum scrolling) and we should not override the pointer
++           * and event windows, because they will always be NULL.
++           */
+           pointer_window = g_object_get_qdata (G_OBJECT (display),
+                                                quark_last_scroll_pointer_window);
+           event_win = g_object_get_qdata (G_OBJECT (display),
+-- 
+1.7.4.4
+
