@@ -21,13 +21,14 @@ class IronLanguagesPackage(GitHubTarballPackage):
 	def install_wrapper_scripts (self, path, ironpython_or_ironruby):
 		for cmd, ext in map(os.path.splitext, os.listdir (path)):
 			if ext != '.exe': continue
-			wrapper = os.path.join (self.prefix, 'bin', cmd)
+			wrapper = os.path.join (self.prefix, "bin", cmd)
 			with open(wrapper, "w") as output:
 				output.write ("#!/bin/sh\n")
-				output.write ("exec {0}/bin/mono {0}/lib/{1}/bin/{2}.exe \"$@\"\n".format (self.prefix, ironpython_or_ironruby, cmd))
+				output.write ("exec {0}/bin/mono {0}/lib/{1}/{2}.exe \"$@\"\n".format (self.prefix, ironpython_or_ironruby, cmd))
 			os.chmod (wrapper, 0755)
 
 	def install (self):
+		Package.install (self)
 		self.install_wrapper_scripts (self.ironruby, 'ironruby')
 		self.install_wrapper_scripts (self.ironpython, 'ironpython')
 		self.sh ("cp -Rp %{ironruby} %{prefix}/lib/ironruby/")
