@@ -28,9 +28,13 @@ class IronLanguagesPackage(GitHubTarballPackage):
 			os.chmod (wrapper, 0755)
 
 	def install (self):
-		self.sh ("cp -Rp %{ironruby} %{prefix}/lib/ironruby/")
-		self.sh ("cp -Rp %{ironpython} %{prefix}/lib/ironpython/")
+
+		self.sh ("mkdir -p %{prefix}/lib/ironruby/")
+		self.sh ("cp -R %{ironruby} %{prefix}/lib/ironruby/")
 		self.install_wrapper_scripts (self.ironruby, 'ironruby')
+
+		self.sh ("mkdir -p %{prefix}/lib/ironpython/")
+		self.sh ("cp -R %{ironpython} %{prefix}/lib/ironpython/")
 		self.install_wrapper_scripts (self.ironpython, 'ironpython')
 
 IronLanguagesPackage()
