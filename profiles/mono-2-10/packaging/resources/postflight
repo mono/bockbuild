@@ -3,6 +3,15 @@
 FW=/Library/Frameworks/Mono.framework
 FW_CURRENT=${FW}/Versions/Current
 
+# Remove /usr/bin/pkg-config if it's a symlink to the Mono-installed one
+PKG_CONFIG_LINK="/usr/bin/pkg-config"
+if [ -L $PKG_CONFIG_LINK ]; then
+    location=`readlink $PKG_CONFIG_LINK`
+    case "$location" in
+    *Mono.framework*) rm $PKG_CONFIG_LINK;;
+    esac
+fi
+
 WHITELIST=$(cat "$(dirname "$0")/whitelist.txt")
 
 if [ -d ${FW}/Commands ]; then
