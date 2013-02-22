@@ -3,7 +3,7 @@ import os
 class MonoMasterPackage(Package):
 
 	def __init__(self):
-		Package.__init__(self, 'mono', '3.0.4',
+		Package.__init__(self, 'mono', '3.0.5',
 			sources = ['git://github.com/mono/mono'],
 			revision = os.getenv('MONO_BUILD_REVISION'),
 			configure_flags = [
