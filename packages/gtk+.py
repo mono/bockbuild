@@ -54,7 +54,7 @@ class GtkPackage (GnomeGitPackage):
 				'patches/gtk-scrolling/fix-overlay-scrollbar-grab.diff',
 				'patches/gtk-scrolling/fix-mouse-events-1.patch',
 				'patches/gtk-scrolling/fix-mouse-events-2.patch',
-
+				'patches/gtk-scrolling/fix-mouse-events-3.patch',
 
 				# make new modifier behviour opt-in, so as not to break old versions of MonoDevelop
 				'patches/gdk-quartz-set-fix-modifiers-hack-v3.patch',
