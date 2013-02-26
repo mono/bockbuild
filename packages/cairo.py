@@ -2,7 +2,8 @@ class CairoPackage (CairoGraphicsPackage):
 	def __init__ (self):
 		Package.__init__ (self, 'cairo', '1.10.2')
 		self.sources.extend ([
-			'patches/cairo-lion.patch'
+			'patches/cairo-lion.patch',
+			'patches/cairo-cglayer.patch',
 		])
 
 	def prep (self):
