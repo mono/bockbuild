@@ -1,3 +1,4 @@
+import hashlib
 import os
 import sys
 import shutil
@@ -50,6 +51,17 @@ class Package:
 			for k, v in override_properties.iteritems ():
 				self.__dict__[k] = v
 
+	# From http://stackoverflow.com/a/11143944
+	def md5sum (self, f):
+		md5 = hashlib.md5 ()
+		with open (f,'rb') as f:
+			for chunk in iter (lambda: f.read (128 * md5.block_size), b''):
+				md5.update (chunk)
+			return md5.digest ()
+
+	def cache_is_valid (self, source, cache):
+		os.path.isfile (source) and os.path.isfile (cache) and (self.md5sum (source) == self.md5sum (cache))
+
 	def _fetch_sources (self, package_dir, package_dest_dir):
 		if self.sources == None:
 			return
@@ -64,7 +76,7 @@ class Package:
 			local_dest_file = os.path.join (package_dest_dir, local_source_file)
 			local_sources.append (local_dest_file)
 
-			if os.path.isfile (local_dest_file):
+			if self.cache_is_valid (local_source, local_dest_file):
 				log (1, 'using cached source: %s' % local_dest_file)
 			elif os.path.isfile (local_source):
 				log (1, 'copying local source: %s' % local_source_file)
