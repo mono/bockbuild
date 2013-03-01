@@ -79,6 +79,9 @@ class GtkPackage (GnomeGitPackage):
 
 				# Bug 3457 - [GTK] Support more standard keyboard shortcuts in dialogs
 				'https://bugzilla.xamarin.com/attachment.cgi?id=2240',
+
+				# Bug  10256 - Mac window manipulation tools get confused by Xamarin Studio
+				'https://bugzilla.xamarin.com/attachment.cgi?id=3465',
 			])
 
 	def prep (self):
