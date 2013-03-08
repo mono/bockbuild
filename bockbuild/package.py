@@ -276,18 +276,9 @@ GnuXzPackage.default_sources = [
         'http://ftp.gnu.org/gnu/%{name}/%{name}-%{version}.tar.xz'
 ]
 
-class CairoGraphicsPackage (Package):
-	def __init__ (self, name, version, configure_flags = None,
-		sources = None, override_properties = { 'configure': './autogen.sh --prefix="%{prefix}"' }):
-
-		Package.__init__ (self, name, version,
-			configure_flags = configure_flags,
-			sources = sources,
-			override_properties = override_properties)
-
+class CairoGraphicsPackage (Package): pass
 CairoGraphicsPackage.default_sources = [
-#	'http://cairographics.org/releases/%{name}-%{version}.tar.gz'
-	'http://cgit.freedesktop.org/%{name}/snapshot/%{name}-%{version}.tar.gz'
+	'http://cairographics.org/releases/%{name}-%{version}.tar.gz'
 ]
 
 class CairoGraphicsXzPackage (Package): pass
@@ -310,19 +301,9 @@ SourceForgePackage.default_sources = [
 	'http://downloads.sourceforge.net/sourceforge/%{project}/%{name}-%{version}.tar.gz'
 ]
 
-class FreeDesktopPackage (ProjectPackage):
-	def __init__ (self, project, name, version, configure_flags = None,
-		sources = None, override_properties = { 'configure': './autogen.sh --prefix="%{prefix}"' }):
-
-		self.project = project
-		Package.__init__ (self, name, version,
-			configure_flags = configure_flags,
-			sources = sources,
-			override_properties = override_properties)
-
+class FreeDesktopPackage (ProjectPackage): pass
 FreeDesktopPackage.default_sources = [
-#	'http://%{project}.freedesktop.org/releases/%{name}-%{version}.tar.gz'
-	'http://cgit.freedesktop.org/%{name}/snapshot/%{name}-%{version}.tar.gz'
+	'http://%{project}.freedesktop.org/releases/%{name}-%{version}.tar.gz'
 ]
 
 class GitHubTarballPackage (Package):
