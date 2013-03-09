@@ -25,7 +25,7 @@ class MonoMasterPackage(Package):
 					'patches/mcs-pkgconfig.patch'
 					])
 
-		self.configure = './autogen.sh'
+		self.configure = 'CFLAGS=-O2 ./autogen.sh'
 
 	def prep (self):
 		Package.prep (self)
