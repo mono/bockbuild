@@ -1,7 +1,7 @@
-From c2b1f7b8aa2ffbb9a1a8b7fc65636d8c0a4db5cd Mon Sep 17 00:00:00 2001
+From b1e93a5a5db15fa84436acf6c2a0a5376490faaa Mon Sep 17 00:00:00 2001
 From: Michael Natterer <mitch@gimp.org>
 Date: Tue, 12 Feb 2013 13:22:39 +0100
-Subject: [PATCH 45/48] tests: add a notebook to testnsview.c
+Subject: [PATCH 45/52] tests: add a notebook to testnsview.c
 
 ---
  tests/testnsview.c |   17 +++++++++++++++++

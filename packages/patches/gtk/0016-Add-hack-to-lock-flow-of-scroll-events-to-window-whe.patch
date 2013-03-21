@@ -1,7 +1,7 @@
-From 1287a04e1fd191fc95f9e2155d85ff9bf673a6ea Mon Sep 17 00:00:00 2001
+From 0adbf5848cfa40b71e97e20119ab7d05f3931ca7 Mon Sep 17 00:00:00 2001
 From: Kristian Rietveld <kris@lanedo.com>
 Date: Fri, 28 Sep 2012 08:24:05 +0200
-Subject: [PATCH 16/48] Add hack to lock flow of scroll events to window where
+Subject: [PATCH 16/52] Add hack to lock flow of scroll events to window where
  scroll started
 
 A bit evil but there is probably no other way, because this is very

@@ -1,7 +1,7 @@
-From 79762900d334f4873b90dd44571ed9a70309b736 Mon Sep 17 00:00:00 2001
+From 6ca6ca597abe8529f1362266560448fb902eed13 Mon Sep 17 00:00:00 2001
 From: Michael Natterer <mitch@gimp.org>
 Date: Thu, 8 Nov 2012 15:54:13 +0100
-Subject: [PATCH 26/48] Reclamp unclamped adjustments after resize
+Subject: [PATCH 26/52] Reclamp unclamped adjustments after resize
 
 ---
  gtk/gtkscrolledwindow.c |   28 ++++++++++++++++++++++++++++

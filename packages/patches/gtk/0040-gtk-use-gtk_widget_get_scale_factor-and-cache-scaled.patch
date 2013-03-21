@@ -1,7 +1,7 @@
-From 6e8b199e3a9fcb86edc772f69d3aada034fbcaea Mon Sep 17 00:00:00 2001
+From 2a47eaea04cf3c3bc8e4c3ff40e79a0c5dc7fec6 Mon Sep 17 00:00:00 2001
 From: Michael Natterer <mitch@gimp.org>
 Date: Fri, 15 Feb 2013 15:42:46 +0100
-Subject: [PATCH 40/48] gtk: use gtk_widget_get_scale_factor(), and cache
+Subject: [PATCH 40/52] gtk: use gtk_widget_get_scale_factor(), and cache
  scaled icons
 
 ---
@@ -25,10 +25,10 @@ index 2985410..9ba0171 100644
      {
        g_warning ("Invalid icon size %u\n", priv->stock_size);
 diff --git a/gtk/gtkentry.c b/gtk/gtkentry.c
-index daaaa46..2ad7541 100644
+index b24641d..80cbb67 100644
 --- a/gtk/gtkentry.c
 +++ b/gtk/gtkentry.c
-@@ -6535,10 +6535,10 @@ gtk_entry_ensure_pixbuf (GtkEntry             *entry,
+@@ -6540,10 +6540,10 @@ gtk_entry_ensure_pixbuf (GtkEntry             *entry,
            
            gtk_icon_size_lookup_scaled (settings,
                                         GTK_ICON_SIZE_MENU,
@@ -41,7 +41,7 @@ index daaaa46..2ad7541 100644
                     width, height, icon_info->icon_name);
  
            icon_info->pixbuf = gtk_icon_theme_load_icon (icon_theme,
-@@ -6568,7 +6568,7 @@ gtk_entry_ensure_pixbuf (GtkEntry             *entry,
+@@ -6573,7 +6573,7 @@ gtk_entry_ensure_pixbuf (GtkEntry             *entry,
  
            gtk_icon_size_lookup_scaled (settings,
                                         GTK_ICON_SIZE_MENU,

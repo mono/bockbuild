@@ -1,6 +1,6 @@
 class GtkPackage (GnomeGitPackage):
 	def __init__ (self):
-		GnomeGitPackage.__init__ (self, 'gtk+', '2.24', '0004fe6cd44bf1033f606c0f9fe9a3784eeb4e73',
+		GnomeGitPackage.__init__ (self, 'gtk+', '2.24', 'e11b1943c7f728c6fdf5ef483db8f9f1d05b4306',
 			configure_flags = [
 				'--with-gdktarget=%{gdk_target}',
 #				'--disable-cups',
@@ -63,6 +63,10 @@ class GtkPackage (GnomeGitPackage):
 				'patches/gtk/0046-gtk-connect-GtkNSView-to-move-native-children-and-re.patch',
 				'patches/gtk/0047-tests-add-a-scrolled-window-test-widget-to-testnsvie.patch',
 				'patches/gtk/0048-gtknsview-clip-drawRect-to-a-parent-GtkViewport-s-wi.patch',
+				'patches/gtk/0049-gtk-clip-NSViews-to-the-scrolled-window-s-overshoot_.patch',
+				'patches/gtk/0050-gtk-implement-clipping-to-multiple-parent-viewports-.patch',
+				'patches/gtk/0051-gtk-first-attempt-to-also-clip-NSWindow-s-field-edit.patch',
+				'patches/gtk/0052-gtk-also-clip-the-NSView-s-subviews.patch',
 
 				# make new modifier behviour opt-in, so as not to break old versions of MonoDevelop
 				'patches/gdk-quartz-set-fix-modifiers-hack-v3.patch',
