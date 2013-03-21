@@ -1,6 +1,6 @@
 #!/usr/bin/python -B -u
 
-import fileinput, glob, os, pprint, re, sys, tempfile, shutil, string
+import fileinput, glob, itertools, os, re, shutil, string, sys, tempfile
 
 sys.path.append ('../..')
 
@@ -157,22 +157,46 @@ class MonoReleaseProfile (DarwinProfile, MonoReleasePackages):
 					print "Generating dsyms for %s" % f
 					backtick ('dsymutil "%s"' % f)
 
-	def fix_libMonoPosixHelper (self):
-		config = os.path.join (self.prefix, "etc", "mono", "config")
-		install_root = os.path.join (self.MONO_ROOT, "Versions", self.RELEASE_VERSION)
-		temp = config + ".tmp"
+
+	def install_root(self):
+		return os.path.join(self.MONO_ROOT, "Versions", self.RELEASE_VERSION)
+
+	def fix_line(self, line, matcher):
+		def insert_install_root(matches):
+			root = self.install_root()
+			captures = matches.groupdict()
+			return 'target="%s"' % os.path.join(root, "lib", captures["lib"])
+
+		if matcher(line):
+			pattern = r'target="(?P<lib>.+\.dylib)"'
+			result = re.sub(pattern, insert_install_root, line)
+			return result
+		else:
+			return line
+
+	def fix_dllmap(self, config, matcher):
+		handle, temp = tempfile.mkstemp()
 		with open(config) as c:
 			with open(temp, "w") as output:
 				for line in c:
-					if re.search(r'MonoPosixHelper', line):
-						output.write (line.replace ('libMonoPosixHelper.dylib', '%s/lib/libMonoPosixHelper.dylib' % install_root))
-					else:
-						output.write(line)
+					output.write(self.fix_line(line, matcher))
 		os.rename(temp, config)
+
+	def fix_libMonoPosixHelper(self):
+		config = os.path.join(self.prefix, "etc", "mono", "config")
+		self.fix_dllmap(config, lambda line: "libMonoPosixHelper.dylib" in line)
+
+	def fix_gtksharp_configs(self):
+		libs = ['glib-sharp', 'atk-sharp', 'gtk-dotnet', 'pango-sharp', 'gtk-sharp', 'glade-sharp', 'gdk-sharp']
+		confs = itertools.chain(*[glob.glob(os.path.join(self.install_root(), "lib", "mono", "gac", x, "*", "*.dll.config")) for x in libs])
+		for c in confs:
+			self.fix_dllmap(c, lambda line: "dllmap" in line)
+
 
 	# THIS IS THE MAIN METHOD FOR MAKING A PACKAGE
 	def package (self):
-		self.fix_libMonoPosixHelper ()
+		self.fix_libMonoPosixHelper()
+		self.fix_gtksharp_configs()
 		self.generate_dsym ()
 		# must apply blacklist first here because PackageMaker follows symlinks :(
 		backtick (os.path.join (self.packaging_dir, 'mdk_blacklist.sh') + ' ' + self.release_root)
