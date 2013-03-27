@@ -15,6 +15,10 @@ class PangoPackage (GnomeXzPackage):
 			# https://bugzilla.gnome.org/show_bug.cgi?id=321419
 			'patches/pango-relative-config-file.patch',
 
+			# BXC 10257 - Characters outside the Basic Multilingual Plane don't render correctly
+			# https://bugzilla.xamarin.com/show_bug.cgi?id=10257
+			'patches/pango-coretext-astral-plane-1.patch',
+			'patches/pango-coretext-astral-plane-2.patch',
 		])
 
 	def prep (self):

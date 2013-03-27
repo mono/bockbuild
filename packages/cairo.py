@@ -2,6 +2,7 @@ class CairoPackage (CairoGraphicsXzPackage):
 	def __init__ (self):
 		Package.__init__ (self, 'cairo', '1.12.14')
 		self.sources.extend ([
+			'patches/cairo-fix-color-bitmap-fonts.patch',
 #			'patches/cairo-cglayer.patch',
 		])
 
