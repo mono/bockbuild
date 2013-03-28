@@ -108,6 +108,17 @@ class Package:
 		source_cache = os.getenv('BOCKBUILD_SOURCE_CACHE')
 		return source_cache or tempfile.mkdtemp ()
 
+	def is_successful_build(self, build_success_file, package_dir):
+		def is_newer(success_file):
+			mtime = os.path.getmtime(success_file)
+			for s in self.sources:
+				src = os.path.join(package_dir, s)
+				if os.path.isfile(src) and os.path.getmtime(src) > mtime:
+						return False
+			return True
+
+		return os.path.exists (build_success_file) and is_newer(build_success_file)
+
 	def start_build (self):
 		Package.last_instance = None
 
@@ -125,7 +136,7 @@ class Package:
 		if os.path.exists(old_package_build_dir):
 			shutil.rmtree (os.path.join(profile.build_root, namever))
 
-		if os.path.exists (build_success_file):
+		if self.is_successful_build(build_success_file, package_dir):
 			print 'Skipping %s - already built' % namever
 			if not os.path.exists (install_success_file):
 				print 'Installing %s' % namever
