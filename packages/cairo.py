@@ -1,7 +1,8 @@
 class CairoPackage (CairoGraphicsXzPackage):
 	def __init__ (self):
-		CairoGraphicsPackage.__init__ (self, 'cairo', '1.12.14')
+		CairoGraphicsXzPackage.__init__ (self, 'cairo', '1.12.14')
 		self.sources.extend ([
+			'patches/cairo-quartz-crash.patch',
 			'patches/cairo-fix-color-bitmap-fonts.patch',
 #			'patches/cairo-cglayer.patch',
 		])
@@ -21,6 +22,8 @@ class CairoPackage (CairoGraphicsXzPackage):
 		if Package.profile.name == 'darwin':
 			self.configure_flags.extend ([
 				'--enable-quartz',
+				'--enable-quartz-font',
+				'--enable-quartz-image',
 				'--disable-xlib',
 				'--without-x'
 			])
