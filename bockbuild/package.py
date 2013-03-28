@@ -53,6 +53,10 @@ class Package:
 				self.__dict__[k] = v
 
 	def _fetch_sources (self, package_dir, package_dest_dir):
+
+		def get_local_filename(source):
+			return source if os.path.isfile(source) else os.path.join (package_dest_dir, os.path.basename (source))
+
 		if self.sources == None:
 			return
 
@@ -63,7 +67,7 @@ class Package:
 		for source in self.sources:
 			local_source = os.path.join (package_dir, source)
 			local_source_file = os.path.basename (local_source)
-			local_dest_file = os.path.join (package_dest_dir, local_source_file)
+			local_dest_file = get_local_filename (local_source)
 			local_sources.append (local_dest_file)
 
 			if os.path.isfile(local_dest_file):
