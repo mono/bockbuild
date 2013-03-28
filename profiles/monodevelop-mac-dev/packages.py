@@ -11,7 +11,8 @@ class MonoDevelopMacDevPackages:
 			'automake.py',
 			'libtool.py',
 			'gettext.py',
-			'pkg-config.py'
+			'pkg-config.py',
+			'nasm.py'
 		])
 
 		#needed to autogen gtk+
@@ -23,7 +24,7 @@ class MonoDevelopMacDevPackages:
 		# Base Libraries
 		self.packages.extend ([
 			'libpng.py',
-			'libjpeg.py',
+			'libjpeg-turbo.py',
 			'libtiff.py',
 			'libxml2.py',
 			'freetype.py',

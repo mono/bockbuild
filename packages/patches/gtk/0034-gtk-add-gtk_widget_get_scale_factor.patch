@@ -1,7 +1,7 @@
-From a788f65aa2987d48426a0da237b4310e90c583a1 Mon Sep 17 00:00:00 2001
+From 6fa0ddf63726ed72ff54591cdb8cdc870834b64c Mon Sep 17 00:00:00 2001
 From: Michael Natterer <mitch@gimp.org>
 Date: Fri, 15 Feb 2013 15:35:13 +0100
-Subject: [PATCH 34/48] gtk: add gtk_widget_get_scale_factor()
+Subject: [PATCH 34/52] gtk: add gtk_widget_get_scale_factor()
 
 ---
  gtk/gtkwidget.c |   20 ++++++++++++++++++++

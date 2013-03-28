@@ -1,7 +1,7 @@
-From de23722b15830d9dd2658b59b3019912e8330d33 Mon Sep 17 00:00:00 2001
+From fad58fab2d93c4e2d09980ef159efc0cc793f925 Mon Sep 17 00:00:00 2001
 From: Michael Natterer <mitch@gimp.org>
 Date: Fri, 18 Jan 2013 15:47:29 +0100
-Subject: [PATCH 33/48] quartz: add gdk_screen_ and
+Subject: [PATCH 33/52] quartz: add gdk_screen_ and
  gdk_window_get_scale_factor()
 
 which return 1.0 normally and 2.0 on retina displays.
@@ -132,10 +132,10 @@ index 4bb573b..e6f0c44 100644
  gdk_screen_make_display_name (GdkScreen *screen)
  {
 diff --git a/gdk/quartz/gdkwindow-quartz.c b/gdk/quartz/gdkwindow-quartz.c
-index a59c433..97f2e90 100644
+index 537222c..14ff574 100644
 --- a/gdk/quartz/gdkwindow-quartz.c
 +++ b/gdk/quartz/gdkwindow-quartz.c
-@@ -3194,6 +3194,27 @@ _gdk_windowing_window_get_input_shape (GdkWindow *window)
+@@ -3197,6 +3197,27 @@ _gdk_windowing_window_get_input_shape (GdkWindow *window)
    return NULL;
  }
  
@@ -163,7 +163,7 @@ index a59c433..97f2e90 100644
  static void
  gdk_window_impl_iface_init (GdkWindowImplIface *iface)
  {
-@@ -3222,4 +3243,5 @@ gdk_window_impl_iface_init (GdkWindowImplIface *iface)
+@@ -3225,4 +3246,5 @@ gdk_window_impl_iface_init (GdkWindowImplIface *iface)
    iface->destroy = _gdk_quartz_window_destroy;
    iface->input_window_destroy = _gdk_input_window_destroy;
    iface->input_window_crossing = _gdk_input_window_crossing;

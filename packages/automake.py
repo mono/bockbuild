@@ -1,1 +1,1 @@
-GnuPackage ('automake', '1.11.5')
+GnuPackage ('automake', '1.12.2')

@@ -1,7 +1,7 @@
-From 0ff8172ebce20d43f5a06fe459b84fd890cf1416 Mon Sep 17 00:00:00 2001
+From 18b305dbdb5396211f0db4fb7e9f7bc812ad1a0e Mon Sep 17 00:00:00 2001
 From: Michael Natterer <mitch@gimp.org>
 Date: Fri, 23 Nov 2012 15:24:36 +0100
-Subject: [PATCH 01/48] Add gdk_screen_get_monitor_workarea() and use it all
+Subject: [PATCH 01/52] Add gdk_screen_get_monitor_workarea() and use it all
  over the place
 
 ---
@@ -94,7 +94,7 @@ index 796fcb5..4bb573b 100644
  gdk_screen_make_display_name (GdkScreen *screen)
  {
 diff --git a/gtk/gtkcombobox.c b/gtk/gtkcombobox.c
-index be968d6..e1541c4 100644
+index dc912a3..d997d0d 100644
 --- a/gtk/gtkcombobox.c
 +++ b/gtk/gtkcombobox.c
 @@ -1667,7 +1667,7 @@ gtk_combo_box_menu_position_below (GtkMenu  *menu,
@@ -116,10 +116,10 @@ index be968d6..e1541c4 100644
    if (*x < monitor.x)
      *x = monitor.x;
 diff --git a/gtk/gtkentry.c b/gtk/gtkentry.c
-index aaeb87c..165840d 100644
+index 2c9c5a4..71dc1df 100644
 --- a/gtk/gtkentry.c
 +++ b/gtk/gtkentry.c
-@@ -8631,7 +8631,7 @@ popup_position_func (GtkMenu   *menu,
+@@ -8636,7 +8636,7 @@ popup_position_func (GtkMenu   *menu,
      monitor_num = 0;
    gtk_menu_set_monitor (menu, monitor_num);
  
@@ -142,7 +142,7 @@ index 2fa7b56..a8deace 100644
    
  
 diff --git a/gtk/gtkfilechooserdefault.c b/gtk/gtkfilechooserdefault.c
-index 57dfa27..f07f0c2 100644
+index dc7b86b..04414e7 100644
 --- a/gtk/gtkfilechooserdefault.c
 +++ b/gtk/gtkfilechooserdefault.c
 @@ -4099,7 +4099,7 @@ popup_position_func (GtkMenu   *menu,

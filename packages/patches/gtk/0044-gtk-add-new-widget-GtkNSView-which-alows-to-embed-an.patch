@@ -1,7 +1,7 @@
-From c53c183b7551a280bbd6df084403d48a0f30389c Mon Sep 17 00:00:00 2001
+From 287286941559cc0801f6cbded0b90c93b66b82df Mon Sep 17 00:00:00 2001
 From: Michael Natterer <mitch@lanedo.com>
 Date: Tue, 29 Nov 2011 16:09:31 +0100
-Subject: [PATCH 44/48] gtk: add new widget GtkNSView which alows to embed an
+Subject: [PATCH 44/52] gtk: add new widget GtkNSView which alows to embed an
  NSView
 
 ---

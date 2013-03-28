@@ -1,7 +1,7 @@
-From 6c55d32bdc562cbac91642ae4511194d5b328817 Mon Sep 17 00:00:00 2001
+From 39580e6ca64b3a2327f44e4397190bd82a2bf188 Mon Sep 17 00:00:00 2001
 From: Michael Natterer <mitch@gimp.org>
 Date: Fri, 23 Mar 2012 12:22:31 +0100
-Subject: [PATCH 41/48] quartz: return events on embedded foreign NSViews back
+Subject: [PATCH 41/52] quartz: return events on embedded foreign NSViews back
  to Cocoa
 
 ---

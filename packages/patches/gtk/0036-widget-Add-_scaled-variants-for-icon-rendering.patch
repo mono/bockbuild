@@ -1,7 +1,7 @@
-From 0fb0c888e002a9c2b0adb247322182f61ffe9742 Mon Sep 17 00:00:00 2001
+From 358edd974708b93d0bb80378972307f0cb73d937 Mon Sep 17 00:00:00 2001
 From: Carlos Garnacho <carlosg@gnome.org>
 Date: Tue, 12 Feb 2013 14:01:15 +0100
-Subject: [PATCH 36/48] widget: Add _scaled() variants for icon rendering
+Subject: [PATCH 36/52] widget: Add _scaled() variants for icon rendering
 
 Likewise to the iconfactory changes, this API allows to
 deal with stock icons at sizes that are suitable for

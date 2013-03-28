@@ -1,7 +1,7 @@
-From f17f886015ce94cdb912243cd22bc4a8b4c34b00 Mon Sep 17 00:00:00 2001
+From 58e91986af1f0ffbbeba696f05b92876088fc9b0 Mon Sep 17 00:00:00 2001
 From: Michael Natterer <mitch@gimp.org>
 Date: Fri, 1 Mar 2013 12:39:41 +0100
-Subject: [PATCH 48/48] gtknsview: clip drawRect to a parent GtkViewport's
+Subject: [PATCH 48/52] gtknsview: clip drawRect to a parent GtkViewport's
  window
 
 not quite perfect yet, but getting there...

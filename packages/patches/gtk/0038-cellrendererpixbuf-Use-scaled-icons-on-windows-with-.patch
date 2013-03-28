@@ -1,7 +1,7 @@
-From 5d2286e5bc6d79f46ac9cb4d206c540d181a0c24 Mon Sep 17 00:00:00 2001
+From 2969752e2cccb292f5950632f3c902a4db17391d Mon Sep 17 00:00:00 2001
 From: Carlos Garnacho <carlosg@gnome.org>
 Date: Tue, 12 Feb 2013 14:04:09 +0100
-Subject: [PATCH 38/48] cellrendererpixbuf: Use scaled icons on windows with a
+Subject: [PATCH 38/52] cellrendererpixbuf: Use scaled icons on windows with a
  scale factor
 
 ---

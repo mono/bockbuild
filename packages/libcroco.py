@@ -1,2 +1,5 @@
-GnomePackage ('libcroco', version_major = '0.6', version_minor = '3',
-	configure_flags = [ '' ])
+GnomeXzPackage ('libcroco', version_major = '0.6', version_minor = '8', 
+	configure_flags = [
+		'--host=i386-apple-darwin',
+		'--disable-Bsymbolic'
+	])

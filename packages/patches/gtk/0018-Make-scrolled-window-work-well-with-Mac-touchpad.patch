@@ -1,7 +1,7 @@
-From 878771026ad2e85768ddde59de88e4728318a4a0 Mon Sep 17 00:00:00 2001
+From 78b58ee608559d2abfa79980c39361a0b78d8aef Mon Sep 17 00:00:00 2001
 From: Kristian Rietveld <kris@lanedo.com>
 Date: Mon, 3 Sep 2012 10:45:13 +0200
-Subject: [PATCH 18/48] Make scrolled window work well with Mac touchpad
+Subject: [PATCH 18/52] Make scrolled window work well with Mac touchpad
 
 Modify the scrolled window code to work with a Mac touchpad as you
 would expect. When precise deltas are received from the Mac touchpad,
