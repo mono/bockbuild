@@ -104,16 +104,8 @@ class Package:
 
 		self.sources = local_sources
 
-	def package_root_dir (self, build_root = False):
-		source_cache = os.getenv('BOCKBUILD_SOURCE_CACHE')
-		if source_cache != None:
-			print 'Using BOCKBUILD_SOURCE_CACHE = %s' % source_cache
-		return source_cache or build_root or Package.profile.build_root
-
 	def sources_dir (self):
 		source_cache = os.getenv('BOCKBUILD_SOURCE_CACHE')
-		if source_cache != None:
-			print 'Using BOCKBUILD_SOURCE_CACHE = %s' % source_cache
 		return source_cache or tempfile.mkdtemp ()
 
 	def start_build (self):

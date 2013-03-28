@@ -133,6 +133,10 @@ class Profile:
 		for k in self.env.get_names ():
 			log (1, '%s = %s' % (k, os.getenv (k)))
 
+		if os.getenv('BOCKBUILD_SOURCE_CACHE') != None:
+			k = 'BOCKBUILD_SOURCE_CACHE'
+			log (1, '%s = %s' % (k, os.getenv (k)))
+
 		Package.profile = self
 
 		if self.cmd_options.do_build or self.cmd_options.show_source_paths:
