@@ -1,1 +1,1 @@
-GnuPackage ('autoconf', '2.68')
+GnuPackage ('autoconf', '2.69')
