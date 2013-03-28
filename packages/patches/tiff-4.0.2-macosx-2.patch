@@ -1,7 +1,7 @@
 diff --git a/libs/tiff-4.0.2/tools/tiffgt.c b/libs/tiff-4.0.2/tools/tiffgt.c
 index de42039..4c8e509 100644
---- a/libs/tiff-4.0.2/tools/tiffgt.c
-+++ b/libs/tiff-4.0.2/tools/tiffgt.c
+--- a/tools/tiffgt.c
++++ b/tools/tiffgt.c
 @@ -31,11 +31,16 @@
  #include <string.h>
  #include <unistd.h>
