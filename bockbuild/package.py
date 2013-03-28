@@ -2,6 +2,7 @@ import hashlib
 import os
 import sys
 import shutil
+import tempfile
 from urllib import FancyURLopener
 from util.util import *
 
@@ -51,17 +52,6 @@ class Package:
 			for k, v in override_properties.iteritems ():
 				self.__dict__[k] = v
 
-	# From http://stackoverflow.com/a/11143944
-	def md5sum (self, f):
-		md5 = hashlib.md5 ()
-		with open (f,'rb') as f:
-			for chunk in iter (lambda: f.read (128 * md5.block_size), b''):
-				md5.update (chunk)
-			return md5.digest ()
-
-	def cache_is_valid (self, source, cache):
-		os.path.isfile (source) and os.path.isfile (cache) and (self.md5sum (source) == self.md5sum (cache))
-
 	def _fetch_sources (self, package_dir, package_dest_dir):
 		if self.sources == None:
 			return
@@ -76,18 +66,18 @@ class Package:
 			local_dest_file = os.path.join (package_dest_dir, local_source_file)
 			local_sources.append (local_dest_file)
 
-			if self.cache_is_valid (local_source, local_dest_file):
+			if os.path.isfile(local_dest_file):
 				log (1, 'using cached source: %s' % local_dest_file)
 			elif os.path.isfile (local_source):
 				log (1, 'copying local source: %s' % local_source_file)
 				shutil.copy2 (local_source, local_dest_file)
 			elif source.startswith (('http://', 'https://', 'ftp://')):
 				log (1, 'downloading remote source: %s' % source)
-				FancyURLopener ().retrieve (source, local_dest_file)
+				filename, message = FancyURLopener ().retrieve (source, local_dest_file)
+
 			elif source.startswith (('git://','file://', 'ssh://')) or source.endswith ('.git'):
 				log (1, 'cloning or updating git repository: %s' % source)
-				local_dest_file = os.path.join (package_dest_dir,
-					'%s-%s.git' % (self.name, self.version))
+				local_dest_file = os.path.join (package_dest_dir, '%s-%s.git' % (self.name, self.version))
 				local_sources.pop ()
 				local_sources.append (local_dest_file)
 				pwd = os.getcwd ()
@@ -116,8 +106,11 @@ class Package:
 			print 'Using BOCKBUILD_SOURCE_CACHE = %s' % source_cache
 		return source_cache or build_root or Package.profile.build_root
 
-	def package_dest_dir (self, build_root = False):
-		return os.path.join (self.package_root_dir (build_root or Package.profile.build_root), '%s-%s' % (self.name, self.version))
+	def sources_dir (self):
+		source_cache = os.getenv('BOCKBUILD_SOURCE_CACHE')
+		if source_cache != None:
+			print 'Using BOCKBUILD_SOURCE_CACHE = %s' % source_cache
+		return source_cache or tempfile.mkdtemp ()
 
 	def start_build (self):
 		Package.last_instance = None
@@ -127,9 +120,14 @@ class Package:
 		profile = Package.profile
 		namever = '%s-%s' % (self.name, self.version)
 		package_dir = os.path.dirname (os.path.realpath (self._path))
-		package_build_dir = os.path.join (os.path.join (profile.build_root, namever), '_build')
+		package_build_dir = profile.build_root
 		build_success_file = os.path.join (profile.build_root, namever + '.success')
 		install_success_file = os.path.join (profile.build_root, namever + '.install')
+		sources_dir = self.sources_dir ()
+
+		old_package_build_dir = os.path.join (os.path.join (profile.build_root, namever), '_build')
+		if os.path.exists(old_package_build_dir):
+			shutil.rmtree (os.path.join(profile.build_root, namever))
 
 		if os.path.exists (build_success_file):
 			print 'Skipping %s - already built' % namever
@@ -147,13 +145,10 @@ class Package:
 			not os.path.isdir (profile.build_root):
 			os.makedirs (profile.build_root, 0755)
 
-		shutil.rmtree (package_build_dir, ignore_errors = True)
-		os.makedirs (package_build_dir)
+		# shutil.rmtree (package_build_dir, ignore_errors = True)
+		# os.makedirs (package_build_dir)
 
-		self._fetch_sources (package_dir, self.package_dest_dir (profile.build_root))
-
-		print '\n\nPATH=%s\n\n' % (os.getenv ('PATH'))
-		print '\n\nMONO VERSION: %s\n\n' % (self.sh ('mono --version'))
+		self._fetch_sources (package_dir, sources_dir)
 
 		os.chdir (package_build_dir)
 
@@ -163,6 +158,9 @@ class Package:
 
 		open (build_success_file, 'w').close ()
 		open (install_success_file, 'w').close ()
+
+		if not sources_dir == os.getenv('BOCKBUILD_SOURCE_CACHE'):
+			shutil.rmtree (sources_dir, ignore_errors = True)
 
 	def sh (self, *commands):
 		for command in commands:
@@ -196,8 +194,14 @@ class Package:
 		if os.path.isdir (os.path.join (self.sources[0], '.git')):
 			dirname = os.path.join (os.getcwd (), os.path.basename (self.sources[0]))
 			# self.sh ('cp -a "%s" "%s"' % (self.sources[0], dirname))
-			self.sh ('git clone --shared "%s" "%s"' % (self.sources[0], dirname))
-			self.cd (dirname)
+			if (os.path.exists(dirname)):
+				self.cd (dirname)
+				self.sh ('git clean -xfd')
+				self.sh ('git reset --hard HEAD')
+				self.sh ('git pull')
+			else:
+				self.sh ('git clone --shared "%s" "%s"' % (self.sources[0], dirname))
+				self.cd (dirname)
 		else:
 			root, ext = os.path.splitext (self.sources[0])
 			if ext == '.zip':
