@@ -81,7 +81,12 @@ class Package:
 
 			elif source.startswith (('git://','file://', 'ssh://')) or source.endswith ('.git'):
 				log (1, 'cloning or updating git repository: %s' % source)
-				local_dest_file = os.path.join (package_dest_dir, '%s-%s.git' % (self.name, self.version))
+				local_name = os.path.splitext(os.path.basename(source))[0]
+				if self.name == local_name:
+					local_dest_file = os.path.join (package_dest_dir, '%s-%s.git' % (self.name, self.version))
+				else:
+					local_dest_file = os.path.join (package_dest_dir, '%s-%s-%s.git' % (self.name, self.version, local_name))
+
 				local_sources.pop ()
 				local_sources.append (local_dest_file)
 				pwd = os.getcwd ()
@@ -99,7 +104,6 @@ class Package:
 				if self.revision != None:
 					self.sh ('%' + '{git} reset --hard %s' % self.revision)
 
-				self.sh ('%' + '{git} log -1')
 				os.chdir (pwd)
 
 		self.sources = local_sources
@@ -207,7 +211,7 @@ class Package:
 				self.sh ('git reset --hard HEAD')
 				self.sh ('git pull')
 			else:
-				self.sh ('git clone --shared "%s" "%s"' % (self.sources[0], dirname))
+				self.sh ('git clone --local --shared "%s" "%s"' % (self.sources[0], dirname))
 				self.cd (dirname)
 		else:
 			root, ext = os.path.splitext (self.sources[0])
