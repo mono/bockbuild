@@ -103,7 +103,7 @@ class GtkPackage (GnomeGitPackage):
 			self.install_gtkrc ()
 
 	def install_gtkrc(self):
-		origin = os.path.join (self.sources_dir (), os.path.basename (self.sources[1]))
+		origin = self.sources[1]
 		destdir = os.path.join (self.prefix, "etc", "gtk-2.0")
 		if not os.path.exists (destdir):
 			os.makedirs(destdir)
