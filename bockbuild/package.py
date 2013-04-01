@@ -101,7 +101,9 @@ class Package:
 					self.sh ('%' + '{git} clone "%s" "%s"' % (source, os.path.basename (local_dest_file)))
 				self.cd (local_dest_file)
 				self.sh ('%' + '{git} checkout %s' % self.git_branch)
-				if self.revision != None:
+
+				# A hack: self.revision can only work with self.sources[0]
+				if self.revision != None and source == self.sources[0]:
 					self.sh ('%' + '{git} reset --hard %s' % self.revision)
 
 				os.chdir (pwd)
