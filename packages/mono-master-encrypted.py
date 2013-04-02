@@ -52,9 +52,9 @@ class MonoMasterEncryptedPackage(Package):
 			if os.path.exists(mono): os.remove (mono)
 			os.symlink (full_mono, mono)
 
-		self.sh ("export QUILT_PATCHES=%s" % full_mono_extensions)
-		self.sh ("cd %s; /usr/local/bin/quilt pop -af || true" % build_root) # ignore its return code
-		self.sh ("cd %s; /usr/local/bin/quilt push -a" % build_root)
+		# ignore its return code
+		self.sh ("cd %s; export QUILT_PATCHES=%s; /usr/local/bin/quilt pop -af || true" % (build_root, full_mono_extensions))
+		self.sh ("cd %s; export QUILT_PATCHES=%s; /usr/local/bin/quilt push -a" % (build_root, full_mono_extensions))
 
 	def prep (self):
 		Package.prep (self)
