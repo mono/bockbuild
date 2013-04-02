@@ -33,7 +33,7 @@ class MonoMasterEncryptedPackage(Package):
 		# extensions
 		print self.sources
 		extension = self.sources[1]
-		build_root = os.path.join (os.getcwd (), "..")
+		build_root = os.path.abspath (os.path.join (os.getcwd (), ".."))
 		dirname = os.path.join (build_root, os.path.basename (extension))
 		if (os.path.exists(dirname)):
 			self.cd (dirname)
@@ -48,13 +48,14 @@ class MonoMasterEncryptedPackage(Package):
 
 		mono = os.path.join (build_root, "mono")
 		full_mono = os.path.join (build_root, "%s-%s" % (self.name, self.version))
+		full_mono_extensions = os.path.join (build_root, "%s-%s-%s" % (self.name, self.version, "mono-extensions"))
 		if not (os.path.exists (mono) and os.path.join (os.path.dirname (mono), os.readlink (mono)) == full_mono):
 			if os.path.exists(mono): os.remove (mono)
 			os.symlink (full_mono, mono)
 
-		self.sh ("export QUILT_PATCHES=%s-%s-mono-extensions" % (self.name, self.version))
-		self.sh ('/usr/local/bin/quilt pop -af || true') # ignore its return code
-		self.sh ('/usr/local/bin/quilt push -a')
+		self.sh ("export QUILT_PATCHES=%s" % full_mono_extensions)
+		self.sh ("cd %s; /usr/local/bin/quilt pop -af || true" % build_root) # ignore its return code
+		self.sh ("cd %s; /usr/local/bin/quilt push -a" % build_root)
 
 	def prep (self):
 		Package.prep (self)
