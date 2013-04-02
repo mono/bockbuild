@@ -29,12 +29,11 @@ class MonoMasterEncryptedPackage(Package):
 		self.make = 'make'
 
 	def apply_extensions(self):
-		# Copied from Package#prep, makes sure we get teh latest
+		# Copied from Package#prep, makes sure we get the latest
 		# extensions
-		print self.sources
 		extension = self.sources[1]
 		build_root = os.path.abspath (os.path.join (os.getcwd (), ".."))
-		dirname = os.path.join (build_root, os.path.basename (extension))
+		dirname = os.path.join (os.getcwd (), os.path.splitext (os.path.basename (self.sources[0]))[0])
 		if (os.path.exists(dirname)):
 			self.cd (dirname)
 			self.sh ('git clean -xfd')
