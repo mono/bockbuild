@@ -205,7 +205,7 @@ class Package:
 			return
 
 		if os.path.isdir (os.path.join (self.sources[0], '.git')):
-			dirname = os.path.join (os.getcwd (), os.path.splitext (os.path.basename (self.sources[0]))[0]
+			dirname = os.path.join (os.getcwd (), os.path.splitext (os.path.basename (self.sources[0])))[0]
 			# self.sh ('cp -a "%s" "%s"' % (self.sources[0], dirname))
 			if (os.path.exists(dirname)):
 				self.cd (dirname)
