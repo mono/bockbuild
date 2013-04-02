@@ -45,8 +45,10 @@ class MonoMasterEncryptedPackage(Package):
 
 		# Use quilt to apply the patch queue
 		self.cd (build_root)
-		if os.path.exists("mono"): os.remove ('mono')
-		if os.path.exists("mono-extensions"): os.remove ('mono-extensions')
+		mono = os.path.join (build_root, "mono")
+		mono_extensions = os.path.join (build_root, "mono-extensions")
+		if os.path.exists(mono): os.remove (mono)
+		if os.path.exists(mono_extensions): os.remove (mono_extensions)
 		self.sh ('ln -s %s-%s.git mono' % (self.name, self.version))
 		self.sh ('ln -s %s-%s-%s.git mono-extensions' % (self.name, self.version, "mono-extensions"))
 		self.sh ('export QUILT_PATCHES=mono-extensions')
