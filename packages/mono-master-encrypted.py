@@ -43,19 +43,21 @@ class MonoMasterEncryptedPackage(Package):
 		else:
 			self.sh ('git clone --local --shared "%s" "%s"' % (extension, dirname))
 
-		# Use quilt to apply the patch queue
-		self.cd (build_root)
-		mono = os.path.join (build_root, "mono")
-		mono_extensions = os.path.join (build_root, "mono-extensions")
-		if os.path.exists(mono): os.remove (mono)
-		if os.path.exists(mono_extensions): os.remove (mono_extensions)
-		self.sh ('ln -s %s-%s mono' % (self.name, self.version))
-		self.sh ('ln -s %s-%s-%s mono-extensions' % (self.name, self.version, "mono-extensions"))
-		self.sh ('export QUILT_PATCHES=mono-extensions')
-		# self.sh ('/usr/local/bin/quilt pop -af')
-		self.sh ('/usr/local/bin/quilt push -a')
-		os.remove ('mono')
-		os.remove ('mono-extensions')
+		try:
+			# Use quilt to apply the patch queue
+			self.cd (build_root)
+			mono = os.path.join (build_root, "mono")
+			mono_extensions = os.path.join (build_root, "mono-extensions")
+			if os.path.exists(mono): os.remove (mono)
+			if os.path.exists(mono_extensions): os.remove (mono_extensions)
+			os.symlink (os.path.join (build_root, "%s-%s" % (self.name, self.version)), mono)
+			os.symlink (os.path.join (build_root, "%s-%s-%s" % (self.name, self.version, "mono-extensions")), mono-extensions)
+			self.sh ('export QUILT_PATCHES=mono-extensions')
+			self.sh ('/usr/local/bin/quilt pop -af')
+			self.sh ('/usr/local/bin/quilt push -a')
+		finally:
+			os.remove ('mono')
+			os.remove ('mono-extensions')
 
 	def prep (self):
 		Package.prep (self)
