@@ -33,7 +33,8 @@ class MonoMasterEncryptedPackage(Package):
 		# extensions
 		print self.sources
 		extension = self.sources[1]
-		dirname = os.path.join (os.getcwd (), "..", os.path.basename (extension))
+		build_root = os.path.join (os.getcwd (), "..")
+		dirname = os.path.join (build_root, os.path.basename (extension))
 		if (os.path.exists(dirname)):
 			self.cd (dirname)
 			self.sh ('git clean -xfd')
@@ -43,7 +44,7 @@ class MonoMasterEncryptedPackage(Package):
 			self.sh ('git clone --local --shared "%s" "%s"' % (extension, dirname))
 
 		# Use quilt to apply the patch queue
-		self.cd (self.build_root)
+		self.cd (build_root)
 		if os.path.exists("mono"): os.remove ('mono')
 		if os.path.exists("mono-extensions"): os.remove ('mono-extensions')
 		self.sh ('ln -s %s-%s.git mono' % (self.name, self.version))
