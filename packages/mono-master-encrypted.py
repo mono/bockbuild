@@ -33,7 +33,7 @@ class MonoMasterEncryptedPackage(Package):
 		# extensions
 		extension = self.sources[1]
 		build_root = os.path.abspath (os.path.join (os.getcwd (), ".."))
-		dirname = os.path.join (os.getcwd (), os.path.splitext (os.path.basename (extension))[0])
+		dirname = os.path.join (build_root, os.path.splitext (os.path.basename (extension))[0])
 		if (os.path.exists(dirname)):
 			self.cd (dirname)
 			self.sh ('git clean -xfd')
