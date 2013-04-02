@@ -114,6 +114,9 @@ class Package:
 		source_cache = os.getenv('BOCKBUILD_SOURCE_CACHE')
 		return source_cache or tempfile.mkdtemp ()
 
+	def package_dir (self):
+		return os.path.dirname (os.path.realpath (self._path))
+
 	def is_successful_build(self, build_success_file, package_dir):
 		def is_newer(success_file):
 			mtime = os.path.getmtime(success_file)
@@ -132,7 +135,7 @@ class Package:
 
 		profile = Package.profile
 		namever = '%s-%s' % (self.name, self.version)
-		package_dir = os.path.dirname (os.path.realpath (self._path))
+		package_dir = self.package_dir ()
 		package_build_dir = profile.build_root
 		build_success_file = os.path.join (profile.build_root, namever + '.success')
 		install_success_file = os.path.join (profile.build_root, namever + '.install')
