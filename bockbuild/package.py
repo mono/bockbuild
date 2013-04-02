@@ -52,6 +52,9 @@ class Package:
 			for k, v in override_properties.iteritems ():
 				self.__dict__[k] = v
 
+		self._sources_dir = None
+		self._package_dir = None
+
 	def _fetch_sources (self, package_dir, package_dest_dir):
 
 		def get_local_filename(source):
@@ -111,11 +114,15 @@ class Package:
 		self.sources = local_sources
 
 	def sources_dir (self):
-		source_cache = os.getenv('BOCKBUILD_SOURCE_CACHE')
-		return source_cache or tempfile.mkdtemp ()
+		if not self._sources_dir:
+			source_cache = os.getenv('BOCKBUILD_SOURCE_CACHE')
+			self._sources_dir = source_cache or tempfile.mkdtemp ()
+		return self._sources_dir
 
 	def package_dir (self):
-		return os.path.dirname (os.path.realpath (self._path))
+		if not self._package_dir:
+			self._package_dir = os.path.dirname (os.path.realpath (self._path))
+		return self._package_dir
 
 	def is_successful_build(self, build_success_file, package_dir):
 		def is_newer(success_file):
