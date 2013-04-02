@@ -83,14 +83,14 @@ class Package:
 				log (1, 'cloning or updating git repository: %s' % source)
 				local_name = os.path.splitext(os.path.basename(source))[0]
 				if self.name == local_name:
-					local_dest_file = os.path.join (package_dest_dir, '%s-%s' % (self.name, self.version))
+					local_dest_file = os.path.join (package_dest_dir, '%s-%s.git' % (self.name, self.version))
 				else:
-					local_dest_file = os.path.join (package_dest_dir, '%s-%s-%s' % (self.name, self.version, local_name))
+					local_dest_file = os.path.join (package_dest_dir, '%s-%s-%s.git' % (self.name, self.version, local_name))
 
 				local_sources.pop ()
 				local_sources.append (local_dest_file)
 				pwd = os.getcwd ()
-				if source.startswith (('git://')) or source.endswith ('.git'):
+				if os.path.isdir (os.path.join (local_dest_file, '.git')):
 					self.cd (local_dest_file)
 					self.sh ('%{git} reset --hard')
 					self.sh ('%{git} clean -xfd')
@@ -205,7 +205,7 @@ class Package:
 			return
 
 		if os.path.isdir (os.path.join (self.sources[0], '.git')):
-			dirname = os.path.join (os.getcwd (), os.path.basename (self.sources[0]))
+			dirname = os.path.join (os.getcwd (), os.path.splitext (os.path.basename (self.sources[0]))[0]
 			# self.sh ('cp -a "%s" "%s"' % (self.sources[0], dirname))
 			if (os.path.exists(dirname)):
 				self.cd (dirname)
