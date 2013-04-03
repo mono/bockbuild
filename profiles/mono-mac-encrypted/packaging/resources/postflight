@@ -47,5 +47,34 @@ if [ -d ${FW_CURRENT} ]; then
     pango-querymodules >  pango/pango.modules
 fi
 
+# Delete older Monos
+#
+# - keep if 'Versions/x.y.z/keep' exists
+# - Keep if it is greater than $CURRENT_VER
+#
+CURRENT=$(readlink ${FW_CURRENT})
+CURRENT_VER=`basename $CURRENT`
+echo "Current:" $CURRENT_VER | tee -a /tmp/delete-mono
+
+pushd ${FW}/Versions
+for i in `ls -d *`; do
+    if [ -f $i/keep ]; then
+        echo "Keeping" $i  | tee -a /tmp/delete-mono
+        continue
+    fi
+
+    # A magical bit of Perl: http://stackoverflow.com/a/7366753/494990
+    result=$(perl -e 'print shift cmp shift' $i $CURRENT_VER)
+    if [ $result -ge 0 ]; then
+        echo "Skipping" $i  | tee -a /tmp/delete-mono
+        continue
+
+    else
+        echo "rm -rf" $i  | tee -a /tmp/delete-mono
+        rm -rf $i
+    fi
+done
+popd
+
 # Mono framework should be owned by root
 chown -R root:admin ${FW}
