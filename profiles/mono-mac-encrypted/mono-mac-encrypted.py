@@ -181,6 +181,7 @@ class MonoReleaseProfile (DarwinProfile, MonoReleasePackages):
 				for line in c:
 					output.write(self.fix_line(line, matcher))
 		os.rename(temp, config)
+		os.system('chmod a+r %s' % config)
 
 	def fix_libMonoPosixHelper(self):
 		config = os.path.join(self.prefix, "etc", "mono", "config")
