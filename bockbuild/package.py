@@ -116,7 +116,9 @@ class Package:
 	def sources_dir (self):
 		if not self._sources_dir:
 			source_cache = os.getenv('BOCKBUILD_SOURCE_CACHE')
-			self._sources_dir = source_cache or tempfile.mkdtemp ()
+			self._sources_dir = source_cache or os.path.realpath (os.path.join (self.package_dir(), "..", "cache"))
+		if not os.path.exists(self._sources_dir): os.mkdir (self._sources_dir)
+		print "Source cache: " + self._sources_dir
 		return self._sources_dir
 
 	def package_dir (self):
