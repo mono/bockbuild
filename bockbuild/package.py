@@ -95,9 +95,7 @@ class Package:
 				pwd = os.getcwd ()
 				if os.path.isdir (os.path.join (local_dest_file, '.git')):
 					self.cd (local_dest_file)
-					self.sh ('%{git} reset --hard')
-					self.sh ('%{git} clean -xfd')
-					self.sh ('%{git} fetch')
+					self.sh ('%{git} pull')
 				else:
 					self.cd (os.path.dirname (local_dest_file))
 					shutil.rmtree (local_dest_file, ignore_errors = True)
