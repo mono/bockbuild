@@ -54,23 +54,23 @@ fi
 #
 CURRENT=$(readlink ${FW_CURRENT})
 CURRENT_VER=`basename $CURRENT`
-echo "Current:" $CURRENT_VER | tee -a /tmp/delete-mono
+echo "Current:" $CURRENT_VER
 
 pushd ${FW}/Versions
 for i in `ls -d *`; do
     if [ -f $i/keep ]; then
-        echo "Keeping" $i  | tee -a /tmp/delete-mono
+        echo "Keeping" $i
         continue
     fi
 
     # A magical bit of Perl: http://stackoverflow.com/a/7366753/494990
     result=$(perl -e 'print shift cmp shift' $i $CURRENT_VER)
     if [ $result -ge 0 ]; then
-        echo "Skipping" $i  | tee -a /tmp/delete-mono
+        echo "Skipping" $i
         continue
 
     else
-        echo "rm -rf" $i  | tee -a /tmp/delete-mono
+        echo "rm -rf" $i
         rm -rf $i
     fi
 done
