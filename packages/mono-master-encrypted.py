@@ -57,8 +57,8 @@ class MonoMasterEncryptedPackage(Package):
 
 		# Print mono-extensions commit hash and the patches applied
 		commit_hash = backtick ("git --git-dir %s/.git rev-parse HEAD" % full_mono_extensions)[0]
-		patches_applied = backtick ("/usr/local/bin/quilt applied")
-		self.sh ("echo '@MonkeyWrench: SetSummary: <p>Using mono-extensions %s</p><p>Applied patches:<br> %s</p>" % (commit_hash [0:8], "<br>".join (patches_applied)))
+		patches_applied = backtick ("cd %s; /usr/local/bin/quilt applied" % build_root)
+		self.sh ("echo '@MonkeyWrench: SetSummary: <p>Using mono-extensions %s</p><p>Applied patches:<br>%s</p>'" % (commit_hash [0:8], "<br>".join (patches_applied)))
 
 	def prep (self):
 		Package.prep (self)
