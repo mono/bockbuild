@@ -44,7 +44,6 @@ class MonoMasterEncryptedPackage(Package):
 
 		# Use quilt to apply the patch queue
 		self.cd (build_root)
-
 		mono = os.path.join (build_root, "mono")
 		full_mono = os.path.join (build_root, "%s-%s" % (self.name, self.version))
 		full_mono_extensions = os.path.join (build_root, "%s-%s-%s" % (self.name, self.version, "mono-extensions"))
@@ -52,9 +51,14 @@ class MonoMasterEncryptedPackage(Package):
 			if os.path.exists(mono): os.remove (mono)
 			os.symlink (full_mono, mono)
 
-		# ignore its return code
+		# ignore 'quilt pop' return code because the tree might be pristine
 		self.sh ("cd %s; export QUILT_PATCHES=%s; /usr/local/bin/quilt pop -af || true" % (build_root, full_mono_extensions))
 		self.sh ("cd %s; export QUILT_PATCHES=%s; /usr/local/bin/quilt push -a" % (build_root, full_mono_extensions))
+
+		# Print mono-extensions commit hash and the patches applied
+		commit_hash = backtick ("git --git-dir %s/.git rev-parse HEAD" % full_mono_extensions)[0]
+		patches_applied = backtick ("/usr/local/bin/quilt applied")
+		self.sh ("echo '@MonkeyWrench: SetSummary: <p>Using mono-extensions %s</p><p>Applied patches:<br> %s</p>" % (commit_hash [0:8], "<br>".join (patches_applied)))
 
 	def prep (self):
 		Package.prep (self)
