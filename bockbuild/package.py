@@ -184,9 +184,6 @@ class Package:
 		open (build_success_file, 'w').close ()
 		open (install_success_file, 'w').close ()
 
-		if not sources_dir == os.getenv('BOCKBUILD_SOURCE_CACHE'):
-			shutil.rmtree (sources_dir, ignore_errors = True)
-
 	def sh (self, *commands):
 		for command in commands:
 			command = expand_macros (command, self)
