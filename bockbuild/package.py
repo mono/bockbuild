@@ -95,19 +95,11 @@ class Package:
 				pwd = os.getcwd ()
 				if os.path.isdir (os.path.join (local_dest_file, '.git')):
 					self.cd (local_dest_file)
-					self.sh ('%{git} pull')
+					self.sh ('%{git} fetch')
 				else:
 					self.cd (os.path.dirname (local_dest_file))
 					shutil.rmtree (local_dest_file, ignore_errors = True)
 					self.sh ('%' + '{git} clone "%s" "%s"' % (source, os.path.basename (local_dest_file)))
-				self.cd (local_dest_file)
-				self.sh ('%' + '{git} checkout %s' % self.git_branch)
-
-				# A hack: self.revision can only work with self.sources[0]
-				if self.revision != None and source == self.sources[0]:
-					self.sh ('%' + '{git} reset --hard %s' % self.revision)
-
-				os.chdir (pwd)
 
 		self.sources = local_sources
 
@@ -214,14 +206,20 @@ class Package:
 		if os.path.isdir (os.path.join (self.sources[0], '.git')):
 			dirname = os.path.join (os.getcwd (), os.path.splitext (os.path.basename (self.sources[0]))[0])
 			# self.sh ('cp -a "%s" "%s"' % (self.sources[0], dirname))
-			if (os.path.exists(dirname)):
-				self.cd (dirname)
-				self.sh ('git clean -xfd')
-				self.sh ('git reset --hard HEAD')
-				self.sh ('git pull')
-			else:
+			if not os.path.exists(dirname):
 				self.sh ('git clone --local --shared "%s" "%s"' % (self.sources[0], dirname))
-				self.cd (dirname)
+
+			self.cd (dirname)
+			self.sh ('git fetch')
+			self.sh ('%{git} clean -xfd')
+
+			if self.revision != None:
+				self.sh ('%' + '{git} reset --hard %s' % self.revision)
+			elif self.revision != None:
+				self.sh ('%' + '{git} checkout %s' % self.git_branch)
+			else:
+				self.sh ('%{git} reset --hard HEAD')
+
 		else:
 			root, ext = os.path.splitext (self.sources[0])
 			if ext == '.zip':
