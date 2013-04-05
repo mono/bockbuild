@@ -12,13 +12,13 @@ index 71dc1df..b24641d 100644
 --- a/gtk/gtkentry.c
 +++ b/gtk/gtkentry.c
 @@ -108,6 +108,7 @@ typedef struct
-
+ 
    GtkTargetList *target_list;
    GdkDragAction actions;
 +  gdouble render_scale;
  } EntryIconInfo;
-
- struct _GtkEntryPrivate
+ 
+ struct _GtkEntryPrivate 
 @@ -6516,15 +6517,17 @@ gtk_entry_ensure_pixbuf (GtkEntry             *entry,
      case GTK_IMAGE_STOCK:
        state = gtk_widget_get_state (widget);
@@ -44,11 +44,11 @@ index 71dc1df..b24641d 100644
 +                                                           &icon_info->render_scale);
        gtk_widget_set_state (widget, state);
        break;
-
+ 
 @@ -6535,9 +6538,13 @@ gtk_entry_ensure_pixbuf (GtkEntry             *entry,
            icon_theme = gtk_icon_theme_get_for_screen (screen);
            settings = gtk_settings_get_for_screen (screen);
-
+           
 -          gtk_icon_size_lookup_for_settings (settings,
 -                                             GTK_ICON_SIZE_MENU,
 -                                             &width, &height);
@@ -59,13 +59,13 @@ index 71dc1df..b24641d 100644
 +
 +          g_print ("............... %f %d %d | %s\n", gdk_window_get_scale_factor (widget->window),
 +                   width, height, icon_info->icon_name);
-
+ 
            icon_info->pixbuf = gtk_icon_theme_load_icon (icon_theme,
                                                          icon_info->icon_name,
 @@ -6564,9 +6571,10 @@ gtk_entry_ensure_pixbuf (GtkEntry             *entry,
            icon_theme = gtk_icon_theme_get_for_screen (screen);
            settings = gtk_settings_get_for_screen (screen);
-
+ 
 -          gtk_icon_size_lookup_for_settings (settings,
 -                                             GTK_ICON_SIZE_MENU,
 -                                             &width, &height);
@@ -73,8 +73,9 @@ index 71dc1df..b24641d 100644
 +                                       GTK_ICON_SIZE_MENU,
 +                                       gdk_window_get_scale_factor (widget->window),
 +                                       &width, &height);
-
+ 
            info = gtk_icon_theme_lookup_by_gicon (icon_theme,
                                                   icon_info->gicon,
---
+-- 
 1.7.10.2 (Apple Git-33)
+
