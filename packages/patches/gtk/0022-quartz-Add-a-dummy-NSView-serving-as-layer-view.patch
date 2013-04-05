@@ -1,7 +1,7 @@
-From ac8397ba1dfb92b6901c6b2348d5984435e335ed Mon Sep 17 00:00:00 2001
+From 326b82aec2b72660a80e8171954930f036681aa9 Mon Sep 17 00:00:00 2001
 From: Michael Natterer <mitch@gimp.org>
 Date: Fri, 5 Oct 2012 12:10:15 +0200
-Subject: [PATCH 22/52] quartz: Add a dummy NSView serving as layer view
+Subject: [PATCH 22/53] quartz: Add a dummy NSView serving as layer view
 
 By doing this, the GdkQuartzView does not have to be marked as layer
 backed, such that the disadvantages that come with that (not being able
@@ -39,7 +39,7 @@ index 77ff5d7..2c3805e 100644
    if ([self window])
      [self updateTrackingRect];
 diff --git a/gdk/quartz/gdkquartz.h b/gdk/quartz/gdkquartz.h
-index f7d3497..1526256 100644
+index 3c42983..8b0085c 100644
 --- a/gdk/quartz/gdkquartz.h
 +++ b/gdk/quartz/gdkquartz.h
 @@ -54,6 +54,7 @@ typedef enum

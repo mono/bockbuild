@@ -1,7 +1,7 @@
-From 5495981e455c8c1c5997e802a18f733a49ef57b1 Mon Sep 17 00:00:00 2001
+From 9545e9a672cf9cf7362bdd5906d3b0ba24027dfe Mon Sep 17 00:00:00 2001
 From: Kristian Rietveld <kris@lanedo.com>
 Date: Sun, 17 Feb 2013 13:06:59 +0100
-Subject: [PATCH 30/52] Never intervene in the event stream for legacy mice
+Subject: [PATCH 30/53] Never intervene in the event stream for legacy mice
 
 This is necessary for devices (e.g. Mighty Mouse) which do emit
 precise deltas but no phase.

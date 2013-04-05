@@ -1,7 +1,7 @@
-From 287286941559cc0801f6cbded0b90c93b66b82df Mon Sep 17 00:00:00 2001
+From 97b70287f8cd75abb87bb927b5b8a9b099d6e6b5 Mon Sep 17 00:00:00 2001
 From: Michael Natterer <mitch@lanedo.com>
 Date: Tue, 29 Nov 2011 16:09:31 +0100
-Subject: [PATCH 44/52] gtk: add new widget GtkNSView which alows to embed an
+Subject: [PATCH 45/53] gtk: add new widget GtkNSView which alows to embed an
  NSView
 
 ---
@@ -21,13 +21,13 @@ index 104768f..f13dfaa 100644
 --- a/gtk/Makefile.am
 +++ b/gtk/Makefile.am
 @@ -737,6 +737,7 @@ gtk_use_win32_c_sources = \
- 	gtkwin32embedwidget.c \
- 	gtkmountoperation-stub.c
+	gtkwin32embedwidget.c \
+	gtkmountoperation-stub.c
  gtk_use_quartz_c_sources =	\
 +	gtknsview.c		\
- 	gtksearchenginequartz.c	\
- 	gtkplug-stub.c		\
- 	gtksocket-stub.c	\
+	gtksearchenginequartz.c	\
+	gtkplug-stub.c		\
+	gtksocket-stub.c	\
 @@ -757,6 +758,7 @@ else
  if USE_QUARTZ
  libgtk_quartz_2_0_la_CFLAGS = "-xobjective-c"
@@ -43,7 +43,7 @@ index 94e0b61..cc5834a 100644
 @@ -218,6 +218,10 @@
  #include <gtk/gtkwidget.h>
  #include <gtk/gtkwindow.h>
- 
+
 +#ifdef GDK_WINDOWING_QUARTZ
 +#include <gtk/gtknsview.h>
 +#endif
@@ -600,23 +600,23 @@ index 3888826..af098f6 100644
 --- a/tests/Makefile.am
 +++ b/tests/Makefile.am
 @@ -8,7 +8,8 @@ INCLUDES =				\
- 	-DGDK_DISABLE_DEPRECATED	\
- 	-DGTK_DISABLE_DEPRECATED	\
- 	$(GTK_DEBUG_FLAGS)		\
+	-DGDK_DISABLE_DEPRECATED	\
+	-DGTK_DISABLE_DEPRECATED	\
+	$(GTK_DEBUG_FLAGS)		\
 -	$(GTK_DEP_CFLAGS)
 +	$(GTK_DEP_CFLAGS)		\
 +	-xobjective-c
- 
+
  DEPS =									\
- 	$(top_builddir)/gdk/$(gdktargetlib)				\
+	$(top_builddir)/gdk/$(gdktargetlib)				\
 @@ -57,6 +58,7 @@ noinst_PROGRAMS =  $(TEST_PROGS)	\
- 	testmultiscreen			\
- 	testnotebookdnd			\
- 	testnouiprint			\
+	testmultiscreen			\
+	testnotebookdnd			\
+	testnouiprint			\
 +	testnsview			\
- 	testoffscreen			\
- 	testoffscreenwindow		\
- 	testorientable			\
+	testoffscreen			\
+	testoffscreenwindow		\
+	testorientable			\
 @@ -134,6 +136,7 @@ testmultidisplay_DEPENDENCIES = $(TEST_DEPS)
  testmultiscreen_DEPENDENCIES = $(TEST_DEPS)
  testnotebookdnd_DEPENDENCIES = $(TEST_DEPS)
@@ -628,22 +628,22 @@ index 3888826..af098f6 100644
 @@ -166,6 +169,8 @@ testtooltips_DEPENDENCIES = $(TEST_DEPS)
  testvolumebutton_DEPENDENCIES = $(TEST_DEPS)
  testwindows_DEPENDENCIES = $(TEST_DEPS)
- 
+
 +testnsview_LDFLAGS = -framework WebKit
 +
  testentrycompletion_SOURCES = 	\
- 	prop-editor.c		\
- 	testentrycompletion.c
+	prop-editor.c		\
+	testentrycompletion.c
 @@ -262,6 +267,9 @@ testrecentchoosermenu_SOURCES =	\
  testvolumebutton_SOURCES =	\
- 	testvolumebutton.c
- 
+	testvolumebutton.c
+
 +testnsview_SOURCES =		\
 +	testnsview.c
 +
  testoffscreen_SOURCES = 	\
- 	gtkoffscreenbox.c	\
- 	gtkoffscreenbox.h	\
+	gtkoffscreenbox.c	\
+	gtkoffscreenbox.h	\
 diff --git a/tests/testnsview.c b/tests/testnsview.c
 new file mode 100644
 index 0000000..7c9ccb7
@@ -840,6 +840,5 @@ index 0000000..7c9ccb7
 +
 +  return 0;
 +}
--- 
+--
 1.7.10.2 (Apple Git-33)
-

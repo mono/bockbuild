@@ -1,7 +1,7 @@
-From cf148638be2da2633b1792ef5d4f3cce706b65ad Mon Sep 17 00:00:00 2001
+From 111d2e2f5eb65b68cd265866f5f707caf9af27fb Mon Sep 17 00:00:00 2001
 From: Kristian Rietveld <kris@lanedo.com>
 Date: Mon, 8 Oct 2012 11:48:38 +0200
-Subject: [PATCH 24/52] Refrain from starting fading out while a gesture is in
+Subject: [PATCH 24/53] Refrain from starting fading out while a gesture is in
  progress
 
 ---

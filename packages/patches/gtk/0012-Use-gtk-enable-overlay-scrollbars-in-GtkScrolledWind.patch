@@ -1,7 +1,7 @@
-From a72466e9c97fefd5b52a4c098027622ee47317af Mon Sep 17 00:00:00 2001
+From b3888a55a73ce0c589ccd28061fadbb248f45faa Mon Sep 17 00:00:00 2001
 From: Kristian Rietveld <kris@lanedo.com>
 Date: Sun, 29 Jul 2012 16:14:09 +0200
-Subject: [PATCH 12/52] Use gtk-enable-overlay-scrollbars in GtkScrolledWindow
+Subject: [PATCH 12/53] Use gtk-enable-overlay-scrollbars in GtkScrolledWindow
 
 And listen for changes to this setting.  Move overlay_scrollbars variable
 to GtkScrolledWindowPrivate, because we are going to have to monitor for

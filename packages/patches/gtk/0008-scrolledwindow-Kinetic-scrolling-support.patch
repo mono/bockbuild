@@ -1,7 +1,7 @@
-From da6cc7082db77ac7196ffce0d1e29b11d4c81e9e Mon Sep 17 00:00:00 2001
+From dd8140f938f344ed9b226b7d20956e2aed4e43d4 Mon Sep 17 00:00:00 2001
 From: Carlos Garcia Campos <cgarcia@igalia.com>
 Date: Fri, 11 Feb 2011 13:43:56 +0100
-Subject: [PATCH 08/52] scrolledwindow: Kinetic scrolling support
+Subject: [PATCH 08/53] scrolledwindow: Kinetic scrolling support
 
 If the scrolling doesn't start after a long press, the scrolling is
 cancelled and events are handled by child widgets normally.
