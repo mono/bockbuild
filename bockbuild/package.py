@@ -85,21 +85,19 @@ class Package:
 			elif source.startswith (('git://','file://', 'ssh://')) or source.endswith ('.git'):
 				log (1, 'cloning or updating git repository: %s' % source)
 				local_name = os.path.splitext(os.path.basename(source))[0]
-				if self.name == local_name:
-					local_dest_file = os.path.join (package_dest_dir, '%s-%s.git' % (self.name, self.version))
-				else:
-					local_dest_file = os.path.join (package_dest_dir, '%s-%s-%s.git' % (self.name, self.version, local_name))
+				local_dest_file = os.path.join (package_dest_dir, '%s.gitmirror' % (self.name))
 
 				local_sources.pop ()
 				local_sources.append (local_dest_file)
 				pwd = os.getcwd ()
-				if os.path.isdir (os.path.join (local_dest_file, '.git')):
+				if os.path.isdir (local_dest_file):
 					self.cd (local_dest_file)
 					self.sh ('%{git} fetch')
+					self.sh ('%{git} remote prune origin')
 				else:
 					self.cd (os.path.dirname (local_dest_file))
 					shutil.rmtree (local_dest_file, ignore_errors = True)
-					self.sh ('%' + '{git} clone "%s" "%s"' % (source, os.path.basename (local_dest_file)))
+					self.sh ('%' + '{git} clone --mirror "%s" "%s"' % (source, os.path.basename (local_dest_file)))
 
 		self.sources = local_sources
 
@@ -202,8 +200,8 @@ class Package:
 			log (1, '<skipping - no sources defined>')
 			return
 
-		if os.path.isdir (os.path.join (self.sources[0], '.git')):
-			dirname = os.path.join (os.getcwd (), os.path.splitext (os.path.basename (self.sources[0]))[0])
+		if self.sources[0].endswith ('.gitmirror'):
+			dirname = os.path.join (os.getcwd (), expand_macros ('%{name}-%{version}', self))
 			# self.sh ('cp -a "%s" "%s"' % (self.sources[0], dirname))
 			if not os.path.exists(dirname):
 				self.sh ('git clone --local --shared "%s" "%s"' % (self.sources[0], dirname))
@@ -215,9 +213,9 @@ class Package:
 			if self.revision != None:
 				self.sh ('%' + '{git} reset --hard %s' % self.revision)
 			elif self.revision != None:
-				self.sh ('%' + '{git} checkout %s' % self.git_branch)
+				self.sh ('%' + '{git} checkout origin/%s' % self.git_branch)
 			else:
-				self.sh ('%{git} reset --hard HEAD')
+				self.sh ('%{git} checkout origin/master')
 
 		else:
 			root, ext = os.path.splitext (self.sources[0])
