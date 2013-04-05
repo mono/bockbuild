@@ -212,7 +212,7 @@ class Package:
 
 			if self.revision != None:
 				self.sh ('%' + '{git} reset --hard %s' % self.revision)
-			elif self.revision != None:
+			elif self.git_branch != None:
 				self.sh ('%' + '{git} checkout origin/%s' % self.git_branch)
 			else:
 				self.sh ('%{git} checkout origin/master')
