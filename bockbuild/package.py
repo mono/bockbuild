@@ -7,13 +7,14 @@ from urllib import FancyURLopener
 from util.util import *
 
 class Package:
-	def __init__ (self, name, version, configure_flags = None, sources = None, revision = None, git_branch = 'master', source_dir_name = None, override_properties = None, configure = None):
+	def __init__ (self, name, version, organization = None, configure_flags = None, sources = None, revision = None, git_branch = 'master', source_dir_name = None, override_properties = None, configure = None):
 		Package.last_instance = self
 
 		self._dirstack = []
 
 		self.name = name
 		self.version = version
+		self.organization = organization
 
 		self.configure_flags = []
 		if Package.profile.global_configure_flags:
@@ -25,6 +26,9 @@ class Package:
 		if self.sources == None \
 			and not self.__class__.default_sources == None:
 			self.sources = list (self.__class__.default_sources)
+
+		if self.organization == None:
+			self.organization = self.extract_organization (self.sources[0])
 
 		self.source_dir_name = source_dir_name
 		if self.source_dir_name == None:
@@ -54,6 +58,24 @@ class Package:
 
 		self._sources_dir = None
 		self._package_dir = None
+
+	def extract_organization (self, source):
+		if not "git" in source or "http" in source:
+			return None
+		if "git.gnome.org" in source:
+			return None
+		if "github" in source:
+			pattern = r"github.com\W(\w+)\/\S+\.git"
+			match = re.search(pattern, source)
+			return match.group(1)
+		else:
+			raise Exception ("Cannot determine organization for %s" % source)
+
+	def cache_name (self):
+		if self.organization == None:
+			return self.name
+		else:
+			return self.organization + "+" + self.name
 
 	def _fetch_sources (self, package_dir, package_dest_dir):
 
@@ -85,7 +107,7 @@ class Package:
 			elif source.startswith (('git://','file://', 'ssh://')) or source.endswith ('.git'):
 				log (1, 'cloning or updating git repository: %s' % source)
 				local_name = os.path.splitext(os.path.basename(source))[0]
-				local_dest_file = os.path.join (package_dest_dir, '%s.gitmirror' % (self.name))
+				local_dest_file = os.path.join (package_dest_dir, '%s.gitmirror' % (self.cache_name ()))
 
 				local_sources.pop ()
 				local_sources.append (local_dest_file)
