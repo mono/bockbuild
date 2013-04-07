@@ -60,7 +60,7 @@ class Package:
 		self._package_dir = None
 
 	def extract_organization (self, source):
-		if not "git" in source or "http" in source:
+		if (not "git" in source) or ("http" in source):
 			return None
 		if "git.gnome.org" in source:
 			return None
