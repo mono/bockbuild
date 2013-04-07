@@ -67,20 +67,24 @@ class Package:
 		if "github" in source:
 			pattern = r"github.com\W(\w+)\/\S+\.git"
 			match = re.search(pattern, source)
-			return match.group(1)
+			if match:
+				return match.group(1)
+			else:
+				raise Exception ("Cannot determine organization for %s" % source)
 		else:
 			raise Exception ("Cannot determine organization for %s" % source)
-
-	def cache_name (self):
-		if self.organization == None:
-			return self.name
-		else:
-			return self.organization + "+" + self.name
 
 	def _fetch_sources (self, package_dir, package_dest_dir):
 
 		def get_local_filename(source):
 			return source if os.path.isfile(source) else os.path.join (package_dest_dir, os.path.basename (source))
+
+		def get_cache_name (name):
+			if self.organization == None:
+				return self.name
+			else:
+				return self.organization + "+" + name
+
 
 		if self.sources == None:
 			return
@@ -107,7 +111,7 @@ class Package:
 			elif source.startswith (('git://','file://', 'ssh://')) or source.endswith ('.git'):
 				log (1, 'cloning or updating git repository: %s' % source)
 				local_name = os.path.splitext(os.path.basename(source))[0]
-				local_dest_file = os.path.join (package_dest_dir, '%s.gitmirror' % (self.cache_name ()))
+				local_dest_file = os.path.join (package_dest_dir, '%s.gitmirror' % (get_cache_name (local_name)))
 
 				local_sources.pop ()
 				local_sources.append (local_dest_file)
