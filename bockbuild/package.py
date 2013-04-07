@@ -146,6 +146,31 @@ class Package:
 
 		return os.path.exists (build_success_file) and is_newer(build_success_file)
 
+	def delete_stale_workspace_cache (self, dirname):
+		origin = backtick ("git --git-dir=%s config --get remote.origin.url" % os.path.join (dirname, ".git"))
+		# Not pointing to a git repo
+		if not origin:
+			return False
+
+		# Pointing to a non gitmirror repo
+		if not "gitmirror" in origin[0]:
+			print "Cache does not point to a gitmirror"
+			# Delete the old cache as well
+			if os.path.exists (origin[0]):
+				print "Deleting old cache " + origin[0]
+				shutil.rmtree (origin [0], ignore_errors = True)
+			print "Deleting workspace " + dirname
+			shutil.rmtree (dirname, ignore_errors = True)
+			return True
+
+		# Make sure gitmirror exists
+		if os.path.isfile (origin[0]) and not os.path.exists (origin[0]):
+			print "Cache does not exist"
+			return True
+		else:
+			# origin and "gitmirror" in origin[0] and os.path.exists (origin[0])
+			return False
+
 	def start_build (self):
 		Package.last_instance = None
 
@@ -155,13 +180,17 @@ class Package:
 		namever = '%s-%s' % (self.name, self.version)
 		package_dir = self.package_dir ()
 		package_build_dir = profile.build_root
+		workspace = os.path.join (profile.build_root, namever)
 		build_success_file = os.path.join (profile.build_root, namever + '.success')
 		install_success_file = os.path.join (profile.build_root, namever + '.install')
 		sources_dir = self.sources_dir ()
 
-		old_package_build_dir = os.path.join (os.path.join (profile.build_root, namever), '_build')
+		old_package_build_dir = os.path.join (workspace, '_build')
 		if os.path.exists(old_package_build_dir):
 			shutil.rmtree (os.path.join(profile.build_root, namever))
+
+		if self.delete_stale_workspace_cache (workspace):
+			if os.path.exists (build_success_file): os.remove (build_success_file)
 
 		if self.is_successful_build(build_success_file, package_dir):
 			print 'Skipping %s - already built' % namever
