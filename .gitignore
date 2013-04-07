@@ -5,3 +5,4 @@ solitary/Solitary.exe*
 *.pyc
 *~
 .DS_Store
+cache

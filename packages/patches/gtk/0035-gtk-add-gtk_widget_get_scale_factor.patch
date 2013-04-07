@@ -1,7 +1,7 @@
-From 6fa0ddf63726ed72ff54591cdb8cdc870834b64c Mon Sep 17 00:00:00 2001
+From b7bc367daa1e305332fd04dc472fe0f22e1e28a9 Mon Sep 17 00:00:00 2001
 From: Michael Natterer <mitch@gimp.org>
 Date: Fri, 15 Feb 2013 15:35:13 +0100
-Subject: [PATCH 34/52] gtk: add gtk_widget_get_scale_factor()
+Subject: [PATCH 35/53] gtk: add gtk_widget_get_scale_factor()
 
 ---
  gtk/gtkwidget.c |   20 ++++++++++++++++++++
@@ -15,7 +15,7 @@ index 8e38ee1..c812bb9 100644
 @@ -7713,6 +7713,26 @@ gtk_widget_has_screen (GtkWidget *widget)
    return (gtk_widget_get_screen_unchecked (widget) != NULL);
  }
- 
+
 +gdouble
 +gtk_widget_get_scale_factor (GtkWidget *widget)
 +{
@@ -44,13 +44,12 @@ index 1fcf21a..cee16cd 100644
 --- a/gtk/gtkwidget.h
 +++ b/gtk/gtkwidget.h
 @@ -1055,6 +1055,7 @@ GdkVisual*   gtk_widget_get_visual	(GtkWidget	*widget);
- 
+
  GdkScreen *   gtk_widget_get_screen      (GtkWidget *widget);
  gboolean      gtk_widget_has_screen      (GtkWidget *widget);
 +gdouble       gtk_widget_get_scale_factor (GtkWidget *widget);
  GdkDisplay *  gtk_widget_get_display     (GtkWidget *widget);
  GdkWindow *   gtk_widget_get_root_window (GtkWidget *widget);
  GtkSettings*  gtk_widget_get_settings    (GtkWidget *widget);
--- 
+--
 1.7.10.2 (Apple Git-33)
-

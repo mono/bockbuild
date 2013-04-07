@@ -1,5 +1,5 @@
 Package ('xamarin-gtk-theme', 'master',
-	sources = [ 'git@github.com:mono/xamarin-gtk-theme.git' ],
+	sources = [ 'git://github.com/mono/xamarin-gtk-theme.git' ],
 	override_properties = { 'configure':
 		'./autogen.sh --prefix=%{prefix}'
 	},

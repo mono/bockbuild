@@ -1,7 +1,7 @@
-From 8b681cf8cdaae44d4d35a0edbaba1aa8dd7b41c1 Mon Sep 17 00:00:00 2001
+From c192e7161e2dfad24b0c07e9652da005488f496f Mon Sep 17 00:00:00 2001
 From: Kristian Rietveld <kris@lanedo.com>
 Date: Fri, 28 Sep 2012 06:18:49 +0200
-Subject: [PATCH 19/52] Use start/end phase in event handling
+Subject: [PATCH 19/53] Use start/end phase in event handling
 
 Should make things work better on Mountain Lion.
 ---

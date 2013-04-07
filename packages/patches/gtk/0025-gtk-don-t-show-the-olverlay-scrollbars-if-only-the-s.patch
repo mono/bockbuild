@@ -1,7 +1,7 @@
-From 0ffdbc0264b493e3c973097019dde26128d869f2 Mon Sep 17 00:00:00 2001
+From 9bb1fb852d9fef9890862040f357a54c8248339f Mon Sep 17 00:00:00 2001
 From: Michael Natterer <mitch@gimp.org>
 Date: Fri, 2 Nov 2012 16:02:32 +0100
-Subject: [PATCH 25/52] gtk: don't show the olverlay scrollbars if only the
+Subject: [PATCH 25/53] gtk: don't show the olverlay scrollbars if only the
  size of the content changes
 
 This commit also optimizes away many signal connections and thus

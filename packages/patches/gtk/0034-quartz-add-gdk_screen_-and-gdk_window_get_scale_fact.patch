@@ -1,7 +1,7 @@
-From fad58fab2d93c4e2d09980ef159efc0cc793f925 Mon Sep 17 00:00:00 2001
+From 702aa1c7fc12ca098d99395bb419300759639a8a Mon Sep 17 00:00:00 2001
 From: Michael Natterer <mitch@gimp.org>
 Date: Fri, 18 Jan 2013 15:47:29 +0100
-Subject: [PATCH 33/52] quartz: add gdk_screen_ and
+Subject: [PATCH 34/53] quartz: add gdk_screen_ and
  gdk_window_get_scale_factor()
 
 which return 1.0 normally and 2.0 on retina displays.
@@ -25,9 +25,9 @@ index d3d4fe9..0c1e895 100644
                                                  gint       monitor_num);
 +gdouble       gdk_screen_get_monitor_scale_factor (GdkScreen *screen,
 +                                                   gint       monitor_num);
- 
+
  void          gdk_screen_broadcast_client_message  (GdkScreen       *screen,
- 						    GdkEvent        *event);
+						    GdkEvent        *event);
 diff --git a/gdk/gdkwindow.c b/gdk/gdkwindow.c
 index ace57d2..0f22246 100644
 --- a/gdk/gdkwindow.c
@@ -35,7 +35,7 @@ index ace57d2..0f22246 100644
 @@ -11443,6 +11443,28 @@ gdk_window_get_height (GdkWindow *window)
    return height;
  }
- 
+
 +gdouble
 +gdk_window_get_scale_factor (GdkWindow *window)
 +{
@@ -58,7 +58,7 @@ index ace57d2..0f22246 100644
 +
 +  return 1.0;
 +}
- 
+
  #define __GDK_WINDOW_C__
  #include "gdkaliasdef.c"
 diff --git a/gdk/gdkwindow.h b/gdk/gdkwindow.h
@@ -70,7 +70,7 @@ index 572797b..95a3665 100644
  int           gdk_window_get_width             (GdkWindow     *window);
  int           gdk_window_get_height            (GdkWindow     *window);
 +gdouble       gdk_window_get_scale_factor      (GdkWindow     *window);
- 
+
  GdkWindow*    gdk_window_at_pointer            (gint          *win_x,
                                                  gint          *win_y);
 diff --git a/gdk/gdkwindowimpl.h b/gdk/gdkwindowimpl.h
@@ -80,13 +80,13 @@ index 3a5029b..d6a0c89 100644
 @@ -146,6 +146,9 @@ struct _GdkWindowImplIface
    void         (* input_window_destroy) (GdkWindow       *window);
    void         (* input_window_crossing)(GdkWindow       *window,
- 					 gboolean         enter);
+					 gboolean         enter);
 +
 +  gdouble      (* get_scale_factor)     (GdkWindow       *window);
 +
    gboolean     supports_native_bg;
  };
- 
+
 diff --git a/gdk/quartz/gdkscreen-quartz.c b/gdk/quartz/gdkscreen-quartz.c
 index 4bb573b..e6f0c44 100644
 --- a/gdk/quartz/gdkscreen-quartz.c
@@ -94,7 +94,7 @@ index 4bb573b..e6f0c44 100644
 @@ -494,6 +494,39 @@ gdk_screen_get_monitor_workarea (GdkScreen    *screen,
    GDK_QUARTZ_RELEASE_POOL;
  }
- 
+
 +/* Protocol to build cleanly for OSX < 10.7 */
 +@protocol ScaleFactor
 +- (CGFloat) backingScaleFactor;
@@ -138,7 +138,7 @@ index 537222c..14ff574 100644
 @@ -3197,6 +3197,27 @@ _gdk_windowing_window_get_input_shape (GdkWindow *window)
    return NULL;
  }
- 
+
 +/* Protocol to build cleanly for OSX < 10.7 */
 +@protocol ScaleFactor
 +- (CGFloat) backingScaleFactor;
@@ -176,7 +176,7 @@ index 66a0d96..d09d0b6 100644
 @@ -454,6 +454,13 @@ gdk_screen_get_monitor_plug_name (GdkScreen *screen,
    return g_strdup (screen_x11->monitors[monitor_num].output_name);
  }
- 
+
 +gdouble
 +gdk_screen_get_monitor_scale_factor (GdkScreen *screen,
 +                                     gint       monitor_num)
@@ -187,6 +187,5 @@ index 66a0d96..d09d0b6 100644
  /**
   * gdk_x11_screen_get_monitor_output:
   * @screen: a #GdkScreen
--- 
+--
 1.7.10.2 (Apple Git-33)
-

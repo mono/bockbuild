@@ -1,7 +1,7 @@
-From 18b305dbdb5396211f0db4fb7e9f7bc812ad1a0e Mon Sep 17 00:00:00 2001
+From df3fd606a7d7121069a1a94b4a8f6655bfb7aa20 Mon Sep 17 00:00:00 2001
 From: Michael Natterer <mitch@gimp.org>
 Date: Fri, 23 Nov 2012 15:24:36 +0100
-Subject: [PATCH 01/52] Add gdk_screen_get_monitor_workarea() and use it all
+Subject: [PATCH 01/53] Add gdk_screen_get_monitor_workarea() and use it all
  over the place
 
 ---
