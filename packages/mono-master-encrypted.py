@@ -4,7 +4,7 @@ class MonoMasterEncryptedPackage(Package):
 
 	def __init__(self):
 		Package.__init__(self, 'mono', '3.0.8',
-      sources = ['git://github.com/mono/mono', 'git@github.com:xamarin/mono-extensions.git'],
+      sources = ['git://github.com/mono/mono.git', 'git@github.com:xamarin/mono-extensions.git'],
 			revision = os.getenv('MONO_BUILD_REVISION'),
 			configure_flags = [
 				'--enable-nls=no',
@@ -33,27 +33,25 @@ class MonoMasterEncryptedPackage(Package):
 		# extensions
 		extension = self.sources[1]
 		build_root = os.path.abspath (os.path.join (os.getcwd (), ".."))
-		dirname = os.path.join (build_root, os.path.splitext (os.path.basename (extension))[0])
-		if (os.path.exists(dirname)):
-			self.cd (dirname)
-			self.sh ('git clean -xfd')
-			self.sh ('git reset --hard HEAD')
-			self.sh ('git pull')
-		else:
+		dirname = os.path.join (build_root, "mono-extensions")
+		if not os.path.exists(dirname):
 			self.sh ('git clone --local --shared "%s" "%s"' % (extension, dirname))
+		self.cd (dirname)
+		self.sh ('git fetch')
+		self.sh ('%{git} clean -xfd')
 
 		# Use quilt to apply the patch queue
 		self.cd (build_root)
 		mono = os.path.join (build_root, "mono")
-		full_mono = os.path.join (build_root, "%s-%s" % (self.name, self.version))
-		full_mono_extensions = os.path.join (build_root, "%s-%s-%s" % (self.name, self.version, "mono-extensions"))
+		full_mono = os.path.join (build_root, "%s+%s" % (self.name, self.name))
+		full_mono_extensions = os.path.join (build_root, "mono-extensions")
 		if not (os.path.exists (mono) and os.path.join (os.path.dirname (mono), os.readlink (mono)) == full_mono):
 			if os.path.exists(mono): os.remove (mono)
 			os.symlink (full_mono, mono)
 
 		# ignore 'quilt pop' return code because the tree might be pristine
-		self.sh ("cd %s; export QUILT_PATCHES=%s; /usr/local/bin/quilt pop -af || true" % (build_root, full_mono_extensions))
-		self.sh ("cd %s; export QUILT_PATCHES=%s; /usr/local/bin/quilt push -a" % (build_root, full_mono_extensions))
+		self.sh ("cd %s; export QUILT_PATCHES=%s; /usr/local/bin/quilt pop -af || true" % (build_root, "mono-extensions"))
+		self.sh ("cd %s; export QUILT_PATCHES=%s; /usr/local/bin/quilt push -a" % (build_root, "mono-extensions"))
 
 		# Print mono-extensions commit hash and the patches applied
 		commit_hash = backtick ("git --git-dir %s/.git rev-parse HEAD" % full_mono_extensions)[0]
