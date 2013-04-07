@@ -4,7 +4,7 @@ class MonoTwoTenPackage(Package):
 
 	def __init__(self):
 		Package.__init__(self, 'mono', '2.10.12',
-			sources = ['git://github.com/mono/mono'],
+			sources = ['git://github.com/mono/mono.git'],
 			git_branch = 'mono-2-10',
 			revision = os.getenv('MONO_BUILD_REVISION'),
 			configure_flags = [
