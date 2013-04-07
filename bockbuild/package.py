@@ -7,13 +7,14 @@ from urllib import FancyURLopener
 from util.util import *
 
 class Package:
-	def __init__ (self, name, version, configure_flags = None, sources = None, revision = None, git_branch = 'master', source_dir_name = None, override_properties = None, configure = None):
+	def __init__ (self, name, version, organization = None, configure_flags = None, sources = None, revision = None, git_branch = 'master', source_dir_name = None, override_properties = None, configure = None):
 		Package.last_instance = self
 
 		self._dirstack = []
 
 		self.name = name
 		self.version = version
+		self.organization = organization
 
 		self.configure_flags = []
 		if Package.profile.global_configure_flags:
@@ -25,6 +26,9 @@ class Package:
 		if self.sources == None \
 			and not self.__class__.default_sources == None:
 			self.sources = list (self.__class__.default_sources)
+
+		if self.organization == None:
+			self.organization = self.extract_organization (self.sources[0])
 
 		self.source_dir_name = source_dir_name
 		if self.source_dir_name == None:
@@ -54,6 +58,24 @@ class Package:
 
 		self._sources_dir = None
 		self._package_dir = None
+
+	def extract_organization (self, source):
+		if not "git" in source or "http" in source:
+			return None
+		if "git.gnome.org" in source:
+			return None
+		if "github" in source:
+			pattern = r"github.com\W(\w+)\/\S+\.git"
+			match = re.search(pattern, source)
+			return match.group(1)
+		else:
+			raise Exception ("Cannot determine organization for %s" % source)
+
+	def cache_name (self):
+		if self.organization == None:
+			return self.name
+		else:
+			return self.organization + "+" + self.name
 
 	def _fetch_sources (self, package_dir, package_dest_dir):
 
@@ -85,29 +107,19 @@ class Package:
 			elif source.startswith (('git://','file://', 'ssh://')) or source.endswith ('.git'):
 				log (1, 'cloning or updating git repository: %s' % source)
 				local_name = os.path.splitext(os.path.basename(source))[0]
-				if self.name == local_name:
-					local_dest_file = os.path.join (package_dest_dir, '%s-%s.git' % (self.name, self.version))
-				else:
-					local_dest_file = os.path.join (package_dest_dir, '%s-%s-%s.git' % (self.name, self.version, local_name))
+				local_dest_file = os.path.join (package_dest_dir, '%s.gitmirror' % (self.cache_name ()))
 
 				local_sources.pop ()
 				local_sources.append (local_dest_file)
 				pwd = os.getcwd ()
-				if os.path.isdir (os.path.join (local_dest_file, '.git')):
+				if os.path.isdir (local_dest_file):
 					self.cd (local_dest_file)
-					self.sh ('%{git} pull')
+					self.sh ('%{git} fetch')
+					self.sh ('%{git} remote prune origin')
 				else:
 					self.cd (os.path.dirname (local_dest_file))
 					shutil.rmtree (local_dest_file, ignore_errors = True)
-					self.sh ('%' + '{git} clone "%s" "%s"' % (source, os.path.basename (local_dest_file)))
-				self.cd (local_dest_file)
-				self.sh ('%' + '{git} checkout %s' % self.git_branch)
-
-				# A hack: self.revision can only work with self.sources[0]
-				if self.revision != None and source == self.sources[0]:
-					self.sh ('%' + '{git} reset --hard %s' % self.revision)
-
-				os.chdir (pwd)
+					self.sh ('%' + '{git} clone --mirror "%s" "%s"' % (source, os.path.basename (local_dest_file)))
 
 		self.sources = local_sources
 
@@ -116,7 +128,6 @@ class Package:
 			source_cache = os.getenv('BOCKBUILD_SOURCE_CACHE')
 			self._sources_dir = source_cache or os.path.realpath (os.path.join (self.package_dir(), "..", "cache"))
 		if not os.path.exists(self._sources_dir): os.mkdir (self._sources_dir)
-		print "Source cache: " + self._sources_dir
 		return self._sources_dir
 
 	def package_dir (self):
@@ -135,6 +146,31 @@ class Package:
 
 		return os.path.exists (build_success_file) and is_newer(build_success_file)
 
+	def delete_stale_workspace_cache (self, dirname):
+		origin = backtick ("git --git-dir=%s config --get remote.origin.url" % os.path.join (dirname, ".git"))
+		# Not pointing to a git repo
+		if not origin:
+			return False
+
+		# Pointing to a non gitmirror repo
+		if not "gitmirror" in origin[0]:
+			print "Cache does not point to a gitmirror"
+			# Delete the old cache as well
+			if os.path.exists (origin[0]):
+				print "Deleting old cache " + origin[0]
+				shutil.rmtree (origin [0], ignore_errors = True)
+			print "Deleting workspace " + dirname
+			shutil.rmtree (dirname, ignore_errors = True)
+			return True
+
+		# Make sure gitmirror exists
+		if os.path.isfile (origin[0]) and not os.path.exists (origin[0]):
+			print "Cache does not exist"
+			return True
+		else:
+			# origin and "gitmirror" in origin[0] and os.path.exists (origin[0])
+			return False
+
 	def start_build (self):
 		Package.last_instance = None
 
@@ -144,13 +180,17 @@ class Package:
 		namever = '%s-%s' % (self.name, self.version)
 		package_dir = self.package_dir ()
 		package_build_dir = profile.build_root
+		workspace = os.path.join (profile.build_root, namever)
 		build_success_file = os.path.join (profile.build_root, namever + '.success')
 		install_success_file = os.path.join (profile.build_root, namever + '.install')
 		sources_dir = self.sources_dir ()
 
-		old_package_build_dir = os.path.join (os.path.join (profile.build_root, namever), '_build')
+		old_package_build_dir = os.path.join (workspace, '_build')
 		if os.path.exists(old_package_build_dir):
 			shutil.rmtree (os.path.join(profile.build_root, namever))
+
+		if self.delete_stale_workspace_cache (workspace):
+			if os.path.exists (build_success_file): os.remove (build_success_file)
 
 		if self.is_successful_build(build_success_file, package_dir):
 			print 'Skipping %s - already built' % namever
@@ -211,17 +251,23 @@ class Package:
 			log (1, '<skipping - no sources defined>')
 			return
 
-		if os.path.isdir (os.path.join (self.sources[0], '.git')):
-			dirname = os.path.join (os.getcwd (), os.path.splitext (os.path.basename (self.sources[0]))[0])
+		if self.sources[0].endswith ('.gitmirror'):
+			dirname = os.path.join (os.getcwd (), expand_macros ('%{name}-%{version}', self))
 			# self.sh ('cp -a "%s" "%s"' % (self.sources[0], dirname))
-			if (os.path.exists(dirname)):
-				self.cd (dirname)
-				self.sh ('git clean -xfd')
-				self.sh ('git reset --hard HEAD')
-				self.sh ('git pull')
-			else:
+			if not os.path.exists(dirname):
 				self.sh ('git clone --local --shared "%s" "%s"' % (self.sources[0], dirname))
-				self.cd (dirname)
+
+			self.cd (dirname)
+			self.sh ('git fetch')
+			self.sh ('%{git} clean -xfd')
+
+			if self.revision != None:
+				self.sh ('%' + '{git} reset --hard %s' % self.revision)
+			elif self.git_branch != None:
+				self.sh ('%' + '{git} checkout origin/%s' % self.git_branch)
+			else:
+				self.sh ('%{git} checkout origin/master')
+
 		else:
 			root, ext = os.path.splitext (self.sources[0])
 			if ext == '.zip':

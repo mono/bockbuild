@@ -133,9 +133,9 @@ class Profile:
 		for k in self.env.get_names ():
 			log (1, '%s = %s' % (k, os.getenv (k)))
 
-		if os.getenv('BOCKBUILD_SOURCE_CACHE') != None:
-			k = 'BOCKBUILD_SOURCE_CACHE'
-			log (1, '%s = %s' % (k, os.getenv (k)))
+		source_cache = os.getenv('BOCKBUILD_SOURCE_CACHE')
+                source_cache = source_cache or os.path.realpath (os.path.join (self.build_root, "..", "..", "..", "cache"))
+		log (1, 'Source cache: %s' % source_cache)
 
 		Package.profile = self
 
