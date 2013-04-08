@@ -14,6 +14,8 @@ class GtkPackage (GnomeGitPackage):
 				# Custom gtkrc
 				'patches/gtkrc',
 
+				'patches/gtk/0000-Fix-call-to-missing-symbol.patch',
+
 				# smooth scrolling, scrollbars, overscroll, retina, gtknsview
 				'patches/gtk/0001-Add-gdk_screen_get_monitor_workarea-and-use-it-all-o.patch',
 				'patches/gtk/0002-gtk-don-t-scroll-combo-box-menus-if-less-than-3-item.patch',
