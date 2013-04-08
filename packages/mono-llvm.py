@@ -1,4 +1,4 @@
-GitHubTarballPackage ('mono', 'llvm', '2.11', '41765e2a354ca7aa88ddb1b8d6b5eb7527556b51',
-	configure = './configure --prefix="%{prefix}" --enable-optimized --enable-targets="x86 x86_64" --target=i386-apple-darwin10.8.0',
+GitHubTarballPackage ('mono', 'llvm', '3.0', '292aa8712c3120b03f9aa1d201b2e7949adf35c3',
+	configure = './configure --prefix="%{prefix}" --enable-optimized --enable-targets="x86 x86_64" --build=i386-apple-darwin10.8.0',
 	override_properties = { 'make': 'make' }
 )

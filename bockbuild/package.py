@@ -265,8 +265,10 @@ class Package:
 			self.sh ('git fetch')
 			self.sh ('%{git} clean -xfd')
 
+			self.sh ('%{git} reset --hard')
+
 			if self.revision != None:
-				self.sh ('%' + '{git} reset --hard %s' % self.revision)
+				self.sh ('%' + '{git} checkout %s' % self.revision)
 			elif self.git_branch != None:
 				self.sh ('%' + '{git} checkout origin/%s' % self.git_branch)
 			else:
