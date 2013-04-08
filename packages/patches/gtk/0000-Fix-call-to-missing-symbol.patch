@@ -1,0 +1,26 @@
+From 08362d7728dfe9b361b56cc9b85ba4555889981e Mon Sep 17 00:00:00 2001
+From: Carlos Garnacho <carlos@lanedo.com>
+Date: Mon, 8 Apr 2013 17:25:19 +0200
+Subject: [PATCH] Fix call to missing symbol
+
+This patch can be considered a leftover of commit a269c2f8d26a ,
+replace the no longer existing function with its GDK equivalent
+---
+ gtk/gtkclipboard-quartz.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/gtk/gtkclipboard-quartz.c b/gtk/gtkclipboard-quartz.c
+index cd6f878..e725d95 100644
+--- a/gtk/gtkclipboard-quartz.c
++++ b/gtk/gtkclipboard-quartz.c
+@@ -109,7 +109,7 @@ static GtkClipboard *clipboard_peek       (GdkDisplay       *display,
+   memset (&selection_data, 0, sizeof (GtkSelectionData));
+ 
+   selection_data.selection = clipboard->selection;
+-  selection_data.target = _gtk_quartz_pasteboard_type_to_atom (type);
++  selection_data.target = gdk_quartz_pasteboard_type_to_atom_libgtk_only (type);
+   selection_data.display = gdk_display_get_default ();
+   selection_data.length = -1;
+ 
+-- 
+1.8.1.4
