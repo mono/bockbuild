@@ -39,7 +39,7 @@ class MonoReleaseProfile (DarwinProfile, MonoReleasePackages):
 
 	def build (self):
 		if not os.path.exists (os.path.join (self.release_root, "bin")):
-			log (0, "Rebuilding world because of new prefix: %s", self.release_root)
+			log (0, "Rebuilding world because of new prefix: %s" % self.release_root)
 			success_files = glob.glob (os.path.join (self.build_root, "*.success"))
 			for sf in success_files:
 				os.remove (sf)
