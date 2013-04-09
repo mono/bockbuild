@@ -37,6 +37,14 @@ class MonoReleaseProfile (DarwinProfile, MonoReleasePackages):
 		if not os.path.exists(aclocal_dir):
 			os.makedirs (aclocal_dir)
 
+	def build (self):
+		if not os.path.exists (os.path.join (self.release_root, "bin")):
+			log (0, "Rebuilding world because of new prefix: %s" % self.release_root)
+			success_files = glob.glob (os.path.join (self.build_root, "*.success"))
+			for sf in success_files:
+				os.remove (sf)
+		DarwinProfile.build (self)
+
 	def make_package_symlinks(self, root):
 		os.symlink (self.prefix, os.path.join (root, "Versions", "Current"))
 		currentlink = os.path.join (self.MONO_ROOT, "Versions", "Current")
