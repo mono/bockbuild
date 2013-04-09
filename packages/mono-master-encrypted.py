@@ -3,7 +3,7 @@ import os
 class MonoMasterEncryptedPackage(Package):
 
 	def __init__(self):
-		Package.__init__(self, 'mono', '3.0.8',
+		Package.__init__(self, 'mono', '3.0.9',
       sources = ['git://github.com/mono/mono.git', 'git@github.com:xamarin/mono-extensions.git'],
 			revision = os.getenv('MONO_BUILD_REVISION'),
 			configure_flags = [
