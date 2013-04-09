@@ -394,6 +394,16 @@ GitHubTarballPackage.default_sources = [
 	'http://github.com/%{org}/%{name}/tarball/%{commit}'
 ]
 
+class GitHubPackage (Package):
+	def __init__ (self, organization, name, version, revision = None, git_branch = None, configure_flags = None, override_properties = None):
+		Package.__init__ (self, name, version,
+			organization = organization,
+			revision = revision,
+			git_branch = git_branch,
+			configure_flags = configure_flags,
+			sources = ['git://github.com/%{organization}/%{name}.git'],
+			override_properties = override_properties)
+
 class GstreamerPackage (ProjectPackage): pass
 GstreamerPackage.default_sources = [
 	'http://%{project}.freedesktop.org/src/%{name}/%{name}-%{version}.tar.gz'
