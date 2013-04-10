@@ -409,12 +409,13 @@ GitHubTarballPackage.default_sources = [
 ]
 
 class GitHubPackage (Package):
-	def __init__ (self, organization, name, version, revision = None, git_branch = None, configure_flags = None, override_properties = None):
+	def __init__ (self, organization, name, version, revision = None, git_branch = None, configure = None, configure_flags = None, override_properties = None):
 		Package.__init__ (self, name, version,
 			organization = organization,
 			revision = revision,
 			git_branch = git_branch,
 			configure_flags = configure_flags,
+			configure = configure,
 			sources = ['git://github.com/%{organization}/%{name}.git'],
 			override_properties = override_properties)
 
