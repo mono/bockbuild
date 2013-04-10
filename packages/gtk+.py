@@ -1,6 +1,6 @@
 class GtkPackage (GnomeGitPackage):
 	def __init__ (self):
-		GnomeGitPackage.__init__ (self, 'gtk+', '2.24', '8f3a3403ffa4458c2e210a04d0c49ebf99601edc',
+		GnomeGitPackage.__init__ (self, 'gtk+', '2.24', 'd7e3f6f9f89f0acb7fd40179cc4246726deafef1',
 			configure_flags = [
 				'--with-gdktarget=%{gdk_target}',
 #				'--disable-cups',
@@ -13,8 +13,6 @@ class GtkPackage (GnomeGitPackage):
 			self.sources.extend ([
 				# Custom gtkrc
 				'patches/gtkrc',
-
-				'patches/gtk/0000-Fix-call-to-missing-symbol.patch',
 
 				# smooth scrolling, scrollbars, overscroll, retina, gtknsview
 				'patches/gtk/0001-Add-gdk_screen_get_monitor_workarea-and-use-it-all-o.patch',
