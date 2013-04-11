@@ -49,23 +49,30 @@ fi
 
 # Delete older Monos
 #
+# - keep if the major version is different
 # - keep if 'Versions/x.y.z/keep' exists
-# - Keep if it is greater than $CURRENT_VER
+# - Keep if it is greater than $CURRENT
 #
 CURRENT=`basename $(readlink ${FW_CURRENT})`
 echo "Current:" $CURRENT
 
 pushd ${FW}/Versions
 for i in `ls -d *`; do
+    result=`echo "${i:0:1} == ${CURRENT:0:1}" | bc`
+    if [ $result -ne 1 ]; then
+        echo "keeping" $i "because it has a different major version"
+        continue
+    fi
+
     if [ -f $i/keep ]; then
-        echo "Keeping" $i
+        echo "Keeping" $i "because of keep file"
         continue
     fi
 
     # A magical bit of Perl: http://stackoverflow.com/a/7366753/494990
     result=$(perl -e 'print shift cmp shift' $i $CURRENT)
     if [ $result -ge 0 ]; then
-        echo "Skipping" $i
+        echo "Skipping" $i "because $i > $CURRENT"
         continue
 
     else
