@@ -40,9 +40,7 @@ class MonoReleaseProfile (DarwinProfile, MonoReleasePackages):
 	def build (self):
 		if not os.path.exists (os.path.join (self.release_root, "bin")):
 			log (0, "Rebuilding world because of new prefix: %s" % self.release_root)
-			success_files = glob.glob (os.path.join (self.build_root, "*.success"))
-			for sf in success_files:
-				os.remove (sf)
+			shutil.rmtree (self.build_root, ignore_errors = True)
 		DarwinProfile.build (self)
 
 	def make_package_symlinks(self, root):
