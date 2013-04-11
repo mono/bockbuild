@@ -28,6 +28,7 @@ class MonoReleasePackages:
 				'libtiff.py',
 				'libgif.py',
 				'libxml2.py',
+				'expat.py',
 				'freetype.py',
 				'fontconfig.py',
 				'pixman.py',
@@ -41,7 +42,6 @@ class MonoReleasePackages:
 				'gtk+.py',
 				'libglade.py',
 				'sqlite.py',
-				'expat.py',
 				'ige-mac-integration.py'
 				])
 
