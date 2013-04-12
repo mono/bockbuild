@@ -70,7 +70,7 @@ for i in `ls -d *`; do
     fi
 
     # A magical bit of Perl: http://stackoverflow.com/a/7366753/494990
-    result=$(perl -e 'print shift cmp shift' $i $CURRENT)
+    result=$(perl -e '($a,$b)=@ARGV; for ($a,$b) {s/(\d+)/sprintf "%5d", $1/ge}; print $a cmp $b;' $i $CURRENT)
     if [ $result -ge 0 ]; then
         echo "Skipping" $i "because $i > $CURRENT" >> /tmp/mono-installation
         continue
