@@ -60,23 +60,23 @@ pushd ${FW}/Versions
 for i in `ls -d *`; do
     result=`echo "${i:0:1} == ${CURRENT:0:1}" | bc`
     if [ $result -ne 1 ]; then
-        echo "keeping" $i "because it has a different major version"
+        echo "keeping" $i "because it has a different major version" >> /tmp/mono-installation
         continue
     fi
 
     if [ -f $i/keep ]; then
-        echo "Keeping" $i "because of keep file"
+        echo "Keeping" $i "because of keep file" >> /tmp/mono-installation
         continue
     fi
 
     # A magical bit of Perl: http://stackoverflow.com/a/7366753/494990
     result=$(perl -e 'print shift cmp shift' $i $CURRENT)
     if [ $result -ge 0 ]; then
-        echo "Skipping" $i "because $i > $CURRENT"
+        echo "Skipping" $i "because $i > $CURRENT" >> /tmp/mono-installation
         continue
 
     else
-        echo "rm -rf" $i
+        echo "rm -rf" $i >> /tmp/mono-installation
         rm -rf $i
     fi
 done
