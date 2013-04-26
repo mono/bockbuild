@@ -1,7 +1,7 @@
-From 8d3b0e6857b2eb51b19ddd716bb7997a5f62e84a Mon Sep 17 00:00:00 2001
+From dcb2fecf10937aaee5bc5946a49c402300c335c3 Mon Sep 17 00:00:00 2001
 From: Michael Natterer <mitch@gimp.org>
 Date: Tue, 12 Feb 2013 13:22:39 +0100
-Subject: [PATCH 46/53] tests: add a notebook to testnsview.c
+Subject: [PATCH 46/56] tests: add a notebook to testnsview.c
 
 ---
  tests/testnsview.c |   17 +++++++++++++++++
@@ -22,7 +22,7 @@ index 7c9ccb7..45b1d60 100644
 @@ -86,6 +87,10 @@ main (gint   argc,
                      G_CALLBACK (forward_clicked),
                      webview);
-
+ 
 +  notebook = gtk_notebook_new ();
 +  gtk_box_pack_end (GTK_BOX (vbox), notebook, TRUE, TRUE, 0);
 +  gtk_widget_show (notebook);
@@ -31,7 +31,7 @@ index 7c9ccb7..45b1d60 100644
                 frameName:@"foo"
                 groupName:@"bar"];
 @@ -97,12 +102,24 @@ main (gint   argc,
-
+ 
    ns_view = gtk_ns_view_new ((NSView *) webview);
    gtk_widget_set_size_request (ns_view, 300, 200);
 +#if 0
@@ -41,9 +41,9 @@ index 7c9ccb7..45b1d60 100644
 +                            gtk_label_new ("WebView"));
 +#endif
    gtk_widget_show (ns_view);
-
+ 
    [webview release];
-
+ 
    {
 +    GtkWidget *useless = gtk_label_new ("Useless Label");
 +    gtk_notebook_append_page (GTK_NOTEBOOK (notebook), useless,
@@ -53,7 +53,8 @@ index 7c9ccb7..45b1d60 100644
 +
 +  {
      GtkWidget *button;
-
+ 
      button = gtk_button_new_with_label ("hide webview");
---
+-- 
 1.7.10.2 (Apple Git-33)
+

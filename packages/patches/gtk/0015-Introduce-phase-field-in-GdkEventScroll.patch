@@ -1,7 +1,7 @@
-From dd87c7bea43b3a5cc8d5b7802da37fcab2c0948e Mon Sep 17 00:00:00 2001
+From 7fba4665f042b0e40a6c778e069a77fc1ee81d81 Mon Sep 17 00:00:00 2001
 From: Kristian Rietveld <kris@lanedo.com>
 Date: Sun, 2 Sep 2012 14:16:45 +0200
-Subject: [PATCH 15/53] Introduce phase field in GdkEventScroll
+Subject: [PATCH 15/56] Introduce phase field in GdkEventScroll
 
 Using the phase field it is possible to distinguish between
 events generated while the user is performing a gesture and
@@ -54,10 +54,10 @@ index f6b4e04..765b520 100644
  
  struct _GdkEventKey
 diff --git a/gdk/gdkwindow.c b/gdk/gdkwindow.c
-index 13d4d46..6150472 100644
+index d48751e..1843873 100644
 --- a/gdk/gdkwindow.c
 +++ b/gdk/gdkwindow.c
-@@ -10797,6 +10797,7 @@ proxy_button_event (GdkEvent *source_event,
+@@ -10803,6 +10803,7 @@ proxy_button_event (GdkEvent *source_event,
        event->scroll.has_deltas = source_event->scroll.has_deltas;
        event->scroll.delta_x = source_event->scroll.delta_x;
        event->scroll.delta_y = source_event->scroll.delta_y;

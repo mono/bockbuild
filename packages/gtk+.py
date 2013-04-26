@@ -68,6 +68,9 @@ class GtkPackage (GnomeGitPackage):
 				'patches/gtk/0051-gtk-implement-clipping-to-multiple-parent-viewports-.patch',
 				'patches/gtk/0052-gtk-first-attempt-to-also-clip-NSWindow-s-field-edit.patch',
 				'patches/gtk/0053-gtk-also-clip-the-NSView-s-subviews.patch',
+				'patches/gtk/0054-nsview-also-swizzle-DidAddSubview-and-clip-all-subvi.patch',
+				'patches/gtk/0055-nsview-clip-text-field-cursor-drawing.patch',
+				'patches/gtk/0056-nsview-factor-out-almost-all-code-from-the-overridde.patch',
 
 				# make new modifier behviour opt-in, so as not to break old versions of MonoDevelop
 				'patches/gdk-quartz-set-fix-modifiers-hack-v3.patch',

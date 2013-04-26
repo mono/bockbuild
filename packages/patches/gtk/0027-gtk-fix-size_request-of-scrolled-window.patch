@@ -1,7 +1,7 @@
-From b8dff96d640f5b986f8ef980db358df53fa85453 Mon Sep 17 00:00:00 2001
+From c8f5e0dfaa02a224fee5155f01c50a326e670fdb Mon Sep 17 00:00:00 2001
 From: Michael Natterer <mitch@gimp.org>
 Date: Thu, 22 Nov 2012 19:49:20 +0100
-Subject: [PATCH 27/53] gtk: fix size_request() of scrolled window
+Subject: [PATCH 27/56] gtk: fix size_request() of scrolled window
 
 ---
  gtk/gtkscrolledwindow.c |   41 ++++++++++++++++-------------------------

@@ -1,7 +1,7 @@
-From b70726c58b95d96d8d4c3d867a93b08316b1badd Mon Sep 17 00:00:00 2001
+From 5af9eb5de4320f37512fd456def895d897792615 Mon Sep 17 00:00:00 2001
 From: Michael Natterer <mitch@gimp.org>
 Date: Fri, 23 Mar 2012 12:22:31 +0100
-Subject: [PATCH 42/53] quartz: return events on embedded foreign NSViews back
+Subject: [PATCH 42/56] quartz: return events on embedded foreign NSViews back
  to Cocoa
 
 ---
@@ -20,7 +20,7 @@ index ea36bae..7b37163 100644
  VOID:DOUBLE,DOUBLE,POINTER,POINTER
 +VOID:POINTER,POINTER
 diff --git a/gdk/gdkwindow.c b/gdk/gdkwindow.c
-index 0f22246..836a5b0 100644
+index f9568f6..9e1eaab 100644
 --- a/gdk/gdkwindow.c
 +++ b/gdk/gdkwindow.c
 @@ -126,6 +126,7 @@ enum {
@@ -30,11 +30,11 @@ index 0f22246..836a5b0 100644
 +  NATIVE_CHILD_EVENT,
    LAST_SIGNAL
  };
-
+ 
 @@ -595,6 +596,19 @@ gdk_window_class_init (GdkWindowObjectClass *klass)
-		  G_TYPE_DOUBLE,
-		  G_TYPE_POINTER,
-		  G_TYPE_POINTER);
+ 		  G_TYPE_DOUBLE,
+ 		  G_TYPE_POINTER,
+ 		  G_TYPE_POINTER);
 +
 +  signals[NATIVE_CHILD_EVENT] =
 +    g_signal_new (g_intern_static_string ("native-child-event"),
@@ -49,7 +49,7 @@ index 0f22246..836a5b0 100644
 +		  G_TYPE_POINTER);
 +
  }
-
+ 
  static void
 diff --git a/gdk/quartz/gdkevents-quartz.c b/gdk/quartz/gdkevents-quartz.c
 index f3ba2c8..f6742f0 100644
@@ -61,12 +61,12 @@ index f3ba2c8..f6742f0 100644
                  GdkWindowImplQuartz *toplevel_impl;
 +                guint n_subviews;
 +                guint i;
-
+ 
                  toplevel = toplevel_under_pointer;
-
+ 
                  toplevel_private = (GdkWindowObject *)toplevel;
                  toplevel_impl = (GdkWindowImplQuartz *)toplevel_private->impl;
-
+ 
 +                n_subviews = [[toplevel_impl->view subviews] count];
 +
 +                for (i = 0; i < n_subviews; ++i)
@@ -88,5 +88,6 @@ index f3ba2c8..f6742f0 100644
                  *x = x_tmp;
                  *y = y_tmp;
                }
---
+-- 
 1.7.10.2 (Apple Git-33)
+

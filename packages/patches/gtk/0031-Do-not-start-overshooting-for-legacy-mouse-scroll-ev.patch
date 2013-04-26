@@ -1,7 +1,7 @@
-From 0bd48a363067858aef60e8c66e73f3c04fd1afc6 Mon Sep 17 00:00:00 2001
+From 648ed2c633e39fd39ab47e238682b0f5cb277fdc Mon Sep 17 00:00:00 2001
 From: Kristian Rietveld <kris@lanedo.com>
 Date: Sun, 17 Feb 2013 13:08:14 +0100
-Subject: [PATCH 31/53] Do not start overshooting for legacy mouse scroll
+Subject: [PATCH 31/56] Do not start overshooting for legacy mouse scroll
  events
 
 Doing overshooting properly relies on the detection of gestures.

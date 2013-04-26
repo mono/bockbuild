@@ -1,7 +1,7 @@
-From df3fd606a7d7121069a1a94b4a8f6655bfb7aa20 Mon Sep 17 00:00:00 2001
+From 084fc8f90f9f56e144cfbbaf0b6ca1bb53561711 Mon Sep 17 00:00:00 2001
 From: Michael Natterer <mitch@gimp.org>
 Date: Fri, 23 Nov 2012 15:24:36 +0100
-Subject: [PATCH 01/53] Add gdk_screen_get_monitor_workarea() and use it all
+Subject: [PATCH 01/56] Add gdk_screen_get_monitor_workarea() and use it all
  over the place
 
 ---
@@ -116,10 +116,10 @@ index dc912a3..d997d0d 100644
    if (*x < monitor.x)
      *x = monitor.x;
 diff --git a/gtk/gtkentry.c b/gtk/gtkentry.c
-index 2c9c5a4..71dc1df 100644
+index 9f5350f..b211159 100644
 --- a/gtk/gtkentry.c
 +++ b/gtk/gtkentry.c
-@@ -8636,7 +8636,7 @@ popup_position_func (GtkMenu   *menu,
+@@ -8635,7 +8635,7 @@ popup_position_func (GtkMenu   *menu,
      monitor_num = 0;
    gtk_menu_set_monitor (menu, monitor_num);
  
