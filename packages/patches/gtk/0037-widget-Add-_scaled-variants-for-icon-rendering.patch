@@ -1,7 +1,7 @@
-From d5e41569123802d461428249deb278b1e9494629 Mon Sep 17 00:00:00 2001
+From 26d5bd6041b28bb456cd2b28bc731114099abf64 Mon Sep 17 00:00:00 2001
 From: Carlos Garnacho <carlosg@gnome.org>
 Date: Tue, 12 Feb 2013 14:01:15 +0100
-Subject: [PATCH 37/53] widget: Add _scaled() variants for icon rendering
+Subject: [PATCH 37/56] widget: Add _scaled() variants for icon rendering
 
 Likewise to the iconfactory changes, this API allows to
 deal with stock icons at sizes that are suitable for
@@ -18,7 +18,7 @@ index c812bb9..f093c39 100644
 @@ -7502,6 +7502,33 @@ gtk_widget_render_icon (GtkWidget      *widget,
    return retval;
  }
-
+ 
 +GdkPixbuf*
 +gtk_widget_render_icon_scaled (GtkWidget      *widget,
 +			       const gchar    *stock_id,
@@ -28,13 +28,13 @@ index c812bb9..f093c39 100644
 +{
 +  GtkIconSet *icon_set;
 +  GdkPixbuf *retval;
-+
++  
 +  g_return_val_if_fail (GTK_IS_WIDGET (widget), NULL);
 +  g_return_val_if_fail (stock_id != NULL, NULL);
 +  g_return_val_if_fail (size > GTK_ICON_SIZE_INVALID || size == -1, NULL);
-+
++  
 +  gtk_widget_ensure_style (widget);
-+
++  
 +  icon_set = gtk_style_lookup_icon_set (widget->style, stock_id);
 +
 +  if (icon_set == NULL)
@@ -62,8 +62,9 @@ index cee16cd..f7ebf9b 100644
 +                                               GtkIconSize     size,
 +                                               const gchar    *detail,
 +                                               gdouble        *real_scale);
-
+ 
  /* handle composite names for GTK_COMPOSITE_CHILD widgets,
   * the returned name is newly allocated.
---
+-- 
 1.7.10.2 (Apple Git-33)
+

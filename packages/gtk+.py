@@ -1,6 +1,6 @@
 class GtkPackage (GnomeGitPackage):
 	def __init__ (self):
-		GnomeGitPackage.__init__ (self, 'gtk+', '2.24', 'd7e3f6f9f89f0acb7fd40179cc4246726deafef1',
+		GnomeGitPackage.__init__ (self, 'gtk+', '2.24', 'ba5ac33cdc18fe252de9baac6a2927f9ea77e6ab',
 			configure_flags = [
 				'--with-gdktarget=%{gdk_target}',
 #				'--disable-cups',
@@ -68,6 +68,9 @@ class GtkPackage (GnomeGitPackage):
 				'patches/gtk/0051-gtk-implement-clipping-to-multiple-parent-viewports-.patch',
 				'patches/gtk/0052-gtk-first-attempt-to-also-clip-NSWindow-s-field-edit.patch',
 				'patches/gtk/0053-gtk-also-clip-the-NSView-s-subviews.patch',
+				'patches/gtk/0054-nsview-also-swizzle-DidAddSubview-and-clip-all-subvi.patch',
+				'patches/gtk/0055-nsview-clip-text-field-cursor-drawing.patch',
+				'patches/gtk/0056-nsview-factor-out-almost-all-code-from-the-overridde.patch',
 
 				# make new modifier behviour opt-in, so as not to break old versions of MonoDevelop
 				'patches/gdk-quartz-set-fix-modifiers-hack-v3.patch',

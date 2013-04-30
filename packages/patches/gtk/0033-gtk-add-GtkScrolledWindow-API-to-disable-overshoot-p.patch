@@ -1,7 +1,7 @@
-From a358e670e5b973413ed94884d9efcd9511026e6f Mon Sep 17 00:00:00 2001
+From e47b104380509f2e9fffc2c0a3eec1b3e9bd91c6 Mon Sep 17 00:00:00 2001
 From: Michael Natterer <mitch@gimp.org>
 Date: Fri, 5 Apr 2013 15:15:08 +0200
-Subject: [PATCH 33/53] gtk: add GtkScrolledWindow API to disable overshoot
+Subject: [PATCH 33/56] gtk: add GtkScrolledWindow API to disable overshoot
  per widget
 
 And remove some forgotten declarations in the header.
@@ -20,12 +20,12 @@ index 4a5c1f4..e17dd45 100644
    gboolean       gesture_in_progress;
 +  gboolean       enable_overshoot;
  } GtkScrolledWindowPrivate;
-
+ 
  #define GTK_SCROLLED_WINDOW_GET_PRIVATE(obj) (G_TYPE_INSTANCE_GET_PRIVATE ((obj), GTK_TYPE_SCROLLED_WINDOW, GtkScrolledWindowPrivate))
 @@ -543,6 +544,8 @@ gtk_scrolled_window_init (GtkScrolledWindow *scrolled_window)
    priv->sb_width = 6;
    priv->sb_fade_out_delay = 1000;
-
+ 
 +  priv->enable_overshoot = TRUE;
 +
    g_signal_connect_swapped (priv->opacity, "value-changed",
@@ -34,19 +34,19 @@ index 4a5c1f4..e17dd45 100644
 @@ -2146,8 +2149,9 @@ gtk_scrolled_window_scroll_event (GtkWidget      *widget,
        gboolean is_momentum_event = event->momentum_phase != GDK_EVENT_SCROLL_PHASE_NONE;
        gboolean legacy_mouse = FALSE;
-
+ 
 -      if (event->phase == GDK_EVENT_SCROLL_PHASE_NONE &&
 -          event->momentum_phase == GDK_EVENT_SCROLL_PHASE_NONE)
 +      if (!priv->enable_overshoot ||
 +          (event->phase == GDK_EVENT_SCROLL_PHASE_NONE &&
 +           event->momentum_phase == GDK_EVENT_SCROLL_PHASE_NONE))
          legacy_mouse = TRUE;
-
+ 
        _gtk_scrolled_window_get_overshoot (scrolled_window,
 @@ -3108,6 +3112,31 @@ gtk_scrolled_window_add_with_viewport (GtkScrolledWindow *scrolled_window,
    gtk_container_add (GTK_CONTAINER (viewport), child);
  }
-
+ 
 +void
 +gtk_scrolled_window_set_enable_overshoot (GtkScrolledWindow *scrolled_window,
 +                                          gboolean           enable_overshoot)
@@ -81,8 +81,8 @@ index 1f555e0..f75596d 100644
 +++ b/gtk/gtkscrolledwindow.h
 @@ -127,13 +127,9 @@ GtkShadowType  gtk_scrolled_window_get_shadow_type   (GtkScrolledWindow *scrolle
  void	       gtk_scrolled_window_add_with_viewport (GtkScrolledWindow *scrolled_window,
-						      GtkWidget		*child);
-
+ 						      GtkWidget		*child);
+ 
 -void           gtk_scrolled_window_set_kinetic_scrolling  (GtkScrolledWindow        *scrolled_window,
 -                                                           gboolean                  kinetic_scrolling);
 -gboolean       gtk_scrolled_window_get_kinetic_scrolling  (GtkScrolledWindow        *scrolled_window);
@@ -93,8 +93,9 @@ index 1f555e0..f75596d 100644
 +void           gtk_scrolled_window_set_enable_overshoot (GtkScrolledWindow *scrolled_window,
 +                                                         gboolean           enable_overshoot);
 +gboolean       gtk_scrolled_window_get_enable_overshoot (GtkScrolledWindow *scrolled_window);
-
+ 
  gint _gtk_scrolled_window_get_scrollbar_spacing (GtkScrolledWindow *scrolled_window);
-
---
+ 
+-- 
 1.7.10.2 (Apple Git-33)
+

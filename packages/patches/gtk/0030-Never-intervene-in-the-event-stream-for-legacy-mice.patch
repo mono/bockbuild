@@ -1,7 +1,7 @@
-From 9545e9a672cf9cf7362bdd5906d3b0ba24027dfe Mon Sep 17 00:00:00 2001
+From 6b4f74e34274b9041ac4f4e2ab67baaf2a9a362a Mon Sep 17 00:00:00 2001
 From: Kristian Rietveld <kris@lanedo.com>
 Date: Sun, 17 Feb 2013 13:06:59 +0100
-Subject: [PATCH 30/53] Never intervene in the event stream for legacy mice
+Subject: [PATCH 30/56] Never intervene in the event stream for legacy mice
 
 This is necessary for devices (e.g. Mighty Mouse) which do emit
 precise deltas but no phase.
@@ -10,10 +10,10 @@ precise deltas but no phase.
  1 file changed, 9 insertions(+), 1 deletion(-)
 
 diff --git a/gdk/gdkwindow.c b/gdk/gdkwindow.c
-index f0d35f5..ace57d2 100644
+index 7a3732c..2db0c0b 100644
 --- a/gdk/gdkwindow.c
 +++ b/gdk/gdkwindow.c
-@@ -10843,12 +10843,20 @@ proxy_button_event (GdkEvent *source_event,
+@@ -10849,12 +10849,20 @@ proxy_button_event (GdkEvent *source_event,
     */
    if (type == GDK_SCROLL && source_event->scroll.has_deltas)
      {

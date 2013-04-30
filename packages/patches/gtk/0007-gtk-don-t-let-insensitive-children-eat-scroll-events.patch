@@ -1,7 +1,7 @@
-From d8deeee270e83655968388864c6af33394ed76ce Mon Sep 17 00:00:00 2001
+From 85bdaf082cfcccaf80625d182cd5b223492a84d9 Mon Sep 17 00:00:00 2001
 From: Michael Natterer <mitch@lanedo.com>
 Date: Thu, 22 Nov 2012 13:37:58 +0100
-Subject: [PATCH 07/53] gtk: don't let insensitive children eat scroll events
+Subject: [PATCH 07/56] gtk: don't let insensitive children eat scroll events
  when bubbling down
 
 When event capturing is enabled, stop propagating scroll events

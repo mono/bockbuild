@@ -1,7 +1,7 @@
-From a10c396caeff30c39ec3adac56e8f546f60752c9 Mon Sep 17 00:00:00 2001
+From 777972cbac401b21d17d8a39689e3f78fd264ecc Mon Sep 17 00:00:00 2001
 From: Michael Natterer <mitch@gimp.org>
 Date: Tue, 8 May 2012 14:11:50 +0200
-Subject: [PATCH 05/53] Smooth scrolling
+Subject: [PATCH 05/56] Smooth scrolling
 
 ---
  gdk/gdkevents.c               |   32 +++++++++++++++++
@@ -88,10 +88,10 @@ index 0602bd0..f6b4e04 100644
                                           GdkAxisUse       axis_use,
                                           gdouble         *value);
 diff --git a/gdk/gdkwindow.c b/gdk/gdkwindow.c
-index d20b424..13d4d46 100644
+index f5f0339..d48751e 100644
 --- a/gdk/gdkwindow.c
 +++ b/gdk/gdkwindow.c
-@@ -10794,6 +10794,9 @@ proxy_button_event (GdkEvent *source_event,
+@@ -10800,6 +10800,9 @@ proxy_button_event (GdkEvent *source_event,
        event->scroll.y_root = source_event->scroll.y_root;
        event->scroll.state = state;
        event->scroll.device = source_event->scroll.device;

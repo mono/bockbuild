@@ -1,7 +1,7 @@
-From ddacc04f98d2f4860caa5ff0db4ed5196b10b50f Mon Sep 17 00:00:00 2001
+From 8cb434e77766e7f5efa97e1a5f52ed19b35d234e Mon Sep 17 00:00:00 2001
 From: Kristian Rietveld <kris@lanedo.com>
 Date: Fri, 28 Sep 2012 08:24:05 +0200
-Subject: [PATCH 16/53] Add hack to lock flow of scroll events to window where
+Subject: [PATCH 16/56] Add hack to lock flow of scroll events to window where
  scroll started
 
 A bit evil but there is probably no other way, because this is very
@@ -15,7 +15,7 @@ the folow of momentum events has ended.
  1 file changed, 94 insertions(+)
 
 diff --git a/gdk/gdkwindow.c b/gdk/gdkwindow.c
-index 6150472..68e4c70 100644
+index 1843873..1dac543 100644
 --- a/gdk/gdkwindow.c
 +++ b/gdk/gdkwindow.c
 @@ -434,6 +434,10 @@ accumulate_get_window (GSignalInvocationHint *ihint,
@@ -42,7 +42,7 @@ index 6150472..68e4c70 100644
  
  
    /* Properties */
-@@ -10696,6 +10706,64 @@ proxy_pointer_event (GdkDisplay                 *display,
+@@ -10702,6 +10712,64 @@ proxy_pointer_event (GdkDisplay                 *display,
  			     GDK_BUTTON4_MASK | \
  			     GDK_BUTTON5_MASK)
  
@@ -107,7 +107,7 @@ index 6150472..68e4c70 100644
  static gboolean
  proxy_button_event (GdkEvent *source_event,
  		    gulong serial)
-@@ -10763,6 +10831,32 @@ proxy_button_event (GdkEvent *source_event,
+@@ -10769,6 +10837,32 @@ proxy_button_event (GdkEvent *source_event,
  				type, state,
  				NULL, serial);
  

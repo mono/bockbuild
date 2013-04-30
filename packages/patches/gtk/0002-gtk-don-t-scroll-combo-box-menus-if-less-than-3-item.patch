@@ -1,7 +1,7 @@
-From 5ecaa8dd5e4eb220f81285074d8ed99a12ee704b Mon Sep 17 00:00:00 2001
+From bfed80164f39055c0547e35871abe0bdc8af94f0 Mon Sep 17 00:00:00 2001
 From: Michael Natterer <mitch@gimp.org>
 Date: Fri, 23 Nov 2012 15:28:26 +0100
-Subject: [PATCH 02/53] gtk: don't scroll combo box menus if less than 3
+Subject: [PATCH 02/56] gtk: don't scroll combo box menus if less than 3
  itemss are visible
 
 ---

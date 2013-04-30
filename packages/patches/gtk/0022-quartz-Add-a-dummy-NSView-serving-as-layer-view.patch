@@ -1,7 +1,7 @@
-From 326b82aec2b72660a80e8171954930f036681aa9 Mon Sep 17 00:00:00 2001
+From 16aca5f63a1d3c93c51157c49c266192d2061766 Mon Sep 17 00:00:00 2001
 From: Michael Natterer <mitch@gimp.org>
 Date: Fri, 5 Oct 2012 12:10:15 +0200
-Subject: [PATCH 22/53] quartz: Add a dummy NSView serving as layer view
+Subject: [PATCH 22/56] quartz: Add a dummy NSView serving as layer view
 
 By doing this, the GdkQuartzView does not have to be marked as layer
 backed, such that the disadvantages that come with that (not being able

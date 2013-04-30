@@ -1,7 +1,7 @@
-From 0efe37cafdc969765b68627a52fe68e223da5dd3 Mon Sep 17 00:00:00 2001
+From 6e1e8d65a16c96fc2fca3af3a920c4ab42257b9c Mon Sep 17 00:00:00 2001
 From: Kristian Rietveld <kris@lanedo.com>
 Date: Sat, 23 Feb 2013 00:52:43 +0100
-Subject: [PATCH 29/53] Add momentum_phase to GdkEventScroll
+Subject: [PATCH 29/56] Add momentum_phase to GdkEventScroll
 
 We need this for the detection of legacy mice that do emit precise
 deltas.
@@ -24,10 +24,10 @@ index 765b520..1cbfc58 100644
  
  struct _GdkEventKey
 diff --git a/gdk/gdkwindow.c b/gdk/gdkwindow.c
-index 68e4c70..f0d35f5 100644
+index 1dac543..7a3732c 100644
 --- a/gdk/gdkwindow.c
 +++ b/gdk/gdkwindow.c
-@@ -10892,6 +10892,7 @@ proxy_button_event (GdkEvent *source_event,
+@@ -10898,6 +10898,7 @@ proxy_button_event (GdkEvent *source_event,
        event->scroll.delta_x = source_event->scroll.delta_x;
        event->scroll.delta_y = source_event->scroll.delta_y;
        event->scroll.phase = source_event->scroll.phase;
