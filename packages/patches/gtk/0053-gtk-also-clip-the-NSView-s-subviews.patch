@@ -1,7 +1,7 @@
-From 13eddba7c625deb4f5f9d0fb0ce22064a95102ed Mon Sep 17 00:00:00 2001
+From e3641c733b4c66952c5f3b11e622e2849e741af8 Mon Sep 17 00:00:00 2001
 From: Michael Natterer <mitch@gimp.org>
 Date: Fri, 15 Mar 2013 16:56:59 +0100
-Subject: [PATCH 53/56] gtk: also clip the NSView's subviews
+Subject: [PATCH 53/57] gtk: also clip the NSView's subviews
 
 ---
  gtk/gtknsview.c |   29 ++++++++++++++++++++---------

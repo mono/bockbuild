@@ -1,7 +1,7 @@
-From d556c2d0f2ae4619dd6ab2bdcb279e22b4d8107f Mon Sep 17 00:00:00 2001
+From 2e950aec74a4edb2f06aa39bfb4d61317ddada62 Mon Sep 17 00:00:00 2001
 From: Michael Natterer <mitch@gimp.org>
 Date: Thu, 25 Apr 2013 12:22:28 +0200
-Subject: [PATCH 54/56] nsview: also swizzle DidAddSubview and clip all
+Subject: [PATCH 54/57] nsview: also swizzle DidAddSubview and clip all
  subviews that are added
 
 Finally makes textviews being clipped correctly. Original patch

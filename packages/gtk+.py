@@ -71,6 +71,7 @@ class GtkPackage (GnomeGitPackage):
 				'patches/gtk/0054-nsview-also-swizzle-DidAddSubview-and-clip-all-subvi.patch',
 				'patches/gtk/0055-nsview-clip-text-field-cursor-drawing.patch',
 				'patches/gtk/0056-nsview-factor-out-almost-all-code-from-the-overridde.patch',
+				'patches/gtk/0057-gtk-add-an-overlay-policy-API-to-GtkScrolledWindow.patch',
 
 				# make new modifier behviour opt-in, so as not to break old versions of MonoDevelop
 				'patches/gdk-quartz-set-fix-modifiers-hack-v3.patch',

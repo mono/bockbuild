@@ -1,7 +1,7 @@
-From b9ec2c1593810ccc5eb07669f869ae0f25595fa4 Mon Sep 17 00:00:00 2001
+From 33546de10e625e91b72eebf4a32d85dfa3acc47e Mon Sep 17 00:00:00 2001
 From: Michael Natterer <mitch@gimp.org>
 Date: Fri, 22 Feb 2013 11:05:17 +0100
-Subject: [PATCH 44/56] gdk: add a "move-native-children" signal to GdkWindow
+Subject: [PATCH 44/57] gdk: add a "move-native-children" signal to GdkWindow
 
 and emit it from move_native_children(), so GtkNSView has
 a chance to do the right thing on scrolling.

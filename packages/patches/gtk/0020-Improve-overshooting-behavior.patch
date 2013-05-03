@@ -1,7 +1,7 @@
-From 4e966f36630dc13d930735ba33e2c1a94719f35f Mon Sep 17 00:00:00 2001
+From 7e46d10c911a1d6ea7bb22c9751a26acf3d8c802 Mon Sep 17 00:00:00 2001
 From: Kristian Rietveld <kris@lanedo.com>
 Date: Wed, 19 Sep 2012 07:22:39 +0200
-Subject: [PATCH 20/56] Improve overshooting behavior
+Subject: [PATCH 20/57] Improve overshooting behavior
 
 This is done by taking the stiffness calculations as found in the WebKit
 source code. These calculations are now used to compute the overshooting

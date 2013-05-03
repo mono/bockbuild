@@ -1,7 +1,7 @@
-From 3caadcb72e7c78994c6e0d70c95508b34bfb8a08 Mon Sep 17 00:00:00 2001
+From 9f70b6d3a3d03c5d4c2905a6923732ff64c517ce Mon Sep 17 00:00:00 2001
 From: Carlos Garnacho <carlosg@gnome.org>
 Date: Tue, 12 Feb 2013 14:04:37 +0100
-Subject: [PATCH 40/56] entry: Use scaled icons on windows with a scale factor
+Subject: [PATCH 40/57] entry: Use scaled icons on windows with a scale factor
 
 ---
  gtk/gtkentry.c |   36 ++++++++++++++++++++++--------------

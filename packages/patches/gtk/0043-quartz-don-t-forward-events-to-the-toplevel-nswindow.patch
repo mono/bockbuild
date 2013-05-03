@@ -1,7 +1,7 @@
-From 95f2f4153c484a8bb5582c2c786139a633cd7318 Mon Sep 17 00:00:00 2001
+From f864050f89208350a3aea72f1c37c0ca4af0597d Mon Sep 17 00:00:00 2001
 From: Michael Natterer <mitch@gimp.org>
 Date: Thu, 28 Feb 2013 11:08:13 +0100
-Subject: [PATCH 43/56] quartz: don't forward events to the toplevel
+Subject: [PATCH 43/57] quartz: don't forward events to the toplevel
  nswindow's layer_view
 
 ---

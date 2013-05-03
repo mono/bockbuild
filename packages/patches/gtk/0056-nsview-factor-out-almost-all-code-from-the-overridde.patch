@@ -1,7 +1,7 @@
-From 7ebaabfb968509443b504dba4923dd526c8c2cf0 Mon Sep 17 00:00:00 2001
+From c8af9e9980ebad3d6a4a103e4d3bd7b403ce07b3 Mon Sep 17 00:00:00 2001
 From: Michael Natterer <mitch@gimp.org>
 Date: Fri, 26 Apr 2013 15:50:14 +0200
-Subject: [PATCH 56/56] nsview: factor out almost all code from the overridden
+Subject: [PATCH 56/57] nsview: factor out almost all code from the overridden
  draw functions
 
 ---

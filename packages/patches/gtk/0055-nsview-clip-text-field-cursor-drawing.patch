@@ -1,7 +1,7 @@
-From 58cece3737ddc10f043639d9bd11f88e1ba2bd42 Mon Sep 17 00:00:00 2001
+From 44471f0cf280610d096fac1ebfa6032c96c0e444 Mon Sep 17 00:00:00 2001
 From: Michael Natterer <mitch@gimp.org>
 Date: Thu, 25 Apr 2013 14:52:18 +0200
-Subject: [PATCH 55/56] nsview: clip text field cursor drawing
+Subject: [PATCH 55/57] nsview: clip text field cursor drawing
 
 by replacing (not "normal" swizzling) drawInsertionPointInRect. This
 fixes cursor clipping for the *blinking* cursor, but not if the

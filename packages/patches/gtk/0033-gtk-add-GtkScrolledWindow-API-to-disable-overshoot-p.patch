@@ -1,7 +1,7 @@
-From e47b104380509f2e9fffc2c0a3eec1b3e9bd91c6 Mon Sep 17 00:00:00 2001
+From bb964af52531fe831438f2041176c7286e2281bc Mon Sep 17 00:00:00 2001
 From: Michael Natterer <mitch@gimp.org>
 Date: Fri, 5 Apr 2013 15:15:08 +0200
-Subject: [PATCH 33/56] gtk: add GtkScrolledWindow API to disable overshoot
+Subject: [PATCH 33/57] gtk: add GtkScrolledWindow API to disable overshoot
  per widget
 
 And remove some forgotten declarations in the header.

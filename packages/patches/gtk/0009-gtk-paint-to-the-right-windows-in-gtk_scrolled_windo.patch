@@ -1,7 +1,7 @@
-From d529f63b5d2629a1a239d95882f88e3a82b44e94 Mon Sep 17 00:00:00 2001
+From 5f139ff38f17515dcd2aa517df1e7a349bd034ec Mon Sep 17 00:00:00 2001
 From: Michael Natterer <mitch@gimp.org>
 Date: Thu, 14 Jun 2012 09:27:09 +0200
-Subject: [PATCH 09/56] gtk: paint to the right windows in
+Subject: [PATCH 09/57] gtk: paint to the right windows in
  gtk_scrolled_window_expose()
 
 so we don't paint everything twice.

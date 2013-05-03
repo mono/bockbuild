@@ -1,7 +1,7 @@
-From 3db757df001cd0ecfc6d61cbc4daec70b61ee414 Mon Sep 17 00:00:00 2001
+From 630f1c74c40a1e00a139ad9971453dfc8b92d29d Mon Sep 17 00:00:00 2001
 From: Carlos Garnacho <carlosg@gnome.org>
 Date: Tue, 12 Feb 2013 14:03:40 +0100
-Subject: [PATCH 38/56] image: Use scaled icons on windows with a scaling
+Subject: [PATCH 38/57] image: Use scaled icons on windows with a scaling
  factor
 
 ---

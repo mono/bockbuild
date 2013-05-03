@@ -1,7 +1,7 @@
-From aa5a69d47deb7671d54e9d61e0819b2341376c2c Mon Sep 17 00:00:00 2001
+From 2bf623cc61be1aaaea80309c118f08d490ebda65 Mon Sep 17 00:00:00 2001
 From: Michael Natterer <mitch@gimp.org>
 Date: Fri, 15 Feb 2013 15:42:46 +0100
-Subject: [PATCH 41/56] gtk: use gtk_widget_get_scale_factor(), and cache
+Subject: [PATCH 41/57] gtk: use gtk_widget_get_scale_factor(), and cache
  scaled icons
 
 ---

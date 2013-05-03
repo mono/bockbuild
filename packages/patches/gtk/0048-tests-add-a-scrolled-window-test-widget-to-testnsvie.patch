@@ -1,7 +1,7 @@
-From f1e7e1a6f37c36274bb4533b65f77b78e402fd89 Mon Sep 17 00:00:00 2001
+From d9018c0f1074dbc366a59ee153898f4f6f87faad Mon Sep 17 00:00:00 2001
 From: Michael Natterer <mitch@gimp.org>
 Date: Fri, 22 Feb 2013 11:06:58 +0100
-Subject: [PATCH 48/56] tests: add a scrolled window test widget to
+Subject: [PATCH 48/57] tests: add a scrolled window test widget to
  testnsview.c
 
 ---

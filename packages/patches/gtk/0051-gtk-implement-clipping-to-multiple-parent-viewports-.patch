@@ -1,7 +1,7 @@
-From 8e46f059a7918f0e769a2929205f0cfe92a49801 Mon Sep 17 00:00:00 2001
+From 6865e07a353a4ccc1eef26d4a6052d9c31e6223f Mon Sep 17 00:00:00 2001
 From: Michael Natterer <mitch@gimp.org>
 Date: Thu, 14 Mar 2013 20:10:51 +0100
-Subject: [PATCH 51/56] gtk: implement clipping to multiple parent viewports
+Subject: [PATCH 51/57] gtk: implement clipping to multiple parent viewports
  in GtkNSView
 
 ---

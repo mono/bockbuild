@@ -1,7 +1,7 @@
-From 7aae9891668e0e2397b780ec6b2648417c2247b4 Mon Sep 17 00:00:00 2001
+From b6b3a9f20e4315489aea36b8836adcef92d79e48 Mon Sep 17 00:00:00 2001
 From: Michael Natterer <mitch@gimp.org>
 Date: Fri, 15 Mar 2013 14:49:59 +0100
-Subject: [PATCH 52/56] gtk: first attempt to also clip NSWindow's field
+Subject: [PATCH 52/57] gtk: first attempt to also clip NSWindow's field
  editor
 
 Also, factor out the method swizzling to a utility function.

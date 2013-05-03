@@ -1,7 +1,7 @@
-From 4989418b70125a65362ab202e9f8a4209f282e52 Mon Sep 17 00:00:00 2001
+From 2fbbdc707dc7ef574deec050bcc22c0d99313941 Mon Sep 17 00:00:00 2001
 From: Carlos Garnacho <carlosg@gnome.org>
 Date: Tue, 12 Feb 2013 13:59:09 +0100
-Subject: [PATCH 36/56] iconfactory: Add _scaled() variants
+Subject: [PATCH 36/57] iconfactory: Add _scaled() variants
 
 These functions can be used to deal with stock icons
 at sizes that are suitable for gdk_window_get_scale_factor()

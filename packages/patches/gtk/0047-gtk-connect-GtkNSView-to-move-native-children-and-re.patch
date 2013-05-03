@@ -1,7 +1,7 @@
-From e90d96484d40250a009c6db2bcd6540425a7a107 Mon Sep 17 00:00:00 2001
+From f4bd54dbf151095cbc97b1218ac2693976f5ea36 Mon Sep 17 00:00:00 2001
 From: Michael Natterer <mitch@gimp.org>
 Date: Fri, 22 Feb 2013 11:06:26 +0100
-Subject: [PATCH 47/56] gtk: connect GtkNSView to "move-native-children" and
+Subject: [PATCH 47/57] gtk: connect GtkNSView to "move-native-children" and
  reposition
 
 ---

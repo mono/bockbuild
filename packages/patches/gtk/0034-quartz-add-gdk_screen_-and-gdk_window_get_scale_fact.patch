@@ -1,7 +1,7 @@
-From e812a5d1962c3ba8ed2b0f22002e874d18c1b00a Mon Sep 17 00:00:00 2001
+From 8775902e7385f1fd4dab329ba3932e95b20c67eb Mon Sep 17 00:00:00 2001
 From: Michael Natterer <mitch@gimp.org>
 Date: Fri, 18 Jan 2013 15:47:29 +0100
-Subject: [PATCH 34/56] quartz: add gdk_screen_ and
+Subject: [PATCH 34/57] quartz: add gdk_screen_ and
  gdk_window_get_scale_factor()
 
 which return 1.0 normally and 2.0 on retina displays.

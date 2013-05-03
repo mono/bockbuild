@@ -1,7 +1,7 @@
-From caf000a3149188beb0f05ebae565297ba7190dc0 Mon Sep 17 00:00:00 2001
+From 3f2e58e0efcf9d69e3532ff017b8754a611c9b98 Mon Sep 17 00:00:00 2001
 From: Michael Natterer <mitch@gimp.org>
 Date: Thu, 14 Mar 2013 16:54:38 +0100
-Subject: [PATCH 50/56] gtk: clip NSViews to the scrolled window's
+Subject: [PATCH 50/57] gtk: clip NSViews to the scrolled window's
  overshoot_window
 
 not to the viewport's allocation. This is ugly but by far the
