@@ -252,7 +252,9 @@ class Package:
 
 		# Check to see if it has the right files for a bare repo
 		for i in ['FETCH_HEAD', 'HEAD', 'config', 'objects', 'packed-refs', 'refs']:
-			return False if not os.path.exists(os.path.join(dirname, i))
+			if not os.path.exists(os.path.join(dirname, i): return False
+
+		return True
 
 	def prep (self):
 		self.tar = os.path.join (Package.profile.prefix, 'bin', 'tar')
