@@ -252,7 +252,7 @@ class Package:
 
 		# Check to see if it has the right files for a bare repo
 		for i in ['FETCH_HEAD', 'HEAD', 'config', 'objects', 'packed-refs', 'refs']:
-			if not os.path.exists(os.path.join(dirname, i): return False
+			if not os.path.exists(os.path.join(dirname, i)): return False
 
 		return True
 
