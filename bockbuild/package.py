@@ -246,6 +246,14 @@ class Package:
 	def popd (self):
 		self.cd (self._dirstack.pop ())
 
+	def working_clone(self, dirname):
+		if not os.path.exists(dirname):
+			return False
+
+		# Check to see if it has the right files for a bare repo
+		for i in ['FETCH_HEAD', 'HEAD', 'config', 'objects', 'packed-refs', 'refs']:
+			return False if not os.path.exists(os.path.join(dirname, i))
+
 	def prep (self):
 		self.tar = os.path.join (Package.profile.prefix, 'bin', 'tar')
 		if not os.path.exists (self.tar):
@@ -258,7 +266,9 @@ class Package:
 		if self.sources[0].endswith ('.gitmirror'):
 			dirname = os.path.join (os.getcwd (), expand_macros ('%{name}-%{version}', self))
 			# self.sh ('cp -a "%s" "%s"' % (self.sources[0], dirname))
-			if not os.path.exists(dirname):
+			if not working_clone(dirname):
+				if os.path.exists(dirname):
+					os.rmtree(dirname)
 				self.sh ('git clone --local --shared "%s" "%s"' % (self.sources[0], dirname))
 
 			self.cd (dirname)
