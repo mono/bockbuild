@@ -268,7 +268,7 @@ class Package:
 		if self.sources[0].endswith ('.gitmirror'):
 			dirname = os.path.join (os.getcwd (), expand_macros ('%{name}-%{version}', self))
 			# self.sh ('cp -a "%s" "%s"' % (self.sources[0], dirname))
-			if not working_clone(dirname):
+			if not self.working_clone(dirname):
 				if os.path.exists(dirname):
 					os.rmtree(dirname)
 				self.sh ('git clone --local --shared "%s" "%s"' % (self.sources[0], dirname))
