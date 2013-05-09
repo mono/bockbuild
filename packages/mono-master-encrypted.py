@@ -54,6 +54,7 @@ class MonoMasterEncryptedPackage(Package):
 			os.symlink (full_mono, mono)
 
 		# ignore 'quilt pop' return code because the tree might be pristine
+		self.sh ("cd %s; export QUILT_PATCHES=%s; /usr/local/bin/quilt upgrade || true" % (build_root, "mono-extensions"))
 		self.sh ("cd %s; export QUILT_PATCHES=%s; /usr/local/bin/quilt pop -af || true" % (build_root, "mono-extensions"))
 		self.sh ("cd %s; export QUILT_PATCHES=%s; /usr/local/bin/quilt push -a" % (build_root, "mono-extensions"))
 
