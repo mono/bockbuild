@@ -103,17 +103,19 @@ class MonoReleaseProfile (DarwinProfile, MonoReleasePackages):
 	def run_package_maker (self, working_dir, pkg_file_name, title):
 		packagemaker = '/Developer/Applications/Utilities/PackageMaker.app/Contents/MacOS/PackageMaker'
 		output = os.path.join (working_dir, pkg_file_name)
+		certificate = os.getenv('CODESIGN_CERTIFICATE')
 		cmd = ' '.join([packagemaker,
-
+			"--target '%s'" % "10.5" if certificate else "10.3",
+			"--certificate '%s'" % certificate if certificate else "",
 			"--resources '%s/resources'" % working_dir,
 			"--info '%s/Info.plist'" % working_dir,
 			"--root '%s/PKGROOT'" % working_dir,
-
 			"--out '%s'" % output,
 			"--title '%s'" % title,
 			"-x '.DS_Store'",
 			"--verbose"
 		])
+		print "*** Running " + cmd
 		backtick (cmd)
 		return output
 
