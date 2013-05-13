@@ -76,17 +76,29 @@ class Package:
 
 	def _fetch_sources (self, package_dir, package_dest_dir):
 
+		def is_proper_gitmirror(dirname):
+			if not (os.path.exists(dirname) and os.path.isdir(dirname)):
+				return False
+
+			# Check to see if it has the right files for a bare repo
+			for i in ['FETCH_HEAD', 'HEAD', 'config', 'objects', 'packed-refs', 'refs']:
+				f = os.path.join(dirname, i)
+				if not os.path.exists(f):
+					log (2, "Missing %s, %s is corrupted" % (os.path.basename(f), dirname))
+					return False
+
+			return True
+
 		def get_local_filename(source):
 			return source if os.path.isfile(source) else os.path.join (package_dest_dir, os.path.basename (source))
 
 		def get_cache_name (name):
-			if self.organization == None:
+			if self.organization is None:
 				return self.name
 			else:
 				return self.organization + "+" + name
 
-
-		if self.sources == None:
+		if self.sources is None:
 			return
 
 		if not os.path.exists (package_dest_dir):
@@ -116,7 +128,7 @@ class Package:
 				local_sources.pop ()
 				local_sources.append (local_dest_file)
 				pwd = os.getcwd ()
-				if os.path.isdir (local_dest_file):
+				if is_proper_gitmirror(local_dest_file):
 					self.cd (local_dest_file)
 					self.sh ('%{git} fetch')
 					self.sh ('%{git} remote prune origin')
@@ -246,17 +258,6 @@ class Package:
 	def popd (self):
 		self.cd (self._dirstack.pop ())
 
-	def working_clone(self, dirname):
-		if not os.path.exists(dirname):
-			return False
-
-		# Check to see if it has the right files for a bare repo
-		for i in ['FETCH_HEAD', 'HEAD', 'config', 'objects', 'packed-refs', 'refs']:
-			if not os.path.exists(os.path.join(dirname, i)):
-				return False
-
-		return True
-
 	def prep (self):
 		self.tar = os.path.join (Package.profile.prefix, 'bin', 'tar')
 		if not os.path.exists (self.tar):
@@ -269,9 +270,7 @@ class Package:
 		if self.sources[0].endswith ('.gitmirror'):
 			dirname = os.path.join (os.getcwd (), expand_macros ('%{name}-%{version}', self))
 			# self.sh ('cp -a "%s" "%s"' % (self.sources[0], dirname))
-			if not self.working_clone(self.sources[0]):
-				if os.path.exists(self.sources[0]):
-					shutil.rmtree(self.sources[0])
+			if not os.path.exists(dirname):
 				self.sh ('git clone --local --shared "%s" "%s"' % (self.sources[0], dirname))
 
 			self.cd (dirname)
