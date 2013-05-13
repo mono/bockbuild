@@ -252,7 +252,8 @@ class Package:
 
 		# Check to see if it has the right files for a bare repo
 		for i in ['FETCH_HEAD', 'HEAD', 'config', 'objects', 'packed-refs', 'refs']:
-			if not os.path.exists(os.path.join(dirname, i)): return False
+			if not os.path.exists(os.path.join(dirname, i)):
+				return False
 
 		return True
 
@@ -268,9 +269,9 @@ class Package:
 		if self.sources[0].endswith ('.gitmirror'):
 			dirname = os.path.join (os.getcwd (), expand_macros ('%{name}-%{version}', self))
 			# self.sh ('cp -a "%s" "%s"' % (self.sources[0], dirname))
-			if not self.working_clone(dirname):
-				if os.path.exists(dirname):
-					shutil.rmtree(dirname)
+			if not self.working_clone(self.sources[0]):
+				if os.path.exists(self.sources[0]):
+					shutil.rmtree(self.sources[0])
 				self.sh ('git clone --local --shared "%s" "%s"' % (self.sources[0], dirname))
 
 			self.cd (dirname)
