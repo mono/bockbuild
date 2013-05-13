@@ -116,7 +116,7 @@ class Package:
 				local_sources.pop ()
 				local_sources.append (local_dest_file)
 				pwd = os.getcwd ()
-				if os.path.isdir (local_dest_file):
+				if self.is_proper_gitmirror(local_dest_file):
 					self.cd (local_dest_file)
 					self.sh ('%{git} fetch')
 					self.sh ('%{git} remote prune origin')
@@ -246,8 +246,8 @@ class Package:
 	def popd (self):
 		self.cd (self._dirstack.pop ())
 
-	def working_clone(self, dirname):
-		if not os.path.exists(dirname):
+	def is_proper_gitmirror(self, dirname):
+		if not (os.path.exists(dirname) and os.path.isdir(dirname)):
 			return False
 
 		# Check to see if it has the right files for a bare repo
@@ -269,7 +269,7 @@ class Package:
 		if self.sources[0].endswith ('.gitmirror'):
 			dirname = os.path.join (os.getcwd (), expand_macros ('%{name}-%{version}', self))
 			# self.sh ('cp -a "%s" "%s"' % (self.sources[0], dirname))
-			if not self.working_clone(self.sources[0]):
+			if not self.is_proper_gitmirror(self.sources[0]):
 				if os.path.exists(self.sources[0]):
 					shutil.rmtree(self.sources[0])
 				self.sh ('git clone --local --shared "%s" "%s"' % (self.sources[0], dirname))
