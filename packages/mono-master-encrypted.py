@@ -34,12 +34,8 @@ class MonoMasterEncryptedPackage(Package):
 		extension = self.sources[1]
 		build_root = os.path.abspath (os.path.join (os.getcwd (), ".."))
 		dirname = os.path.join (build_root, "mono-extensions")
-
-		if not self.working_clone(dirname):
-			if os.path.exists(dirname):
-				shutil.rmtree(dirname)
+		if not os.path.exists(dirname):
 			self.sh ('git clone --local --shared "%s" "%s"' % (extension, dirname))
-
 		self.cd (dirname)
 		self.sh ('git fetch')
 		self.sh ('%{git} clean -xfd')
