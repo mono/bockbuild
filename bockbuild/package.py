@@ -81,7 +81,7 @@ class Package:
 				return False
 
 			# Check to see if it has the right files for a bare repo
-			for i in ['FETCH_HEAD', 'HEAD', 'config', 'objects', 'packed-refs', 'refs']:
+			for i in ['HEAD', 'config', 'objects', 'packed-refs', 'refs']:
 				f = os.path.join(dirname, i)
 				if not os.path.exists(f):
 					log (2, "Missing %s, %s is corrupted" % (os.path.basename(f), dirname))
