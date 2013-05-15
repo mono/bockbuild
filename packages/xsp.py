@@ -1,1 +1,1 @@
-GitHubTarballPackage('mono', 'xsp', '2.11', 'd3e2f80ff59ddff68e757a520655555e2fbf2695', configure = './autogen.sh --prefix="%{prefix}"')  
+GitHubTarballPackage('mono', 'xsp', '3.0.11', '4587438369691b9b3e8415e1f113aa98b57d1fde', configure = './autogen.sh --prefix="%{prefix}"')  
