@@ -136,6 +136,8 @@ class Package:
 					self.cd (os.path.dirname (local_dest_file))
 					shutil.rmtree (local_dest_file, ignore_errors = True)
 					self.sh ('%' + '{git} clone --mirror "%s" "%s"' % (source, os.path.basename (local_dest_file)))
+			else:
+				raise Exception ('missing source: %s' % source)
 
 		self.sources = local_sources
 
