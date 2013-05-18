@@ -1,7 +1,7 @@
-From e3641c733b4c66952c5f3b11e622e2849e741af8 Mon Sep 17 00:00:00 2001
+From 930b1d8d655d31b1a977cef549a2ab2242358413 Mon Sep 17 00:00:00 2001
 From: Michael Natterer <mitch@gimp.org>
 Date: Fri, 15 Mar 2013 16:56:59 +0100
-Subject: [PATCH 53/57] gtk: also clip the NSView's subviews
+Subject: [PATCH 45/61] gtk: also clip the NSView's subviews
 
 ---
  gtk/gtknsview.c |   29 ++++++++++++++++++++---------
@@ -13,7 +13,7 @@ index b58a2c8..e2d8f96 100644
 +++ b/gtk/gtknsview.c
 @@ -225,10 +225,14 @@ gtk_ns_view_init (GtkNSView *ns_view)
  @end
- 
+
  static void
 -gtk_ns_view_swizzle_draw_rect (NSView *view)
 +gtk_ns_view_swizzle_draw_rect_recursive (NSView      *view,
@@ -24,7 +24,7 @@ index b58a2c8..e2d8f96 100644
    Method my_drawRect;
 +  NSArray *subviews;
 +  gint i;
- 
+
    original_drawRect = class_getInstanceMethod ([view class],
                                                 @selector (drawRect:));
 @@ -245,6 +249,18 @@ gtk_ns_view_swizzle_draw_rect (NSView *view)
@@ -44,12 +44,12 @@ index b58a2c8..e2d8f96 100644
 +                                               associated_object);
 +    }
  }
- 
+
  static void
 @@ -263,10 +279,8 @@ gtk_ns_view_constructed (GObject *object)
                gtk_widget_get_can_focus (GTK_WIDGET (ns_view)));
  #endif
- 
+
 -  gtk_ns_view_swizzle_draw_rect (ns_view->priv->view);
 -
 -  objc_setAssociatedObject (ns_view->priv->view, "gtknsview", (id) ns_view,
@@ -57,10 +57,10 @@ index b58a2c8..e2d8f96 100644
 +  gtk_ns_view_swizzle_draw_rect_recursive (ns_view->priv->view,
 +                                           "gtknsview", ns_view);
  }
- 
+
  static void
 @@ -428,10 +442,7 @@ gtk_ns_view_map (GtkWidget *widget)
- 
+
        if (text)
          {
 -          gtk_ns_view_swizzle_draw_rect (text);
@@ -71,6 +71,5 @@ index b58a2c8..e2d8f96 100644
          }
      }
  }
--- 
+--
 1.7.10.2 (Apple Git-33)
-

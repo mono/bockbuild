@@ -1,7 +1,7 @@
-From 3b371c9088f01be384ca6c05512d8655f1a3a299 Mon Sep 17 00:00:00 2001
+From c2e0e793a523b0575974d71b6d6a51fc780fa3a8 Mon Sep 17 00:00:00 2001
 From: Michael Natterer <mitch@gimp.org>
 Date: Thu, 16 Aug 2012 09:35:53 +0200
-Subject: [PATCH 13/57] gtk: correctly handle toggling of the scrollbar
+Subject: [PATCH 13/61] gtk: correctly handle toggling of the scrollbar
  visibility setting
 
 By doing most things unconditionally, like connecting to signals

@@ -1,7 +1,7 @@
-From 1b387cb33a30dbbc341d2f85a97fbb8e7413936e Mon Sep 17 00:00:00 2001
+From c8443864f9cb95bde5becbb8936571c284b72fdf Mon Sep 17 00:00:00 2001
 From: Michael Natterer <mitch@gimp.org>
 Date: Fri, 1 Mar 2013 12:39:41 +0100
-Subject: [PATCH 49/57] gtknsview: clip drawRect to a parent GtkViewport's
+Subject: [PATCH 41/61] gtknsview: clip drawRect to a parent GtkViewport's
  window
 
 not quite perfect yet, but getting there...
@@ -15,7 +15,7 @@ index a19a94e..84d758f 100644
 +++ b/gtk/gtknsview.c
 @@ -28,6 +28,7 @@
  #include <objc/runtime.h>
- 
+
  #include "gtknsview.h"
 +#include "gtkviewport.h"
  #include "gtkprivate.h"
@@ -23,24 +23,24 @@ index a19a94e..84d758f 100644
  #include "gtkalias.h"
 @@ -52,6 +53,7 @@ struct _GtkNSViewPrivate
                                        GTK_TYPE_NS_VIEW, GtkNSViewPrivate))
- 
- 
+
+
 +static void       gtk_ns_view_constructed   (GObject        *object);
  static void       gtk_ns_view_finalize      (GObject        *object);
  static void       gtk_ns_view_set_property  (GObject        *object,
                                               guint           prop_id,
 @@ -89,7 +91,6 @@ static gboolean   gtk_ns_view_forward_event        (GtkWidget     *widget,
- 
+
  G_DEFINE_TYPE (GtkNSView, gtk_ns_view, GTK_TYPE_WIDGET)
- 
+
 -
  static void
  gtk_ns_view_class_init (GtkNSViewClass *klass)
  {
 @@ -98,6 +99,7 @@ gtk_ns_view_class_init (GtkNSViewClass *klass)
- 
+
    g_type_class_add_private (klass, sizeof (GtkNSViewPrivate));
- 
+
 +  object_class->constructed = gtk_ns_view_constructed;
    object_class->finalize = gtk_ns_view_finalize;
    object_class->set_property = gtk_ns_view_set_property;
@@ -48,7 +48,7 @@ index a19a94e..84d758f 100644
 @@ -136,6 +138,111 @@ gtk_ns_view_init (GtkNSView *ns_view)
    gtk_widget_set_has_window (GTK_WIDGET (ns_view), FALSE);
  }
- 
+
 +@implementation NSView (myDrawRect)
 +- (void) myDrawRect: (NSRect) dirtyRect
 +{
@@ -174,8 +174,7 @@ index a19a94e..84d758f 100644
 -        }
 +        [ns_view->priv->view retain];
        break;
- 
-     default:
--- 
-1.7.10.2 (Apple Git-33)
 
+     default:
+--
+1.7.10.2 (Apple Git-33)

@@ -1,7 +1,7 @@
-From 9ff06dc83471ddfadea48a05fed2d43321fc30c7 Mon Sep 17 00:00:00 2001
+From 1a10c1decbabecf913a93b5a2932097b9dd4ac8e Mon Sep 17 00:00:00 2001
 From: Michael Natterer <mitch@gimp.org>
 Date: Tue, 8 May 2012 14:11:50 +0200
-Subject: [PATCH 05/57] Smooth scrolling
+Subject: [PATCH 05/61] Smooth scrolling
 
 ---
  gdk/gdkevents.c               |   32 +++++++++++++++++

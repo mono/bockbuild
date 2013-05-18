@@ -1,7 +1,7 @@
-From c358275ab4f110d38b6ed4a9844eae609b2fc2c0 Mon Sep 17 00:00:00 2001
+From 91a974eb076273682067f7a3fb6fe96a19f660c8 Mon Sep 17 00:00:00 2001
 From: Michael Natterer <mitch@gimp.org>
 Date: Fri, 1 Mar 2013 15:06:20 +0100
-Subject: [PATCH 32/57] gtk: remove the overlay scrollbar grab on unrealize()
+Subject: [PATCH 32/61] gtk: remove the overlay scrollbar grab on unrealize()
 
 ---
  gtk/gtkscrolledwindow.c |    6 ++++++

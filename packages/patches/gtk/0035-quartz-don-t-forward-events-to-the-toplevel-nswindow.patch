@@ -1,7 +1,7 @@
-From f864050f89208350a3aea72f1c37c0ca4af0597d Mon Sep 17 00:00:00 2001
+From 10afa445927ae397e373f7b11038663bf2f0eaf3 Mon Sep 17 00:00:00 2001
 From: Michael Natterer <mitch@gimp.org>
 Date: Thu, 28 Feb 2013 11:08:13 +0100
-Subject: [PATCH 43/57] quartz: don't forward events to the toplevel
+Subject: [PATCH 35/61] quartz: don't forward events to the toplevel
  nswindow's layer_view
 
 ---
@@ -15,13 +15,12 @@ index f6742f0..6271085 100644
 @@ -856,6 +856,9 @@ find_window_for_ns_event (NSEvent *nsevent,
                      NSView* sv = [[toplevel_impl->view subviews] objectAtIndex:i];
                      NSRect r = [sv frame];
- 
+
 +                    if (sv == toplevel_impl->layer_view)
 +                      continue;
 +
                      if (r.origin.x <= *x && r.origin.x + r.size.width >= *x &&
                          r.origin.y <= *y && r.origin.y + r.size.height >= *y)
                        {
--- 
+--
 1.7.10.2 (Apple Git-33)
-

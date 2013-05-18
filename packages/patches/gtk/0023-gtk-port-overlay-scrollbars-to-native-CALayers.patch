@@ -1,7 +1,7 @@
-From 9813ed4bd9bb6864d003955f00d4e679dd516fce Mon Sep 17 00:00:00 2001
+From dbf60ebc94cbf59786c2fe3fdcab0efcd6daff4f Mon Sep 17 00:00:00 2001
 From: Michael Natterer <mitch@gimp.org>
 Date: Thu, 27 Sep 2012 17:03:47 +0200
-Subject: [PATCH 23/57] gtk: port overlay scrollbars to native CALayers
+Subject: [PATCH 23/61] gtk: port overlay scrollbars to native CALayers
 
 ---
  gtk/gtkscrolledwindow.c |  679 ++++++++++++++++++++++++++---------------------
