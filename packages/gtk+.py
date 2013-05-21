@@ -76,6 +76,8 @@ class GtkPackage (GnomeGitPackage):
 				'patches/gtk/0059-cellrendererpixbuf-Use-scaled-icons-on-windows-with-.patch',
 				'patches/gtk/0060-entry-Use-scaled-icons-on-windows-with-a-scale-facto.patch',
 				'patches/gtk/0061-gdk-Lookup-double-scaled-variants-on-pixbufs.patch',
+				'patches/gtk/0062-Add-stronger-checks-on-the-scale-matching.patch',
+				'patches/gtk/0063-Fully-handle-the-GtkCellRenderer-icon-set-property.patch',
 
 				# make new modifier behviour opt-in, so as not to break old versions of MonoDevelop
 				'patches/gdk-quartz-set-fix-modifiers-hack-v3.patch',
@@ -104,7 +106,7 @@ class GtkPackage (GnomeGitPackage):
 		Package.prep (self)
 		if Package.profile.name == 'darwin':
 			for p in range (2, len (self.sources)):
-				self.sh ('patch -p1 < "%{sources[' + str (p) + ']}"')
+				self.sh ('patch -p1 --ignore-whitespace < "%{sources[' + str (p) + ']}"')
 
 	def install(self):
 		Package.install(self)

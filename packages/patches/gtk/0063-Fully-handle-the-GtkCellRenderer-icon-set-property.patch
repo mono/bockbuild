@@ -1,0 +1,92 @@
+From cfccbd144f2b134b57046d8dc063873dcd071332 Mon Sep 17 00:00:00 2001
+From: Carlos Garnacho <carlosg@gnome.org>
+Date: Tue, 21 May 2013 18:51:12 +0200
+Subject: [PATCH 2/2] Fully handle the GtkCellRenderer::icon-set property
+
+---
+ gtk/gtkcellrendererpixbuf.c | 54 ++++++++++++++++++++++++++++++++++++++++++++-
+ 1 file changed, 53 insertions(+), 1 deletion(-)
+
+diff --git a/gtk/gtkcellrendererpixbuf.c b/gtk/gtkcellrendererpixbuf.c
+index 2c6a0e8..7c767b6 100644
+--- a/gtk/gtkcellrendererpixbuf.c
++++ b/gtk/gtkcellrendererpixbuf.c
+@@ -462,8 +462,45 @@ gtk_cell_renderer_pixbuf_set_property (GObject      *object,
+       break;
+     case PROP_ICON_SET:
+       if (priv->icon_set)
++	{
++	  if (cellpixbuf->pixbuf)
++	    {
++	      g_object_unref (cellpixbuf->pixbuf);
++	      cellpixbuf->pixbuf = NULL;
++              g_object_notify (object, "pixbuf");
++	    }
++
++          gtk_icon_set_unref (priv->icon_set);
++	}
++
++      priv->icon_set = g_value_dup_boxed (value);
++
++      if (priv->icon_set)
+         {
+-          
++	  if (cellpixbuf->pixbuf)
++	    {
++              g_object_unref (cellpixbuf->pixbuf);
++              cellpixbuf->pixbuf = NULL;
++              g_object_notify (object, "pixbuf");
++	    }
++          if (priv->stock_id)
++            {
++              g_free (priv->stock_id);
++              priv->stock_id = NULL;
++              g_object_notify (object, "stock-id");
++            }
++          if (priv->icon_name)
++            {
++              g_free (priv->icon_name);
++              priv->icon_name = NULL;
++              g_object_notify (object, "icon-name");
++            }
++          if (priv->gicon)
++            {
++              g_object_unref (priv->gicon);
++              priv->gicon = NULL;
++              g_object_notify (object, "gicon");
++            }
+         }
+       break;
+     default:
+@@ -496,6 +533,7 @@ gtk_cell_renderer_pixbuf_create_stock_pixbuf (GtkCellRendererPixbuf *cellpixbuf,
+                                               GtkWidget             *widget)
+ {
+   GtkCellRendererPixbufPrivate *priv;
++  GtkIconSet *icon_set;
+ 
+   priv = GTK_CELL_RENDERER_PIXBUF_GET_PRIVATE (cellpixbuf);
+ 
+@@ -644,6 +682,20 @@ gtk_cell_renderer_pixbuf_get_size (GtkCellRenderer *cell,
+     {
+       if (priv->stock_id)
+ 	gtk_cell_renderer_pixbuf_create_stock_pixbuf (cellpixbuf, widget);
++      else if (priv->icon_set)
++        {
++          gdouble scale;
++
++          scale = gtk_widget_get_scale_factor (widget);
++          cellpixbuf->pixbuf =
++            gtk_icon_set_render_icon_scaled (priv->icon_set,
++                                             widget->style,
++                                             gtk_widget_get_direction (widget),
++                                             gtk_widget_get_state (widget),
++                                             priv->stock_size,
++                                             widget, priv->stock_detail,
++                                             &scale);
++        }
+       else if (priv->icon_name || priv->gicon)
+ 	gtk_cell_renderer_pixbuf_create_themed_pixbuf (cellpixbuf, widget);
+     }
+-- 
+1.8.3.rc1
+
