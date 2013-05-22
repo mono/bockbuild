@@ -1,7 +1,7 @@
-From 1592d07efeee601a1b7ece79598959873f93a11c Mon Sep 17 00:00:00 2001
+From 45b8f4946a5b34dc4d4f62c16d7c8a757d0010a9 Mon Sep 17 00:00:00 2001
 From: Kristian Rietveld <kris@lanedo.com>
 Date: Sat, 23 Feb 2013 00:52:43 +0100
-Subject: [PATCH 29/57] Add momentum_phase to GdkEventScroll
+Subject: [PATCH 29/61] Add momentum_phase to GdkEventScroll
 
 We need this for the detection of legacy mice that do emit precise
 deltas.

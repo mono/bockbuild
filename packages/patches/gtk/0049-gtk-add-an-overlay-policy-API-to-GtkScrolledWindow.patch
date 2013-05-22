@@ -1,17 +1,17 @@
-From 20e0c856be2db4d5babe994de605c0d22fca7154 Mon Sep 17 00:00:00 2001
+From be7bf2b6962641123623e45a3317f30634597414 Mon Sep 17 00:00:00 2001
 From: Michael Natterer <mitch@gimp.org>
 Date: Fri, 3 May 2013 11:55:51 +0200
-Subject: [PATCH 57/57] gtk: add an "overlay policy" API to GtkScrolledWindow
+Subject: [PATCH 49/61] gtk: add an "overlay policy" API to GtkScrolledWindow
 
 which allows to turn off drawing of the overlay scrollbars,
 while keeping scrolling enabled.
 ---
- gtk/gtkscrolledwindow.c |   60 +++++++++++++++++++++++++++++++++++++++++++----
+ gtk/gtkscrolledwindow.c |   68 ++++++++++++++++++++++++++++++++++++++++++-----
  gtk/gtkscrolledwindow.h |    6 +++++
- 2 files changed, 62 insertions(+), 4 deletions(-)
+ 2 files changed, 68 insertions(+), 6 deletions(-)
 
 diff --git a/gtk/gtkscrolledwindow.c b/gtk/gtkscrolledwindow.c
-index e17dd45..b4336f6 100644
+index e17dd45..846750d 100644
 --- a/gtk/gtkscrolledwindow.c
 +++ b/gtk/gtkscrolledwindow.c
 @@ -121,6 +121,9 @@ typedef struct {
@@ -101,7 +101,22 @@ index e17dd45..b4336f6 100644
      {
        rect.origin.x = priv->viewport_allocation.x + hbar_rect.x;
        rect.origin.y = priv->viewport_allocation.y + hbar_rect.y;
-@@ -1349,7 +1397,9 @@ gtk_scrolled_window_update_scrollbars (GtkScrolledWindow *scrolled_window)
+@@ -1336,8 +1384,12 @@ gtk_scrolled_window_update_scrollbars (GtkScrolledWindow *scrolled_window)
+       rect.size.height = hbar_rect.height;
+
+       /* don't overlap in the corner */
+-      if (scrolled_window->vscrollbar && vbar_rect.width > 0)
+-        rect.size.width -= vbar_rect.width;
++      if (scrolled_window->vscrollbar                   &&
++          priv->voverlay_policy == GTK_POLICY_AUTOMATIC &&
++          vbar_rect.width > 0)
++        {
++          rect.size.width -= vbar_rect.width;
++        }
+
+       rect.origin.y = window_height - rect.origin.y - rect.size.height;
+
+@@ -1349,7 +1401,9 @@ gtk_scrolled_window_update_scrollbars (GtkScrolledWindow *scrolled_window)
        priv->hbar_layer.opacity = 0.0;
      }
 
@@ -112,7 +127,7 @@ index e17dd45..b4336f6 100644
      {
        rect.origin.x = priv->viewport_allocation.x + vslider_rect.x;
        rect.origin.y = priv->viewport_allocation.y + vslider_rect.y;
-@@ -1367,7 +1417,9 @@ gtk_scrolled_window_update_scrollbars (GtkScrolledWindow *scrolled_window)
+@@ -1367,7 +1421,9 @@ gtk_scrolled_window_update_scrollbars (GtkScrolledWindow *scrolled_window)
        priv->vslider_layer.opacity = 0.0;
      }
 

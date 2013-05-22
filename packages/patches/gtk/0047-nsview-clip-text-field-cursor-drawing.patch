@@ -1,7 +1,7 @@
-From 44471f0cf280610d096fac1ebfa6032c96c0e444 Mon Sep 17 00:00:00 2001
+From cd01f4a68a5c653a1ff7287a68155307b316f420 Mon Sep 17 00:00:00 2001
 From: Michael Natterer <mitch@gimp.org>
 Date: Thu, 25 Apr 2013 14:52:18 +0200
-Subject: [PATCH 55/57] nsview: clip text field cursor drawing
+Subject: [PATCH 47/61] nsview: clip text field cursor drawing
 
 by replacing (not "normal" swizzling) drawInsertionPointInRect. This
 fixes cursor clipping for the *blinking* cursor, but not if the
@@ -16,15 +16,15 @@ index bc3cbfb..5e3aa59 100644
 +++ b/gtk/gtknsview.c
 @@ -145,14 +145,23 @@ static void   gtk_ns_view_swizzle_draw_rect_recursive (NSView      *view,
                                                         gpointer     associated_object);
- 
+
  @implementation NSView (myDidAddSubview)
 -- (void) myDidAddSubview:(NSView *)aView
 +- (void) myDidAddSubview: (NSView *) aView
  {
    void *associated_object;
- 
+
    associated_object = objc_getAssociatedObject (self, "gtknsview");
- 
+
    if (associated_object)
 -    gtk_ns_view_swizzle_draw_rect_recursive (aView, "gtknsview", associated_object);
 +    {
@@ -37,13 +37,13 @@ index bc3cbfb..5e3aa59 100644
 +      if (associated_object)
 +        gtk_ns_view_swizzle_draw_rect_recursive (aView, "gtkwindow", associated_object);
 +    }
- 
+
    [self myDidAddSubview:aView];
  }
 @@ -256,6 +265,110 @@ static void   gtk_ns_view_swizzle_draw_rect_recursive (NSView      *view,
  }
  @end
- 
+
 +@implementation NSTextView (myDrawInsertionPointInRect)
 +- (void) myDrawInsertionPointInRect: (NSRect) aRect
 +                              color: (NSColor *) aColor
@@ -154,14 +154,14 @@ index bc3cbfb..5e3aa59 100644
 @@ -310,7 +423,6 @@ gtk_ns_view_swizzle_draw_rect_recursive (NSView      *view,
                             method_getTypeEncoding (my_didAddSubview));
      }
- 
+
 -
    objc_setAssociatedObject (view, associated_key, (id) associated_object,
                              OBJC_ASSOCIATION_ASSIGN);
- 
+
 @@ -325,6 +437,49 @@ gtk_ns_view_swizzle_draw_rect_recursive (NSView      *view,
  }
- 
+
  static void
 +gtk_ns_view_replace_draw_insertion_point (void)
 +{
@@ -212,11 +212,10 @@ index bc3cbfb..5e3aa59 100644
 @@ -340,6 +495,7 @@ gtk_ns_view_constructed (GObject *object)
                gtk_widget_get_can_focus (GTK_WIDGET (ns_view)));
  #endif
- 
+
 +  gtk_ns_view_replace_draw_insertion_point ();
    gtk_ns_view_swizzle_draw_rect_recursive (ns_view->priv->view,
                                             "gtknsview", ns_view);
  }
--- 
+--
 1.7.10.2 (Apple Git-33)
-
