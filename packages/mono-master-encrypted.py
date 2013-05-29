@@ -58,7 +58,7 @@ class MonoMasterEncryptedPackage(Package):
         prologue = "cd %s; export QUILT_PATCHES=mono-extensions" % build_root
         self.sh("%s; /usr/local/bin/quilt upgrade || true" % prologue)
         self.sh("%s; /usr/local/bin/quilt pop -af || true" % prologue)
-        self.sh("%s /usr/local/bin/quilt push -a" % prologue)
+        self.sh("%s; /usr/local/bin/quilt push -a" % prologue)
 
         # Print mono-extensions commit hash and the patches applied
         commit_hash = backtick("git --git-dir %s/.git rev-parse HEAD" % full_mono_extensions)[0]
