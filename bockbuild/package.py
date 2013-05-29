@@ -47,7 +47,7 @@ class Package:
 		self.makeinstall = 'make install'
 		self.git = 'git'
 		self.git_branch = git_branch
-		for git in ['/usr/local/git/bin/git', '/usr/local/bin/git', '/usr/bin/git']:
+		for git in ['/usr/local/bin/git', '/usr/local/git/bin/git', '/usr/bin/git']:
 			if os.path.isfile (git):
 				self.git = git
 				break
