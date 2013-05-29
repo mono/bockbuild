@@ -39,6 +39,7 @@ class MonoDevelopMacDevPackages:
 			'gdk-pixbuf.py',
 			'gtk+.py',
 			'libglade.py',
+			'gtkimcocoa.py',
 		])
 
 		# Theme
