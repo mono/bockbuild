@@ -165,7 +165,7 @@ class Package:
 		return os.path.exists (build_success_file) and is_newer(build_success_file)
 
 	def delete_stale_workspace_cache (self, dirname):
-		origin = backtick ("%{git} --git-dir=%s config --get remote.origin.url" % os.path.join (dirname, ".git"))
+		origin = backtick ('%' + "{git} --git-dir=%s config --get remote.origin.url" % os.path.join (dirname, ".git"))
 		# Not pointing to a git repo
 		if not origin:
 			return False
@@ -273,7 +273,7 @@ class Package:
 			dirname = os.path.join (os.getcwd (), expand_macros ('%{name}-%{version}', self))
 			# self.sh ('cp -a "%s" "%s"' % (self.sources[0], dirname))
 			if not os.path.exists(dirname):
-				self.sh ('%{git} clone --local --shared "%s" "%s"' % (self.sources[0], dirname))
+				self.sh ('%' + '{git} clone --local --shared "%s" "%s"' % (self.sources[0], dirname))
 
 			self.cd (dirname)
 			self.sh ('%{git} fetch')
