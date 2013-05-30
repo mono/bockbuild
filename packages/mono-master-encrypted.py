@@ -48,11 +48,14 @@ class MonoMasterEncryptedPackage(Package):
         mono = os.path.join(build_root, "mono")
         full_mono = os.path.join(build_root, self.name + "-" + self.version)
         full_mono_extensions = os.path.join(build_root, "mono-extensions")
-        mono_link = os.path.join(os.path.dirname(mono), os.readlink(mono))
-        if not (os.path.exists(mono) and mono_link == full_mono):
-            if os.path.exists(mono):
-                os.remove(mono)
+
+        if not os.path.exists(mono):
             os.symlink(full_mono, mono)
+        else:
+            mono_link = os.path.join(os.path.dirname(mono), os.readlink(mono))
+            if not (mono_link == full_mono):
+                os.remove(mono)
+                os.symlink(full_mono, mono)
 
         # ignore 'quilt pop' return code because the tree might be pristine
         prologue = "cd %s; export QUILT_PATCHES=mono-extensions" % build_root
