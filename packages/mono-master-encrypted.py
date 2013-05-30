@@ -38,10 +38,10 @@ class MonoMasterEncryptedPackage(Package):
         build_root = os.path.abspath(os.path.join(os.getcwd(), ".."))
         dirname = os.path.join(build_root, "mono-extensions")
         if not os.path.exists(dirname):
-            self.sh('git clone --local --shared "%s" "%s"' % (ext, dirname))
+            self.sh('%' + '{git} clone --local --shared "%s" "%s"' % (ext, dirname))
             self.cd(dirname)
             self.sh('%{git} clean -xfd')
-            self.sh('git pull')
+            self.sh('%{git} pull')
 
         # Use quilt to apply the patch queue
         self.cd(build_root)
