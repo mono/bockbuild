@@ -82,7 +82,6 @@ class MonoReleaseProfile (DarwinProfile, MonoReleasePackages):
 		for dirpath, d, files in os.walk (tmpdir):
 			for name in files:
 				if not name.startswith('.'):
-					print "*** Replacing %s" % os.path.join(dirpath, name)
 					replace_in_file (os.path.join (dirpath, name), parameter_map)
 
 		self.make_package_symlinks(monoroot)

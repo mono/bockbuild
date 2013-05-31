@@ -8,7 +8,7 @@ index 73b9cea..98b8cfb 100644
  	-e 's,@''mono_instdir@,$(mono_instdir),g'		\
 -	-e 's,@''gtkdir@,$(gtkdir),g'
 +	-e 's,@''gtkdir@,$(gtkdir),g'                           \
-+	-e 's,@''mono_version@,$(PACKAGE_VERSION),g'
++	-e 's,@''mono_version@,$(VERSION),g'
  
  REWRITE = $(REWRITE_COMMON) -e 's,@''mono_interp@,$(mono_interp),g'
  REWRITE_DEBUG = $(REWRITE_COMMON) -e 's,@''mono_interp@,$(mono_interp) --debug,g'
