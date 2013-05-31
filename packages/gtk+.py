@@ -1,6 +1,6 @@
 class GtkPackage (GnomeGitPackage):
 	def __init__ (self):
-		GnomeGitPackage.__init__ (self, 'gtk+', '2.24', '9f16fc1b003c6e4c5095fe277f67be6bf8c8ffee',
+		GnomeGitPackage.__init__ (self, 'gtk+', '2.24', 'efa63c5970a2cc3fd7b9a4deddcaf85528b9b688',
 			configure_flags = [
 				'--with-gdktarget=%{gdk_target}',
 #				'--disable-cups',
@@ -64,7 +64,6 @@ class GtkPackage (GnomeGitPackage):
 				'patches/gtk/0047-nsview-clip-text-field-cursor-drawing.patch',
 				'patches/gtk/0048-nsview-factor-out-almost-all-code-from-the-overridde.patch',
 				'patches/gtk/0049-gtk-add-an-overlay-policy-API-to-GtkScrolledWindow.patch',
-				'patches/gtk/0050-quartz-honor-more-source-image-properties-in-_gdk_qu.patch',
 				'patches/gtk/0051-quartz-add-gdk_screen_-and-gdk_window_get_scale_fact.patch',
 				'patches/gtk/0052-gtk-add-gtk_widget_get_scale_factor.patch',
 				'patches/gtk/0053-iconfactory-Add-_scaled-variants.patch',

@@ -28,12 +28,12 @@ index 77ff5d7..2c3805e 100644
  -(void)setNeedsInvalidateShadow:(BOOL)invalidate
 @@ -194,7 +196,11 @@
  
- -(void)setFrame:(NSRect)frame
+ -(void)setFrame: (NSRect)frame
  {
 +  GdkWindowObject *private = GDK_WINDOW_OBJECT (gdk_window);
 +  GdkWindowImplQuartz *impl = GDK_WINDOW_IMPL_QUARTZ (private->impl);
 +
-   [super setFrame:frame];
+   [super setFrame: frame];
 +  [impl->layer_view setFrame:frame];
  
    if ([self window])
