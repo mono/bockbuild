@@ -77,8 +77,6 @@ class MonoReleaseProfile (DarwinProfile, MonoReleasePackages):
 			'@@PACKAGES@@': string.join (set([root for root,ext in map(os.path.splitext, os.listdir (self.build_root))]), "\\\n"),
 			'@@DEP_PACKAGES@@': ""
 		}
-		print "*** Replacing with map"
-		print parameter_map
 		for dirpath, d, files in os.walk (tmpdir):
 			for name in files:
 				if not name.startswith('.'):
