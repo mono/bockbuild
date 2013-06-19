@@ -101,7 +101,7 @@ class GtkPackage (GnomeGitPackage):
 
 				# enable text input with third party input methods
 				# https://github.com/ashie/gtkimcocoa/blob/master/patches/gtk%2B-2.24.17-gdk-quartz-observe-input-sources.patch
-				'patches/gtk+-2.24.17-gdk-quartz-observe-input-sources.patch',
+				#'patches/gtk+-2.24.17-gdk-quartz-observe-input-sources.patch',
 			])
 
 	def prep (self):
