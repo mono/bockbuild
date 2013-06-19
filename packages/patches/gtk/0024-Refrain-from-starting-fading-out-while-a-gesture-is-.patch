@@ -1,4 +1,4 @@
-From a11a0270f680bcb37c1d7eada02a32b440555702 Mon Sep 17 00:00:00 2001
+From ac9fab4da6dcf67c2b64942890050b41d96c5524 Mon Sep 17 00:00:00 2001
 From: Kristian Rietveld <kris@lanedo.com>
 Date: Mon, 8 Oct 2012 11:48:38 +0200
 Subject: [PATCH 24/61] Refrain from starting fading out while a gesture is in
@@ -9,7 +9,7 @@ Subject: [PATCH 24/61] Refrain from starting fading out while a gesture is in
  1 file changed, 16 insertions(+), 4 deletions(-)
 
 diff --git a/gtk/gtkscrolledwindow.c b/gtk/gtkscrolledwindow.c
-index 749dbf7..b59d406 100644
+index 1fba87b..a04436b 100644
 --- a/gtk/gtkscrolledwindow.c
 +++ b/gtk/gtkscrolledwindow.c
 @@ -153,6 +153,7 @@ typedef struct {
@@ -20,7 +20,7 @@ index 749dbf7..b59d406 100644
  } GtkScrolledWindowPrivate;
  
  #define GTK_SCROLLED_WINDOW_GET_PRIVATE(obj) (G_TYPE_INSTANCE_GET_PRIVATE ((obj), GTK_TYPE_SCROLLED_WINDOW, GtkScrolledWindowPrivate))
-@@ -2153,7 +2154,10 @@ gtk_scrolled_window_scroll_event (GtkWidget      *widget,
+@@ -2151,7 +2152,10 @@ gtk_scrolled_window_scroll_event (GtkWidget      *widget,
         * FIXME: check if overshoot has really ended.
         */
        if (event->phase == GDK_EVENT_SCROLL_PHASE_START)
@@ -32,7 +32,7 @@ index 749dbf7..b59d406 100644
  
        if (is_momentum_event && !is_overshot)
          gtk_scrolled_window_calculate_velocity (scrolled_window, (GdkEvent *)event);
-@@ -2293,13 +2297,20 @@ gtk_scrolled_window_scroll_event (GtkWidget      *widget,
+@@ -2291,13 +2295,20 @@ gtk_scrolled_window_scroll_event (GtkWidget      *widget,
         /* Reset force if gesture has ended. */
         if (event->phase == GDK_EVENT_SCROLL_PHASE_END)
           {
@@ -55,7 +55,7 @@ index 749dbf7..b59d406 100644
  
        /* If we should start a snap back and no current deceleration
         * is active, start the snap back.
-@@ -3600,7 +3611,8 @@ gtk_scrolled_window_start_fade_in_animation (GtkScrolledWindow *scrolled_window)
+@@ -3598,7 +3609,8 @@ gtk_scrolled_window_start_fade_in_animation (GtkScrolledWindow *scrolled_window)
    g_object_add_weak_pointer (G_OBJECT (priv->opacity_anim),
                               (gpointer *) &priv->opacity_anim);
  

@@ -1,4 +1,4 @@
-From 65f38b12c1a301c8884a61a219daea3789beb95e Mon Sep 17 00:00:00 2001
+From 6c7c8288d12f80f6f0657fce80264f86eb527aaa Mon Sep 17 00:00:00 2001
 From: Kristian Rietveld <kris@lanedo.com>
 Date: Wed, 19 Sep 2012 07:22:39 +0200
 Subject: [PATCH 20/61] Improve overshooting behavior
@@ -16,7 +16,7 @@ these are not handling kinetic deceleration in this code.
  1 file changed, 99 insertions(+), 80 deletions(-)
 
 diff --git a/gtk/gtkscrolledwindow.c b/gtk/gtkscrolledwindow.c
-index f353e7d..fa38da4 100644
+index 92e75a0..f3be303 100644
 --- a/gtk/gtkscrolledwindow.c
 +++ b/gtk/gtkscrolledwindow.c
 @@ -84,6 +84,10 @@
@@ -66,7 +66,7 @@ index f353e7d..fa38da4 100644
  static gboolean gtk_scrolled_window_calculate_velocity  (GtkScrolledWindow *scrolled_window,
                                                           GdkEvent          *event);
  static void gtk_scrolled_window_init_overlay_scrollbars (GtkScrolledWindow *window);
-@@ -2018,6 +2026,9 @@ gtk_scrolled_window_scroll_event (GtkWidget      *widget,
+@@ -2016,6 +2024,9 @@ gtk_scrolled_window_scroll_event (GtkWidget      *widget,
        if (event->phase == GDK_EVENT_SCROLL_PHASE_START)
          priv->is_snapping_back = FALSE;
  
@@ -76,7 +76,7 @@ index f353e7d..fa38da4 100644
        /* Scroll events are handled in two cases:
         *  1) We are not overshot and not snapping back, so scroll as
         *  usual and also handle momentum events.
-@@ -2033,15 +2044,29 @@ gtk_scrolled_window_scroll_event (GtkWidget      *widget,
+@@ -2031,15 +2042,29 @@ gtk_scrolled_window_scroll_event (GtkWidget      *widget,
            if (delta_x != 0.0 && scrolled_window->hscrollbar &&
                (priv->overlay_scrollbars || gtk_widget_get_visible (scrolled_window->hscrollbar)))
              {
@@ -108,7 +108,7 @@ index f353e7d..fa38da4 100644
                                                               TRUE,
                                                               FALSE);
                  }
-@@ -2066,15 +2091,29 @@ gtk_scrolled_window_scroll_event (GtkWidget      *widget,
+@@ -2064,15 +2089,29 @@ gtk_scrolled_window_scroll_event (GtkWidget      *widget,
            if (delta_y != 0.0 && scrolled_window->vscrollbar &&
                (priv->overlay_scrollbars || gtk_widget_get_visible (scrolled_window->vscrollbar)))
              {
@@ -140,7 +140,7 @@ index f353e7d..fa38da4 100644
                                                               TRUE,
                                                               FALSE);
                  }
-@@ -2095,10 +2134,6 @@ gtk_scrolled_window_scroll_event (GtkWidget      *widget,
+@@ -2093,10 +2132,6 @@ gtk_scrolled_window_scroll_event (GtkWidget      *widget,
  
                handled = TRUE;
              }
@@ -151,7 +151,7 @@ index f353e7d..fa38da4 100644
          }
  
        _gtk_scrolled_window_get_overshoot (scrolled_window,
-@@ -2114,9 +2149,17 @@ gtk_scrolled_window_scroll_event (GtkWidget      *widget,
+@@ -2112,9 +2147,17 @@ gtk_scrolled_window_scroll_event (GtkWidget      *widget,
         *  also signals that the user's gesture has ended.
         */
        if (is_overshot &&
@@ -170,7 +170,7 @@ index f353e7d..fa38da4 100644
        /* If we should start a snap back and no current deceleration
         * is active, start the snap back.
         */
-@@ -2132,9 +2175,10 @@ gtk_scrolled_window_scroll_event (GtkWidget      *widget,
+@@ -2130,9 +2173,10 @@ gtk_scrolled_window_scroll_event (GtkWidget      *widget,
  
            if (new_overshoot_x != 0 || new_overshoot_y != 0)
              {
@@ -182,7 +182,7 @@ index f353e7d..fa38da4 100644
              }
          }
      }
-@@ -2209,16 +2253,16 @@ _gtk_scrolled_window_set_adjustment_value (GtkScrolledWindow *scrolled_window,
+@@ -2207,16 +2251,16 @@ _gtk_scrolled_window_set_adjustment_value (GtkScrolledWindow *scrolled_window,
  }
  
  static gboolean
@@ -202,7 +202,7 @@ index f353e7d..fa38da4 100644
  
    priv = GTK_SCROLLED_WINDOW_GET_PRIVATE (scrolled_window);
    hadjustment = gtk_range_get_adjustment (GTK_RANGE (scrolled_window->hscrollbar));
-@@ -2228,12 +2272,22 @@ scrolled_window_deceleration_cb (gpointer user_data)
+@@ -2226,12 +2270,22 @@ scrolled_window_deceleration_cb (gpointer user_data)
                                        &old_overshoot_x, &old_overshoot_y);
  
    current_time = g_get_monotonic_time ();
@@ -228,7 +228,7 @@ index f353e7d..fa38da4 100644
  
        if (_gtk_scrolled_window_set_adjustment_value (scrolled_window,
                                                       hadjustment,
-@@ -2245,7 +2299,17 @@ scrolled_window_deceleration_cb (gpointer user_data)
+@@ -2243,7 +2297,17 @@ scrolled_window_deceleration_cb (gpointer user_data)
  
    if (vadjustment && scrolled_window->vscrollbar_visible)
      {
@@ -247,7 +247,7 @@ index f353e7d..fa38da4 100644
  
        if (_gtk_scrolled_window_set_adjustment_value (scrolled_window,
                                                       vadjustment,
-@@ -2258,58 +2322,17 @@ scrolled_window_deceleration_cb (gpointer user_data)
+@@ -2256,58 +2320,17 @@ scrolled_window_deceleration_cb (gpointer user_data)
    _gtk_scrolled_window_get_overshoot (scrolled_window,
                                        &overshoot_x, &overshoot_y);
  
@@ -311,7 +311,7 @@ index f353e7d..fa38da4 100644
      return TRUE;
    else
      {
-@@ -2319,29 +2342,24 @@ scrolled_window_deceleration_cb (gpointer user_data)
+@@ -2317,29 +2340,24 @@ scrolled_window_deceleration_cb (gpointer user_data)
  }
  
  static void
@@ -347,7 +347,7 @@ index f353e7d..fa38da4 100644
                                    data, (GDestroyNotify) g_free);
  }
  
-@@ -2362,13 +2380,14 @@ gtk_scrolled_window_calculate_velocity (GtkScrolledWindow *scrolled_window,
+@@ -2360,13 +2378,14 @@ gtk_scrolled_window_calculate_velocity (GtkScrolledWindow *scrolled_window,
        gdouble delta_x, delta_y;
  
        if (gdk_event_get_scroll_deltas (event, &delta_x, &delta_y) &&

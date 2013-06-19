@@ -1,4 +1,4 @@
-From dbf60ebc94cbf59786c2fe3fdcab0efcd6daff4f Mon Sep 17 00:00:00 2001
+From e537a73e092fea6a04ea810f3ee40edbbfe2b4ae Mon Sep 17 00:00:00 2001
 From: Michael Natterer <mitch@gimp.org>
 Date: Thu, 27 Sep 2012 17:03:47 +0200
 Subject: [PATCH 23/61] gtk: port overlay scrollbars to native CALayers
@@ -8,7 +8,7 @@ Subject: [PATCH 23/61] gtk: port overlay scrollbars to native CALayers
  1 file changed, 379 insertions(+), 300 deletions(-)
 
 diff --git a/gtk/gtkscrolledwindow.c b/gtk/gtkscrolledwindow.c
-index dc2cc9d..749dbf7 100644
+index ab3df16..1fba87b 100644
 --- a/gtk/gtkscrolledwindow.c
 +++ b/gtk/gtkscrolledwindow.c
 @@ -36,8 +36,12 @@
@@ -72,7 +72,7 @@ index dc2cc9d..749dbf7 100644
  
  
  static void gtk_scrolled_window_start_snap_back         (GtkScrolledWindow *scrolled_window);
-@@ -538,9 +542,9 @@ gtk_scrolled_window_init (GtkScrolledWindow *scrolled_window)
+@@ -536,9 +540,9 @@ gtk_scrolled_window_init (GtkScrolledWindow *scrolled_window)
    priv->sb_width = 6;
    priv->sb_fade_out_delay = 1000;
  
@@ -85,7 +85,7 @@ index dc2cc9d..749dbf7 100644
  }
  
  /**
-@@ -589,7 +593,6 @@ gtk_scrolled_window_set_hadjustment (GtkScrolledWindow *scrolled_window,
+@@ -587,7 +591,6 @@ gtk_scrolled_window_set_hadjustment (GtkScrolledWindow *scrolled_window,
  				     GtkAdjustment     *hadjustment)
  {
    GtkBin *bin;
@@ -93,7 +93,7 @@ index dc2cc9d..749dbf7 100644
  
    g_return_if_fail (GTK_IS_SCROLLED_WINDOW (scrolled_window));
    if (hadjustment)
-@@ -625,7 +628,7 @@ gtk_scrolled_window_set_hadjustment (GtkScrolledWindow *scrolled_window,
+@@ -623,7 +626,7 @@ gtk_scrolled_window_set_hadjustment (GtkScrolledWindow *scrolled_window,
                                              gtk_scrolled_window_adjustment_value_changed,
                                              scrolled_window);
        g_signal_handlers_disconnect_by_func (old_adjustment,
@@ -102,7 +102,7 @@ index dc2cc9d..749dbf7 100644
                                              scrolled_window);
  
        gtk_range_set_adjustment (GTK_RANGE (scrolled_window->hscrollbar),
-@@ -643,18 +646,12 @@ gtk_scrolled_window_set_hadjustment (GtkScrolledWindow *scrolled_window,
+@@ -641,18 +644,12 @@ gtk_scrolled_window_set_hadjustment (GtkScrolledWindow *scrolled_window,
    gtk_scrolled_window_adjustment_changed (hadjustment, scrolled_window);
    gtk_scrolled_window_adjustment_value_changed (hadjustment, scrolled_window);
  
@@ -127,7 +127,7 @@ index dc2cc9d..749dbf7 100644
  
    if (bin->child)
      gtk_widget_set_scroll_adjustments (bin->child,
-@@ -713,7 +710,7 @@ gtk_scrolled_window_set_vadjustment (GtkScrolledWindow *scrolled_window,
+@@ -711,7 +708,7 @@ gtk_scrolled_window_set_vadjustment (GtkScrolledWindow *scrolled_window,
                                              gtk_scrolled_window_adjustment_value_changed,
                                              scrolled_window);
        g_signal_handlers_disconnect_by_func (old_adjustment,
@@ -136,7 +136,7 @@ index dc2cc9d..749dbf7 100644
                                              scrolled_window);
  
        gtk_range_set_adjustment (GTK_RANGE (scrolled_window->vscrollbar),
-@@ -731,19 +728,12 @@ gtk_scrolled_window_set_vadjustment (GtkScrolledWindow *scrolled_window,
+@@ -729,19 +726,12 @@ gtk_scrolled_window_set_vadjustment (GtkScrolledWindow *scrolled_window,
    gtk_scrolled_window_adjustment_changed (vadjustment, scrolled_window);
    gtk_scrolled_window_adjustment_value_changed (vadjustment, scrolled_window);
  
@@ -162,7 +162,7 @@ index dc2cc9d..749dbf7 100644
  
    if (bin->child)
      gtk_widget_set_scroll_adjustments (bin->child,
-@@ -1083,7 +1073,7 @@ gtk_scrolled_window_destroy (GtkObject *object)
+@@ -1081,7 +1071,7 @@ gtk_scrolled_window_destroy (GtkObject *object)
                                              gtk_scrolled_window_adjustment_value_changed,
                                              scrolled_window);
        g_signal_handlers_disconnect_by_func (gtk_range_get_adjustment (GTK_RANGE (scrolled_window->hscrollbar)),
@@ -171,7 +171,7 @@ index dc2cc9d..749dbf7 100644
                                              scrolled_window);
  
        gtk_widget_unparent (scrolled_window->hscrollbar);
-@@ -1100,7 +1090,7 @@ gtk_scrolled_window_destroy (GtkObject *object)
+@@ -1098,7 +1088,7 @@ gtk_scrolled_window_destroy (GtkObject *object)
                                              gtk_scrolled_window_adjustment_value_changed,
                                              scrolled_window);
        g_signal_handlers_disconnect_by_func (gtk_range_get_adjustment (GTK_RANGE (scrolled_window->vscrollbar)),
@@ -180,7 +180,7 @@ index dc2cc9d..749dbf7 100644
                                              scrolled_window);
  
        gtk_widget_unparent (scrolled_window->vscrollbar);
-@@ -1278,10 +1268,11 @@ gtk_scrolled_window_screen_changed (GtkWidget *widget,
+@@ -1276,10 +1266,11 @@ gtk_scrolled_window_screen_changed (GtkWidget *widget,
  }
  
  static void
@@ -194,7 +194,7 @@ index dc2cc9d..749dbf7 100644
    GtkAllocation relative_allocation;
  
    if (scrolled_window->shadow_type != GTK_SHADOW_NONE)
-@@ -1319,6 +1310,116 @@ gtk_scrolled_window_paint (GtkWidget    *widget,
+@@ -1317,6 +1308,116 @@ gtk_scrolled_window_paint (GtkWidget    *widget,
      }
  }
  
@@ -311,7 +311,7 @@ index dc2cc9d..749dbf7 100644
  static gboolean
  gtk_scrolled_window_expose (GtkWidget      *widget,
  			    GdkEventExpose *event)
-@@ -1328,23 +1429,11 @@ gtk_scrolled_window_expose (GtkWidget      *widget,
+@@ -1326,23 +1427,11 @@ gtk_scrolled_window_expose (GtkWidget      *widget,
  
    if (gtk_widget_is_drawable (widget))
      {
@@ -338,7 +338,7 @@ index dc2cc9d..749dbf7 100644
      }
  
    return FALSE;
-@@ -1556,6 +1645,8 @@ gtk_scrolled_window_size_request (GtkWidget      *widget,
+@@ -1554,6 +1643,8 @@ gtk_scrolled_window_size_request (GtkWidget      *widget,
  	  else
  	    requisition->width += vscrollbar_requisition.width;
  	}
@@ -347,7 +347,7 @@ index dc2cc9d..749dbf7 100644
  
        if (scrolled_window->vscrollbar_policy == GTK_POLICY_NEVER)
  	requisition->height += child_requisition.height;
-@@ -1571,6 +1662,8 @@ gtk_scrolled_window_size_request (GtkWidget      *widget,
+@@ -1569,6 +1660,8 @@ gtk_scrolled_window_size_request (GtkWidget      *widget,
  	  else
  	    requisition->height += hscrollbar_requisition.height;
  	}
@@ -356,7 +356,7 @@ index dc2cc9d..749dbf7 100644
      }
  
    if (! priv->overlay_scrollbars)
-@@ -1787,6 +1880,12 @@ _gtk_scrolled_window_allocate_overshoot_window (GtkScrolledWindow *scrolled_wind
+@@ -1785,6 +1878,12 @@ _gtk_scrolled_window_allocate_overshoot_window (GtkScrolledWindow *scrolled_wind
      }
    else
      gdk_window_hide (priv->hbackground_window);
@@ -369,7 +369,7 @@ index dc2cc9d..749dbf7 100644
  }
  
  static void
-@@ -1813,6 +1912,35 @@ gtk_scrolled_window_allocate_child (GtkScrolledWindow *swindow,
+@@ -1811,6 +1910,35 @@ gtk_scrolled_window_allocate_child (GtkScrolledWindow *swindow,
  }
  
  static void
@@ -405,7 +405,7 @@ index dc2cc9d..749dbf7 100644
  gtk_scrolled_window_size_allocate (GtkWidget     *widget,
  				   GtkAllocation *allocation)
  {
-@@ -1831,8 +1959,6 @@ gtk_scrolled_window_size_allocate (GtkWidget     *widget,
+@@ -1829,8 +1957,6 @@ gtk_scrolled_window_size_allocate (GtkWidget     *widget,
    priv = GTK_SCROLLED_WINDOW_GET_PRIVATE (scrolled_window);
    bin = GTK_BIN (scrolled_window);
  
@@ -414,7 +414,7 @@ index dc2cc9d..749dbf7 100644
    scrollbar_spacing = _gtk_scrolled_window_get_scrollbar_spacing (scrolled_window);
    gtk_widget_style_get (widget, "scrollbars-within-bevel", &scrollbars_within_bevel, NULL);
  
-@@ -1881,6 +2007,9 @@ gtk_scrolled_window_size_allocate (GtkWidget     *widget,
+@@ -1879,6 +2005,9 @@ gtk_scrolled_window_size_allocate (GtkWidget     *widget,
  	}
        while (previous_hvis != scrolled_window->hscrollbar_visible ||
  	     previous_vvis != scrolled_window->vscrollbar_visible);
@@ -424,7 +424,7 @@ index dc2cc9d..749dbf7 100644
      }
    else
      {
-@@ -2168,6 +2297,10 @@ gtk_scrolled_window_scroll_event (GtkWidget      *widget,
+@@ -2166,6 +2295,10 @@ gtk_scrolled_window_scroll_event (GtkWidget      *widget,
             priv->y_force = 0.0;
           }
  
@@ -435,7 +435,7 @@ index dc2cc9d..749dbf7 100644
        /* If we should start a snap back and no current deceleration
         * is active, start the snap back.
         */
-@@ -2345,6 +2478,10 @@ scrolled_window_snap_back_cb (gpointer user_data)
+@@ -2343,6 +2476,10 @@ scrolled_window_snap_back_cb (gpointer user_data)
    else
      {
        priv->deceleration_id = 0;
@@ -446,7 +446,7 @@ index dc2cc9d..749dbf7 100644
        return FALSE;
      }
  }
-@@ -2447,6 +2584,25 @@ static gboolean
+@@ -2445,6 +2582,25 @@ static gboolean
  gtk_scrolled_window_captured_motion_notify_scrollbar (GtkWidget *widget,
                                                        GdkEvent  *event);
  
@@ -472,7 +472,7 @@ index dc2cc9d..749dbf7 100644
  static gboolean
  gtk_scrolled_window_captured_button_press_scrollbar (GtkWidget *widget,
                                                       GdkEvent  *event)
-@@ -2454,14 +2610,19 @@ gtk_scrolled_window_captured_button_press_scrollbar (GtkWidget *widget,
+@@ -2452,14 +2608,19 @@ gtk_scrolled_window_captured_button_press_scrollbar (GtkWidget *widget,
    GtkScrolledWindow *scrolled_window = GTK_SCROLLED_WINDOW (widget);
    GtkScrolledWindowPrivate *priv = GTK_SCROLLED_WINDOW_GET_PRIVATE (scrolled_window);
    GdkEventButton *bevent = (GdkEventButton *) event;
@@ -496,7 +496,7 @@ index dc2cc9d..749dbf7 100644
      {
        GdkRectangle vbar_rect;
        GdkRectangle vslider_rect;
-@@ -2471,11 +2632,9 @@ gtk_scrolled_window_captured_button_press_scrollbar (GtkWidget *widget,
+@@ -2469,11 +2630,9 @@ gtk_scrolled_window_captured_button_press_scrollbar (GtkWidget *widget,
        priv->sb_pointer_grabbed = TRUE;
        gtk_grab_add (widget);
  
@@ -511,7 +511,7 @@ index dc2cc9d..749dbf7 100644
  
        if (priv->sb_grab_vscroll)
          {
-@@ -2483,20 +2642,20 @@ gtk_scrolled_window_captured_button_press_scrollbar (GtkWidget *widget,
+@@ -2481,20 +2640,20 @@ gtk_scrolled_window_captured_button_press_scrollbar (GtkWidget *widget,
            vslider_rect.x = vbar_rect.x;
            vslider_rect.width = vbar_rect.width;
  
@@ -539,7 +539,7 @@ index dc2cc9d..749dbf7 100644
                  priv->sb_scroll_direction = -1;
                else
                  priv->sb_scroll_direction = 1;
-@@ -2508,20 +2667,20 @@ gtk_scrolled_window_captured_button_press_scrollbar (GtkWidget *widget,
+@@ -2506,20 +2665,20 @@ gtk_scrolled_window_captured_button_press_scrollbar (GtkWidget *widget,
            hslider_rect.y = hbar_rect.y;
            hslider_rect.height = hbar_rect.height;
  
@@ -567,7 +567,7 @@ index dc2cc9d..749dbf7 100644
                  priv->sb_scroll_direction = -1;
                else
                  priv->sb_scroll_direction = 1;
-@@ -2599,6 +2758,11 @@ gtk_scrolled_window_captured_motion_notify_scrollbar (GtkWidget *widget,
+@@ -2597,6 +2756,11 @@ gtk_scrolled_window_captured_motion_notify_scrollbar (GtkWidget *widget,
    GtkScrolledWindow *scrolled_window = GTK_SCROLLED_WINDOW (widget);
    GtkScrolledWindowPrivate *priv = GTK_SCROLLED_WINDOW_GET_PRIVATE (scrolled_window);
    GdkEventMotion *mevent = (GdkEventMotion *) event;
@@ -579,7 +579,7 @@ index dc2cc9d..749dbf7 100644
  
    if (priv->sb_pointer_grabbed)
      {
-@@ -2613,22 +2777,20 @@ gtk_scrolled_window_captured_motion_notify_scrollbar (GtkWidget *widget,
+@@ -2611,22 +2775,20 @@ gtk_scrolled_window_captured_motion_notify_scrollbar (GtkWidget *widget,
            gint visible_range;
            gdouble value;
  
@@ -607,7 +607,7 @@ index dc2cc9d..749dbf7 100644
                visible_range = hbar_rect.width - hslider_rect.width;
              }
  
-@@ -2643,9 +2805,9 @@ gtk_scrolled_window_captured_motion_notify_scrollbar (GtkWidget *widget,
+@@ -2641,9 +2803,9 @@ gtk_scrolled_window_captured_motion_notify_scrollbar (GtkWidget *widget,
      }
    else
      {
@@ -620,7 +620,7 @@ index dc2cc9d..749dbf7 100644
          {
            priv->sb_hovering = TRUE;
            priv->sb_visible = TRUE;
-@@ -2654,7 +2816,7 @@ gtk_scrolled_window_captured_motion_notify_scrollbar (GtkWidget *widget,
+@@ -2652,7 +2814,7 @@ gtk_scrolled_window_captured_motion_notify_scrollbar (GtkWidget *widget,
            gtk_scrolled_window_stop_fade_out_timeout (scrolled_window);
  
            /* needed when entering the scrollbar */
@@ -629,7 +629,7 @@ index dc2cc9d..749dbf7 100644
  
            return TRUE;
          }
-@@ -2841,10 +3003,6 @@ gtk_scrolled_window_add (GtkContainer *container,
+@@ -2839,10 +3001,6 @@ gtk_scrolled_window_add (GtkContainer *container,
                                            gtk_range_get_adjustment (GTK_RANGE (scrolled_window->vscrollbar))))
      g_warning ("gtk_scrolled_window_add(): cannot add non scrollable widget "
  	       "use gtk_scrolled_window_add_with_viewport() instead");
@@ -640,7 +640,7 @@ index dc2cc9d..749dbf7 100644
  }
  
  static void
-@@ -2859,10 +3017,6 @@ gtk_scrolled_window_remove (GtkContainer *container,
+@@ -2857,10 +3015,6 @@ gtk_scrolled_window_remove (GtkContainer *container,
  
    priv = GTK_SCROLLED_WINDOW_GET_PRIVATE (container);
  
@@ -651,7 +651,7 @@ index dc2cc9d..749dbf7 100644
    gtk_widget_set_scroll_adjustments (child, NULL, NULL);
  
    /* chain parent class handler to remove child */
-@@ -3035,6 +3189,37 @@ gtk_scrolled_window_realize (GtkWidget *widget)
+@@ -3033,6 +3187,37 @@ gtk_scrolled_window_realize (GtkWidget *widget)
                                    priv->overshoot_window);
  
    GTK_WIDGET_CLASS (gtk_scrolled_window_parent_class)->realize (widget);
@@ -689,7 +689,7 @@ index dc2cc9d..749dbf7 100644
  }
  
  static void
-@@ -3055,6 +3240,22 @@ gtk_scrolled_window_unrealize (GtkWidget *widget)
+@@ -3053,6 +3238,22 @@ gtk_scrolled_window_unrealize (GtkWidget *widget)
    gdk_window_destroy (priv->hbackground_window);
    priv->hbackground_window = NULL;
  
@@ -712,7 +712,7 @@ index dc2cc9d..749dbf7 100644
    gtk_widget_set_realized (widget, FALSE);
  
    GTK_WIDGET_CLASS (gtk_scrolled_window_parent_class)->unrealize (widget);
-@@ -3078,6 +3279,9 @@ gtk_scrolled_window_map (GtkWidget *widget)
+@@ -3076,6 +3277,9 @@ gtk_scrolled_window_map (GtkWidget *widget)
      gdk_window_hide (priv->hbackground_window);
  
    GTK_WIDGET_CLASS (gtk_scrolled_window_parent_class)->map (widget);
@@ -722,7 +722,7 @@ index dc2cc9d..749dbf7 100644
  }
  
  static void
-@@ -3090,6 +3294,9 @@ gtk_scrolled_window_unmap (GtkWidget *widget)
+@@ -3088,6 +3292,9 @@ gtk_scrolled_window_unmap (GtkWidget *widget)
    gdk_window_hide (priv->vbackground_window);
    gdk_window_hide (priv->hbackground_window);
  
@@ -732,7 +732,7 @@ index dc2cc9d..749dbf7 100644
    GTK_WIDGET_CLASS (gtk_scrolled_window_parent_class)->unmap (widget);
  }
  
-@@ -3119,75 +3326,25 @@ gtk_scrolled_window_grab_notify (GtkWidget *widget,
+@@ -3117,75 +3324,25 @@ gtk_scrolled_window_grab_notify (GtkWidget *widget,
      }
  }
  
@@ -816,7 +816,7 @@ index dc2cc9d..749dbf7 100644
  
    if (vbar_rect.width > 0 &&
        x >= vbar_rect.x && x < (vbar_rect.x + vbar_rect.width) &&
-@@ -3209,72 +3366,48 @@ gtk_scrolled_window_over_child_scroll_areas (GtkScrolledWindow *scrolled_window,
+@@ -3207,72 +3364,48 @@ gtk_scrolled_window_over_child_scroll_areas (GtkScrolledWindow *scrolled_window,
  }
  
  static void
@@ -904,7 +904,7 @@ index dc2cc9d..749dbf7 100644
         ratio = page_size / (upper - lower);
         if (ratio < 1.0)
           {
-@@ -3282,7 +3415,7 @@ gtk_scrolled_window_get_child_scroll_areas (GtkScrolledWindow *scrolled_window,
+@@ -3280,7 +3413,7 @@ gtk_scrolled_window_get_child_scroll_areas (GtkScrolledWindow *scrolled_window,
             height = MAX (height, 20);
             height = MIN (height, viewport_height - (2 * priv->sb_padding));
  
@@ -913,7 +913,7 @@ index dc2cc9d..749dbf7 100644
             y = ratio * (viewport_height - (2 * priv->sb_padding) - height) + priv->sb_padding;
             x = viewport_width - priv->sb_width - priv->sb_padding;
  
-@@ -3330,11 +3463,18 @@ gtk_scrolled_window_get_child_scroll_areas (GtkScrolledWindow *scrolled_window,
+@@ -3328,11 +3461,18 @@ gtk_scrolled_window_get_child_scroll_areas (GtkScrolledWindow *scrolled_window,
         adj = gtk_range_get_adjustment (GTK_RANGE (scrolled_window->hscrollbar));
  
         g_object_get (adj,
@@ -932,7 +932,7 @@ index dc2cc9d..749dbf7 100644
         ratio = page_size / (upper - lower);
         if (ratio < 1.0)
           {
-@@ -3342,7 +3482,7 @@ gtk_scrolled_window_get_child_scroll_areas (GtkScrolledWindow *scrolled_window,
+@@ -3340,7 +3480,7 @@ gtk_scrolled_window_get_child_scroll_areas (GtkScrolledWindow *scrolled_window,
             width = MAX (width, 20);
             width = MIN (width, viewport_width - (2 * priv->sb_padding));
  
@@ -941,7 +941,7 @@ index dc2cc9d..749dbf7 100644
             x = ratio * (viewport_width - (2 * priv->sb_padding) - width) + priv->sb_padding;
             y = viewport_height - priv->sb_width - priv->sb_padding;
  
-@@ -3386,69 +3526,6 @@ gtk_scrolled_window_get_child_scroll_areas (GtkScrolledWindow *scrolled_window,
+@@ -3384,69 +3524,6 @@ gtk_scrolled_window_get_child_scroll_areas (GtkScrolledWindow *scrolled_window,
       }
  }
  
@@ -1011,7 +1011,7 @@ index dc2cc9d..749dbf7 100644
  static void
  gtk_scrolled_window_cancel_animation (GtkScrolledWindow *scrolled_window)
  {
-@@ -3543,39 +3620,6 @@ gtk_scrolled_window_start_fade_out_animation (GtkScrolledWindow *scrolled_window
+@@ -3541,39 +3618,6 @@ gtk_scrolled_window_start_fade_out_animation (GtkScrolledWindow *scrolled_window
  }
  
  static void
@@ -1051,7 +1051,7 @@ index dc2cc9d..749dbf7 100644
  gtk_scrolled_window_init_overlay_scrollbars (GtkScrolledWindow *scrolled_window)
  {
    _gtk_widget_set_captured_event_handler (GTK_WIDGET (scrolled_window),
-@@ -3594,8 +3638,43 @@ gtk_scrolled_window_overlay_scrollbars_changed (GtkSettings *settings,
+@@ -3592,8 +3636,43 @@ gtk_scrolled_window_overlay_scrollbars_changed (GtkSettings *settings,
                  &priv->overlay_scrollbars,
                  NULL);
  

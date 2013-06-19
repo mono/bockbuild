@@ -1,4 +1,4 @@
-From f781e44ae82e1539e8697b4e128f4efe57e8f04d Mon Sep 17 00:00:00 2001
+From 4dc315d660c011648ba3b32ae653a2e970ff2719 Mon Sep 17 00:00:00 2001
 From: Kristian Rietveld <kris@lanedo.com>
 Date: Sun, 17 Feb 2013 13:06:59 +0100
 Subject: [PATCH 30/61] Never intervene in the event stream for legacy mice

@@ -1,4 +1,4 @@
-From 1a10c1decbabecf913a93b5a2932097b9dd4ac8e Mon Sep 17 00:00:00 2001
+From 7a695a3b0d47fe292c4831ecb9ff9e96921fc881 Mon Sep 17 00:00:00 2001
 From: Michael Natterer <mitch@gimp.org>
 Date: Tue, 8 May 2012 14:11:50 +0200
 Subject: [PATCH 05/61] Smooth scrolling
@@ -319,10 +319,10 @@ index 5463140..c672acb 100644
  void               _gtk_range_set_stop_values              (GtkRange      *range,
                                                              gdouble       *values,
 diff --git a/gtk/gtkscrolledwindow.c b/gtk/gtkscrolledwindow.c
-index 05389fa..999df18 100644
+index 1704d3c..2288b2f 100644
 --- a/gtk/gtkscrolledwindow.c
 +++ b/gtk/gtkscrolledwindow.c
-@@ -1568,31 +1568,77 @@ static gboolean
+@@ -1565,31 +1565,77 @@ static gboolean
  gtk_scrolled_window_scroll_event (GtkWidget      *widget,
  				  GdkEventScroll *event)
  {

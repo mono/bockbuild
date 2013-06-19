@@ -1,4 +1,4 @@
-From 0b1675494d6ae3bb47721c8c6a894c36a426ba04 Mon Sep 17 00:00:00 2001
+From 40c7c29c7ccd025d95d9d7ffc02d04e2930ffe9f Mon Sep 17 00:00:00 2001
 From: Michael Natterer <mitch@gimp.org>
 Date: Fri, 5 Apr 2013 15:15:08 +0200
 Subject: [PATCH 33/61] gtk: add GtkScrolledWindow API to disable overshoot
@@ -11,7 +11,7 @@ And remove some forgotten declarations in the header.
  2 files changed, 34 insertions(+), 9 deletions(-)
 
 diff --git a/gtk/gtkscrolledwindow.c b/gtk/gtkscrolledwindow.c
-index 4a5c1f4..e17dd45 100644
+index 7200462..9def3aa 100644
 --- a/gtk/gtkscrolledwindow.c
 +++ b/gtk/gtkscrolledwindow.c
 @@ -154,6 +154,7 @@ typedef struct {
@@ -22,7 +22,7 @@ index 4a5c1f4..e17dd45 100644
  } GtkScrolledWindowPrivate;
  
  #define GTK_SCROLLED_WINDOW_GET_PRIVATE(obj) (G_TYPE_INSTANCE_GET_PRIVATE ((obj), GTK_TYPE_SCROLLED_WINDOW, GtkScrolledWindowPrivate))
-@@ -543,6 +544,8 @@ gtk_scrolled_window_init (GtkScrolledWindow *scrolled_window)
+@@ -541,6 +542,8 @@ gtk_scrolled_window_init (GtkScrolledWindow *scrolled_window)
    priv->sb_width = 6;
    priv->sb_fade_out_delay = 1000;
  
@@ -31,7 +31,7 @@ index 4a5c1f4..e17dd45 100644
    g_signal_connect_swapped (priv->opacity, "value-changed",
                              G_CALLBACK (gtk_scrolled_window_update_scrollbars),
                              scrolled_window);
-@@ -2146,8 +2149,9 @@ gtk_scrolled_window_scroll_event (GtkWidget      *widget,
+@@ -2144,8 +2147,9 @@ gtk_scrolled_window_scroll_event (GtkWidget      *widget,
        gboolean is_momentum_event = event->momentum_phase != GDK_EVENT_SCROLL_PHASE_NONE;
        gboolean legacy_mouse = FALSE;
  
@@ -43,7 +43,7 @@ index 4a5c1f4..e17dd45 100644
          legacy_mouse = TRUE;
  
        _gtk_scrolled_window_get_overshoot (scrolled_window,
-@@ -3108,6 +3112,31 @@ gtk_scrolled_window_add_with_viewport (GtkScrolledWindow *scrolled_window,
+@@ -3106,6 +3110,31 @@ gtk_scrolled_window_add_with_viewport (GtkScrolledWindow *scrolled_window,
    gtk_container_add (GTK_CONTAINER (viewport), child);
  }
  
