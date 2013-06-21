@@ -77,6 +77,8 @@ class GtkPackage (GnomeGitPackage):
 				'patches/gtk/0060-gdk-Lookup-double-scaled-variants-on-pixbufs.patch',
 				'patches/gtk/0061-Make-usual-calls-to-get-a-GdkPixbuf-attach-a-2x-vari.patch',
 
+				'patches/gtk/fix-icon-criticals.patch',
+
 				# make new modifier behviour opt-in, so as not to break old versions of MonoDevelop
 				'patches/gdk-quartz-set-fix-modifiers-hack-v3.patch',
 
