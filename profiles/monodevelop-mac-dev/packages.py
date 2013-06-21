@@ -57,8 +57,8 @@ class MonoDevelopMacDevPackages:
 			'libgdiplus.py',
 			'mono-llvm.py',
 			'mono-master.py',
-			'mono-addins.py',
 			'gtk-sharp.py',
+			'mono-addins.py'
 		])
 
 		self.packages = [os.path.join ('..', '..', 'packages', p)
