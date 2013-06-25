@@ -1,4 +1,4 @@
-From 0e87de34ef31af93c68b70ae10e414ca0ed7d553 Mon Sep 17 00:00:00 2001
+From 7a434b865f5fa4495de222123c56246c99848c8a Mon Sep 17 00:00:00 2001
 From: Michael Natterer <mitch@gimp.org>
 Date: Fri, 22 Feb 2013 11:05:17 +0100
 Subject: [PATCH 36/61] gdk: add a "move-native-children" signal to GdkWindow
@@ -20,11 +20,11 @@ index a6b582c..3040321 100644
 +  MOVE_NATIVE_CHILDREN,
    LAST_SIGNAL
  };
-
+ 
 @@ -609,6 +610,15 @@ gdk_window_class_init (GdkWindowObjectClass *klass)
-		  G_TYPE_POINTER,
-		  G_TYPE_POINTER);
-
+ 		  G_TYPE_POINTER,
+ 		  G_TYPE_POINTER);
+ 
 +  signals[MOVE_NATIVE_CHILDREN] =
 +    g_signal_new (g_intern_static_string ("move-native-children"),
 +                  G_OBJECT_CLASS_TYPE (object_class),
@@ -35,16 +35,17 @@ index a6b582c..3040321 100644
 +                  G_TYPE_NONE,
 +                  0);
  }
-
+ 
  static void
 @@ -7474,6 +7484,8 @@ move_native_children (GdkWindowObject *private)
        else
-	move_native_children  (child);
+ 	move_native_children  (child);
      }
 +
 +  g_signal_emit_by_name (private, "move-native-children");
  }
-
+ 
  static gboolean
---
+-- 
 1.7.10.2 (Apple Git-33)
+

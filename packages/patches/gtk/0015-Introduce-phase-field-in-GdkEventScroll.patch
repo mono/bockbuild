@@ -1,4 +1,4 @@
-From 9b37fb298ce6513fa54cc4d0066a6a117640a7bb Mon Sep 17 00:00:00 2001
+From 102d7536cfaf0267806250ea5203840f7f966595 Mon Sep 17 00:00:00 2001
 From: Kristian Rietveld <kris@lanedo.com>
 Date: Sun, 2 Sep 2012 14:16:45 +0200
 Subject: [PATCH 15/61] Introduce phase field in GdkEventScroll

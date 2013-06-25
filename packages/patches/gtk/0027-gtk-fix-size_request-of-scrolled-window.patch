@@ -1,4 +1,4 @@
-From 08fdda11850523c5dc3b77156bd88c03f84a3e2a Mon Sep 17 00:00:00 2001
+From 773901da48cdab050d88c44e3a47f5f9bff4c106 Mon Sep 17 00:00:00 2001
 From: Michael Natterer <mitch@gimp.org>
 Date: Thu, 22 Nov 2012 19:49:20 +0100
 Subject: [PATCH 27/61] gtk: fix size_request() of scrolled window
@@ -8,10 +8,10 @@ Subject: [PATCH 27/61] gtk: fix size_request() of scrolled window
  1 file changed, 16 insertions(+), 25 deletions(-)
 
 diff --git a/gtk/gtkscrolledwindow.c b/gtk/gtkscrolledwindow.c
-index 2d0cc0e..84103a6 100644
+index 09f19d9..77bb5af 100644
 --- a/gtk/gtkscrolledwindow.c
 +++ b/gtk/gtkscrolledwindow.c
-@@ -1581,14 +1581,12 @@ gtk_scrolled_window_size_request (GtkWidget      *widget,
+@@ -1579,14 +1579,12 @@ gtk_scrolled_window_size_request (GtkWidget      *widget,
    GtkRequisition hscrollbar_requisition;
    GtkRequisition vscrollbar_requisition;
    GtkRequisition child_requisition;
@@ -26,7 +26,7 @@ index 2d0cc0e..84103a6 100644
  
    scrollbar_spacing = _gtk_scrolled_window_get_scrollbar_spacing (scrolled_window);
  
-@@ -1608,7 +1606,7 @@ gtk_scrolled_window_size_request (GtkWidget      *widget,
+@@ -1606,7 +1604,7 @@ gtk_scrolled_window_size_request (GtkWidget      *widget,
  
        if (scrolled_window->hscrollbar_policy == GTK_POLICY_NEVER)
  	requisition->width += child_requisition.width;
@@ -35,7 +35,7 @@ index 2d0cc0e..84103a6 100644
  	{
  	  GtkWidgetAuxInfo *aux_info = _gtk_widget_get_aux_info (bin->child, FALSE);
  
-@@ -1619,13 +1617,11 @@ gtk_scrolled_window_size_request (GtkWidget      *widget,
+@@ -1617,13 +1615,11 @@ gtk_scrolled_window_size_request (GtkWidget      *widget,
  	    }
  	  else
  	    requisition->width += vscrollbar_requisition.width;
@@ -51,7 +51,7 @@ index 2d0cc0e..84103a6 100644
  	{
  	  GtkWidgetAuxInfo *aux_info = _gtk_widget_get_aux_info (bin->child, FALSE);
  
-@@ -1636,28 +1632,23 @@ gtk_scrolled_window_size_request (GtkWidget      *widget,
+@@ -1634,28 +1630,23 @@ gtk_scrolled_window_size_request (GtkWidget      *widget,
  	    }
  	  else
  	    requisition->height += hscrollbar_requisition.height;

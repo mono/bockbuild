@@ -1,6 +1,6 @@
 class GtkPackage (GnomeGitPackage):
 	def __init__ (self):
-		GnomeGitPackage.__init__ (self, 'gtk+', '2.24', '9f16fc1b003c6e4c5095fe277f67be6bf8c8ffee',
+		GnomeGitPackage.__init__ (self, 'gtk+', '2.24', 'e62709da2ee6619f26c8446b545418e5f1b9e151',
 			configure_flags = [
 				'--with-gdktarget=%{gdk_target}',
 #				'--disable-cups',
@@ -64,20 +64,20 @@ class GtkPackage (GnomeGitPackage):
 				'patches/gtk/0047-nsview-clip-text-field-cursor-drawing.patch',
 				'patches/gtk/0048-nsview-factor-out-almost-all-code-from-the-overridde.patch',
 				'patches/gtk/0049-gtk-add-an-overlay-policy-API-to-GtkScrolledWindow.patch',
-				'patches/gtk/0050-quartz-honor-more-source-image-properties-in-_gdk_qu.patch',
-				'patches/gtk/0051-quartz-add-gdk_screen_-and-gdk_window_get_scale_fact.patch',
-				'patches/gtk/0052-gtk-add-gtk_widget_get_scale_factor.patch',
-				'patches/gtk/0053-iconfactory-Add-_scaled-variants.patch',
-				'patches/gtk/0054-widget-Add-_scaled-variants-for-icon-rendering.patch',
-				'patches/gtk/0055-icontheme-Add-support-for-high-resolution-icons.patch',
-				'patches/gtk/0056-iconfactory-Add-scale-info-to-GtkIconSource.patch',
-				'patches/gtk/0057-iconfactory-Add-gtk_cairo_set_source_icon_set.patch',
-				'patches/gtk/0058-image-Use-scaled-icons-on-windows-with-a-scaling-fac.patch',
-				'patches/gtk/0059-cellrendererpixbuf-Use-scaled-icons-on-windows-with-.patch',
-				'patches/gtk/0060-entry-Use-scaled-icons-on-windows-with-a-scale-facto.patch',
-				'patches/gtk/0061-gdk-Lookup-double-scaled-variants-on-pixbufs.patch',
-				'patches/gtk/0062-Add-stronger-checks-on-the-scale-matching.patch',
-				'patches/gtk/0063-Fully-handle-the-GtkCellRenderer-icon-set-property.patch',
+				'patches/gtk/0050-quartz-add-gdk_screen_-and-gdk_window_get_scale_fact.patch',
+				'patches/gtk/0051-gtk-add-gtk_widget_get_scale_factor.patch',
+				'patches/gtk/0052-iconfactory-Add-_scaled-variants.patch',
+				'patches/gtk/0053-widget-Add-_scaled-variants-for-icon-rendering.patch',
+				'patches/gtk/0054-icontheme-Add-support-for-high-resolution-icons.patch',
+				'patches/gtk/0055-iconfactory-Add-scale-info-to-GtkIconSource.patch',
+				'patches/gtk/0056-iconfactory-Add-gtk_cairo_set_source_icon_set.patch',
+				'patches/gtk/0057-image-Use-scaled-icons-on-windows-with-a-scaling-fac.patch',
+				'patches/gtk/0058-cellrendererpixbuf-Use-scaled-icons-on-windows-with-.patch',
+				'patches/gtk/0059-entry-Use-scaled-icons-on-windows-with-a-scale-facto.patch',
+				'patches/gtk/0060-gdk-Lookup-double-scaled-variants-on-pixbufs.patch',
+				'patches/gtk/0061-Make-usual-calls-to-get-a-GdkPixbuf-attach-a-2x-vari.patch',
+
+				'patches/gtk/fix-icon-criticals.patch',
 
 				# make new modifier behviour opt-in, so as not to break old versions of MonoDevelop
 				'patches/gdk-quartz-set-fix-modifiers-hack-v3.patch',
@@ -103,7 +103,7 @@ class GtkPackage (GnomeGitPackage):
 
 				# enable text input with third party input methods
 				# https://github.com/ashie/gtkimcocoa/blob/master/patches/gtk%2B-2.24.17-gdk-quartz-observe-input-sources.patch
-				'patches/gtk+-2.24.17-gdk-quartz-observe-input-sources.patch',
+				#'patches/gtk+-2.24.17-gdk-quartz-observe-input-sources.patch',
 			])
 
 	def prep (self):

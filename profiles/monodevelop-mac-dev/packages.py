@@ -39,7 +39,6 @@ class MonoDevelopMacDevPackages:
 			'gdk-pixbuf.py',
 			'gtk+.py',
 			'libglade.py',
-			'gtkimcocoa.py',
 		])
 
 		# Theme
@@ -59,6 +58,7 @@ class MonoDevelopMacDevPackages:
 			'mono-llvm.py',
 			'mono-master.py',
 			'gtk-sharp.py',
+			'mono-addins.py'
 		])
 
 		self.packages = [os.path.join ('..', '..', 'packages', p)

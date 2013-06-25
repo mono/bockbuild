@@ -1,4 +1,4 @@
-From db955335af18e1a834043a122a1f0401c788efc7 Mon Sep 17 00:00:00 2001
+From 1d31399271a61a4784350c17b27f4689fb9a56f2 Mon Sep 17 00:00:00 2001
 From: Kristian Rietveld <kris@lanedo.com>
 Date: Fri, 28 Sep 2012 06:18:49 +0200
 Subject: [PATCH 19/61] Use start/end phase in event handling
@@ -9,10 +9,10 @@ Should make things work better on Mountain Lion.
  1 file changed, 5 insertions(+), 8 deletions(-)
 
 diff --git a/gtk/gtkscrolledwindow.c b/gtk/gtkscrolledwindow.c
-index 9bf0df1..f353e7d 100644
+index 5341b50..92e75a0 100644
 --- a/gtk/gtkscrolledwindow.c
 +++ b/gtk/gtkscrolledwindow.c
-@@ -2012,12 +2012,10 @@ gtk_scrolled_window_scroll_event (GtkWidget      *widget,
+@@ -2010,12 +2010,10 @@ gtk_scrolled_window_scroll_event (GtkWidget      *widget,
        if (old_overshoot_x != 0 || old_overshoot_y != 0)
          is_overshot = TRUE;
  
@@ -28,7 +28,7 @@ index 9bf0df1..f353e7d 100644
          priv->is_snapping_back = FALSE;
  
        /* Scroll events are handled in two cases:
-@@ -2111,13 +2109,12 @@ gtk_scrolled_window_scroll_event (GtkWidget      *widget,
+@@ -2109,13 +2107,12 @@ gtk_scrolled_window_scroll_event (GtkWidget      *widget,
          _gtk_scrolled_window_allocate_overshoot_window (scrolled_window);
  
        /* In two cases we want to start snapping back:

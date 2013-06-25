@@ -1,4 +1,4 @@
-From 9573436e1bfb223b97b52c7e1e1950bc7c6c7b54 Mon Sep 17 00:00:00 2001
+From f9192bfd54447f9054dcb6e69de3fb6a2373cb25 Mon Sep 17 00:00:00 2001
 From: Kristian Rietveld <kris@lanedo.com>
 Date: Sun, 17 Feb 2013 13:08:14 +0100
 Subject: [PATCH 31/61] Do not start overshooting for legacy mouse scroll
@@ -13,10 +13,10 @@ stuck.
  1 file changed, 16 insertions(+), 7 deletions(-)
 
 diff --git a/gtk/gtkscrolledwindow.c b/gtk/gtkscrolledwindow.c
-index 84103a6..a27c08b 100644
+index 77bb5af..4159af8 100644
 --- a/gtk/gtkscrolledwindow.c
 +++ b/gtk/gtkscrolledwindow.c
-@@ -2143,7 +2143,12 @@ gtk_scrolled_window_scroll_event (GtkWidget      *widget,
+@@ -2141,7 +2141,12 @@ gtk_scrolled_window_scroll_event (GtkWidget      *widget,
        gint old_overshoot_x, old_overshoot_y;
        gboolean start_snap_back = FALSE;
        gboolean is_overshot = FALSE;
@@ -30,7 +30,7 @@ index 84103a6..a27c08b 100644
  
        _gtk_scrolled_window_get_overshoot (scrolled_window,
                                            &old_overshoot_x, &old_overshoot_y);
-@@ -2152,10 +2157,12 @@ gtk_scrolled_window_scroll_event (GtkWidget      *widget,
+@@ -2150,10 +2155,12 @@ gtk_scrolled_window_scroll_event (GtkWidget      *widget,
        if (old_overshoot_x != 0 || old_overshoot_y != 0)
          is_overshot = TRUE;
  
@@ -45,7 +45,7 @@ index 84103a6..a27c08b 100644
          {
            priv->is_snapping_back = FALSE;
            priv->gesture_in_progress = TRUE;
-@@ -2195,8 +2202,9 @@ gtk_scrolled_window_scroll_event (GtkWidget      *widget,
+@@ -2193,8 +2200,9 @@ gtk_scrolled_window_scroll_event (GtkWidget      *widget,
                 */
                adj = gtk_range_get_adjustment (GTK_RANGE (scrolled_window->hscrollbar));
                gdouble max_adj = gtk_adjustment_get_upper (adj) - gtk_adjustment_get_page_size (adj);
@@ -57,7 +57,7 @@ index 84103a6..a27c08b 100644
                  may_overshoot = TRUE;
  
                if (scrolled_window->hscrollbar_visible && (is_overshot || may_overshoot))
-@@ -2242,8 +2250,9 @@ gtk_scrolled_window_scroll_event (GtkWidget      *widget,
+@@ -2240,8 +2248,9 @@ gtk_scrolled_window_scroll_event (GtkWidget      *widget,
                 */
                adj = gtk_range_get_adjustment (GTK_RANGE (scrolled_window->vscrollbar));
                gdouble max_adj = gtk_adjustment_get_upper (adj) - gtk_adjustment_get_page_size (adj);

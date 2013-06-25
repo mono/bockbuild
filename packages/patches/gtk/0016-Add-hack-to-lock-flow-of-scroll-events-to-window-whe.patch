@@ -1,4 +1,4 @@
-From 3d27ebd57fb3a115762238276c0ecc4b449c9df9 Mon Sep 17 00:00:00 2001
+From 2b6916f3a569b93b98717a1fbe500e7c6a565958 Mon Sep 17 00:00:00 2001
 From: Kristian Rietveld <kris@lanedo.com>
 Date: Fri, 28 Sep 2012 08:24:05 +0200
 Subject: [PATCH 16/61] Add hack to lock flow of scroll events to window where

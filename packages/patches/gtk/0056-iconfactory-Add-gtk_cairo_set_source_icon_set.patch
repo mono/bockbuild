@@ -1,7 +1,7 @@
-From 417b3a78813222736dffb25036145c87c053cc4a Mon Sep 17 00:00:00 2001
+From ea9025112da79aef86f71be5c31be689f99db5a9 Mon Sep 17 00:00:00 2001
 From: Carlos Garnacho <carlos@lanedo.com>
 Date: Fri, 10 May 2013 18:29:05 +0200
-Subject: [PATCH 57/61] iconfactory: Add gtk_cairo_set_source_icon_set()
+Subject: [PATCH 56/61] iconfactory: Add gtk_cairo_set_source_icon_set()
 
 As GtkIconSet remains a good candidate to delay pixbuf lookup until
 the moment of rendering, a cairo helper function has been added
@@ -12,13 +12,13 @@ to easy enabling support for high resolution icons.
  2 files changed, 41 insertions(+)
 
 diff --git a/gtk/gtkiconfactory.c b/gtk/gtkiconfactory.c
-index 8469d1f..48b6e80 100644
+index 41d1ee7..ab9a212 100644
 --- a/gtk/gtkiconfactory.c
 +++ b/gtk/gtkiconfactory.c
-@@ -3125,5 +3125,37 @@ gtk_icon_source_get_filename (const GtkIconSource *source)
-
+@@ -3127,5 +3127,37 @@ gtk_icon_source_get_filename (const GtkIconSource *source)
+ 
  #endif
-
+ 
 +void
 +gtk_cairo_set_source_icon_set (cairo_t         *cr,
 +                               GtkWidget       *widget,
@@ -60,7 +60,7 @@ index d646ed9..67e318a 100644
 @@ -196,6 +196,15 @@ GtkStateType     gtk_icon_source_get_state                (const GtkIconSource *
  GtkIconSize      gtk_icon_source_get_size                 (const GtkIconSource *source);
  gdouble          gtk_icon_source_get_scale                (const GtkIconSource *source);
-
+ 
 +/* Cairo helper */
 +void             gtk_cairo_set_source_icon_set            (cairo_t             *cr,
 +                                                           GtkWidget           *widget,
@@ -73,5 +73,6 @@ index d646ed9..67e318a 100644
  /* ignore this */
  void _gtk_icon_set_invalidate_caches (void);
  GList* _gtk_icon_factory_list_ids (void);
---
+-- 
 1.7.10.2 (Apple Git-33)
+

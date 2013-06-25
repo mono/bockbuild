@@ -1,4 +1,4 @@
-From e31b4fe190325c0f7f4c64dbe714e657c04674d8 Mon Sep 17 00:00:00 2001
+From ceaed048170608c99678fe05c880f68ea5f0c443 Mon Sep 17 00:00:00 2001
 From: Michael Natterer <mitch@gimp.org>
 Date: Tue, 15 Jan 2013 14:56:29 +0100
 Subject: [PATCH 28/61] Hackish fix for bug 8493 - Min size of

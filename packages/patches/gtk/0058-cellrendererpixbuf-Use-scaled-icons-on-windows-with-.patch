@@ -1,15 +1,15 @@
-From d5ebbb1a5503ce95742880811049df623f178809 Mon Sep 17 00:00:00 2001
+From 2a8e2a8d2943c15c613c0de6b7ceeac611effa8d Mon Sep 17 00:00:00 2001
 From: Carlos Garnacho <carlosg@gnome.org>
 Date: Tue, 12 Feb 2013 14:04:09 +0100
-Subject: [PATCH 59/61] cellrendererpixbuf: Use scaled icons on windows with a
+Subject: [PATCH 58/61] cellrendererpixbuf: Use scaled icons on windows with a
  scale factor
 
 ---
- gtk/gtkcellrendererpixbuf.c |   63 ++++++++++++++++++++++++++++++++++---------
- 1 file changed, 50 insertions(+), 13 deletions(-)
+ gtk/gtkcellrendererpixbuf.c |  115 ++++++++++++++++++++++++++++++++++++++-----
+ 1 file changed, 102 insertions(+), 13 deletions(-)
 
 diff --git a/gtk/gtkcellrendererpixbuf.c b/gtk/gtkcellrendererpixbuf.c
-index f689784..2c6a0e8 100644
+index f689784..7c767b6 100644
 --- a/gtk/gtkcellrendererpixbuf.c
 +++ b/gtk/gtkcellrendererpixbuf.c
 @@ -63,7 +63,8 @@ enum {
@@ -20,8 +20,8 @@ index f689784..2c6a0e8 100644
 +  PROP_GICON,
 +  PROP_ICON_SET
  };
-
-
+ 
+ 
 @@ -78,6 +79,8 @@ struct _GtkCellRendererPixbufPrivate
    gboolean follow_state;
    gchar *icon_name;
@@ -29,12 +29,12 @@ index f689784..2c6a0e8 100644
 +  GtkIconSet *icon_set;
 +  gdouble render_scale;
  };
-
+ 
  G_DEFINE_TYPE (GtkCellRendererPixbuf, gtk_cell_renderer_pixbuf, GTK_TYPE_CELL_RENDERER)
 @@ -173,6 +176,14 @@ gtk_cell_renderer_pixbuf_class_init (GtkCellRendererPixbufClass *class)
-							NULL,
-							GTK_PARAM_READWRITE));
-
+ 							NULL,
+ 							GTK_PARAM_READWRITE));
+ 
 +  g_object_class_install_property (object_class,
 +                                   PROP_ICON_SET,
 +                                   g_param_spec_boxed ("icon-set",
@@ -58,37 +58,81 @@ index f689784..2c6a0e8 100644
        break;
 @@ -300,6 +314,7 @@ gtk_cell_renderer_pixbuf_set_property (GObject      *object,
        if (cellpixbuf->pixbuf)
-	g_object_unref (cellpixbuf->pixbuf);
+ 	g_object_unref (cellpixbuf->pixbuf);
        cellpixbuf->pixbuf = (GdkPixbuf*) g_value_dup_object (value);
 +      priv->render_scale = 1;
        if (cellpixbuf->pixbuf)
          {
            if (priv->stock_id)
 @@ -422,6 +437,7 @@ gtk_cell_renderer_pixbuf_set_property (GObject      *object,
-	  g_object_unref (priv->gicon);
-	}
+ 	  g_object_unref (priv->gicon);
+ 	}
        priv->gicon = (GIcon *) g_value_dup_object (value);
 +      priv->render_scale = 1;
        if (priv->gicon)
          {
-	  if (cellpixbuf->pixbuf)
-@@ -444,6 +460,12 @@ gtk_cell_renderer_pixbuf_set_property (GObject      *object,
+ 	  if (cellpixbuf->pixbuf)
+@@ -444,6 +460,49 @@ gtk_cell_renderer_pixbuf_set_property (GObject      *object,
              }
          }
        break;
 +    case PROP_ICON_SET:
 +      if (priv->icon_set)
-+        {
++	{
++	  if (cellpixbuf->pixbuf)
++	    {
++	      g_object_unref (cellpixbuf->pixbuf);
++	      cellpixbuf->pixbuf = NULL;
++              g_object_notify (object, "pixbuf");
++	    }
 +
++          gtk_icon_set_unref (priv->icon_set);
++	}
++
++      priv->icon_set = g_value_dup_boxed (value);
++
++      if (priv->icon_set)
++        {
++	  if (cellpixbuf->pixbuf)
++	    {
++              g_object_unref (cellpixbuf->pixbuf);
++              cellpixbuf->pixbuf = NULL;
++              g_object_notify (object, "pixbuf");
++	    }
++          if (priv->stock_id)
++            {
++              g_free (priv->stock_id);
++              priv->stock_id = NULL;
++              g_object_notify (object, "stock-id");
++            }
++          if (priv->icon_name)
++            {
++              g_free (priv->icon_name);
++              priv->icon_name = NULL;
++              g_object_notify (object, "icon-name");
++            }
++          if (priv->gicon)
++            {
++              g_object_unref (priv->gicon);
++              priv->gicon = NULL;
++              g_object_notify (object, "gicon");
++            }
 +        }
 +      break;
      default:
        G_OBJECT_WARN_INVALID_PROPERTY_ID (object, param_id, pspec);
        break;
-@@ -480,10 +502,12 @@ gtk_cell_renderer_pixbuf_create_stock_pixbuf (GtkCellRendererPixbuf *cellpixbuf,
+@@ -474,16 +533,19 @@ gtk_cell_renderer_pixbuf_create_stock_pixbuf (GtkCellRendererPixbuf *cellpixbuf,
+                                               GtkWidget             *widget)
+ {
+   GtkCellRendererPixbufPrivate *priv;
++  GtkIconSet *icon_set;
+ 
+   priv = GTK_CELL_RENDERER_PIXBUF_GET_PRIVATE (cellpixbuf);
+ 
    if (cellpixbuf->pixbuf)
      g_object_unref (cellpixbuf->pixbuf);
-
+ 
 -  cellpixbuf->pixbuf = gtk_widget_render_icon (widget,
 -                                               priv->stock_id,
 -                                               priv->stock_size,
@@ -99,13 +143,13 @@ index f689784..2c6a0e8 100644
 +                                                      priv->stock_size,
 +                                                      priv->stock_detail,
 +                                                      &priv->render_scale);
-
+ 
    g_object_notify (G_OBJECT (cellpixbuf), "pixbuf");
  }
-@@ -510,15 +534,24 @@ gtk_cell_renderer_pixbuf_create_themed_pixbuf (GtkCellRendererPixbuf *cellpixbuf
+@@ -510,15 +572,24 @@ gtk_cell_renderer_pixbuf_create_themed_pixbuf (GtkCellRendererPixbuf *cellpixbuf
    icon_theme = gtk_icon_theme_get_for_screen (screen);
    settings = gtk_settings_get_for_screen (screen);
-
+ 
 -  if (!gtk_icon_size_lookup_for_settings (settings,
 -					  priv->stock_size,
 -					  &width, &height))
@@ -117,7 +161,7 @@ index f689784..2c6a0e8 100644
        g_warning ("Invalid icon size %u\n", priv->stock_size);
        width = height = 24;
      }
-
+ 
 -  if (priv->icon_name)
 +  if (priv->icon_set)
 +    cellpixbuf->pixbuf =
@@ -129,10 +173,30 @@ index f689784..2c6a0e8 100644
 +                                       NULL, &priv->render_scale);
 +  else if (priv->icon_name)
      cellpixbuf->pixbuf = gtk_icon_theme_load_icon (icon_theme,
-			                           priv->icon_name,
-			                           MIN (width, height),
-@@ -617,8 +650,8 @@ gtk_cell_renderer_pixbuf_get_size (GtkCellRenderer *cell,
-
+ 			                           priv->icon_name,
+ 			                           MIN (width, height), 
+@@ -611,14 +682,28 @@ gtk_cell_renderer_pixbuf_get_size (GtkCellRenderer *cell,
+     {
+       if (priv->stock_id)
+ 	gtk_cell_renderer_pixbuf_create_stock_pixbuf (cellpixbuf, widget);
++      else if (priv->icon_set)
++        {
++          gdouble scale;
++
++          scale = gtk_widget_get_scale_factor (widget);
++          cellpixbuf->pixbuf =
++            gtk_icon_set_render_icon_scaled (priv->icon_set,
++                                             widget->style,
++                                             gtk_widget_get_direction (widget),
++                                             gtk_widget_get_state (widget),
++                                             priv->stock_size,
++                                             widget, priv->stock_detail,
++                                             &scale);
++        }
+       else if (priv->icon_name || priv->gicon)
+ 	gtk_cell_renderer_pixbuf_create_themed_pixbuf (cellpixbuf, widget);
+     }
+   
    if (cellpixbuf->pixbuf)
      {
 -      pixbuf_width  = gdk_pixbuf_get_width (cellpixbuf->pixbuf);
@@ -142,22 +206,23 @@ index f689784..2c6a0e8 100644
      }
    if (cellpixbuf->pixbuf_expander_open)
      {
-@@ -761,10 +794,14 @@ gtk_cell_renderer_pixbuf_render (GtkCellRenderer      *cell,
+@@ -761,10 +846,14 @@ gtk_cell_renderer_pixbuf_render (GtkCellRenderer      *cell,
        pixbuf = colorized;
      }
-
+ 
 +  draw_rect.x -= pix_rect.x;
 +  draw_rect.y -= pix_rect.y;
 +
    cr = gdk_cairo_create (window);
--
+-  
 -  gdk_cairo_set_source_pixbuf (cr, pixbuf, pix_rect.x, pix_rect.y);
 +  cairo_translate (cr, pix_rect.x, pix_rect.y);
    gdk_cairo_rectangle (cr, &draw_rect);
 +  cairo_scale (cr, 1 / priv->render_scale, 1 / priv->render_scale);
 +  gdk_cairo_set_source_pixbuf (cr, pixbuf, 0, 0);
    cairo_fill (cr);
-
+ 
    cairo_destroy (cr);
---
+-- 
 1.7.10.2 (Apple Git-33)
+

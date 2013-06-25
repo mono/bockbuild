@@ -1,4 +1,4 @@
-From 2e31fd0a42446e3ec94b89943280b177685073c1 Mon Sep 17 00:00:00 2001
+From 2a2beca8d8b1b68bf4756997596d7e86016d8ccc Mon Sep 17 00:00:00 2001
 From: Kristian Rietveld <kris@lanedo.com>
 Date: Fri, 24 Aug 2012 12:12:04 +0200
 Subject: [PATCH 04/61] Implement gtk-enable-overlay-scrollbars GtkSetting
@@ -92,23 +92,23 @@ index 53f1962..c99a2c9 100644
  
    return FALSE;
 diff --git a/gtk/gtksettings.c b/gtk/gtksettings.c
-index 7015e48..5a88ac7 100644
+index 3fbbf00..1455db1 100644
 --- a/gtk/gtksettings.c
 +++ b/gtk/gtksettings.c
-@@ -126,7 +126,8 @@ enum {
-   PROP_TOOLBAR_STYLE,
-   PROP_TOOLBAR_ICON_SIZE,
-   PROP_AUTO_MNEMONICS,
--  PROP_PRIMARY_BUTTON_WARPS_SLIDER
-+  PROP_PRIMARY_BUTTON_WARPS_SLIDER,
+@@ -139,7 +139,8 @@ enum {
+   PROP_LABEL_SELECT_ON_FOCUS,
+   PROP_COLOR_PALETTE,
+   PROP_IM_PREEDIT_STYLE,
+-  PROP_IM_STATUS_STYLE
++  PROP_IM_STATUS_STYLE,
 +  PROP_ENABLE_OVERLAY_SCROLLBARS
  };
  
- 
-@@ -1042,6 +1043,23 @@ gtk_settings_class_init (GtkSettingsClass *class)
-                                              NULL);
- 
-   g_assert (result == PROP_PRIMARY_BUTTON_WARPS_SLIDER);
+ /* --- prototypes --- */
+@@ -1205,6 +1206,23 @@ gtk_settings_class_init (GtkSettingsClass *class)
+                                                                 GTK_PARAM_READWRITE),
+                                              gtk_rc_property_parse_enum);
+   g_assert (result == PROP_IM_STATUS_STYLE);
 +
 +  /**
 +   * GtkSettings:gtk-enable-overlay-scrollbars:

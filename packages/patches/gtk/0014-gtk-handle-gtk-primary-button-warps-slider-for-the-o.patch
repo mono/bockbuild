@@ -1,4 +1,4 @@
-From 7f116b9eccd217a6432513acedc9d772411bff89 Mon Sep 17 00:00:00 2001
+From 5f567c036b567b355cb3158f7184876a26d78dfa Mon Sep 17 00:00:00 2001
 From: Michael Natterer <mitch@gimp.org>
 Date: Fri, 31 Aug 2012 16:24:07 +0200
 Subject: [PATCH 14/61] gtk: handle gtk-primary-button-warps-slider for the
@@ -9,10 +9,10 @@ Subject: [PATCH 14/61] gtk: handle gtk-primary-button-warps-slider for the
  1 file changed, 33 insertions(+), 5 deletions(-)
 
 diff --git a/gtk/gtkscrolledwindow.c b/gtk/gtkscrolledwindow.c
-index 4792c11..5fe9196 100644
+index 7680f5d..02745b1 100644
 --- a/gtk/gtkscrolledwindow.c
 +++ b/gtk/gtkscrolledwindow.c
-@@ -2726,6 +2726,10 @@ gtk_scrolled_window_scroll_step_timeout (gpointer data)
+@@ -2725,6 +2725,10 @@ gtk_scrolled_window_scroll_step_timeout (gpointer data)
  }
  
  static gboolean
@@ -23,7 +23,7 @@ index 4792c11..5fe9196 100644
  gtk_scrolled_window_captured_button_press_scrollbar (GtkWidget *widget,
                                                       GdkEvent  *event)
  {
-@@ -2809,12 +2813,36 @@ gtk_scrolled_window_captured_button_press_scrollbar (GtkWidget *widget,
+@@ -2808,12 +2812,36 @@ gtk_scrolled_window_captured_button_press_scrollbar (GtkWidget *widget,
        if ((priv->sb_grab_vscroll || priv->sb_grab_hscroll) &&
            !priv->sb_drag_slider)
          {

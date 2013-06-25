@@ -1,4 +1,4 @@
-From 51d9b8a62921d7c730699c8c5c042a3859cc9228 Mon Sep 17 00:00:00 2001
+From bd27c7615ca11e229d0c6dd47eb799cfbc340c82 Mon Sep 17 00:00:00 2001
 From: Carlos Garcia Campos <cgarcia@igalia.com>
 Date: Tue, 8 Feb 2011 14:49:31 +0100
 Subject: [PATCH 06/61] gtk: Add a way to do event capture
