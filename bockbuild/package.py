@@ -86,7 +86,11 @@ class Package:
 				if not os.path.exists(f):
 					log (2, "Missing %s, %s is corrupted" % (os.path.basename(f), dirname))
 					return False
-
+			try:
+				self.cd (dirname)
+				self.sh ('%{git} fetch')
+			except:
+				return False
 			return True
 
 		def get_local_filename(source):
@@ -271,23 +275,11 @@ class Package:
 
 		if self.sources[0].endswith ('.gitmirror'):
 			dirname = os.path.join (os.getcwd (), expand_macros ('%{name}-%{version}', self))
-			# self.sh ('cp -a "%s" "%s"' % (self.sources[0], dirname))
-			if not os.path.exists(dirname):
-				self.sh ('%' + '{git} clone --local --shared "%s" "%s"' % (self.sources[0], dirname))
-
-			self.cd (dirname)
-			self.sh ('%{git} fetch')
-			self.sh ('%{git} clean -xfd')
-
-			self.sh ('%{git} reset --hard')
-
-			if self.revision != None:
-				self.sh ('%' + '{git} checkout %s' % self.revision)
-			elif self.git_branch != None:
-				self.sh ('%' + '{git} checkout origin/%s' % self.git_branch)
-			else:
-				self.sh ('%{git} checkout origin/master')
-
+			try:
+				self.trycheckout (dirname)
+			except:
+				shutil.rmtree (dirname, ignore_errors = True)
+				self.trycheckout (dirname)
 		else:
 			root, ext = os.path.splitext (self.sources[0])
 			if ext == '.zip':
@@ -295,6 +287,23 @@ class Package:
 			else:
 				self.sh ('%{tar} xf "%{sources[0]}"')
 			self.cd ('%{source_dir_name}')
+
+	def trycheckout (self, dirname):
+		if not os.path.exists(dirname):
+			self.sh ('%' + '{git} clone --local --shared "%s" "%s"' % (self.sources[0], dirname))
+
+		self.cd (dirname)
+		self.sh ('%{git} fetch')
+		self.sh ('%{git} clean -xfd')
+
+		self.sh ('%{git} reset --hard')
+
+		if self.revision != None:
+			self.sh ('%' + '{git} checkout %s' % self.revision)
+		elif self.git_branch != None:
+			self.sh ('%' + '{git} checkout origin/%s' % self.git_branch)
+		else:
+			self.sh ('%{git} checkout origin/master')
 
 	def build (self):
 		if self.sources == None:
