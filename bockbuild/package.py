@@ -74,24 +74,34 @@ class Package:
 		else:
 			raise Exception ("Cannot determine organization for %s" % source)
 
-	def _fetch_sources (self, package_dir, package_dest_dir):
+	def _fetch_sources (self, workspace, package_dir, package_dest_dir):
 
-		def is_proper_gitmirror(dirname):
-			if not (os.path.exists(dirname) and os.path.isdir(dirname)):
-				return False
+		def checkout (self, source_url, cache_dir, workspace_dir):
+			if not os.path.exists (cache_dir):
+				print 'No cache detected. Cloning a fresh cache'
+				self.sh ('%' + '{git} clone --mirror "%s" "%s"' % (source_url, cache_dir))
+			else:
+				print 'Updating existing cache'
+				self.cd (cache_dir)
+				self.sh ('%{git} fetch --all --prune')
 
-			# Check to see if it has the right files for a bare repo
-			for i in ['HEAD', 'config', 'objects', 'packed-refs', 'refs']:
-				f = os.path.join(dirname, i)
-				if not os.path.exists(f):
-					log (2, "Missing %s, %s is corrupted" % (os.path.basename(f), dirname))
-					return False
-			try:
-				self.cd (dirname)
-				self.sh ('%{git} fetch')
-			except:
-				return False
-			return True
+			if not os.path.exists(workspace_dir):
+				print 'No workspace checkout detected. Cloning a fresh workspace checkout from the cache'
+				self.sh ('%' + '{git} clone --local --shared "%s" "%s"' % (cache_dir, workspace_dir))
+				self.cd (workspace_dir)
+			else:
+				print 'Updating existing workspace checkout'
+				self.cd (workspace_dir)
+				self.sh ('%{git} clean -xffd')
+				self.sh ('%{git} reset --hard')
+				self.sh ('%{git} fetch --all --prune')
+
+			if self.revision != None:
+				self.sh ('%' + '{git} checkout %s' % self.revision)
+			elif self.git_branch != None:
+				self.sh ('%' + '{git} checkout origin/%s' % self.git_branch)
+			else:
+				self.sh ('%{git} checkout origin/master')
 
 		def get_local_filename(source):
 			return source if os.path.isfile(source) else os.path.join (package_dest_dir, os.path.basename (source))
@@ -131,15 +141,16 @@ class Package:
 
 				local_sources.pop ()
 				local_sources.append (local_dest_file)
-				pwd = os.getcwd ()
-				if is_proper_gitmirror(local_dest_file):
-					self.cd (local_dest_file)
-					self.sh ('%{git} fetch')
-					self.sh ('%{git} remote prune origin')
-				else:
-					self.cd (os.path.dirname (local_dest_file))
+				
+				try:
+					checkout (self, source, local_dest_file, workspace)
+				except Exception as e:
+					print 'Deleting the caches due to git error: ', e
 					shutil.rmtree (local_dest_file, ignore_errors = True)
-					self.sh ('%' + '{git} clone --mirror "%s" "%s"' % (source, os.path.basename (local_dest_file)))
+					shutil.rmtree (workspace, ignore_errors = True)
+					checkout (self, source, local_dest_file, workspace)
+				finally:
+					os.chdir (workspace)
 			else:
 				raise Exception ('missing source: %s' % source)
 
@@ -233,7 +244,7 @@ class Package:
 		# shutil.rmtree (package_build_dir, ignore_errors = True)
 		# os.makedirs (package_build_dir)
 
-		self._fetch_sources (package_dir, sources_dir)
+		self._fetch_sources (workspace, package_dir, sources_dir)
 
 		os.chdir (package_build_dir)
 
@@ -274,12 +285,7 @@ class Package:
 			return
 
 		if self.sources[0].endswith ('.gitmirror'):
-			dirname = os.path.join (os.getcwd (), expand_macros ('%{name}-%{version}', self))
-			try:
-				self.trycheckout (dirname)
-			except:
-				shutil.rmtree (dirname, ignore_errors = True)
-				self.trycheckout (dirname)
+			os.chdir (os.path.join (os.getcwd (), expand_macros ('%{name}-%{version}', self)))
 		else:
 			root, ext = os.path.splitext (self.sources[0])
 			if ext == '.zip':
@@ -287,24 +293,7 @@ class Package:
 			else:
 				self.sh ('%{tar} xf "%{sources[0]}"')
 			self.cd ('%{source_dir_name}')
-
-	def trycheckout (self, dirname):
-		if not os.path.exists(dirname):
-			self.sh ('%' + '{git} clone --local --shared "%s" "%s"' % (self.sources[0], dirname))
-
-		self.cd (dirname)
-		self.sh ('%{git} fetch')
-		self.sh ('%{git} clean -xfd')
-
-		self.sh ('%{git} reset --hard')
-
-		if self.revision != None:
-			self.sh ('%' + '{git} checkout %s' % self.revision)
-		elif self.git_branch != None:
-			self.sh ('%' + '{git} checkout origin/%s' % self.git_branch)
-		else:
-			self.sh ('%{git} checkout origin/master')
-
+			
 	def build (self):
 		if self.sources == None:
 			log (1, '<skipping - no sources defined>')
