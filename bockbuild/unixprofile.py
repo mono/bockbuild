@@ -22,6 +22,7 @@ class UnixProfile (Profile):
 			'%{prefix}/bin',
 			'/usr/bin',
 			'/bin',
+			'/usr/local/bin',
 			'/usr/local/git/bin')
 
 		self.env.set ('CFLAGS',          '%{gcc_flags}')

@@ -35,25 +35,26 @@ class DarwinProfile (UnixProfile):
 		else:
 			raise IOError ('Mac OS X SDKs 10.6 and 10.7 not found')
 
-		self.gcc_arch_flags = [ '-m32', '-arch i386' ]
 		self.gcc_debug_flags = [ '-O0', '-ggdb3' ]
 		
 		if self.cmd_options.debug is True:
 			self.gcc_flags.extend (self.gcc_debug_flags)
 
-		self.gcc_flags.extend (self.gcc_arch_flags)
-		self.ld_flags.extend (self.gcc_arch_flags)
-
 		#if (os.path.isfile ('/usr/bin/gcc-4.2')):
 		#	self.env.set ('CC',  'gcc-4.2')
 		#	self.env.set ('CXX', 'g++-4.2')
 		#else:
-		self.env.set ('CC',  'gcc')
-		self.env.set ('CXX', 'g++')
+		if os.getenv('BOCKBUILD_USE_CCACHE') is None:
+			self.env.set ('CC',  'gcc')
+			self.env.set ('CXX', 'g++')
+		else:
+			self.env.set ('CC',  'ccache gcc')
+			self.env.set ('CXX', 'ccache g++')
 
 		# GTK2_RC_FILES must be a ":"-seperated list of files (NOT a single folder)
 		self.gtk2_rc_files = os.path.join (os.getcwd (), 'skeleton.darwin', 'Contents', 'Resources', 'etc', 'gtk-2.0', 'gtkrc')
 		self.env.set ('GTK2_RC_FILES', '%{gtk2_rc_files}')
+		self.global_configure_flags.extend (['--build=i386-apple-darwin10.8.0'])
 
 	def bundle (self):
 		self.make_app_bundle ()

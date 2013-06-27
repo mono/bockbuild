@@ -16,7 +16,6 @@ class MonoMasterPackage(Package):
 		if Package.profile.name == 'darwin':
 			self.configure_flags.extend([
 					# fix build on lion, it uses 64-bit host even with -m32
-					'--build=i386-apple-darwin11.2.0',
 					'--enable-loadedllvm'
 					])
 
