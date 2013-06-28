@@ -48,8 +48,12 @@ class DarwinProfile (UnixProfile):
 		#	self.env.set ('CC',  'gcc-4.2')
 		#	self.env.set ('CXX', 'g++-4.2')
 		#else:
-		self.env.set ('CC',  'gcc')
-		self.env.set ('CXX', 'g++')
+		if os.getenv('BOCKBUILD_USE_CCACHE') is None:
+			self.env.set ('CC',  'gcc')
+			self.env.set ('CXX', 'g++')
+		else:
+			self.env.set ('CC',  'ccache gcc')
+			self.env.set ('CXX', 'ccache g++')
 
 		# GTK2_RC_FILES must be a ":"-seperated list of files (NOT a single folder)
 		self.gtk2_rc_files = os.path.join (os.getcwd (), 'skeleton.darwin', 'Contents', 'Resources', 'etc', 'gtk-2.0', 'gtkrc')
