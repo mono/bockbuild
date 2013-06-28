@@ -79,6 +79,10 @@ class GtkPackage (GnomeGitPackage):
 
 				'patches/gtk/fix-icon-criticals.patch',
 
+				# Bug 12765 - GtkNSView keyboard input not propagated through non-acceptsFirstResponder NSView
+				# https://bugzilla.xamarin.com/show_bug.cgi?id=12765
+				'patches/gtk/GtkNSView-keyinput.patch',
+
 				# make new modifier behviour opt-in, so as not to break old versions of MonoDevelop
 				'patches/gdk-quartz-set-fix-modifiers-hack-v3.patch',
 

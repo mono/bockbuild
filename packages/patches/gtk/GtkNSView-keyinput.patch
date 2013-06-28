@@ -1,0 +1,24 @@
+diff --git a/gtk/gtknsview.c b/gtk/gtknsview.c
+index b37b2fa..7beff6f 100644
+--- a/gtk/gtknsview.c
++++ b/gtk/gtknsview.c
+@@ -702,7 +702,8 @@ gtk_ns_view_native_child_event (GdkWindow *window,
+                                 NSEvent   *event,
+                                 GtkNSView *ns_view)
+ {
+-  if (view == ns_view->priv->view)
++  if (view == ns_view->priv->view ||
++      [view ancestorSharedWithView: ns_view->priv->view] == ns_view->priv->view)
+     {
+ #if 0
+       g_printerr ("native child event on %s\n",
+@@ -716,7 +717,8 @@ gtk_ns_view_native_child_event (GdkWindow *window,
+ 
+               /*  other code can set can-focus, so check for both  */
+               gtk_widget_get_can_focus (GTK_WIDGET (ns_view)) &&
+-              [ns_view->priv->view acceptsFirstResponder])
++              ([ns_view->priv->view acceptsFirstResponder] ||
++               [view acceptsFirstResponder]))
+             {
+ #if DEBUG_FOCUS
+               g_printerr ("grabbing focus on %s\n",
