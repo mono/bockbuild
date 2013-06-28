@@ -76,6 +76,7 @@ class GtkPackage (GnomeGitPackage):
 				'patches/gtk/0059-entry-Use-scaled-icons-on-windows-with-a-scale-facto.patch',
 				'patches/gtk/0060-gdk-Lookup-double-scaled-variants-on-pixbufs.patch',
 				'patches/gtk/0061-Make-usual-calls-to-get-a-GdkPixbuf-attach-a-2x-vari.patch',
+				'patches/gtk/retina-CellRendererPixbuf.patch',
 
 				'patches/gtk/fix-icon-criticals.patch',
 
