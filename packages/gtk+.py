@@ -83,6 +83,10 @@ class GtkPackage (GnomeGitPackage):
 				# https://bugzilla.xamarin.com/show_bug.cgi?id=12765
 				'patches/gtk/GtkNSView-keyinput.patch',
 
+				# Bug 702841 - GdkQuartz does not distinguish Eisu, Kana and Space keys on Japanese keyrboard
+				# https://bugzilla.gnome.org/show_bug.cgi?id=702841
+				'patches/gtk/bgo702841-fix-kana-eisu-keys.patch',
+
 				# make new modifier behviour opt-in, so as not to break old versions of MonoDevelop
 				'patches/gdk-quartz-set-fix-modifiers-hack-v3.patch',
 
