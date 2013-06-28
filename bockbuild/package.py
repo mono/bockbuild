@@ -285,7 +285,8 @@ class Package:
 			return
 
 		if self.sources[0].endswith ('.gitmirror'):
-			os.chdir (os.path.join (os.getcwd (), expand_macros ('%{name}-%{version}', self)))
+			namever = '%s-%s' % (self.name, self.version)
+			os.chdir (os.path.join (os.getcwd (), namever))
 		else:
 			root, ext = os.path.splitext (self.sources[0])
 			if ext == '.zip':
