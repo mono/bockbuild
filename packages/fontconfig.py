@@ -1,6 +1,6 @@
 class FontConfigPackage (Package):
 	def __init__ (self):
-		Package.__init__ (self, 'fontconfig', '2.10.0',
+		Package.__init__ (self, 'fontconfig', '2.10.2',
 			configure_flags = [ '--disable-docs' ],
 			sources = [
 				'http://www.fontconfig.org/release/%{name}-%{version}.tar.gz'

@@ -3,7 +3,7 @@ class LibJpegTurboPackage (SourceForgePackage):
 		SourceForgePackage.__init__(self,
 			'%{name}',
 			'libjpeg-turbo',
-			'1.2.1'
+			'1.3.0'
 			#override_properties = {
 			#	'configure': './configure --prefix "%{prefix}"'
 			#}

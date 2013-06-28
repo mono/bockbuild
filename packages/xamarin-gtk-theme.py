@@ -3,5 +3,5 @@ Package ('xamarin-gtk-theme', 'master',
 	override_properties = { 'configure':
 		'./autogen.sh --prefix=%{prefix}'
 	},
-	revision = '01d77e8b0051b899837934c454d3af0d4f197b89',
+	revision = '9887890ccbcfb1ed6812533d09312f0e1fd8f1a4',
 )
