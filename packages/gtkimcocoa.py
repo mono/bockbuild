@@ -1,4 +1,4 @@
-Package ('gtkimcocoa', 'master',
+Package ('gtkimcocoa', '0.2',
 	sources = [ 'git://github.com/ashie/gtkimcocoa.git' ],
 	override_properties = {
 		'configure':
@@ -6,5 +6,5 @@ Package ('gtkimcocoa', 'master',
 		'makeinstall':
 			 'make install && gtk-query-immodules-2.0 > %{prefix}/etc/gtk-2.0/gtk.immodules',
 	},
-	revision = 'b5c4275187ac03c6a47a4fbcfd384069d0c37fad',
+	revision = '66e02a793fafab876e09bb3fe5dad87365dfdb31',
 )
