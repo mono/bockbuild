@@ -109,10 +109,8 @@ class GtkPackage (GnomeGitPackage):
 
 				# Bug  10256 - Mac window manipulation tools get confused by Xamarin Studio
 				'https://bugzilla.xamarin.com/attachment.cgi?id=3465',
-
-				# enable text input with third party input methods
-				# https://github.com/ashie/gtkimcocoa/blob/master/patches/gtk%2B-2.24.17-gdk-quartz-observe-input-sources.patch
-				#'patches/gtk+-2.24.17-gdk-quartz-observe-input-sources.patch',
+				
+				'patches/gtk/0001-Implement-IME-reset-for-imquartz.patch',
 			])
 
 	def prep (self):
