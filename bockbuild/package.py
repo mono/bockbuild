@@ -127,7 +127,7 @@ class Package:
 			local_sources.append (local_dest_file)
 
 			if os.path.isfile (local_source):
-				if filecmp(local_source, local_dest_file):
+				if filecmp.cmp(local_source, local_dest_file):
 					log (1, 'using cached source: %s' % local_dest_file)
 				else:
 					log (1, 'copying local source: %s' % local_source_file)
