@@ -4,6 +4,7 @@ import sys
 import shutil
 import tempfile
 import filecmp
+import datetime
 from urllib import FancyURLopener
 from util.util import *
 
@@ -246,7 +247,7 @@ class Package:
 				open (install_success_file, 'w').close ()
 			return
 
-		print '\n\nBuilding %s on %s (%s CPU)' % (self.name, profile.host, profile.cpu_count)
+		print '\n\n%s: Building %s on %s (%s CPU)' % (datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"), self.name, profile.host, profile.cpu_count)
 
 		if not os.path.exists (profile.build_root) or \
 			not os.path.isdir (profile.build_root):
@@ -260,7 +261,7 @@ class Package:
 		os.chdir (package_build_dir)
 
 		for phase in Package.profile.run_phases:
-			log (0, '%sing %s' % (phase.capitalize (), self.name))
+			log (0, '%s: %sing %s' % (datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"), phase.capitalize (), self.name))
 			getattr (self, phase) ()
 
 		open (build_success_file, 'w').close ()
