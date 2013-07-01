@@ -16,8 +16,8 @@ class MonoReleaseProfile (DarwinProfile, MonoReleasePackages):
 		self.MRE_GUID = "432959f9-ce1b-47a7-94d3-eb99cb2e1aa8"
 		self.MDK_GUID = "964ebddd-1ffe-47e7-8128-5ce17ffffb05"
 
-		if self.RELEASE_VERSION is None:
-			raise Exception("Please define the environment variable: MONO_VERSION")
+        if self.RELEASE_VERSION is None:
+            raise Exception("Please define the environment variable: MONO_VERSION")
 
 		# Create the updateid
 		parts = self.RELEASE_VERSION.split(".")
