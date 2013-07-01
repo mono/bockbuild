@@ -153,13 +153,19 @@ class Package:
 
 				local_sources.pop ()
 				local_sources.append (local_dest_file)
-				
+
+	 			working_dir = os.getcwd ()
 				try:
 					checkout (self, source, local_dest_file, workspace)
 				except Exception as e:
-					print 'Deleting the caches due to git error: ', e
+					print 'Deleting ' + local_dest_file + ' cache due to git error'
 					shutil.rmtree (local_dest_file, ignore_errors = True)
+					print 'Deleting ' + workspace + ' cache due to git error'
 					shutil.rmtree (workspace, ignore_errors = True)
+
+					# Explicitly reset the working dir to a known directory which has not been deleted
+					# 'git clone' does not work if you are in a directory which has been deleted
+					os.chdir (working_dir)
 					checkout (self, source, local_dest_file, workspace)
 				finally:
 					os.chdir (workspace)
