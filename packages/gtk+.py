@@ -93,7 +93,8 @@ class GtkPackage (GnomeGitPackage):
 
 				# attempt to work around 2158 - [GTK] crash triggering context menu
 				# also prints some warnings that may help to debug the real issue
-				'https://bugzilla.xamarin.com/attachment.cgi?id=1644',
+				# https://bugzilla.xamarin.com/attachment.cgi?id=1644
+				'patches/gtk/bxc2158_workaround_crash_triggering_context_menu.patch',
 
 				# Zoom, rotate, swipe events
 				'patches/gtk-gestures.patch',
@@ -102,13 +103,16 @@ class GtkPackage (GnomeGitPackage):
 				'patches/gtk-quartz-move-drag.patch',
 
 				# Bug 6156 - [gtk] Quitting the application with unsaved file and answering Cancel results in crash
-				'https://bugzilla.xamarin.com/attachment.cgi?id=2214',
+				# https://bugzilla.xamarin.com/attachment.cgi?id=2214
+				'patches/gtk/bxc6156_quit_with_unsaved_file_and_cancel_results_in_crash.patch',
 
 				# Bug 3457 - [GTK] Support more standard keyboard shortcuts in dialogs
-				'https://bugzilla.xamarin.com/attachment.cgi?id=2240',
+				# https://bugzilla.xamarin.com/attachment.cgi?id=2240
+				'patches/gtk/bxc3457_more_standard_keyboard_shortcuts.patch',
 
 				# Bug  10256 - Mac window manipulation tools get confused by Xamarin Studio
-				'https://bugzilla.xamarin.com/attachment.cgi?id=3465',
+				# https://bugzilla.xamarin.com/attachment.cgi?id=3465
+				'patches/gtk/bxc_10256_window_tools_get_confused.diff',
 				
 				'patches/gtk/0001-Implement-IME-reset-for-imquartz.patch',
 			])
