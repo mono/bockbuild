@@ -5,12 +5,17 @@ class MonoReleasePackages:
 	def __init__(self):
 
 		# Toolchain
+		#package order is very important.
+		#autoconf and automake don't depend on CC
+		#ccache uses a different CC since it's not installed yet
+		#every thing after ccache needs a working ccache
 		self.packages.extend ([
-			'xz.py',
-			'tar.py',
 			'autoconf.py',
 			'automake.py',
+			'ccache.py',
 			'libtool.py',
+			'xz.py',
+			'tar.py',
 			'gettext.py',
 			'pkg-config.py'
 		])

@@ -3,6 +3,8 @@ import os
 import sys
 import shutil
 import tempfile
+import filecmp
+import datetime
 from urllib import FancyURLopener
 from util.util import *
 
@@ -125,14 +127,24 @@ class Package:
 			local_dest_file = get_local_filename (local_source)
 			local_sources.append (local_dest_file)
 
-			if os.path.isfile(local_dest_file):
-				log (1, 'using cached source: %s' % local_dest_file)
-			elif os.path.isfile (local_source):
-				log (1, 'copying local source: %s' % local_source_file)
-				shutil.copy2 (local_source, local_dest_file)
+			if os.path.isfile (local_source):
+				if filecmp.cmp(local_source, local_dest_file):
+					log (1, 'using cached source: %s' % local_dest_file)
+				else:
+					log (1, 'copying local source: %s' % local_source_file)
+					shutil.copy2 (local_source, local_dest_file)
 			elif source.startswith (('http://', 'https://', 'ftp://')):
-				log (1, 'downloading remote source: %s' % source)
-				filename, message = FancyURLopener ().retrieve (source, local_dest_file)
+				if os.path.isfile(local_dest_file):
+					try:
+						self.extract_archive (local_dest_file, True)
+						log (1, 'using cached source: %s' % local_dest_file)
+					except:
+						log (1, 'local cache is corrupt for: %s' % local_dest_file)
+						os.remove (local_dest_file)
+
+				if not os.path.isfile(local_dest_file):
+					log (1, 'downloading remote source: %s' % source)
+					filename, message = FancyURLopener ().retrieve (source, local_dest_file)
 
 			elif source.startswith (('git://','file://', 'ssh://')) or source.endswith ('.git'):
 				log (1, 'cloning or updating git repository: %s' % source)
@@ -235,7 +247,7 @@ class Package:
 				open (install_success_file, 'w').close ()
 			return
 
-		print '\n\nBuilding %s on %s (%s CPU)' % (self.name, profile.host, profile.cpu_count)
+		print '\n\n%s: Building %s on %s (%s CPU)' % (datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"), self.name, profile.host, profile.cpu_count)
 
 		if not os.path.exists (profile.build_root) or \
 			not os.path.isdir (profile.build_root):
@@ -249,7 +261,7 @@ class Package:
 		os.chdir (package_build_dir)
 
 		for phase in Package.profile.run_phases:
-			log (0, '%sing %s' % (phase.capitalize (), self.name))
+			log (0, '%s: %sing %s' % (datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"), phase.capitalize (), self.name))
 			getattr (self, phase) ()
 
 		open (build_success_file, 'w').close ()
@@ -276,24 +288,33 @@ class Package:
 		self.cd (self._dirstack.pop ())
 
 	def prep (self):
-		self.tar = os.path.join (Package.profile.prefix, 'bin', 'tar')
-		if not os.path.exists (self.tar):
-			self.tar = 'tar'
-
 		if self.sources == None:
 			log (1, '<skipping - no sources defined>')
 			return
 
 		if self.sources[0].endswith ('.gitmirror'):
-			os.chdir (os.path.join (os.getcwd (), expand_macros ('%{name}-%{version}', self)))
+			namever = '%s-%s' % (self.name, self.version)
+			os.chdir (os.path.join (os.getcwd (), namever))
 		else:
-			root, ext = os.path.splitext (self.sources[0])
-			if ext == '.zip':
-				self.sh ('unzip -qq "%{sources[0]}"')
-			else:
-				self.sh ('%{tar} xf "%{sources[0]}"')
+			self.extract_archive (self.sources[0], False)
 			self.cd ('%{source_dir_name}')
-			
+
+	def extract_archive (self, local_dest_file, validate_only):
+		self.tar = os.path.join (Package.profile.prefix, 'bin', 'tar')
+		if not os.path.exists (self.tar):
+			self.tar = 'tar'
+		root, ext = os.path.splitext (local_dest_file)
+		command = None
+		if ext == '.zip':
+			command = 'unzip -qq ' + local_dest_file
+			if validate_only:
+				command = command + ' -t > /dev/null'
+		else:
+			command = '%{tar} xf ' + local_dest_file
+			if validate_only:
+				command = command + ' -O > /dev/null'
+		self.sh (command)
+
 	def build (self):
 		if self.sources == None:
 			log (1, '<skipping - no sources defined>')

@@ -1,6 +1,6 @@
 class GdkPixbufPackage (GnomeXzPackage):
 	def __init__ (self):
-		GnomeXzPackage.__init__ (self, 'gdk-pixbuf', version_major = '2.28', version_minor = '1')
+		GnomeXzPackage.__init__ (self, 'gdk-pixbuf', version_major = '2.28', version_minor = '2')
 
 		if Package.profile.name == 'darwin':
 			self.sources.extend ([

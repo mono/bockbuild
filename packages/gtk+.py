@@ -76,8 +76,17 @@ class GtkPackage (GnomeGitPackage):
 				'patches/gtk/0059-entry-Use-scaled-icons-on-windows-with-a-scale-facto.patch',
 				'patches/gtk/0060-gdk-Lookup-double-scaled-variants-on-pixbufs.patch',
 				'patches/gtk/0061-Make-usual-calls-to-get-a-GdkPixbuf-attach-a-2x-vari.patch',
+				'patches/gtk/retina-CellRendererPixbuf.patch',
 
 				'patches/gtk/fix-icon-criticals.patch',
+
+				# Bug 12765 - GtkNSView keyboard input not propagated through non-acceptsFirstResponder NSView
+				# https://bugzilla.xamarin.com/show_bug.cgi?id=12765
+				'patches/gtk/GtkNSView-keyinput.patch',
+
+				# Bug 702841 - GdkQuartz does not distinguish Eisu, Kana and Space keys on Japanese keyrboard
+				# https://bugzilla.gnome.org/show_bug.cgi?id=702841
+				'patches/gtk/bgo702841-fix-kana-eisu-keys.patch',
 
 				# make new modifier behviour opt-in, so as not to break old versions of MonoDevelop
 				'patches/gdk-quartz-set-fix-modifiers-hack-v3.patch',
@@ -100,10 +109,8 @@ class GtkPackage (GnomeGitPackage):
 
 				# Bug  10256 - Mac window manipulation tools get confused by Xamarin Studio
 				'https://bugzilla.xamarin.com/attachment.cgi?id=3465',
-
-				# enable text input with third party input methods
-				# https://github.com/ashie/gtkimcocoa/blob/master/patches/gtk%2B-2.24.17-gdk-quartz-observe-input-sources.patch
-				#'patches/gtk+-2.24.17-gdk-quartz-observe-input-sources.patch',
+				
+				'patches/gtk/0001-Implement-IME-reset-for-imquartz.patch',
 			])
 
 	def prep (self):

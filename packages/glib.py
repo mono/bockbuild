@@ -3,7 +3,7 @@ class GlibPackage (GnomeXzPackage):
 		GnomePackage.__init__ (self,
 			'glib',
 			version_major = '2.36',
-			version_minor = '0')
+			version_minor = '3')
 
 		self.darwin = Package.profile.name == 'darwin'
 
@@ -34,6 +34,9 @@ class GlibPackage (GnomeXzPackage):
 			# 'autoconf',
 			'%{configure}',
 			'ed - config.h < %{sources[1]}',
+			# work around https://bugzilla.gnome.org/show_bug.cgi?id=700350
+			'touch docs/reference/*/Makefile.in',
+			'touch docs/reference/*/*/Makefile.in',
 			'%{make}'
 		)
 
