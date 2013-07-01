@@ -4,8 +4,8 @@ import os
 class MonoMasterEncryptedPackage(Package):
 
     def __init__(self):
-        if os.getenv('MONO_VERSION') is None:
-            raise Exception('You must export MONO_VERSION to use this build profile. e.g. export MONO_VERSION=3.1.0')
+	if os.getenv('MONO_VERSION') is None:
+		raise Exception('You must export MONO_VERSION to use this build profile. e.g. export MONO_VERSION=3.1.0')
 
         Package.__init__(self, 'mono', os.getenv('MONO_VERSION'),
                          sources=[
