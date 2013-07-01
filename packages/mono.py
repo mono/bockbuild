@@ -14,7 +14,7 @@ class MonoPackage (Package):
 				'--enable-quiet-build',
 			]
 		)
-		if Package.profile.name == 'darwin':
+		if Package.profile.name == 'darwin' and not Package.profile.m64:
 			self.configure_flags.extend ([
 				# fix build on lion, it uses 64-bit host even with -m32
 				'--build=i386-apple-darwin11.2.0',

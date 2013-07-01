@@ -9,5 +9,8 @@ class LibJpegTurboPackage (SourceForgePackage):
 			#}
 			)
 
+		if Package.profile.name == "darwin" and Package.profile.m64:
+			self.configure_flags.extend ([ '--host x86_64-apple-darwin' ])
+
 LibJpegTurboPackage()
 

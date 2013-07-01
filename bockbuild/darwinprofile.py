@@ -5,11 +5,12 @@ from util.util import *
 from unixprofile import UnixProfile
 
 class DarwinProfile (UnixProfile):
-	def __init__ (self, prefix = False):
+	def __init__ (self, prefix = False, m64 = False):
 		UnixProfile.__init__ (self, prefix)
 		
 		self.name = 'darwin'
 		self.os_x_major = 10
+		self.m64 = m64
 
 		sdkroot = '/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/'
 		if (not os.path.isdir (sdkroot)):
@@ -35,7 +36,11 @@ class DarwinProfile (UnixProfile):
 		else:
 			raise IOError ('Mac OS X SDKs 10.6 and 10.7 not found')
 
-		self.gcc_arch_flags = [ '-m32', '-arch i386' ]
+		if m64:
+			self.gcc_arch_flags = [ '-m64', '-arch x86_64'  ]
+		else:
+			self.gcc_arch_flags = [ '-m32', '-arch i386' ]
+
 		self.gcc_debug_flags = [ '-O0', '-ggdb3' ]
 		
 		if self.cmd_options.debug is True:
