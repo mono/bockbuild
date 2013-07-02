@@ -115,6 +115,7 @@ class GtkPackage (GnomeGitPackage):
 				'patches/gtk/bxc_10256_window_tools_get_confused.diff',
 				
 				'patches/gtk/0001-Implement-IME-reset-for-imquartz.patch',
+				'patches/gtk/0001-Fix-annoying-beeping-introduced-by-Mac-IME.patch',
 			])
 
 	def prep (self):
