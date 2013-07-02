@@ -193,6 +193,9 @@ class Package:
 				src = os.path.join(package_dir, s)
 				if os.path.isfile(src) and os.path.getmtime(src) > mtime:
 						return False
+				head = os.path.join(src, ".git", "HEAD")
+				if os.path.isfile(head) and os.path.getmtime(head) > mtime:
+						return False
 			return True
 
 		return os.path.exists (build_success_file) and is_newer(build_success_file)
