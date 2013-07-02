@@ -9,7 +9,7 @@ from urllib import FancyURLopener
 from util.util import *
 
 class Package:
-	def __init__ (self, name, version, organization = None, configure_flags = None, sources = None, revision = None, git_branch = 'master', source_dir_name = None, override_properties = None, configure = None):
+	def __init__ (self, name, version, organization = None, configure_flags = None, sources = None, revision = None, git_branch = 'master', source_dir_name = None, override_properties = None, configure = None, dont_cache = False):
 		Package.last_instance = self
 
 		self._dirstack = []
@@ -17,6 +17,8 @@ class Package:
 		self.name = name
 		self.version = version
 		self.organization = organization
+		
+		self.dont_cache = dont_cache
 
 		self.configure_flags = []
 		if Package.profile.global_configure_flags:
@@ -197,6 +199,9 @@ class Package:
 				if os.path.isfile(head) and os.path.getmtime(head) > mtime:
 						return False
 			return True
+			
+		if self.dont_cache:
+			return False
 
 		return os.path.exists (build_success_file) and is_newer(build_success_file)
 
@@ -440,7 +445,7 @@ GitHubTarballPackage.default_sources = [
 ]
 
 class GitHubPackage (Package):
-	def __init__ (self, organization, name, version, revision = None, git_branch = None, configure = None, configure_flags = None, override_properties = None):
+	def __init__ (self, organization, name, version, revision = None, git_branch = None, configure = None, configure_flags = None, override_properties = None, dont_cache = False):
 		Package.__init__ (self, name, version,
 			organization = organization,
 			revision = revision,
@@ -448,7 +453,8 @@ class GitHubPackage (Package):
 			configure_flags = configure_flags,
 			configure = configure,
 			sources = ['git://github.com/%{organization}/%{name}.git'],
-			override_properties = override_properties)
+			override_properties = override_properties,
+			dont_cache = dont_cache)
 
 class GstreamerPackage (ProjectPackage): pass
 GstreamerPackage.default_sources = [
