@@ -453,6 +453,8 @@ class GitHubPackage (Package):
 		self.revision_file = os.path.join (profile.build_root, namever + '.revision')
 		
 	def is_successful_build(self, build_success_file, package_dir):
+		if not Package.is_successful_build(self, build_success_file, package_dir):
+			return False
 		return self.check_version_hash ()
 			
 	def check_version_hash (self):
