@@ -115,9 +115,10 @@ class MonoReleaseProfile(DarwinProfile, MonoReleasePackages):
         info = self.package_info(package_type)
         output = os.path.join(self.self_dir, info["filename"])
         identifier = "com.xamarin.mono-" + info["type"] + ".pkg"
-        resources_dir = os.path.join("packaging", "resources")
+        resources_dir = os.path.join(working_dir, "resources")
         distribution_xml = os.path.join(resources_dir, "distribution.xml")
 
+        os.chdir(working_dir)
         pkgbuild = "/usr/bin/pkgbuild"
         pkgbuild_cmd = ' '.join([pkgbuild,
                                  "--identifier " + identifier,
