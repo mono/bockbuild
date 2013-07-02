@@ -60,15 +60,16 @@ class MonoReleasePackages:
 		self.packages.extend([
 				'mono-llvm.py',
 				'mono-master-encrypted.py',
-				'libgdiplus.py',
-				'xsp.py',
-				'gtk-sharp-2.12-release.py',
-				'boo.py',
-				# 'nant.py',
-				'ironlangs.py',
-				'fsharp-3.0.py',
-				'mono-addins.py',
-				'mono-basic.py',
+				'pcl-reference-assemblies.py',
+				# 'libgdiplus.py',
+				# 'xsp.py',
+				# 'gtk-sharp-2.12-release.py',
+				# 'boo.py',
+				# # 'nant.py',
+				# 'ironlangs.py',
+				# 'fsharp-3.0.py',
+				# 'mono-addins.py',
+				# 'mono-basic.py',
 				])
 
 		self.packages = [os.path.join('..', '..', 'packages', p) for p in self.packages]
