@@ -9,7 +9,7 @@ from urllib import FancyURLopener
 from util.util import *
 
 class Package:
-	def __init__ (self, name, version, organization = None, configure_flags = None, sources = None, revision = None, git_branch = 'master', source_dir_name = None, override_properties = None, configure = None, dont_cache = False):
+	def __init__ (self, name, version, organization = None, configure_flags = None, sources = None, revision = None, git_branch = 'master', source_dir_name = None, override_properties = None, configure = None):
 		Package.last_instance = self
 
 		self._dirstack = []
@@ -17,8 +17,6 @@ class Package:
 		self.name = name
 		self.version = version
 		self.organization = organization
-		
-		self.dont_cache = dont_cache
 
 		self.configure_flags = []
 		if Package.profile.global_configure_flags:
@@ -195,13 +193,7 @@ class Package:
 				src = os.path.join(package_dir, s)
 				if os.path.isfile(src) and os.path.getmtime(src) > mtime:
 						return False
-				head = os.path.join(src, ".git", "HEAD")
-				if os.path.isfile(head) and os.path.getmtime(head) > mtime:
-						return False
 			return True
-			
-		if self.dont_cache:
-			return False
 
 		return os.path.exists (build_success_file) and is_newer(build_success_file)
 
@@ -445,7 +437,7 @@ GitHubTarballPackage.default_sources = [
 ]
 
 class GitHubPackage (Package):
-	def __init__ (self, organization, name, version, revision = None, git_branch = None, configure = None, configure_flags = None, override_properties = None, dont_cache = False):
+	def __init__ (self, organization, name, version, revision = None, git_branch = None, configure = None, configure_flags = None, override_properties = None):
 		Package.__init__ (self, name, version,
 			organization = organization,
 			revision = revision,
@@ -453,8 +445,31 @@ class GitHubPackage (Package):
 			configure_flags = configure_flags,
 			configure = configure,
 			sources = ['git://github.com/%{organization}/%{name}.git'],
-			override_properties = override_properties,
-			dont_cache = dont_cache)
+			override_properties = override_properties)
+			
+		profile = Package.profile
+		namever = '%s-%s' % (self.name, self.version)
+			
+		self.revision_file = os.path.join (profile.build_root, namever + '.revision')
+		
+	def is_successful_build(self, build_success_file, package_dir):
+		return self.check_version_hash ()
+			
+	def check_version_hash (self):
+		if os.path.isfile (self.revision_file):
+			f = open (self.revision_file, 'r')
+			check = f.readline ().strip ('\n')
+			if check == self.revision:
+				return True
+		self.create_version_hash ()
+		return False
+		
+	def create_version_hash (self):
+		f = open (self.revision_file, 'w')
+		f.write (self.revision)
+		f.write ('\n')
+		f.close()
+
 
 class GstreamerPackage (ProjectPackage): pass
 GstreamerPackage.default_sources = [
