@@ -1,1 +1,1 @@
-mono-mac-release/mono-mac-release.py
+../mono-mac-release/mono-mac-release.py
