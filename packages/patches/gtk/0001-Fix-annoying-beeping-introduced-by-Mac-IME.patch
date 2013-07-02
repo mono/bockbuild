@@ -1,0 +1,29 @@
+From 09c8ea126902244e5dac375fd794f1a73a610993 Mon Sep 17 00:00:00 2001
+From: Michael Hutchinson <m.j.hutchinson@gmail.com>
+Date: Tue, 2 Jul 2013 19:04:36 -0400
+Subject: [PATCH] Fix annoying beeping introduced by Mac IME
+
+NSTextInputClient should not chain unhandled commands to super
+---
+ gdk/quartz/GdkQuartzView.c | 5 +++--
+ 1 file changed, 3 insertions(+), 2 deletions(-)
+
+diff --git a/gdk/quartz/GdkQuartzView.c b/gdk/quartz/GdkQuartzView.c
+index f9ad706..1de3e8e 100644
+--- a/gdk/quartz/GdkQuartzView.c
++++ b/gdk/quartz/GdkQuartzView.c
+@@ -168,8 +168,9 @@
+ 
+ -(void)doCommandBySelector: (SEL)aSelector
+ {
+-  GDK_NOTE (EVENTS, g_print ("doCommandBySelector\n"));
+-  [super doCommandBySelector: aSelector];
++  // Do nothing. Although we are required to implement this method for NSTextInputClient, we do
++  // not handle Cocoa command IDs, and the Apple docs explicitly say not to forward
++  // unhandled commands up the NSReponder chain, which calls NSBeep().
+ }
+ 
+ -(void)insertText: (id)aString replacementRange: (NSRange)replacementRange
+-- 
+1.8.2.3
+
