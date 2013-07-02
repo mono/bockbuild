@@ -17,18 +17,22 @@ class MonoMasterPackage(Package):
 			]
 		)
 		if Package.profile.name == 'darwin':
-			self.configure_flags.extend([
+			if not Package.profile.m64:
+				self.configure_flags.extend([
 					# fix build on lion, it uses 64-bit host even with -m32
 					'--build=i386-apple-darwin11.2.0',
-					'--enable-loadedllvm'
 					])
+
+			self.configure_flags.extend([
+				'--enable-loadedllvm'
+				])
 
 			self.sources.extend ([
 					# Fixes up pkg-config usage on the Mac
 					'patches/mcs-pkgconfig.patch'
 					])
 
-		self.configure = 'CFLAGS=-O2 ./autogen.sh'
+		self.configure = expand_macros ('CFLAGS="%{env.CFLAGS} -O2" ./autogen.sh', Package.profile)
 
 	def prep (self):
 		Package.prep (self)

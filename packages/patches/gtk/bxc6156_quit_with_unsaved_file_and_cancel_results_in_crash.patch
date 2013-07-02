@@ -1,0 +1,18 @@
+--- gtk+-2.24.10/gdk/quartz/gdkeventloop-quartz.c.old	2012-07-17 17:06:38.000000000 -0400
++++ gtk+-2.24.10/gdk/quartz/gdkeventloop-quartz.c	2012-07-17 17:21:47.000000000 -0400
+@@ -715,11 +715,15 @@
+   else
+     limit_date = [NSDate dateWithTimeIntervalSinceNow:timeout_/1000.0];
+ 
++  //nextEventMatchingMask can dispatch callbacks, and they may drain the autorelease pool
++  //so we need to retain the limit_date
+   getting_events++;
++  [limit_date retain];
+   event = [NSApp nextEventMatchingMask: NSAnyEventMask
+ 	                     untilDate: limit_date
+ 	                        inMode: NSDefaultRunLoopMode
+                                dequeue: YES];
++  [limit_date release];
+   getting_events--;
+ 
+   if (n_ready < 0)

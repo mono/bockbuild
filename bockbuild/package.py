@@ -446,6 +446,32 @@ class GitHubPackage (Package):
 			configure = configure,
 			sources = ['git://github.com/%{organization}/%{name}.git'],
 			override_properties = override_properties)
+			
+		profile = Package.profile
+		namever = '%s-%s' % (self.name, self.version)
+			
+		self.revision_file = os.path.join (profile.build_root, namever + '.revision')
+		
+	def is_successful_build(self, build_success_file, package_dir):
+		if not Package.is_successful_build(self, build_success_file, package_dir):
+			return False
+		return self.check_version_hash ()
+			
+	def check_version_hash (self):
+		if os.path.isfile (self.revision_file):
+			f = open (self.revision_file, 'r')
+			check = f.readline ().strip ('\n')
+			if check == self.revision:
+				return True
+		self.create_version_hash ()
+		return False
+		
+	def create_version_hash (self):
+		f = open (self.revision_file, 'w')
+		f.write (self.revision)
+		f.write ('\n')
+		f.close()
+
 
 class GstreamerPackage (ProjectPackage): pass
 GstreamerPackage.default_sources = [
