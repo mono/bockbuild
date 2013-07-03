@@ -5,11 +5,11 @@ from bockbuild.darwinprofile import DarwinProfile
 class MonoReleasePackages:
     def __init__(self):
 
-        # Toolchain
-        #package order is very important.
-        #autoconf and automake don't depend on CC
-        #ccache uses a different CC since it's not installed yet
-        #every thing after ccache needs a working ccache
+        ## Toolchain
+        # package order is very important.
+        # autoconf and automake don't depend on CC
+        # ccache uses a different CC since it's not installed yet
+        # every thing after ccache needs a working ccache
         self.packages.extend([
             'autoconf.py',
             'automake.py',
@@ -21,13 +21,13 @@ class MonoReleasePackages:
             'pkg-config.py'
         ])
 
-        #needed to autogen gtk+
+        # needed to autogen gtk+
         self.packages.extend([
             'gtk-osx-docbook.py',
             'gtk-doc.py',
         ])
 
-        # # Base Libraries
+        ## Base Libraries
         self.packages.extend([
             'libpng.py',
             'libjpeg.py',
@@ -51,7 +51,7 @@ class MonoReleasePackages:
             'ige-mac-integration.py'
         ])
 
-        # # Theme
+        ## Theme
         self.packages.extend([
             'libcroco.py',
             'librsvg.py',
@@ -62,7 +62,7 @@ class MonoReleasePackages:
             'gtk-quartz-engine.py'
         ])
 
-        # Mono
+        ## Mono
         self.packages.extend([
             'mono-llvm.py',
             'mono-master-encrypted.py',
