@@ -124,10 +124,10 @@ class MonoReleaseProfile(DarwinProfile, MonoReleasePackages):
         pkgbuild_cmd = ' '.join([pkgbuild,
                                  "--identifier " + identifier,
                                  "--root '%s/PKGROOT'" % working_dir,
-                                 "--version " + self.RELEASE_VERSION,
+                                 "--version '%s'" % self.RELEASE_VERSION,
                                  "--install-location '/'",
-                                 "--sign \"%s\"" % identity,
-                                 "--scripts " + resources_dir,
+                                 "--sign '%s'" % identity,
+                                 "--scripts '%s'" % resources_dir,
                                  os.path.join(working_dir, "mono.pkg")])
         print pkgbuild_cmd
         backtick(pkgbuild_cmd)
