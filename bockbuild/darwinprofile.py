@@ -11,16 +11,7 @@ class DarwinProfile (UnixProfile):
 		self.name = 'darwin'
 		self.os_x_major = 10
 		self.m64 = m64
-		
-		# Build with Xcode4 if Xcode5 is installed until we fixed that.
-		if os.path.isdir ('/Applications/Xcode5-DP.app') and os.path.isdir ('/Applications/Xcode.app/Contents/Developer/'):
-			self.env.set ('PATH', ':',
-				'%{prefix}/bin',
-				'/Applications/Xcode.app/Contents/Developer/usr/bin',
-				'/usr/bin',
-				'/bin',
-				'/usr/local/git/bin')
-				
+
 		sdkroot = '/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/'
 		if (not os.path.isdir (sdkroot)):
 			sdkroot = '/Developer/SDKs/'
