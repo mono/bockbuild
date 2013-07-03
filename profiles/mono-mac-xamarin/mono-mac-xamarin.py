@@ -118,6 +118,7 @@ class MonoReleaseProfile(DarwinProfile, MonoReleasePackages):
         resources_dir = os.path.join(working_dir, "resources")
         distribution_xml = os.path.join(resources_dir, "distribution.xml")
 
+        old_cwd = os.getcwd
         os.chdir(working_dir)
         pkgbuild = "/usr/bin/pkgbuild"
         identity = "Developer ID Installer: Xamarin Inc"
@@ -140,6 +141,7 @@ class MonoReleaseProfile(DarwinProfile, MonoReleasePackages):
                                      output])
         print productbuild_cmd
         backtick(productbuild_cmd)
+        os.chdir(old_cwd)
         return output
 
     def make_updateinfo(self, working_dir, guid):
