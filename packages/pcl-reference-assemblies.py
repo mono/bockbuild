@@ -10,9 +10,11 @@ class PCLReferenceAssembliesPackage(Package):
                          version='2013-06-27',
                          sources=['http://storage.bos.xamarin.com/bot-provisioning/PortableReferenceAssemblies2013-06-27.zip'])
         self.source_dir_name = "PortableReferenceAssemblies2013-06-27"
-		
+
     def prep(self):
-        self.extract_archive (self.sources[0], False)
+        self.extract_archive(self.sources[0],
+                             validate_only=True,
+                             overwrite=True)
 
     def build(self):
         pass
@@ -25,7 +27,7 @@ class PCLReferenceAssembliesPackage(Package):
 
         name = expand_macros("%{name}%{version}", self)
         pcldir = os.path.join(dest, name)
-        shutil.rmtree(dest, ignore_errors = True)
+        shutil.rmtree(dest, ignore_errors=True)
         self.sh("rsync -abv -q %s/* %s" % (name, dest))
 
         for f in glob.glob("%s/*/Profile/*/SupportedFrameworks" % dest):
