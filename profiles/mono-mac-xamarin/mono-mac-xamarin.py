@@ -120,17 +120,15 @@ class MonoReleaseProfile(DarwinProfile, MonoReleasePackages):
 
         os.chdir(working_dir)
         pkgbuild = "/usr/bin/pkgbuild"
-        options = {
-            "--identifier":       identifier,
-            "--root":             os.path.join(working_dir, "PKGROOT"),
-            "--version":          self.RELEASE_VERSION,
-            "--install-location": "/",
-            "--sign":             "Developer ID Installer: Xamarin Inc",
-            "--scripts":          resources_dir,
-        }
-        flags = ["%s '%s'" % (k, v) for k, v in options.items()]
-        mono_pkg = [os.path.join(working_dir, "mono.pkg")]
-        pkgbuild_cmd = ' '.join([pkgbuild] + flags + mono_pkg)
+        identity = "Developer ID Installer: Xamarin Inc"
+        pkgbuild_cmd = ' '.join([pkgbuild,
+                                 "--identifier " + identifier,
+                                 "--root '%s/PKGROOT'" % working_dir,
+                                 "--version " + self.RELEASE_VERSION,
+                                 "--install-location '/'",
+                                 "--sign \"%s\"" % identity,
+                                 "--scripts " + resources_dir,
+                                 os.path.join(working_dir, "mono.pkg")])
         print pkgbuild_cmd
         backtick(pkgbuild_cmd)
 
