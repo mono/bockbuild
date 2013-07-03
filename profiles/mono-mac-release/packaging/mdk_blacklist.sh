@@ -124,3 +124,12 @@ rm -rf bin/bugpoint
 rm -rf bin/lli
 rm -rf bin/llvm-*
 rm -rf bin/macho-dump
+rm -rf bin/ccache
+
+#
+# 14:39 <baulig> the install script needs to be modified not to
+#                install .mdb's for these
+# 14:39 <baulig> System.Windows.dll, System.Xml.Serialization.dll and
+#                everything in Facades
+
+find ./lib/mono/4.5/Facades -name "*.mdb" -delete
