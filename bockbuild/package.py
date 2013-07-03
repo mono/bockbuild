@@ -308,14 +308,17 @@ class Package:
 			self.extract_archive (self.sources[0], False)
 			self.cd ('%{source_dir_name}')
 
-	def extract_archive (self, local_dest_file, validate_only):
+	def extract_archive (self, local_dest_file, validate_only, overwrite=False):
 		self.tar = os.path.join (Package.profile.prefix, 'bin', 'tar')
 		if not os.path.exists (self.tar):
 			self.tar = 'tar'
 		root, ext = os.path.splitext (local_dest_file)
 		command = None
 		if ext == '.zip':
-			command = 'unzip -qq ' + local_dest_file
+			flags = ["-qq"]
+			if overwrite:
+				flags.extend(["-o"])
+			command = ' '.join(['unzip'] + flags + [local_dest_file])
 			if validate_only:
 				command = command + ' -t > /dev/null'
 		else:
