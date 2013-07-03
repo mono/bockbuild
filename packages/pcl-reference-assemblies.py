@@ -13,7 +13,7 @@ class PCLReferenceAssembliesPackage(Package):
 
     def prep(self):
         self.extract_archive(self.sources[0],
-                             validate_only=True,
+                             validate_only=False,
                              overwrite=True)
 
     def build(self):
