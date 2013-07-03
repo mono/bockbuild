@@ -20,15 +20,13 @@ class PCLReferenceAssembliesPackage(Package):
         dest = "/Library/Frameworks/Mono.framework/External/xbuild-frameworks/.NETPortable/"
         if not os.path.exists(dest):
             os.mkdir(dest)
-        self.sh("unzip -o -q %s -d %s" % (self.sources[0], dest))
 
         name = expand_macros("%{name}%{version}", self)
         pcldir = os.path.join(dest, name)
-        self.sh("rsync -abv --remove-source-files -q %s/* %s" % (pcldir, dest))
-        self.sh("rm -rf " + pcldir)
+        self.sh("rsync -abv -q %s/* %s" % (name, dest))
 
-        for f in glob.glob("*/Profile/*/SupportedFrameworks"):
-            self.write_xml(os.path.join(dest, f))
+        for f in glob.glob("%s/*/Profile/*/SupportedFrameworks" % dest):
+            self.write_xml(f)
 
     def write_xml(self, directory):
         print "Writing iOS/Android listings for " + directory
