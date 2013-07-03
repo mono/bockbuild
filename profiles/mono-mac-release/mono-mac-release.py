@@ -109,7 +109,7 @@ class MonoReleaseProfile(DarwinProfile, MonoReleasePackages):
 
         # copy pcl assemblies
         pcl_root = os.path.join(self.MONO_ROOT, "External", "xbuild-frameworks", ".NETPortable")
-        backtick('rsync -aP "%s" "%s"' % (pcl_root, versions))
+        backtick('rsync -aP "%s" "%s"' % (pcl_root, pcl_assemblies))
 
         return tmpdir
 
