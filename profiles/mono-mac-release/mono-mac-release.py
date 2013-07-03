@@ -80,7 +80,9 @@ class MonoReleaseProfile(DarwinProfile, MonoReleasePackages):
         tmpdir = tempfile.mkdtemp()
         monoroot = os.path.join(tmpdir, "PKGROOT", self.MONO_ROOT[1:])
         versions = os.path.join(monoroot, "Versions")
+        pcl_assemblies = os.path.join(monoroot, "External", "xbuild-frameworks", ".NETPortable")
         os.makedirs(versions)
+        os.makedirs(pcl_assemblies)
 
         print "setup_working_dir " + tmpdir
         # setup metadata
@@ -104,6 +106,11 @@ class MonoReleaseProfile(DarwinProfile, MonoReleasePackages):
 
         # copy to package root
         backtick('rsync -aP "%s" "%s"' % (self.release_root, versions))
+
+        # copy pcl assemblies
+        pcl_root = os.path.join(self.MONO_ROOT, "External", "xbuild-frameworks", ".NETPortable")
+        backtick('rsync -aP "%s" "%s"' % (self.pcl_root, versions))
+
         return tmpdir
 
     def apply_blacklist(self, working_dir, blacklist_name):
