@@ -26,7 +26,9 @@ class PCLReferenceAssembliesPackage(Package):
             os.mkdir(dest)
 
         shutil.rmtree(dest, ignore_errors=True)
-        self.sh("rsync -abv -q * %s" % dest)
+
+        print os.getcwd()
+        self.sh("rsync -abv -q %s/* %s" % (self.source_dir_name, dest))
 
         for f in glob.glob("%s/*/Profile/*/SupportedFrameworks" % dest):
             self.write_xml(f)
