@@ -25,10 +25,8 @@ class PCLReferenceAssembliesPackage(Package):
         if not os.path.exists(dest):
             os.mkdir(dest)
 
-        name = expand_macros("%{name}%{version}", self)
-        pcldir = os.path.join(dest, name)
         shutil.rmtree(dest, ignore_errors=True)
-        self.sh("rsync -abv -q %s/* %s" % (name, dest))
+        self.sh("rsync -abv -q * %s" % dest)
 
         for f in glob.glob("%s/*/Profile/*/SupportedFrameworks" % dest):
             self.write_xml(f)
