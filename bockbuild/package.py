@@ -187,7 +187,7 @@ class Package:
 		return self._package_dir
 
 	def package_build_dir(self):
-		return profile.build_root
+		return Package.profile.build_root
 
 	def is_successful_build(self, build_success_file, package_dir):
 		def is_newer(success_file):
