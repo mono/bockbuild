@@ -186,6 +186,9 @@ class Package:
 			self._package_dir = os.path.dirname (os.path.realpath (self._path))
 		return self._package_dir
 
+	def package_build_dir(self):
+		return profile.build_root
+
 	def is_successful_build(self, build_success_file, package_dir):
 		def is_newer(success_file):
 			mtime = os.path.getmtime(success_file)
@@ -233,7 +236,7 @@ class Package:
 		profile = Package.profile
 		namever = '%s-%s' % (self.name, self.version)
 		package_dir = self.package_dir ()
-		package_build_dir = profile.build_root
+		package_build_dir = self.package_build_dir()
 		workspace = os.path.join (profile.build_root, namever)
 		build_success_file = os.path.join (profile.build_root, namever + '.success')
 		install_success_file = os.path.join (profile.build_root, namever + '.install')
