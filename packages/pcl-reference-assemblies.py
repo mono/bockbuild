@@ -23,7 +23,7 @@ class PCLReferenceAssembliesPackage(Package):
     def install(self):
         dest = "/Library/Frameworks/Mono.framework/External/xbuild-frameworks/.NETPortable/"
         if not os.path.exists(dest):
-            os.mkdir(dest)
+            os.makedirs(dest)
 
         shutil.rmtree(dest, ignore_errors=True)
 
