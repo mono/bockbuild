@@ -67,9 +67,10 @@ class MonoReleaseProfile(DarwinProfile, MonoReleasePackages):
         for srcname, destname in links:
             src = os.path.join(currentlink, srcname)
             dest = os.path.join(root, destname)
+            #If the symlink exists, we remove it so we can create a fresh one
             if os.path.exists(dest):
                 os.unlink(dest)
-                os.symlink(src, dest)
+            os.symlink(src, dest)
 
     # creates and returns the path to a working directory containing:
     #   PKGROOT/ - this root will be bundled into the .pkg and extracted at /
