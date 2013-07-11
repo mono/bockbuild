@@ -119,9 +119,10 @@ class MonoReleaseProfile(DarwinProfile, MonoReleasePackages):
         root = os.path.join(working_dir, "PKGROOT", self.release_root[1:])
         backtick(blacklist + ' "%s"' % root)
 
-    def run_pkgbuild(self, working_dir, package_type):
+    def run_pkgbuild(self, working_dir, package_type, codesign_key):
         info = self.package_info(package_type)
         output = os.path.join(self.self_dir, info["filename"])
+        temp = os.path.join(self.self_dir, "mono-%s.pkg" % package_type)
         identifier = "com.xamarin.mono-" + info["type"] + ".pkg"
         resources_dir = os.path.join(working_dir, "resources")
         distribution_xml = os.path.join(resources_dir, "distribution.xml")
@@ -150,6 +151,14 @@ class MonoReleaseProfile(DarwinProfile, MonoReleasePackages):
                                      output])
         print productbuild_cmd
         backtick(productbuild_cmd)
+
+        productsign = "/usr/bin/productsign"
+        productsign_cmd = ' '.join([productsign,
+                                    "-s '%s'" % codesign_key,
+                                    "'%s'" % temp,
+                                    "'%s'" % output])
+        backtick(productsign_cmd)
+
         os.chdir(old_cwd)
         return output
 
@@ -171,19 +180,29 @@ class MonoReleaseProfile(DarwinProfile, MonoReleasePackages):
 
     def build_package(self):
         working = self.setup_working_dir()
-        uninstall_script = os.path.join(working, "uninstallMono.sh")
+        # uninstall_script = os.path.join(working, "uninstallMono.sh")
+
+        # Unlock the keychain
+        key = os.getenv("CODESIGN_KEY")
+        password = os.getenv("CODESIGN_KEYCHAIN_PASSWORD")
+
+        backtick("security -v find-identity")
+
+        if password:
+            print "Unlocking the keychain"
+            backtick("security unlock-keychain -p %s" % '"' + password + '"')
 
         # make the MDK
         self.apply_blacklist(working, 'mdk_blacklist.sh')
         self.make_updateinfo(working, self.MDK_GUID)
-        mdk_pkg = self.run_pkgbuild(working, "MDK")
+        mdk_pkg = self.run_pkgbuild(working, "MDK", key)
         print "Saving: " + mdk_pkg
         # self.make_dmg(mdk_dmg, title, mdk_pkg, uninstall_script)
 
         # make the MRE
         self.apply_blacklist(working, 'mre_blacklist.sh')
         self.make_updateinfo(working, self.MRE_GUID)
-        mre_pkg = self.run_pkgbuild(working, "MRE")
+        mre_pkg = self.run_pkgbuild(working, "MRE", key)
         print "Saving: " + mre_pkg
         # self.make_dmg(mre_dmg, title, mre_pkg, uninstall_script)
 
