@@ -145,6 +145,7 @@ class MonoReleaseProfile(DarwinProfile, MonoReleasePackages):
         productbuild_cmd = ' '.join([productbuild,
                                      "--resources %s" % resources_dir,
                                      "--distribution %s" % distribution_xml,
+                                     "--sign '%s'" % identity,
                                      "--package-path %s" % working_dir,
                                      output])
         print productbuild_cmd
