@@ -197,6 +197,7 @@ class MonoReleaseProfile(DarwinProfile, MonoReleasePackages):
         self.make_updateinfo(working, self.MDK_GUID)
         mdk_pkg = self.run_pkgbuild(working, "MDK", key)
         print "Saving: " + mdk_pkg
+        verify_codesign(mdk_pkg)
         # self.make_dmg(mdk_dmg, title, mdk_pkg, uninstall_script)
 
         # make the MRE
@@ -204,13 +205,35 @@ class MonoReleaseProfile(DarwinProfile, MonoReleasePackages):
         self.make_updateinfo(working, self.MRE_GUID)
         mre_pkg = self.run_pkgbuild(working, "MRE", key)
         print "Saving: " + mre_pkg
+        verify_codesign(mre_pkg)
         # self.make_dmg(mre_dmg, title, mre_pkg, uninstall_script)
 
         shutil.rmtree(working)
 
+    def verify_codesign(pkg):
+        oldcwd = os.getcwd()
+        try:
+            name = os.path.basename(pkg)
+            pkgdir = os.path.dirname(pkg)
+            os.chdir(pkgdir)
+            spctl = "/usr/sbin/spctl"
+            spctl_cmd = ' '.join(
+                [spctl, "-vvv", "--assess", "--type install", name, "2>&1"])
+            output = backtick(spctl_cmd)
+
+            if "accepted" in output:
+                log(0, "%s IS SIGNED" % pkg)
+            else:
+                log(0, "%s IS NOT SIGNED" % pkg)
+        finally:
+            os.chdir(oldcwd)
+
     def generate_dsym(self):
         for path, dirs, files in os.walk(self.prefix):
             for name in files:
+
+
+
                 f = os.path.join(path, name)
                 file_type = backtick('file "%s"' % f)
                 if "dSYM" in f:
