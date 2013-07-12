@@ -21,7 +21,7 @@ class PCLReferenceAssembliesPackage(Package):
 
     # A bunch of shell script written inside python literals ;(
     def install(self):
-        dest = "/Library/Frameworks/Mono.framework/External/xbuild-frameworks/.NETPortable/"
+        dest = os.path.join(self.prefix, "lib", "mono", "xbuild-frameworks", ".NETPortable")
         if not os.path.exists(dest):
             os.makedirs(dest)
 
