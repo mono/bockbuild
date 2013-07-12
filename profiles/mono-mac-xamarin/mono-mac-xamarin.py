@@ -192,7 +192,7 @@ class MonoReleaseProfile(DarwinProfile, MonoReleasePackages):
 
         if password:
             print "Unlocking the keychain"
-            output = backtick("security unlock-keychain -p '%s'" % password)
+            output = backtick("security unlock-keychain -p %s" % password)
             print " ".join(output)
 
         # make the MDK
