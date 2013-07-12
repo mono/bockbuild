@@ -188,12 +188,14 @@ class MonoReleaseProfile(DarwinProfile, MonoReleasePackages):
         print "Key: " + key
         print "Password: " + password
         output = backtick("security -v find-identity")
-        print " ".join(output)
+        if key not in output:
+            raise Exception("%s is not a valid codesign key" % key)
 
         if password:
             print "Unlocking the keychain"
-            output = backtick("security unlock-keychain -p %s" % password)
-            print " ".join(output)
+            backtick("security unlock-keychain -p %s" % password)
+        else:
+            raise Exception("CODESIGN_KEYCHAIN_PASSWORD needs to be defined")
 
         # make the MDK
         self.apply_blacklist(working, 'mdk_blacklist.sh')
