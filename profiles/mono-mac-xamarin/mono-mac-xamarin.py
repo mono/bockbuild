@@ -213,7 +213,7 @@ class MonoReleaseProfile(DarwinProfile, MonoReleasePackages):
 
         shutil.rmtree(working)
 
-    def verify_codesign(pkg):
+    def verify_codesign(self, pkg):
         oldcwd = os.getcwd()
         try:
             name = os.path.basename(pkg)
