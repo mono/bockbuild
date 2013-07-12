@@ -236,9 +236,6 @@ class MonoReleaseProfile(DarwinProfile, MonoReleasePackages):
     def generate_dsym(self):
         for path, dirs, files in os.walk(self.prefix):
             for name in files:
-
-
-
                 f = os.path.join(path, name)
                 file_type = backtick('file "%s"' % f)
                 if "dSYM" in f:
