@@ -30,6 +30,9 @@ class PCLReferenceAssembliesPackage(Package):
         pcldir = os.path.join(self.package_build_dir(), self.source_dir_name)
         self.sh("rsync -abv -q %s/* %s" % (pcldir, dest))
 
+        # Remove v4.6 until we support it
+        shutil.rmtree(os.path.join(dest, "v4.6"))
+
         for f in glob.glob("%s/*/Profile/*/SupportedFrameworks" % dest):
             self.write_xml(f)
 
