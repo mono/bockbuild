@@ -136,7 +136,7 @@ class MonoReleaseProfile(DarwinProfile, MonoReleasePackages):
                                  "--root '%s/PKGROOT'" % working_dir,
                                  "--version '%s'" % self.RELEASE_VERSION,
                                  "--install-location '/'",
-                                 "--sign '%s'" % identity,
+                                 # "--sign '%s'" % identity,
                                  "--scripts '%s'" % resources_dir,
                                  os.path.join(working_dir, "mono.pkg")])
         print pkgbuild_cmd
@@ -146,18 +146,18 @@ class MonoReleaseProfile(DarwinProfile, MonoReleasePackages):
         productbuild_cmd = ' '.join([productbuild,
                                      "--resources %s" % resources_dir,
                                      "--distribution %s" % distribution_xml,
-                                     "--sign '%s'" % identity,
+                                     # "--sign '%s'" % identity,
                                      "--package-path %s" % working_dir,
                                      output])
         print productbuild_cmd
         backtick(productbuild_cmd)
 
-        # productsign = "/usr/bin/productsign"
-        # productsign_cmd = ' '.join([productsign,
-        #                             "-s '%s'" % codesign_key,
-        #                             "'%s'" % temp,
-        #                             "'%s'" % output])
-        # backtick(productsign_cmd)
+        productsign = "/usr/bin/productsign"
+        productsign_cmd = ' '.join([productsign,
+                                    "-s '%s'" % codesign_key,
+                                    "'%s'" % temp,
+                                    "'%s'" % output])
+        backtick(productsign_cmd)
 
         os.chdir(old_cwd)
         return output
@@ -185,12 +185,15 @@ class MonoReleaseProfile(DarwinProfile, MonoReleasePackages):
         # Unlock the keychain
         key = os.getenv("CODESIGN_KEY")
         password = os.getenv("CODESIGN_KEYCHAIN_PASSWORD")
-
-        print backtick("security -v find-identity")
+        print "Key: " + key
+        print "Password: " + password
+        output = backtick("security -v find-identity")
+        print " ".join(output)
 
         if password:
             print "Unlocking the keychain"
-            print backtick("security unlock-keychain -p '%s'" % password)
+            output = backtick("security unlock-keychain -p '%s'" % password)
+            print " ".join(output)
 
         # make the MDK
         self.apply_blacklist(working, 'mdk_blacklist.sh')
