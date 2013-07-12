@@ -188,7 +188,7 @@ class MonoReleaseProfile(DarwinProfile, MonoReleasePackages):
         print "Key: " + key
         print "Password: " + password
         output = backtick("security -v find-identity")
-        if key not in output:
+        if key not in " ".join(output):
             raise Exception("%s is not a valid codesign key" % key)
 
         if password:
