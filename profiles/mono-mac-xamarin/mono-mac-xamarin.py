@@ -157,6 +157,7 @@ class MonoReleaseProfile(DarwinProfile, MonoReleasePackages):
                                     "-s '%s'" % codesign_key,
                                     "'%s'" % temp,
                                     "'%s'" % output])
+        print productsign_cmd
         backtick(productsign_cmd)
         os.remove(temp)
 
@@ -185,9 +186,7 @@ class MonoReleaseProfile(DarwinProfile, MonoReleasePackages):
 
         # Unlock the keychain
         key = os.getenv("CODESIGN_KEY")
-        password = os.getenv("CODESIGN_KEYCHAIN_PASSWORD")
-        print "Key: " + key
-        print "Password: " + password
+        password = os.getenv("CODESIGN_KEYCHAIN_PASSWORD")        
         output = backtick("security -v find-identity")
         if key not in " ".join(output):
             raise Exception("%s is not a valid codesign key" % key)
