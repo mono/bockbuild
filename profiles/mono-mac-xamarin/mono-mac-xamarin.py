@@ -148,7 +148,7 @@ class MonoReleaseProfile(DarwinProfile, MonoReleasePackages):
                                      "--distribution %s" % distribution_xml,
                                      # "--sign '%s'" % identity,
                                      "--package-path %s" % working_dir,
-                                     output])
+                                     temp])
         print productbuild_cmd
         backtick(productbuild_cmd)
 
@@ -200,7 +200,7 @@ class MonoReleaseProfile(DarwinProfile, MonoReleasePackages):
         self.make_updateinfo(working, self.MDK_GUID)
         mdk_pkg = self.run_pkgbuild(working, "MDK", key)
         print "Saving: " + mdk_pkg
-        verify_codesign(mdk_pkg)
+        self.verify_codesign(mdk_pkg)
         # self.make_dmg(mdk_dmg, title, mdk_pkg, uninstall_script)
 
         # make the MRE
@@ -208,7 +208,7 @@ class MonoReleaseProfile(DarwinProfile, MonoReleasePackages):
         self.make_updateinfo(working, self.MRE_GUID)
         mre_pkg = self.run_pkgbuild(working, "MRE", key)
         print "Saving: " + mre_pkg
-        verify_codesign(mre_pkg)
+        self.verify_codesign(mre_pkg)
         # self.make_dmg(mre_dmg, title, mre_pkg, uninstall_script)
 
         shutil.rmtree(working)
