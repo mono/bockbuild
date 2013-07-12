@@ -21,7 +21,7 @@ class PCLReferenceAssembliesPackage(Package):
 
     # A bunch of shell script written inside python literals ;(
     def install(self):
-        dest = "/Library/Frameworks/Mono.framework/External/xbuild-frameworks/.NETPortable/"
+        dest = os.path.join(self.prefix, "lib", "mono", "xbuild-frameworks", ".NETPortable")
         if not os.path.exists(dest):
             os.makedirs(dest)
 
@@ -29,6 +29,9 @@ class PCLReferenceAssembliesPackage(Package):
 
         pcldir = os.path.join(self.package_build_dir(), self.source_dir_name)
         self.sh("rsync -abv -q %s/* %s" % (pcldir, dest))
+
+        # Remove v4.6 until we support it
+        shutil.rmtree(os.path.join(dest, "v4.6"))
 
         for f in glob.glob("%s/*/Profile/*/SupportedFrameworks" % dest):
             self.write_xml(f)
