@@ -186,11 +186,11 @@ class MonoReleaseProfile(DarwinProfile, MonoReleasePackages):
         key = os.getenv("CODESIGN_KEY")
         password = os.getenv("CODESIGN_KEYCHAIN_PASSWORD")
 
-        backtick("security -v find-identity")
+        print backtick("security -v find-identity")
 
         if password:
             print "Unlocking the keychain"
-            backtick("security unlock-keychain -p %s" % '"' + password + '"')
+            print backtick("security unlock-keychain -p '%s'" % password)
 
         # make the MDK
         self.apply_blacklist(working, 'mdk_blacklist.sh')
