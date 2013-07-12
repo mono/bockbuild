@@ -158,6 +158,7 @@ class MonoReleaseProfile(DarwinProfile, MonoReleasePackages):
                                     "'%s'" % temp,
                                     "'%s'" % output])
         backtick(productsign_cmd)
+        os.remove(temp)
 
         os.chdir(old_cwd)
         return output
