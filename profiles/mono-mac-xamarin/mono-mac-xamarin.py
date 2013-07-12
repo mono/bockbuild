@@ -152,12 +152,12 @@ class MonoReleaseProfile(DarwinProfile, MonoReleasePackages):
         print productbuild_cmd
         backtick(productbuild_cmd)
 
-        productsign = "/usr/bin/productsign"
-        productsign_cmd = ' '.join([productsign,
-                                    "-s '%s'" % codesign_key,
-                                    "'%s'" % temp,
-                                    "'%s'" % output])
-        backtick(productsign_cmd)
+        # productsign = "/usr/bin/productsign"
+        # productsign_cmd = ' '.join([productsign,
+        #                             "-s '%s'" % codesign_key,
+        #                             "'%s'" % temp,
+        #                             "'%s'" % output])
+        # backtick(productsign_cmd)
 
         os.chdir(old_cwd)
         return output
