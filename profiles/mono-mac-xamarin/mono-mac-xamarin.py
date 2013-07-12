@@ -226,7 +226,7 @@ class MonoReleaseProfile(DarwinProfile, MonoReleasePackages):
                 [spctl, "-vvv", "--assess", "--type install", name, "2>&1"])
             output = backtick(spctl_cmd)
 
-            if "accepted" in output:
+            if "accepted" in " ".join(output):
                 log(0, "%s IS SIGNED" % pkg)
             else:
                 log(0, "%s IS NOT SIGNED" % pkg)
