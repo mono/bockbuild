@@ -244,6 +244,21 @@ class MonoReleaseProfile(DarwinProfile, MonoReleasePackages):
                     print "Generating dsyms for %s" % f
                     backtick('dsymutil "%s"' % f)
 
+    def verify(self, f):
+        result = " ".join(backtick("otool -L " + f))
+        regex = """%s/(\d+\.\d+\.\d+)+\/""" % self.versions_root
+        match = re.search(regex, result).group(1)
+        if self.RELEASE_VERSION not in match:
+            raise Exception("%s references Mono %s\n%s" % (f, match, result))
+
+    def verify_binaries(self, binaries):
+        for path, dirs, files in os.walk(binaries):
+            for name in files:
+                f = os.path.join(path, name)
+                file_type = backtick('file "%s"' % f)
+                if "Mach-O executable" in "".join(file_type):
+                    self.verify(f)
+
     def install_root(self):
         return os.path.join(self.MONO_ROOT, "Versions", self.RELEASE_VERSION)
 
@@ -295,6 +310,7 @@ class MonoReleaseProfile(DarwinProfile, MonoReleasePackages):
         self.fix_libMonoPosixHelper()
         self.fix_gtksharp_configs()
         self.generate_dsym()
+        self.verify_binaries(os.path.join(self.release_root, "bin"))
         blacklist = os.path.join(self.packaging_dir, 'mdk_blacklist.sh')
         backtick(blacklist + ' ' + self.release_root)
         self.build_package()
