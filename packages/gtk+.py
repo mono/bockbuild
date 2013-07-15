@@ -102,7 +102,7 @@ class GtkPackage (GnomeGitPackage):
 
 				# Bug 6156 - [gtk] Quitting the application with unsaved file and answering Cancel results in crash
 				# https://bugzilla.xamarin.com/attachment.cgi?id=2214
-				'patches/gtk/bxc6156_quit_with_unsaved_file_and_cancel_results_in_crash.patch',
+				'patches/gtk/gdk-quartz-recursive-poll.patch',
 
 				# Bug 3457 - [GTK] Support more standard keyboard shortcuts in dialogs
 				# https://bugzilla.xamarin.com/attachment.cgi?id=2240
