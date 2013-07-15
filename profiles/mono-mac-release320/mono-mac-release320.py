@@ -81,9 +81,7 @@ class MonoReleaseProfile(DarwinProfile, MonoReleasePackages):
         tmpdir = tempfile.mkdtemp()
         monoroot = os.path.join(tmpdir, "PKGROOT", self.MONO_ROOT[1:])
         versions = os.path.join(monoroot, "Versions")
-        pcl_assemblies = os.path.join(monoroot, "External", "xbuild-frameworks", ".NETPortable")
         os.makedirs(versions)
-        os.makedirs(pcl_assemblies)
 
         print "setup_working_dir " + tmpdir
         # setup metadata
@@ -108,10 +106,6 @@ class MonoReleaseProfile(DarwinProfile, MonoReleasePackages):
         # copy to package root
         backtick('rsync -aP "%s" "%s"' % (self.release_root, versions))
 
-        # copy pcl assemblies
-        pcl_root = os.path.join(self.MONO_ROOT, "External", "xbuild-frameworks", ".NETPortable")
-        backtick('rsync -aP "%s/" "%s"' % (pcl_root, pcl_assemblies))
-
         return tmpdir
 
     def apply_blacklist(self, working_dir, blacklist_name):
@@ -119,9 +113,10 @@ class MonoReleaseProfile(DarwinProfile, MonoReleasePackages):
         root = os.path.join(working_dir, "PKGROOT", self.release_root[1:])
         backtick(blacklist + ' "%s"' % root)
 
-    def run_pkgbuild(self, working_dir, package_type):
+    def run_pkgbuild(self, working_dir, package_type, codesign_key):
         info = self.package_info(package_type)
         output = os.path.join(self.self_dir, info["filename"])
+        temp = os.path.join(self.self_dir, "mono-%s.pkg" % package_type)
         identifier = "com.xamarin.mono-" + info["type"] + ".pkg"
         resources_dir = os.path.join(working_dir, "resources")
         distribution_xml = os.path.join(resources_dir, "distribution.xml")
@@ -129,11 +124,13 @@ class MonoReleaseProfile(DarwinProfile, MonoReleasePackages):
         old_cwd = os.getcwd()
         os.chdir(working_dir)
         pkgbuild = "/usr/bin/pkgbuild"
+        identity = "Developer ID Installer: Xamarin Inc"
         pkgbuild_cmd = ' '.join([pkgbuild,
                                  "--identifier " + identifier,
                                  "--root '%s/PKGROOT'" % working_dir,
                                  "--version '%s'" % self.RELEASE_VERSION,
                                  "--install-location '/'",
+                                 # "--sign '%s'" % identity,
                                  "--scripts '%s'" % resources_dir,
                                  os.path.join(working_dir, "mono.pkg")])
         print pkgbuild_cmd
@@ -143,10 +140,21 @@ class MonoReleaseProfile(DarwinProfile, MonoReleasePackages):
         productbuild_cmd = ' '.join([productbuild,
                                      "--resources %s" % resources_dir,
                                      "--distribution %s" % distribution_xml,
+                                     # "--sign '%s'" % identity,
                                      "--package-path %s" % working_dir,
-                                     output])
+                                     temp])
         print productbuild_cmd
         backtick(productbuild_cmd)
+
+        productsign = "/usr/bin/productsign"
+        productsign_cmd = ' '.join([productsign,
+                                    "-s '%s'" % codesign_key,
+                                    "'%s'" % temp,
+                                    "'%s'" % output])
+        print productsign_cmd
+        backtick(productsign_cmd)
+        os.remove(temp)
+
         os.chdir(old_cwd)
         return output
 
@@ -168,23 +176,56 @@ class MonoReleaseProfile(DarwinProfile, MonoReleasePackages):
 
     def build_package(self):
         working = self.setup_working_dir()
-        uninstall_script = os.path.join(working, "uninstallMono.sh")
+        # uninstall_script = os.path.join(working, "uninstallMono.sh")
+
+        # Unlock the keychain
+        key = os.getenv("CODESIGN_KEY")
+        password = os.getenv("CODESIGN_KEYCHAIN_PASSWORD")
+        output = backtick("security -v find-identity")
+        if key not in " ".join(output):
+            raise Exception("%s is not a valid codesign key" % key)
+
+        if password:
+            print "Unlocking the keychain"
+            backtick("security unlock-keychain -p %s" % password)
+        else:
+            raise Exception("CODESIGN_KEYCHAIN_PASSWORD needs to be defined")
 
         # make the MDK
         self.apply_blacklist(working, 'mdk_blacklist.sh')
         self.make_updateinfo(working, self.MDK_GUID)
-        mdk_pkg = self.run_pkgbuild(working, "MDK")
+        mdk_pkg = self.run_pkgbuild(working, "MDK", key)
         print "Saving: " + mdk_pkg
+        self.verify_codesign(mdk_pkg)
         # self.make_dmg(mdk_dmg, title, mdk_pkg, uninstall_script)
 
         # make the MRE
         self.apply_blacklist(working, 'mre_blacklist.sh')
         self.make_updateinfo(working, self.MRE_GUID)
-        mre_pkg = self.run_pkgbuild(working, "MRE")
+        mre_pkg = self.run_pkgbuild(working, "MRE", key)
         print "Saving: " + mre_pkg
+        self.verify_codesign(mre_pkg)
         # self.make_dmg(mre_dmg, title, mre_pkg, uninstall_script)
 
         shutil.rmtree(working)
+
+    def verify_codesign(self, pkg):
+        oldcwd = os.getcwd()
+        try:
+            name = os.path.basename(pkg)
+            pkgdir = os.path.dirname(pkg)
+            os.chdir(pkgdir)
+            spctl = "/usr/sbin/spctl"
+            spctl_cmd = ' '.join(
+                [spctl, "-vvv", "--assess", "--type install", name, "2>&1"])
+            output = backtick(spctl_cmd)
+
+            if "accepted" in " ".join(output):
+                log(0, "%s IS SIGNED" % pkg)
+            else:
+                log(0, "%s IS NOT SIGNED" % pkg)
+        finally:
+            os.chdir(oldcwd)
 
     def generate_dsym(self):
         for path, dirs, files in os.walk(self.prefix):
@@ -196,6 +237,21 @@ class MonoReleaseProfile(DarwinProfile, MonoReleasePackages):
                 if "Mach-O" in "".join(file_type):
                     print "Generating dsyms for %s" % f
                     backtick('dsymutil "%s"' % f)
+
+    def verify(self, f):
+        result = " ".join(backtick("otool -L " + f))
+        regex = os.path.join(self.MONO_ROOT, "Versions", r"(\d+\.\d+\.\d+)")
+        match = re.search(regex, result).group(1)
+        if self.RELEASE_VERSION not in match:
+            raise Exception("%s references Mono %s\n%s" % (f, match, result))
+
+    def verify_binaries(self, binaries):
+        for path, dirs, files in os.walk(binaries):
+            for name in files:
+                f = os.path.join(path, name)
+                file_type = backtick('file "%s"' % f)
+                if "Mach-O executable" in "".join(file_type):
+                    self.verify(f)
 
     def install_root(self):
         return os.path.join(self.MONO_ROOT, "Versions", self.RELEASE_VERSION)
@@ -248,33 +304,10 @@ class MonoReleaseProfile(DarwinProfile, MonoReleasePackages):
         self.fix_libMonoPosixHelper()
         self.fix_gtksharp_configs()
         self.generate_dsym()
+        self.verify_binaries(os.path.join(self.release_root, "bin"))
         blacklist = os.path.join(self.packaging_dir, 'mdk_blacklist.sh')
         backtick(blacklist + ' ' + self.release_root)
         self.build_package()
 
 MonoReleaseProfile().build()
 
-profname = "mono-mac-release-env"
-dir = os.path.realpath(os.path.dirname(sys.argv[0]))
-envscript = '''#!/bin/sh
-PROFNAME="%s"
-INSTALLDIR=%s/build-root/_install
-export DYLD_FALLBACK_LIBRARY_PATH="$INSTALLDIR/lib:/lib:/usr/lib:$DYLD_FALLBACK_LIBRARY_PATH"
-export C_INCLUDE_PATH="$INSTALLDIR/include:$C_INCLUDE_PATH"
-export ACLOCAL_PATH="$INSTALLDIR/share/aclocal:$ACLOCAL_PATH"
-export ACLOCAL_FLAGS="-I $INSTALLDIR/share/aclocal $ACLOCAL_FLAGS"
-export PKG_CONFIG_PATH="$INSTALLDIR/lib/pkgconfig:$INSTALLDIR/lib64/pkgconfig:$INSTALLDIR/share/pkgconfig:$PKG_CONFIG_PATH"
-export CONFIG_SITE="$INSTALLDIR/$PROFNAME-config.site"
-export MONO_GAC_PREFIX="$INSTALLDIR:MONO_GAC_PREFIX"
-export MONO_ADDINS_REGISTRY="$INSTALLDIR/addinreg"
-export PATH="$INSTALLDIR/bin:$PATH"
-export MONO_INSTALL_PREFIX="$INSTALLDIR"
-
-#mkdir -p "$INSTALLDIR"
-#echo "test \"\$prefix\" = NONE && prefix=\"$INSTALLDIR\"" > $CONFIG_SITE
-
-PS1="[$PROFNAME] \w @ "
-''' % (profname, dir)
-
-with open(os.path.join(dir, profname), 'w') as f:
-    f.write(envscript)
