@@ -2,6 +2,14 @@
 
 FW=/Library/Frameworks/Mono.framework
 FW_CURRENT=${FW}/Versions/Current
+CURRENT=`basename $(readlink ${FW_CURRENT})`
+
+# Remove PCL assemblies that we installed from Mono 3.1.1
+LICENSE="Portable Class Library Reference Assemblies License-07JUN2013.docx"
+if [ -f "$FW/External/xbuild-frameworks/.NETPortable/$LICENSE" ]; then
+    echo "Removing PCL because we're upgrading from 3.1.1" >> /tmp/mono-installation
+    rm -rf $FW/External/xbuild-frameworks/.NETPortable
+fi
 
 # Remove /usr/bin/pkg-config if it's a symlink to the Mono-installed one
 PKG_CONFIG_LINK="/usr/bin/pkg-config"
@@ -53,8 +61,7 @@ fi
 # - keep if 'Versions/x.y.z/keep' exists
 # - Keep if it is greater than $CURRENT
 #
-CURRENT=`basename $(readlink ${FW_CURRENT})`
-echo "Current:" $CURRENT
+echo "Current:" $CURRENT >> /tmp/mono-installation
 
 pushd ${FW}/Versions
 for i in `ls -d *`; do
@@ -72,7 +79,7 @@ for i in `ls -d *`; do
     # A magical bit of Perl: http://stackoverflow.com/a/7366753/494990
     result=$(perl -e '($a,$b)=@ARGV; for ($a,$b) {s/(\d+)/sprintf "%5d", $1/ge}; print $a cmp $b;' $i $CURRENT)
     if [ $result -ge 0 ]; then
-        echo "Skipping" $i "because $i > $CURRENT" >> /tmp/mono-installation
+        echo "Skipping" $i "because $i >= $CURRENT" >> /tmp/mono-installation
         continue
 
     else
