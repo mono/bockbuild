@@ -37,15 +37,15 @@ index 224d84c..80ef87f 100644
  poll_func (GPollFD *ufds,
  	   guint    nfds,
 @@ -706,6 +723,9 @@ poll_func (GPollFD *ufds,
- 
-   static GPollFD *last_ufds;
+   static GPollFD *current_ufds = NULL;
+   static int current_nfds = 0;
  
 +  /* This is performed *once* before we poll Cocoa for the first event. */
 +  ensure_finish_launching_called ();
 +
-   last_ufds = ufds;
+   current_ufds = ufds;
+   current_nfds = nfds;
  
-   n_ready = select_thread_start_poll (ufds, nfds, timeout_);
 -- 
 1.7.4.4
 
