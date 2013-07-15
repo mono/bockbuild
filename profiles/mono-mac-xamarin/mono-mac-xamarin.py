@@ -240,7 +240,7 @@ class MonoReleaseProfile(DarwinProfile, MonoReleasePackages):
 
     def verify(self, f):
         result = " ".join(backtick("otool -L " + f))
-        regex = os.path.join(self.versions_root, r"(\d+\.\d+\.\d+)")
+        regex = os.path.join(self.MONO_ROOT, "Versions", r"(\d+\.\d+\.\d+)")
         match = re.search(regex, result).group(1)
         if self.RELEASE_VERSION not in match:
             raise Exception("%s references Mono %s\n%s" % (f, match, result))
