@@ -71,7 +71,7 @@ index 500f0ab..23295ca 100644
 +
 +  variant = gtk_icon_theme_lookup_icon_for_scale (icon_theme, icon_name,
 +                                                  size, 2, flags);
-+  if (retval->pixbuf && variant)
++  if (retval && variant)
 +    g_object_set_data_full (G_OBJECT (retval->pixbuf),
 +                            "gdk-pixbuf-2x-variant",
 +                            g_object_ref (variant->pixbuf),
@@ -98,7 +98,7 @@ index 500f0ab..23295ca 100644
 +  retval = choose_icon (icon_theme, icon_names, size, 1, flags);
 +  variant = choose_icon (icon_theme, icon_names, size, 2, flags);
 +
-+  if (retval->pixbuf && variant)
++  if (retval && variant)
 +    g_object_set_data_full (G_OBJECT (retval->pixbuf),
 +                            "gdk-pixbuf-2x-variant",
 +                            g_object_ref (variant->pixbuf),
