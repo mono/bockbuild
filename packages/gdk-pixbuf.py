@@ -5,6 +5,7 @@ class GdkPixbufPackage (GnomeXzPackage):
 		if Package.profile.name == 'darwin':
 			self.sources.extend ([
 				'patches/gdk-pixbuf/0001-pixbuf-load-2x-variants-as-pixbuf-gobject-data.patch',
+				'patches/gdk-pixbuf/0001-pixbuf-Add-getter-setter-for-the-2x-variants.patch',
 			])
 
 	def prep (self):

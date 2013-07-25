@@ -1,6 +1,6 @@
 class GlibPackage (GnomeXzPackage):
 	def __init__ (self):
-		GnomePackage.__init__ (self,
+		GnomeXzPackage.__init__ (self,
 			'glib',
 			version_major = '2.36',
 			version_minor = '3')
@@ -24,13 +24,19 @@ class GlibPackage (GnomeXzPackage):
 				'patches/glib/patch-glib-2.0.pc.in.diff',
 				# https://trac.macports.org/export/64476/trunk/dports/devel/glib2/files/patch-glib_gunicollate.c.diff
 				'patches/glib/patch-glib_gunicollate.c.diff',
+
+				# Bug 6156 - [gtk] Quitting the application with unsaved file and answering Cancel results in crash
+				# https://bugzilla.xamarin.com/attachment.cgi?id=2214
+				'patches/glib-recursive-poll.patch',
 			])
 
 	def prep (self):
 		Package.prep (self)
 		if self.darwin:
-			for p in range (2, len (self.sources)):
+			for p in range (2, 8):
 				self.sh ('patch -p0 < %{sources[' + str (p) + ']}')
+			for p in range (8, len (self.sources)):
+				self.sh ('patch --ignore-whitespace -p1 < %{sources[' + str (p) + ']}')
 	
 	def build (self):
 		if not self.darwin:

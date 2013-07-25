@@ -82,6 +82,9 @@ class GtkPackage (GnomeGitPackage):
 				'patches/gtk/0065-Make-usual-calls-to-get-a-GdkPixbuf-attach-a-2x-vari.patch',
 				'patches/gtk/0066-cellrendererpixbuf-let-2x-variants-go-through-pixel-.patch',
 
+				'patches/gtk/0001-iconfactory-Check-2x-variants-more-closely-before-at.patch',
+				'patches/gtk/0002-icontheme-Check-2x-variants-more-closely-before-atta.patch',
+
 				# Bug 702841 - GdkQuartz does not distinguish Eisu, Kana and Space keys on Japanese keyrboard
 				# https://bugzilla.gnome.org/show_bug.cgi?id=702841
 				'patches/gtk/bgo702841-fix-kana-eisu-keys.patch',
@@ -102,7 +105,7 @@ class GtkPackage (GnomeGitPackage):
 
 				# Bug 6156 - [gtk] Quitting the application with unsaved file and answering Cancel results in crash
 				# https://bugzilla.xamarin.com/attachment.cgi?id=2214
-				'patches/gtk/bxc6156_quit_with_unsaved_file_and_cancel_results_in_crash.patch',
+				'patches/gtk/gdk-quartz-recursive-poll.patch',
 
 				# Bug 3457 - [GTK] Support more standard keyboard shortcuts in dialogs
 				# https://bugzilla.xamarin.com/attachment.cgi?id=2240
