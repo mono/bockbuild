@@ -20,7 +20,7 @@ class MonoReleaseProfile(DarwinProfile, MonoReleasePackages):
     def __init__(self):
         self.MONO_ROOT = "/Library/Frameworks/Mono.framework"
         self.RELEASE_VERSION = os.getenv('MONO_VERSION')
-        self.BUILD_NUMBER = "0"
+        self.BUILD_NUMBER = os.getenv('MONO_BUILD_REVISION') or "0"
         self.MRE_GUID = "432959f9-ce1b-47a7-94d3-eb99cb2e1aa8"
         self.MDK_GUID = "964ebddd-1ffe-47e7-8128-5ce17ffffb05"
 
