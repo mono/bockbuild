@@ -85,6 +85,8 @@ class GtkPackage (GnomeGitPackage):
 				'patches/gtk/0001-iconfactory-Check-2x-variants-more-closely-before-at.patch',
 				'patches/gtk/0002-icontheme-Check-2x-variants-more-closely-before-atta.patch',
 
+				'patches/gtk/nsview-simple-keybindings.patch',
+
 				# Bug 702841 - GdkQuartz does not distinguish Eisu, Kana and Space keys on Japanese keyrboard
 				# https://bugzilla.gnome.org/show_bug.cgi?id=702841
 				'patches/gtk/bgo702841-fix-kana-eisu-keys.patch',
