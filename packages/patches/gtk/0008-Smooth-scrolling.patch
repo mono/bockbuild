@@ -1,7 +1,7 @@
-From 088c525ce49542116eebee3a5b6861adbbc2ed43 Mon Sep 17 00:00:00 2001
+From ab426801023babba7513d9e27a4dbdd44bdbc318 Mon Sep 17 00:00:00 2001
 From: Michael Natterer <mitch@gimp.org>
 Date: Tue, 8 May 2012 14:11:50 +0200
-Subject: [PATCH 08/66] Smooth scrolling
+Subject: [PATCH 08/68] Smooth scrolling
 
 ---
  gdk/gdkevents.c               |   32 +++++++++++++++++
@@ -29,7 +29,7 @@ index 53833a0..0f8bba2 100644
 @@ -845,6 +847,36 @@ gdk_event_get_root_coords (const GdkEvent *event,
    return fetched;
  }
-
+ 
 +gboolean
 +gdk_event_get_scroll_deltas (const GdkEvent *event,
 +                             gdouble        *delta_x,
@@ -75,12 +75,12 @@ index 0602bd0..f6b4e04 100644
 +  gdouble delta_x;
 +  gdouble delta_y;
  };
-
+ 
  struct _GdkEventKey
 @@ -537,6 +540,9 @@ gboolean  gdk_event_get_coords		(const GdkEvent  *event,
  gboolean  gdk_event_get_root_coords	(const GdkEvent  *event,
-					 gdouble	 *x_root,
-					 gdouble	 *y_root);
+ 					 gdouble	 *x_root,
+ 					 gdouble	 *y_root);
 +gboolean  gdk_event_get_scroll_deltas   (const GdkEvent *event,
 +                                         gdouble         *delta_x,
 +                                         gdouble         *delta_y);
@@ -99,7 +99,7 @@ index f5f0339..d48751e 100644
 +      event->scroll.delta_x = source_event->scroll.delta_x;
 +      event->scroll.delta_y = source_event->scroll.delta_y;
        return TRUE;
-
+ 
      default:
 diff --git a/gdk/quartz/gdkevents-quartz.c b/gdk/quartz/gdkevents-quartz.c
 index c99a2c9..e7d97dc 100644
@@ -108,7 +108,7 @@ index c99a2c9..e7d97dc 100644
 @@ -57,6 +57,13 @@ static GdkWindow *find_toplevel_under_pointer   (GdkDisplay *display,
                                                   gint       *x,
                                                   gint       *y);
-
+ 
 +/* Protocol to build cleanly for OSX < 10.7 */
 +@protocol PreciseDeltas
 +- (BOOL) hasPreciseScrollingDeltas;
@@ -116,7 +116,7 @@ index c99a2c9..e7d97dc 100644
 +- (CGFloat) scrollingDeltaY;
 +@end
 +
-
+ 
  NSEvent *
  gdk_quartz_event_get_nsevent (GdkEvent *event)
 @@ -980,6 +987,9 @@ fill_scroll_event (GdkWindow          *window,
@@ -137,10 +137,10 @@ index c99a2c9..e7d97dc 100644
 +  event->scroll.delta_x = delta_x;
 +  event->scroll.delta_y = delta_y;
  }
-
+ 
  static void
 @@ -1471,28 +1484,59 @@ gdk_event_translate (GdkEvent *event,
-
+ 
      case NSScrollWheel:
        {
 -	float dx = [nsevent deltaX];
@@ -156,7 +156,7 @@ index c99a2c9..e7d97dc 100644
 +        GdkScrollDirection direction;
 +	float dx;
 +	float dy;
-
+ 
 -            fill_scroll_event (window, event, nsevent, x, y, x_root, y_root, direction);
 -          }
 +	if (gdk_quartz_osx_version() >= GDK_OSX_LION &&
@@ -164,7 +164,7 @@ index c99a2c9..e7d97dc 100644
 +	  {
 +	    dx = [(id <PreciseDeltas>) nsevent scrollingDeltaX];
 +	    dy = [(id <PreciseDeltas>) nsevent scrollingDeltaY];
-
+ 
 -        if (dx != 0)
 -          {
 -            if (dx < 0.0)
@@ -184,7 +184,7 @@ index c99a2c9..e7d97dc 100644
 +                else
 +                  direction = GDK_SCROLL_LEFT;
 +              }
-
+ 
 -            fill_scroll_event (window, event, nsevent, x, y, x_root, y_root, direction);
 +            fill_scroll_event (window, event, nsevent, x, y, x_root, y_root,
 +                               TRUE, -dx, -dy, direction);
@@ -227,9 +227,9 @@ index 245fbf6..d39f045 100644
   * @range: a #GtkRange
 - * @direction: A #GdkScrollDirection
 + * @event: A #GdkEventScroll
-  *
+  * 
   * Returns a good step value for the mouse wheel.
-  *
+  * 
 @@ -2570,27 +2570,52 @@ gtk_range_button_release (GtkWidget      *widget,
   * Since: 2.4
   **/
@@ -242,7 +242,7 @@ index 245fbf6..d39f045 100644
    GtkAdjustment *adj = range->adjustment;
 +  gdouble dx, dy;
    gdouble delta;
-
+ 
 -  if (GTK_IS_SCROLLBAR (range))
 -    delta = pow (adj->page_size, 2.0 / 3.0);
 +  if (gdk_event_get_scroll_deltas ((GdkEvent *) event, &dx, &dy))
@@ -268,11 +268,11 @@ index 245fbf6..d39f045 100644
 +    }
    else
 -    delta = adj->step_increment * 2;
--
+-  
 -  if (direction == GDK_SCROLL_UP ||
 -      direction == GDK_SCROLL_LEFT)
 -    delta = - delta;
--
+-  
 +    {
 +      if (GTK_IS_SCROLLBAR (range))
 +        delta = pow (adj->page_size, 2.0 / 3.0);
@@ -286,21 +286,21 @@ index 245fbf6..d39f045 100644
 +
    if (range->inverted)
      delta = - delta;
-
+ 
    return delta;
  }
--
+-      
 +
  static gboolean
  gtk_range_scroll_event (GtkWidget      *widget,
-			GdkEventScroll *event)
+ 			GdkEventScroll *event)
 @@ -2603,7 +2628,7 @@ gtk_range_scroll_event (GtkWidget      *widget,
        gdouble delta;
        gboolean handled;
-
+ 
 -      delta = _gtk_range_get_wheel_delta (range, event->direction);
 +      delta = _gtk_range_get_wheel_delta (range, event);
-
+ 
        g_signal_emit (range, signals[CHANGE_VALUE], 0,
                       GTK_SCROLL_JUMP, adj->value + delta,
 diff --git a/gtk/gtkrange.h b/gtk/gtkrange.h
@@ -308,14 +308,14 @@ index 5463140..c672acb 100644
 --- a/gtk/gtkrange.h
 +++ b/gtk/gtkrange.h
 @@ -199,8 +199,8 @@ gint                gtk_range_get_round_digits             (GtkRange      *range
-
-
+ 
+ 
  /* internal API */
 -gdouble            _gtk_range_get_wheel_delta              (GtkRange      *range,
 -                                                            GdkScrollDirection direction);
 +gdouble            _gtk_range_get_wheel_delta              (GtkRange       *range,
 +                                                            GdkEventScroll *event);
-
+ 
  void               _gtk_range_set_stop_values              (GtkRange      *range,
                                                              gdouble       *values,
 diff --git a/gtk/gtkscrolledwindow.c b/gtk/gtkscrolledwindow.c
@@ -324,17 +324,17 @@ index 1704d3c..2288b2f 100644
 +++ b/gtk/gtkscrolledwindow.c
 @@ -1565,31 +1565,77 @@ static gboolean
  gtk_scrolled_window_scroll_event (GtkWidget      *widget,
-				  GdkEventScroll *event)
+ 				  GdkEventScroll *event)
  {
 -  GtkWidget *range;
 +  GtkScrolledWindow *scrolled_window = GTK_SCROLLED_WINDOW (widget);
 +  gboolean handled = FALSE;
 +  gdouble delta_x;
 +  gdouble delta_y;
-
+ 
    g_return_val_if_fail (GTK_IS_SCROLLED_WINDOW (widget), FALSE);
-   g_return_val_if_fail (event != NULL, FALSE);
-
+   g_return_val_if_fail (event != NULL, FALSE);  
+ 
 -  if (event->direction == GDK_SCROLL_UP || event->direction == GDK_SCROLL_DOWN)
 -    range = GTK_SCROLLED_WINDOW (widget)->vscrollbar;
 -  else
@@ -371,7 +371,7 @@ index 1704d3c..2288b2f 100644
 +                             gtk_adjustment_get_lower (adj),
 +                             gtk_adjustment_get_upper (adj) -
 +                             gtk_adjustment_get_page_size (adj));
-
+ 
 -  if (range && gtk_widget_get_visible (range))
 +          gtk_adjustment_set_value (adj, new_value);
 +
@@ -383,21 +383,21 @@ index 1704d3c..2288b2f 100644
 -      GtkAdjustment *adj = GTK_RANGE (range)->adjustment;
 -      gdouble delta, new_value;
 +      GtkWidget *range;
-
+ 
 -      delta = _gtk_range_get_wheel_delta (GTK_RANGE (range), event->direction);
 +      if (event->direction == GDK_SCROLL_UP || event->direction == GDK_SCROLL_DOWN)
 +        range = scrolled_window->vscrollbar;
 +      else
 +        range = scrolled_window->hscrollbar;
-
+ 
 -      new_value = CLAMP (adj->value + delta, adj->lower, adj->upper - adj->page_size);
--
+-      
 -      gtk_adjustment_set_value (adj, new_value);
 +      if (range && gtk_widget_get_visible (range))
 +        {
 +          GtkAdjustment *adj = GTK_RANGE (range)->adjustment;
 +          gdouble delta, new_value;
-
+ 
 -      return TRUE;
 +          delta = _gtk_range_get_wheel_delta (GTK_RANGE (range), event);
 +
@@ -408,11 +408,12 @@ index 1704d3c..2288b2f 100644
 +          handled = TRUE;
 +        }
      }
-
+ 
 -  return FALSE;
 +  return handled;
  }
-
+ 
  static gboolean
---
+-- 
 1.7.10.2 (Apple Git-33)
+

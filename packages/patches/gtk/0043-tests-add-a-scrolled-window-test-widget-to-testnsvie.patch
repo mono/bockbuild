@@ -1,7 +1,7 @@
-From fa856cc8253164e4ece8919c520b226ba76e7859 Mon Sep 17 00:00:00 2001
+From aa3e5322000437f02e04916abf278dbbc407a403 Mon Sep 17 00:00:00 2001
 From: Michael Natterer <mitch@gimp.org>
 Date: Fri, 22 Feb 2013 11:06:58 +0100
-Subject: [PATCH 43/66] tests: add a scrolled window test widget to
+Subject: [PATCH 43/68] tests: add a scrolled window test widget to
  testnsview.c
 
 ---
@@ -15,7 +15,7 @@ index 45b1d60..1a523e6 100644
 @@ -139,6 +139,57 @@ main (gint   argc,
                                ns_view);
    }
-
+ 
 +  /* add an entry in a scrolled window to test scrolling / clipping */
 +  {
 +    GtkWidget *sw;
@@ -70,5 +70,6 @@ index 45b1d60..1a523e6 100644
    /* add an entry in an event box to test living inside another gdkwindow */
    {
      GtkWidget *event_box;
---
+-- 
 1.7.10.2 (Apple Git-33)
+

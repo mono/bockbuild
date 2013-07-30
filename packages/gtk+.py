@@ -1,6 +1,6 @@
 class GtkPackage (GnomeGitPackage):
 	def __init__ (self):
-		GnomeGitPackage.__init__ (self, 'gtk+', '2.24', '158fc5d9e0f541420708a22ce0b120f25df996dc',
+		GnomeGitPackage.__init__ (self, 'gtk+', '2.24', '4ecbef0791d420c014ecca911cd2a1cc18122e9a',
 			configure_flags = [
 				'--with-gdktarget=%{gdk_target}',
 #				'--disable-cups',
@@ -81,11 +81,8 @@ class GtkPackage (GnomeGitPackage):
 				'patches/gtk/0064-gdk-Lookup-double-scaled-variants-on-pixbufs.patch',
 				'patches/gtk/0065-Make-usual-calls-to-get-a-GdkPixbuf-attach-a-2x-vari.patch',
 				'patches/gtk/0066-cellrendererpixbuf-let-2x-variants-go-through-pixel-.patch',
-
-				'patches/gtk/0001-iconfactory-Check-2x-variants-more-closely-before-at.patch',
-				'patches/gtk/0002-icontheme-Check-2x-variants-more-closely-before-atta.patch',
-
-				'patches/gtk/nsview-simple-keybindings.patch',
+				'patches/gtk/0067-quartz-Make-event-loop-deal-with-recursive-poll-invo.patch',
+				'patches/gtk/0068-nsview-implement-a-few-text-view-command-accelerator.patch',
 
 				# Bug 702841 - GdkQuartz does not distinguish Eisu, Kana and Space keys on Japanese keyrboard
 				# https://bugzilla.gnome.org/show_bug.cgi?id=702841
@@ -104,10 +101,6 @@ class GtkPackage (GnomeGitPackage):
 
 				# Fix gtk_window_begin_move_drag on Quartz
 				'patches/gtk-quartz-move-drag.patch',
-
-				# Bug 6156 - [gtk] Quitting the application with unsaved file and answering Cancel results in crash
-				# https://bugzilla.xamarin.com/attachment.cgi?id=2214
-				'patches/gtk/gdk-quartz-recursive-poll.patch',
 
 				# Bug 3457 - [GTK] Support more standard keyboard shortcuts in dialogs
 				# https://bugzilla.xamarin.com/attachment.cgi?id=2240

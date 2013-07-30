@@ -1,7 +1,7 @@
-From ee328365798641934a31d3803753177bbf63f685 Mon Sep 17 00:00:00 2001
+From 79c1e789097b4e46b9f3fdcbc96a2aae69e24144 Mon Sep 17 00:00:00 2001
 From: Kristian Rietveld <kris@lanedo.com>
 Date: Mon, 3 Sep 2012 10:45:13 +0200
-Subject: [PATCH 21/66] Make scrolled window work well with Mac touchpad
+Subject: [PATCH 21/68] Make scrolled window work well with Mac touchpad
 
 Modify the scrolled window code to work with a Mac touchpad as you
 would expect. When precise deltas are received from the Mac touchpad,
@@ -24,7 +24,7 @@ index 9d0d87a..5341b50 100644
 --- a/gtk/gtkscrolledwindow.c
 +++ b/gtk/gtkscrolledwindow.c
 @@ -79,7 +79,7 @@
-
+ 
  /* Kinetic scrolling */
  #define FRAME_INTERVAL (1000 / 60)
 -#define MAX_OVERSHOOT_DISTANCE 50
@@ -40,10 +40,10 @@ index 9d0d87a..5341b50 100644
 -  guint                  capture_button_press      : 1;
    guint                  in_drag                   : 1;
 -  guint                  last_button_event_valid   : 1;
-
+ 
 -  guint                  release_timeout_id;
    guint                  deceleration_id;
-
+ 
 -  gdouble                last_button_event_x_root;
 -  gdouble                last_button_event_y_root;
 -
@@ -51,16 +51,16 @@ index 9d0d87a..5341b50 100644
 -  gdouble                last_motion_event_y_root;
 -  guint32                last_motion_event_time;
 +  guint32                last_scroll_event_time;
-
+ 
    gdouble                x_velocity;
    gdouble                y_velocity;
 @@ -144,6 +135,7 @@ typedef struct {
    guint          sb_scroll_timeout_id;
-
+ 
    gboolean       overlay_scrollbars;
 +  gboolean       is_snapping_back;
  } GtkScrolledWindowPrivate;
-
+ 
  #define GTK_SCROLLED_WINDOW_GET_PRIVATE(obj) (G_TYPE_INSTANCE_GET_PRIVATE ((obj), GTK_TYPE_SCROLLED_WINDOW, GtkScrolledWindowPrivate))
 @@ -167,8 +159,7 @@ enum {
    PROP_VSCROLLBAR_POLICY,
@@ -70,12 +70,12 @@ index 9d0d87a..5341b50 100644
 -  PROP_KINETIC_SCROLLING
 +  PROP_SHADOW_TYPE
  };
-
+ 
  /* Signals */
 @@ -268,6 +259,13 @@ static void gtk_scrolled_window_overlay_scrollbars_changed (GtkSettings *setting
                                                              GParamSpec  *arg,
                                                              gpointer     user_data);
-
+ 
 +
 +static void gtk_scrolled_window_start_deceleration      (GtkScrolledWindow *scrolled_window);
 +static gboolean gtk_scrolled_window_calculate_velocity  (GtkScrolledWindow *scrolled_window,
@@ -84,11 +84,11 @@ index 9d0d87a..5341b50 100644
 +
 +
  static guint signals[LAST_SIGNAL] = {0};
-
+ 
  G_DEFINE_TYPE (GtkScrolledWindow, gtk_scrolled_window, GTK_TYPE_BIN)
 @@ -432,22 +430,6 @@ gtk_scrolled_window_class_init (GtkScrolledWindowClass *class)
-							     GTK_PARAM_READABLE));
-
+ 							     GTK_PARAM_READABLE));
+ 
    /**
 -   * GtkScrolledWindow:kinetic-scrolling:
 -   *
@@ -112,17 +112,17 @@ index 9d0d87a..5341b50 100644
 @@ -531,8 +513,7 @@ gtk_scrolled_window_init (GtkScrolledWindow *scrolled_window)
                      G_CALLBACK (gtk_scrolled_window_overlay_scrollbars_changed),
                      scrolled_window);
-
+ 
 -  gtk_scrolled_window_set_kinetic_scrolling (scrolled_window, TRUE);
 -  gtk_scrolled_window_set_capture_button_press (scrolled_window, TRUE);
 +  gtk_scrolled_window_init_overlay_scrollbars (scrolled_window);
-
+ 
    priv->opacity = g_object_new (GTK_TYPE_ADJUSTMENT,
                                  "lower", 0.0,
 @@ -1075,130 +1056,6 @@ gtk_scrolled_window_get_shadow_type (GtkScrolledWindow *scrolled_window)
    return scrolled_window->shadow_type;
  }
-
+ 
 -/**
 - * gtk_scrolled_window_set_kinetic_scrolling:
 - * @scrolled_window: a #GtkScrolledWindow
@@ -253,7 +253,7 @@ index 9d0d87a..5341b50 100644
 @@ -1246,11 +1103,6 @@ gtk_scrolled_window_destroy (GtkObject *object)
                                          G_CALLBACK (gtk_scrolled_window_overlay_scrollbars_changed),
                                          scrolled_window);
-
+ 
 -  if (priv->release_timeout_id)
 -    {
 -      g_source_remove (priv->release_timeout_id);
@@ -264,7 +264,7 @@ index 9d0d87a..5341b50 100644
        g_source_remove (priv->deceleration_id);
 @@ -1313,10 +1165,6 @@ gtk_scrolled_window_set_property (GObject      *object,
        gtk_scrolled_window_set_shadow_type (scrolled_window,
-					   g_value_get_enum (value));
+ 					   g_value_get_enum (value));
        break;
 -    case PROP_KINETIC_SCROLLING:
 -      gtk_scrolled_window_set_kinetic_scrolling (scrolled_window,
@@ -284,7 +284,7 @@ index 9d0d87a..5341b50 100644
        G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
        break;
 @@ -2152,40 +1997,146 @@ gtk_scrolled_window_scroll_event (GtkWidget      *widget,
-
+ 
    if (gdk_event_get_scroll_deltas ((GdkEvent *) event, &delta_x, &delta_y))
      {
 -      if (delta_x != 0.0 && scrolled_window->hscrollbar &&
@@ -328,10 +328,10 @@ index 9d0d87a..5341b50 100644
 +              (priv->overlay_scrollbars || gtk_widget_get_visible (scrolled_window->hscrollbar)))
 +            {
 +              GtkAdjustment *adj;
-
+ 
 -          adj = gtk_range_get_adjustment (GTK_RANGE (scrolled_window->hscrollbar));
 +              adj = gtk_range_get_adjustment (GTK_RANGE (scrolled_window->hscrollbar));
-
+ 
 -          new_value = CLAMP (gtk_adjustment_get_value (adj) + delta_x,
 -                             gtk_adjustment_get_lower (adj),
 -                             gtk_adjustment_get_upper (adj) -
@@ -347,7 +347,7 @@ index 9d0d87a..5341b50 100644
 +              else
 +                {
 +                  gdouble new_value;
-
+ 
 -          gtk_adjustment_set_value (adj, new_value);
 +                  /* If the scrollbar is not visible, clamp the value and
 +                   * don't trigger overshooting.
@@ -356,7 +356,7 @@ index 9d0d87a..5341b50 100644
 +                                     gtk_adjustment_get_lower (adj),
 +                                     gtk_adjustment_get_upper (adj) -
 +                                     gtk_adjustment_get_page_size (adj));
-
+ 
 -          handled = TRUE;
 +                  gtk_adjustment_set_value (adj, new_value);
 +                }
@@ -401,7 +401,7 @@ index 9d0d87a..5341b50 100644
 +          priv->last_scroll_event_time = gdk_event_get_time ((GdkEvent *)event);
 +          gtk_scrolled_window_calculate_velocity (scrolled_window, (GdkEvent *)event);
          }
-
+ 
 -      if (delta_y != 0.0 && scrolled_window->vscrollbar &&
 -          (priv->overlay_scrollbars || gtk_widget_get_visible (scrolled_window->vscrollbar)))
 -        {
@@ -409,12 +409,12 @@ index 9d0d87a..5341b50 100644
 -          gdouble new_value;
 +      _gtk_scrolled_window_get_overshoot (scrolled_window,
 +                                          &new_overshoot_x, &new_overshoot_y);
-
+ 
 -          adj = gtk_range_get_adjustment (GTK_RANGE (scrolled_window->vscrollbar));
 +      if (old_overshoot_x != new_overshoot_x ||
 +          old_overshoot_y != new_overshoot_y)
 +        _gtk_scrolled_window_allocate_overshoot_window (scrolled_window);
-
+ 
 -          new_value = CLAMP (gtk_adjustment_get_value (adj) + delta_y,
 -                             gtk_adjustment_get_lower (adj),
 -                             gtk_adjustment_get_upper (adj) -
@@ -428,7 +428,7 @@ index 9d0d87a..5341b50 100644
 +      if (is_overshot &&
 +          ((delta_x == 0.0 && delta_y == 0.0) || is_momentum_event))
 +        start_snap_back = TRUE;
-
+ 
 -          gtk_adjustment_set_value (adj, new_value);
 +      /* If we should start a snap back and no current deceleration
 +       * is active, start the snap back.
@@ -440,7 +440,7 @@ index 9d0d87a..5341b50 100644
 +            priv->x_velocity = 0;
 +          if (!scrolled_window->vscrollbar_visible)
 +            priv->y_velocity = 0;
-
+ 
 -          handled = TRUE;
 +          priv->is_snapping_back = TRUE;
 +
@@ -455,7 +455,7 @@ index 9d0d87a..5341b50 100644
    else
 @@ -2369,18 +2320,6 @@ scrolled_window_deceleration_cb (gpointer user_data)
  }
-
+ 
  static void
 -gtk_scrolled_window_cancel_deceleration (GtkScrolledWindow *scrolled_window)
 -{
@@ -474,7 +474,7 @@ index 9d0d87a..5341b50 100644
    GtkScrolledWindowPrivate *priv = GTK_SCROLLED_WINDOW_GET_PRIVATE (scrolled_window);
 @@ -2408,327 +2347,36 @@ gtk_scrolled_window_start_deceleration (GtkScrolledWindow *scrolled_window)
  }
-
+ 
  static gboolean
 -gtk_scrolled_window_release_captured_event (GtkScrolledWindow *scrolled_window)
 -{
@@ -515,12 +515,12 @@ index 9d0d87a..5341b50 100644
 -
 -static gboolean
  gtk_scrolled_window_calculate_velocity (GtkScrolledWindow *scrolled_window,
-					GdkEvent          *event)
+ 					GdkEvent          *event)
  {
    GtkScrolledWindowPrivate *priv;
 -  gdouble x_root, y_root;
    guint32 _time;
-
+ 
 -#define STILL_THRESHOLD 40
 -
 -  if (!gdk_event_get_root_coords (event, &x_root, &y_root))
@@ -528,7 +528,7 @@ index 9d0d87a..5341b50 100644
 -
    priv = GTK_SCROLLED_WINDOW_GET_PRIVATE (scrolled_window);
    _time = gdk_event_get_time (event);
-
+ 
 -  if (priv->last_motion_event_x_root != x_root ||
 -      priv->last_motion_event_y_root != y_root ||
 -      ABS (_time - priv->last_motion_event_time) > STILL_THRESHOLD)
@@ -605,7 +605,7 @@ index 9d0d87a..5341b50 100644
 -  if (!scrolled_window->vscrollbar_visible)
 -    priv->y_velocity = 0;
 +#define STILL_THRESHOLD 40
-
+ 
 -  if (priv->x_velocity != 0 || priv->y_velocity != 0 || overshoot)
 +  if (event->type == GDK_SCROLL)
      {
@@ -627,7 +627,7 @@ index 9d0d87a..5341b50 100644
 -    return FALSE;
 -}
 +      gdouble delta_x, delta_y;
-
+ 
 -static gboolean
 -gtk_scrolled_window_captured_motion_notify_kinetic (GtkWidget *widget,
 -                                                    GdkEvent  *event)
@@ -671,7 +671,7 @@ index 9d0d87a..5341b50 100644
 -            }
 +          priv->x_velocity = delta_x / (gdouble) (_time - priv->last_scroll_event_time);
 +          priv->y_velocity = delta_y / (gdouble) (_time - priv->last_scroll_event_time);
-
+ 
 -          priv->last_button_event_valid = FALSE;
 -          priv->in_drag = TRUE;
 +          priv->last_scroll_event_time = _time;
@@ -712,7 +712,7 @@ index 9d0d87a..5341b50 100644
 -      _gtk_scrolled_window_set_adjustment_value (scrolled_window, vadjustment,
 -                                                 dy, TRUE, FALSE);
      }
-
+ 
 -  _gtk_scrolled_window_get_overshoot (scrolled_window,
 -                                      &new_overshoot_x, &new_overshoot_y);
 -
@@ -722,10 +722,10 @@ index 9d0d87a..5341b50 100644
 -
 -  gtk_scrolled_window_calculate_velocity (scrolled_window, event);
 +#undef STILL_THRESHOLD
-
+ 
    return TRUE;
  }
-
+ 
 -static gboolean
 -gtk_scrolled_window_captured_button_press_kinetic (GtkWidget *widget,
 -                                                   GdkEvent  *event)
@@ -850,11 +850,11 @@ index 9d0d87a..5341b50 100644
 -
 -      priv->last_button_event_valid = FALSE;
      }
-
+ 
    if (priv->sb_pointer_grabbed && !was_grabbed)
 @@ -3923,6 +3550,13 @@ gtk_scrolled_window_expose_scrollbars (GtkAdjustment     *adj,
  }
-
+ 
  static void
 +gtk_scrolled_window_init_overlay_scrollbars (GtkScrolledWindow *scrolled_window)
 +{
@@ -866,5 +866,6 @@ index 9d0d87a..5341b50 100644
  gtk_scrolled_window_overlay_scrollbars_changed (GtkSettings *settings,
                                                  GParamSpec  *arg,
                                                  gpointer     user_data)
---
+-- 
 1.7.10.2 (Apple Git-33)
+

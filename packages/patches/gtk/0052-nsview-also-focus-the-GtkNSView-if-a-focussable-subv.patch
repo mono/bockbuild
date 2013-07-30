@@ -1,7 +1,7 @@
-From bc9ab7449e47a56fa37af54efee0b794de1a084a Mon Sep 17 00:00:00 2001
+From 6bf17cdaffe648ce53dd39619c3ff9a65d272831 Mon Sep 17 00:00:00 2001
 From: Michael Natterer <mitch@gimp.org>
 Date: Fri, 5 Jul 2013 11:49:22 +0200
-Subject: [PATCH 52/66] nsview: also focus the GtkNSView if a focussable
+Subject: [PATCH 52/68] nsview: also focus the GtkNSView if a focussable
  subview was clicked
 
 ---
@@ -38,12 +38,13 @@ index b37b2fa..3b30d3b 100644
 +                  g_printerr ("grabbing focus on %s\n",
 +                              class_getName ([ns_view->priv->view class]));
  #endif
-
+ 
 -              gtk_widget_grab_focus (GTK_WIDGET (ns_view));
 +                  gtk_widget_grab_focus (GTK_WIDGET (ns_view));
 +                }
              }
            break;
-
---
+ 
+-- 
 1.7.10.2 (Apple Git-33)
+
