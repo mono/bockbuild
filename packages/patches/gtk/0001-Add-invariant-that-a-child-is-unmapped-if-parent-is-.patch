@@ -1,7 +1,7 @@
-From c87db483f14373deae313781bc39dc04fe1b9d93 Mon Sep 17 00:00:00 2001
+From fdbef10f94b9e16618b75e7e12184befcd178852 Mon Sep 17 00:00:00 2001
 From: Havoc Pennington <hp@pobox.com>
 Date: Mon, 20 Dec 2010 12:58:04 -0500
-Subject: [PATCH 01/66] Add invariant that a child is unmapped if parent is
+Subject: [PATCH 01/68] Add invariant that a child is unmapped if parent is
  unmapped
 
 Requires fixes to GtkContainer and GtkWindow to unmap their
@@ -27,14 +27,14 @@ index 1c2867c..9463f10 100644
 --- a/docs/widget_system.txt
 +++ b/docs/widget_system.txt
 @@ -255,7 +255,7 @@ In the following
-
-    widget->parent && GTK_WIDGET_MAPPED (widget->parent) &&
-      GTK_WIDGET_VISIBLE (widget) && GTK_WIDGET_CHILD_VISIBLE
+ 
+    widget->parent && GTK_WIDGET_MAPPED (widget->parent) && 
+      GTK_WIDGET_VISIBLE (widget) && GTK_WIDGET_CHILD_VISIBLE 
 -       => GTK_WIDGET_MAPPED (widget)
 +       <=> GTK_WIDGET_MAPPED (widget)
-
+ 
  Note:, the definition
-
+ 
 diff --git a/gtk/gtkcontainer.c b/gtk/gtkcontainer.c
 index 9aaa7d9..7105724 100644
 --- a/gtk/gtkcontainer.c
@@ -42,7 +42,7 @@ index 9aaa7d9..7105724 100644
 @@ -2694,12 +2694,17 @@ gtk_container_unmap (GtkWidget *widget)
  {
    gtk_widget_set_mapped (widget, FALSE);
-
+ 
 +  /* hide our window first so user doesn't see all the child windows
 +   * vanishing one by one.  (only matters these days if one of the
 +   * children has an actual native window instead of client-side
@@ -60,7 +60,7 @@ index 9aaa7d9..7105724 100644
 +                        (GtkCallback)gtk_widget_unmap,
 +                        NULL);
  }
-
+ 
  /**
 diff --git a/gtk/gtkhandlebox.c b/gtk/gtkhandlebox.c
 index 667371f..557d2de 100644
@@ -73,7 +73,7 @@ index 667371f..557d2de 100644
 +
 +  GTK_WIDGET_CLASS (gtk_handle_box_parent_class)->unmap (widget);
  }
-
+ 
  static void
 diff --git a/gtk/gtkwindow.c b/gtk/gtkwindow.c
 index 4de3215..8f174c6 100644
@@ -83,11 +83,11 @@ index 4de3215..8f174c6 100644
  {
    GtkWindow *window = GTK_WINDOW (widget);
    GtkWindowPrivate *priv = GTK_WINDOW_GET_PRIVATE (widget);
--  GtkWindowGeometryInfo *info;
+-  GtkWindowGeometryInfo *info;    
 +  GtkWindowGeometryInfo *info;
 +  GtkWidget *child;
    GdkWindowState state;
-
+ 
    gtk_widget_set_mapped (widget, FALSE);
 @@ -4721,6 +4722,10 @@ gtk_window_unmap (GtkWidget *widget)
    window->stick_initially = (state & GDK_WINDOW_STATE_STICKY) != 0;
@@ -98,7 +98,8 @@ index 4de3215..8f174c6 100644
 +  if (child)
 +    gtk_widget_unmap (child);
  }
-
+ 
  static void
---
+-- 
 1.7.10.2 (Apple Git-33)
+

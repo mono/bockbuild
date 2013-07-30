@@ -1,7 +1,7 @@
-From 7341a68f6342181e606fb62f11e754eef9379e55 Mon Sep 17 00:00:00 2001
+From 388e70cee0897fb743531ec001c1e6f796e2c27f Mon Sep 17 00:00:00 2001
 From: Michael Natterer <mitch@gimp.org>
 Date: Fri, 1 Mar 2013 15:06:20 +0100
-Subject: [PATCH 35/66] gtk: remove the overlay scrollbar grab on unrealize()
+Subject: [PATCH 35/68] gtk: remove the overlay scrollbar grab on unrealize()
 
 ---
  gtk/gtkscrolledwindow.c |    6 ++++++
@@ -14,7 +14,7 @@ index 4159af8..7200462 100644
 @@ -3256,6 +3256,12 @@ gtk_scrolled_window_unrealize (GtkWidget *widget)
    GtkScrolledWindow *scrolled_window = GTK_SCROLLED_WINDOW (widget);
    GtkScrolledWindowPrivate *priv = GTK_SCROLLED_WINDOW_GET_PRIVATE (scrolled_window);
-
+ 
 +  if (priv->sb_pointer_grabbed)
 +    {
 +      gtk_grab_remove (widget);
@@ -24,5 +24,6 @@ index 4159af8..7200462 100644
    gdk_window_set_user_data (priv->overshoot_window, NULL);
    gdk_window_destroy (priv->overshoot_window);
    priv->overshoot_window = NULL;
---
+-- 
 1.7.10.2 (Apple Git-33)
+

@@ -1,7 +1,7 @@
-From 719d6bd9f9e17794ca1dfaab2f09bc986bee61ee Mon Sep 17 00:00:00 2001
+From fd8e0fe0f9c630a56d415604c3c80dce5cd24648 Mon Sep 17 00:00:00 2001
 From: Michael Natterer <mitch@gimp.org>
 Date: Tue, 15 Jan 2013 14:56:29 +0100
-Subject: [PATCH 31/66] Hackish fix for bug 8493 - Min size of
+Subject: [PATCH 31/68] Hackish fix for bug 8493 - Min size of
  GtkScrolledWindow is too small
 
 In gtk_scrollbar_size_allocate(), pretend the scrollbar
@@ -18,23 +18,23 @@ index 634b337..bab062d 100644
 @@ -32,6 +32,8 @@
  #include "gtkprivate.h"
  #include "gtkalias.h"
-
+ 
 +static void gtk_scrollbar_size_request (GtkWidget      *widget,
 +                                        GtkRequisition *requisition);
  static void gtk_scrollbar_style_set (GtkWidget *widget,
                                       GtkStyle  *previous);
-
+ 
 @@ -42,6 +44,7 @@ gtk_scrollbar_class_init (GtkScrollbarClass *class)
  {
    GtkWidgetClass *widget_class = GTK_WIDGET_CLASS (class);
-
+ 
 +  widget_class->size_request = gtk_scrollbar_size_request;
    widget_class->style_set = gtk_scrollbar_style_set;
-
+ 
    GTK_RANGE_CLASS (class)->stepper_detail = "Xscrollbar";
 @@ -97,6 +100,31 @@ gtk_scrollbar_init (GtkScrollbar *scrollbar)
  }
-
+ 
  static void
 +gtk_scrollbar_size_request (GtkWidget      *widget,
 +                            GtkRequisition *requisition)
@@ -64,5 +64,6 @@ index 634b337..bab062d 100644
  gtk_scrollbar_style_set (GtkWidget *widget,
                           GtkStyle  *previous)
  {
---
+-- 
 1.7.10.2 (Apple Git-33)
+

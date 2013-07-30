@@ -1,7 +1,7 @@
-From 8c96e7f93501ca5d2dedc5c25956b4ae2f9c6a60 Mon Sep 17 00:00:00 2001
+From da200e6664615a5ef9e89d0a295aa435f60522c9 Mon Sep 17 00:00:00 2001
 From: Michael Natterer <mitch@gimp.org>
 Date: Fri, 26 Jul 2013 14:48:57 +0200
-Subject: [PATCH] nsview: implement a few text view command accelerators
+Subject: [PATCH 68/68] nsview: implement a few text view command accelerators
  manually
 
 so cut, copy, paste and select all work.
