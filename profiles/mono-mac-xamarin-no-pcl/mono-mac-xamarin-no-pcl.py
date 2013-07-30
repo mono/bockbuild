@@ -172,7 +172,7 @@ class MonoReleaseProfile(DarwinProfile, MonoReleasePackages):
         return {
             "type": pkg_type,
             "filename": filename,
-            "title": "Mono Framework %s %s " % info
+            "title": "Mono Framework %s %s (build %s)" % info
         }
 
     def build_package(self):
