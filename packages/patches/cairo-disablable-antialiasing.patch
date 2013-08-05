@@ -1,0 +1,1046 @@
+diff --git a/src/cairo-analysis-surface.c b/src/cairo-analysis-surface.c
+index 8516094..ff90655 100644
+--- a/src/cairo-analysis-surface.c
++++ b/src/cairo-analysis-surface.c
+@@ -552,7 +552,8 @@ _cairo_analysis_surface_show_glyphs (void		  *abstract_surface,
+ 				     cairo_glyph_t	  *glyphs,
+ 				     int		   num_glyphs,
+ 				     cairo_scaled_font_t  *scaled_font,
+-				     const cairo_clip_t         *clip)
++				     const cairo_clip_t         *clip,
++				     const cairo_antialias_t antialias)
+ {
+     cairo_analysis_surface_t *surface = abstract_surface;
+     cairo_int_status_t	     status, backend_status;
+@@ -565,7 +566,8 @@ _cairo_analysis_surface_show_glyphs (void		  *abstract_surface,
+ 						   source,
+ 						   glyphs, num_glyphs,
+ 						   scaled_font,
+-						   clip);
++						   clip,
++						   antialias);
+ 	if (_cairo_int_status_is_error (backend_status))
+ 	    return backend_status;
+     }
+@@ -579,7 +581,8 @@ _cairo_analysis_surface_show_glyphs (void		  *abstract_surface,
+ 							NULL, 0,
+ 							FALSE,
+ 							scaled_font,
+-							clip);
++							clip,
++							antialias);
+ 	if (_cairo_int_status_is_error (backend_status))
+ 	    return backend_status;
+     }
+@@ -630,7 +633,8 @@ _cairo_analysis_surface_show_text_glyphs (void			    *abstract_surface,
+ 					  int			     num_clusters,
+ 					  cairo_text_cluster_flags_t cluster_flags,
+ 					  cairo_scaled_font_t	    *scaled_font,
+-					  const cairo_clip_t		    *clip)
++					  const cairo_clip_t		    *clip,
++					  const cairo_antialias_t antialias)
+ {
+     cairo_analysis_surface_t *surface = abstract_surface;
+     cairo_int_status_t	     status, backend_status;
+@@ -647,7 +651,8 @@ _cairo_analysis_surface_show_text_glyphs (void			    *abstract_surface,
+ 							clusters, num_clusters,
+ 							cluster_flags,
+ 							scaled_font,
+-							clip);
++							clip,
++							antialias);
+ 	if (_cairo_int_status_is_error (backend_status))
+ 	    return backend_status;
+     }
+@@ -659,7 +664,8 @@ _cairo_analysis_surface_show_text_glyphs (void			    *abstract_surface,
+ 						   source,
+ 						   glyphs, num_glyphs,
+ 						   scaled_font,
+-						   clip);
++						   clip,
++						   antialias);
+ 	if (_cairo_int_status_is_error (backend_status))
+ 	    return backend_status;
+     }
+@@ -878,7 +884,8 @@ typedef cairo_int_status_t
+ 				 cairo_glyph_t		*glyphs,
+ 				 int			 num_glyphs,
+ 				 cairo_scaled_font_t	*scaled_font,
+-				 const cairo_clip_t		*clip);
++				 const cairo_clip_t		*clip,
++				 const cairo_antialias_t antialias);
+ 
+ static const cairo_surface_backend_t cairo_null_surface_backend = {
+     CAIRO_INTERNAL_SURFACE_TYPE_NULL,
+diff --git a/src/cairo-compositor-private.h b/src/cairo-compositor-private.h
+index 0199723..9479f5d 100644
+--- a/src/cairo-compositor-private.h
++++ b/src/cairo-compositor-private.h
+@@ -85,7 +85,8 @@ struct cairo_compositor {
+ 				 cairo_scaled_font_t		*scaled_font,
+ 				 cairo_glyph_t			*glyphs,
+ 				 int				 num_glyphs,
+-				 cairo_bool_t			 overlap);
++				 cairo_bool_t			 overlap,
++				 const cairo_antialias_t antialias);
+ };
+ 
+ struct cairo_mask_compositor {
+@@ -358,7 +359,8 @@ _cairo_compositor_glyphs (const cairo_compositor_t		*compositor,
+ 			  cairo_glyph_t				*glyphs,
+ 			  int					 num_glyphs,
+ 			  cairo_scaled_font_t			*scaled_font,
+-			  const cairo_clip_t			*clip);
++			  const cairo_clip_t			*clip,
++			  const cairo_antialias_t antialias);
+ 
+ CAIRO_END_DECLS
+ 
+diff --git a/src/cairo-compositor.c b/src/cairo-compositor.c
+index b31413b..e1676f8 100644
+--- a/src/cairo-compositor.c
++++ b/src/cairo-compositor.c
+@@ -228,7 +228,8 @@ _cairo_compositor_glyphs (const cairo_compositor_t		*compositor,
+ 			  cairo_glyph_t				*glyphs,
+ 			  int					 num_glyphs,
+ 			  cairo_scaled_font_t			*scaled_font,
+-			  const cairo_clip_t			*clip)
++			  const cairo_clip_t			*clip,
++			  const cairo_antialias_t antialias)
+ {
+     cairo_composite_rectangles_t extents;
+     cairo_bool_t overlap;
+@@ -248,7 +249,7 @@ _cairo_compositor_glyphs (const cairo_compositor_t		*compositor,
+ 	    compositor = compositor->delegate;
+ 
+ 	status = compositor->glyphs (compositor, &extents,
+-				     scaled_font, glyphs, num_glyphs, overlap);
++				     scaled_font, glyphs, num_glyphs, overlap, antialias);
+ 
+ 	compositor = compositor->delegate;
+     } while (status == CAIRO_INT_STATUS_UNSUPPORTED);
+diff --git a/src/cairo-default-context.c b/src/cairo-default-context.c
+index fee08f0..f701b91 100644
+--- a/src/cairo-default-context.c
++++ b/src/cairo-default-context.c
+@@ -1292,7 +1292,7 @@ _cairo_default_context_glyphs (void *abstract_cr,
+ {
+     cairo_default_context_t *cr = abstract_cr;
+ 
+-    return _cairo_gstate_show_text_glyphs (cr->gstate, glyphs, num_glyphs, info);
++    return _cairo_gstate_show_text_glyphs (cr->gstate, glyphs, num_glyphs, info, cr->gstate->antialias);
+ }
+ 
+ static cairo_status_t
+diff --git a/src/cairo-fallback-compositor.c b/src/cairo-fallback-compositor.c
+index 3f6199f..e64843b 100644
+--- a/src/cairo-fallback-compositor.c
++++ b/src/cairo-fallback-compositor.c
+@@ -154,7 +154,8 @@ _cairo_fallback_compositor_glyphs (const cairo_compositor_t	*_compositor,
+ 				   cairo_scaled_font_t		*scaled_font,
+ 				   cairo_glyph_t		*glyphs,
+ 				   int				 num_glyphs,
+-				   cairo_bool_t			 overlap)
++				   cairo_bool_t			 overlap,
++				   const cairo_antialias_t antialias)
+ {
+     cairo_image_surface_t *image;
+     cairo_int_status_t status;
+diff --git a/src/cairo-gstate-private.h b/src/cairo-gstate-private.h
+index b2ccc76..18f73fe 100644
+--- a/src/cairo-gstate-private.h
++++ b/src/cairo-gstate-private.h
+@@ -369,7 +369,8 @@ cairo_private cairo_status_t
+ _cairo_gstate_show_text_glyphs (cairo_gstate_t		   *gstate,
+ 				const cairo_glyph_t	   *glyphs,
+ 				int			    num_glyphs,
+-				cairo_glyph_text_info_t    *info);
++				cairo_glyph_text_info_t    *info,
++				const cairo_antialias_t antialias);
+ 
+ cairo_private cairo_status_t
+ _cairo_gstate_glyph_path (cairo_gstate_t      *gstate,
+diff --git a/src/cairo-gstate.c b/src/cairo-gstate.c
+index 6319471..a90c2ba 100644
+--- a/src/cairo-gstate.c
++++ b/src/cairo-gstate.c
+@@ -1912,7 +1912,8 @@ cairo_status_t
+ _cairo_gstate_show_text_glyphs (cairo_gstate_t		   *gstate,
+ 				const cairo_glyph_t	   *glyphs,
+ 				int			    num_glyphs,
+-				cairo_glyph_text_info_t    *info)
++				cairo_glyph_text_info_t    *info,
++				const cairo_antialias_t antialias)
+ {
+     cairo_glyph_t stack_transformed_glyphs[CAIRO_STACK_ARRAY_LENGTH (cairo_glyph_t)];
+     cairo_text_cluster_t stack_transformed_clusters[CAIRO_STACK_ARRAY_LENGTH (cairo_text_cluster_t)];
+@@ -2003,14 +2004,16 @@ _cairo_gstate_show_text_glyphs (cairo_gstate_t		   *gstate,
+ 						      transformed_clusters, info->num_clusters,
+ 						      info->cluster_flags,
+ 						      gstate->scaled_font,
+-						      gstate->clip);
++						      gstate->clip,
++						      antialias);
+ 	} else {
+ 	    status = _cairo_surface_show_text_glyphs (gstate->target, op, pattern,
+ 						      NULL, 0,
+ 						      transformed_glyphs, num_glyphs,
+ 						      NULL, 0, 0,
+ 						      gstate->scaled_font,
+-						      gstate->clip);
++						      gstate->clip,
++						      antialias);
+ 	}
+     }
+     else
+diff --git a/src/cairo-image-surface-private.h b/src/cairo-image-surface-private.h
+index 8ca694c..4325a28 100644
+--- a/src/cairo-image-surface-private.h
++++ b/src/cairo-image-surface-private.h
+@@ -144,7 +144,8 @@ _cairo_image_surface_glyphs (void			*abstract_surface,
+ 			     cairo_glyph_t		*glyphs,
+ 			     int			 num_glyphs,
+ 			     cairo_scaled_font_t	*scaled_font,
+-			     const cairo_clip_t		*clip);
++			     const cairo_clip_t		*clip,
++			     const cairo_antialias_t antialias);
+ 
+ cairo_private void
+ _cairo_image_surface_init (cairo_image_surface_t *surface,
+diff --git a/src/cairo-image-surface.c b/src/cairo-image-surface.c
+index 49f6e18..2ade15d 100644
+--- a/src/cairo-image-surface.c
++++ b/src/cairo-image-surface.c
+@@ -986,7 +986,8 @@ _cairo_image_surface_glyphs (void			*abstract_surface,
+ 			     cairo_glyph_t		*glyphs,
+ 			     int			 num_glyphs,
+ 			     cairo_scaled_font_t	*scaled_font,
+-			     const cairo_clip_t		*clip)
++			     const cairo_clip_t		*clip,
++			     const cairo_antialias_t antialias)
+ {
+     cairo_image_surface_t *surface = abstract_surface;
+ 
+@@ -996,7 +997,8 @@ _cairo_image_surface_glyphs (void			*abstract_surface,
+     return _cairo_compositor_glyphs (surface->compositor, &surface->base,
+ 				     op, source,
+ 				     glyphs, num_glyphs, scaled_font,
+-				     clip);
++				     clip,
++				     antialias);
+ }
+ 
+ void
+diff --git a/src/cairo-mask-compositor.c b/src/cairo-mask-compositor.c
+index d0be144..59e98f5 100644
+--- a/src/cairo-mask-compositor.c
++++ b/src/cairo-mask-compositor.c
+@@ -1417,7 +1417,8 @@ _cairo_mask_compositor_glyphs (const cairo_compositor_t *_compositor,
+ 			       cairo_scaled_font_t	*scaled_font,
+ 			       cairo_glyph_t		*glyphs,
+ 			       int			 num_glyphs,
+-			       cairo_bool_t		 overlap)
++			       cairo_bool_t		 overlap,
++			       const cairo_antialias_t antialias)
+ {
+     const cairo_mask_compositor_t *compositor = (cairo_mask_compositor_t*)_compositor;
+     cairo_surface_t *mask;
+diff --git a/src/cairo-no-compositor.c b/src/cairo-no-compositor.c
+index 1602a12..b990908 100644
+--- a/src/cairo-no-compositor.c
++++ b/src/cairo-no-compositor.c
+@@ -91,7 +91,8 @@ _cairo_no_compositor_glyphs (const cairo_compositor_t *compositor,
+ 			     cairo_scaled_font_t	*scaled_font,
+ 			     cairo_glyph_t		*glyphs,
+ 			     int			 num_glyphs,
+-			     cairo_bool_t overlap)
++			     cairo_bool_t overlap,
++			     const cairo_antialias_t antialias)
+ {
+     ASSERT_NOT_REACHED;
+     return CAIRO_INT_STATUS_NOTHING_TO_DO;
+diff --git a/src/cairo-paginated-surface.c b/src/cairo-paginated-surface.c
+index fe9ccee..af5bb3a 100644
+--- a/src/cairo-paginated-surface.c
++++ b/src/cairo-paginated-surface.c
+@@ -635,7 +635,8 @@ _cairo_paginated_surface_show_text_glyphs (void			      *abstract_surface,
+ 					   int			       num_clusters,
+ 					   cairo_text_cluster_flags_t  cluster_flags,
+ 					   cairo_scaled_font_t	      *scaled_font,
+-					   const cairo_clip_t		      *clip)
++					   const cairo_clip_t		      *clip,
++					   const cairo_antialias_t antialias)
+ {
+     cairo_paginated_surface_t *surface = abstract_surface;
+ 
+@@ -645,7 +646,8 @@ _cairo_paginated_surface_show_text_glyphs (void			      *abstract_surface,
+ 					    clusters, num_clusters,
+ 					    cluster_flags,
+ 					    scaled_font,
+-					    clip);
++					    clip,
++					    antialias);
+ }
+ 
+ static const char **
+diff --git a/src/cairo-pdf-surface.c b/src/cairo-pdf-surface.c
+index eaa27f1..1520b33 100644
+--- a/src/cairo-pdf-surface.c
++++ b/src/cairo-pdf-surface.c
+@@ -6404,7 +6404,7 @@ _cairo_pdf_surface_set_clip (cairo_pdf_surface_t *surface,
+ 	    return CAIRO_STATUS_SUCCESS;
+     }
+ 
+-    return _cairo_surface_clipper_set_clip (&surface->clipper, clip);
++    return _cairo_surface_clipper_set_clip (&surface->clipper, clip, CAIRO_ANTIALIAS_DEFAULT);
+ }
+ 
+ static cairo_int_status_t
+@@ -7134,7 +7134,8 @@ _cairo_pdf_surface_show_text_glyphs (void			*abstract_surface,
+ 				     int                         num_clusters,
+ 				     cairo_text_cluster_flags_t  cluster_flags,
+ 				     cairo_scaled_font_t	*scaled_font,
+-				     const cairo_clip_t		*clip)
++				     const cairo_clip_t		*clip,
++				     const cairo_antialias_t antialias)
+ {
+     cairo_pdf_surface_t *surface = abstract_surface;
+     cairo_pdf_smask_group_t *group;
+diff --git a/src/cairo-ps-surface.c b/src/cairo-ps-surface.c
+index 877ba14..786d053 100644
+--- a/src/cairo-ps-surface.c
++++ b/src/cairo-ps-surface.c
+@@ -4127,7 +4127,7 @@ _cairo_ps_surface_set_clip (cairo_ps_surface_t *surface,
+ 	    return CAIRO_STATUS_SUCCESS;
+     }
+ 
+-    return _cairo_surface_clipper_set_clip (&surface->clipper, clip);
++    return _cairo_surface_clipper_set_clip (&surface->clipper, clip, CAIRO_ANTIALIAS_DEFAULT);
+ }
+ 
+ static cairo_int_status_t
+@@ -4422,7 +4422,8 @@ _cairo_ps_surface_show_text_glyphs (void		       *abstract_surface,
+ 				    int                         num_clusters,
+ 				    cairo_text_cluster_flags_t  cluster_flags,
+ 				    cairo_scaled_font_t	       *scaled_font,
+-				    const cairo_clip_t	       *clip)
++				    const cairo_clip_t	       *clip,
++				    const cairo_antialias_t antialias)
+ {
+     cairo_ps_surface_t *surface = abstract_surface;
+     cairo_composite_rectangles_t extents;
+diff --git a/src/cairo-quartz-image-surface.c b/src/cairo-quartz-image-surface.c
+index 2715abd..e474fb6 100644
+--- a/src/cairo-quartz-image-surface.c
++++ b/src/cairo-quartz-image-surface.c
+@@ -238,7 +238,8 @@ _cairo_quartz_image_surface_glyphs (void			*abstract_surface,
+ 				    cairo_glyph_t		*glyphs,
+ 				    int				 num_glyphs,
+ 				    cairo_scaled_font_t		*scaled_font,
+-				    const cairo_clip_t		*clip)
++				    const cairo_clip_t		*clip,
++				    const cairo_antialias_t antialias)
+ {
+     cairo_quartz_image_surface_t *surface = abstract_surface;
+     return _cairo_surface_show_text_glyphs (&surface->imageSurface->base,
+@@ -246,7 +247,8 @@ _cairo_quartz_image_surface_glyphs (void			*abstract_surface,
+ 					    NULL, 0,
+ 					    glyphs, num_glyphs,
+ 					    NULL, 0, 0,
+-					    scaled_font, clip);
++					    scaled_font, clip,
++					    CAIRO_ANTIALIAS_DEFAULT);
+ }
+ 
+ 
+diff --git a/src/cairo-quartz-surface.c b/src/cairo-quartz-surface.c
+index 60c1f26..a6df8f4 100644
+--- a/src/cairo-quartz-surface.c
++++ b/src/cairo-quartz-surface.c
+@@ -1131,7 +1131,8 @@ _cairo_quartz_setup_gradient_source (cairo_quartz_drawing_state_t *state,
+ 
+ static cairo_int_status_t
+ _cairo_quartz_setup_state (cairo_quartz_drawing_state_t *state,
+-			   cairo_composite_rectangles_t *composite)
++			   cairo_composite_rectangles_t *composite,
++			   cairo_antialias_t antialias)
+ {
+     cairo_quartz_surface_t       *surface = (cairo_quartz_surface_t *) composite->surface;
+     cairo_operator_t              op = composite->op;
+@@ -1147,7 +1148,7 @@ _cairo_quartz_setup_state (cairo_quartz_drawing_state_t *state,
+     state->cgDrawContext = NULL;
+     state->cgMaskContext = NULL;
+ 
+-    status = _cairo_surface_clipper_set_clip (&surface->clipper, clip);
++    status = _cairo_surface_clipper_set_clip (&surface->clipper, clip, antialias);
+     if (unlikely (status))
+ 	return status;
+ 
+@@ -1631,7 +1632,7 @@ _cairo_quartz_cg_paint (const cairo_compositor_t *compositor,
+     ND ((stderr, "%p _cairo_quartz_surface_paint op %d source->type %d\n",
+ 	 extents->surface, extents->op, extents->source_pattern.base.type));
+ 
+-    rv = _cairo_quartz_setup_state (&state, extents);
++    rv = _cairo_quartz_setup_state (&state, extents, CAIRO_ANTIALIAS_DEFAULT);
+     if (unlikely (rv))
+ 	goto BAIL;
+ 
+@@ -1665,7 +1666,7 @@ _cairo_quartz_cg_mask_with_surface (cairo_composite_rectangles_t *extents,
+     if (unlikely (status))
+ 	return status;
+ 
+-    status = _cairo_quartz_setup_state (&state, extents);
++    status = _cairo_quartz_setup_state (&state, extents, CAIRO_ANTIALIAS_DEFAULT);
+     if (unlikely (status))
+ 	goto BAIL;
+ 
+@@ -1707,7 +1708,7 @@ _cairo_quartz_cg_mask_with_solid (cairo_quartz_surface_t *surface,
+     double alpha = extents->mask_pattern.solid.color.alpha;
+     cairo_status_t status;
+ 
+-    status = _cairo_quartz_setup_state (&state, extents);
++    status = _cairo_quartz_setup_state (&state, extents, CAIRO_ANTIALIAS_DEFAULT);
+     if (unlikely (status))
+ 	return status;
+ 
+@@ -1825,7 +1826,7 @@ _cairo_quartz_cg_fill (const cairo_compositor_t *compositor,
+     ND ((stderr, "%p _cairo_quartz_surface_fill op %d source->type %d\n",
+ 	 extents->surface, extents->op, extents->source_pattern.base.type));
+ 
+-    rv = _cairo_quartz_setup_state (&state, extents);
++    rv = _cairo_quartz_setup_state (&state, extents, CAIRO_ANTIALIAS_DEFAULT);
+     if (unlikely (rv))
+ 	goto BAIL;
+ 
+@@ -1872,7 +1873,7 @@ _cairo_quartz_cg_stroke (const cairo_compositor_t *compositor,
+     ND ((stderr, "%p _cairo_quartz_surface_stroke op %d source->type %d\n",
+ 	 extents->surface, extents->op, extents->source_pattern.base.type));
+ 
+-    rv = _cairo_quartz_setup_state (&state, extents);
++    rv = _cairo_quartz_setup_state (&state, extents, CAIRO_ANTIALIAS_DEFAULT);
+     if (unlikely (rv))
+ 	goto BAIL;
+ 
+@@ -1941,7 +1942,8 @@ _cairo_quartz_cg_glyphs (const cairo_compositor_t *compositor,
+ 			 cairo_scaled_font_t *scaled_font,
+ 			 cairo_glyph_t *glyphs,
+ 			 int num_glyphs,
+-			 cairo_bool_t overlap)
++			 cairo_bool_t overlap,
++			 const cairo_antialias_t antialias)
+ {
+     CGAffineTransform textTransform, invTextTransform;
+     CGGlyph glyphs_static[CAIRO_STACK_ARRAY_LENGTH (CGSize)];
+@@ -1961,7 +1963,7 @@ _cairo_quartz_cg_glyphs (const cairo_compositor_t *compositor,
+     if (cairo_scaled_font_get_type (scaled_font) != CAIRO_FONT_TYPE_QUARTZ)
+ 	return CAIRO_INT_STATUS_UNSUPPORTED;
+ 
+-    rv = _cairo_quartz_setup_state (&state, extents);
++    rv = _cairo_quartz_setup_state (&state, extents, scaled_font->options.antialias);
+     if (unlikely (rv))
+ 	goto BAIL;
+ 
+@@ -1977,30 +1979,34 @@ _cairo_quartz_cg_glyphs (const cairo_compositor_t *compositor,
+     CGContextSetFont (state.cgMaskContext, cgfref);
+     CGContextSetFontSize (state.cgMaskContext, 1.0);
+ 
+-    switch (scaled_font->options.antialias) {
+-	case CAIRO_ANTIALIAS_SUBPIXEL:
+-	case CAIRO_ANTIALIAS_BEST:
+-	    CGContextSetShouldAntialias (state.cgMaskContext, TRUE);
+-	    CGContextSetShouldSmoothFonts (state.cgMaskContext, TRUE);
+-	    if (CGContextSetAllowsFontSmoothingPtr &&
+-		!CGContextGetAllowsFontSmoothingPtr (state.cgMaskContext))
+-	    {
+-		didForceFontSmoothing = TRUE;
+-		CGContextSetAllowsFontSmoothingPtr (state.cgMaskContext, TRUE);
+-	    }
+-	    break;
+-	case CAIRO_ANTIALIAS_NONE:
+-	    CGContextSetShouldAntialias (state.cgMaskContext, FALSE);
+-	    break;
+-	case CAIRO_ANTIALIAS_GRAY:
+-	case CAIRO_ANTIALIAS_GOOD:
+-	case CAIRO_ANTIALIAS_FAST:
+-	    CGContextSetShouldAntialias (state.cgMaskContext, TRUE);
+-	    CGContextSetShouldSmoothFonts (state.cgMaskContext, FALSE);
+-	    break;
+-	case CAIRO_ANTIALIAS_DEFAULT:
+-	    /* Don't do anything */
+-	    break;
++    if (antialias == CAIRO_ANTIALIAS_NONE) {
++        CGContextSetShouldAntialias (state.cgMaskContext, FALSE);
++    } else {
++        switch (scaled_font->options.antialias) {
++        case CAIRO_ANTIALIAS_SUBPIXEL:
++        case CAIRO_ANTIALIAS_BEST:
++            CGContextSetShouldAntialias (state.cgMaskContext, TRUE);
++            CGContextSetShouldSmoothFonts (state.cgMaskContext, TRUE);
++            if (CGContextSetAllowsFontSmoothingPtr &&
++            !CGContextGetAllowsFontSmoothingPtr (state.cgMaskContext))
++            {
++            didForceFontSmoothing = TRUE;
++            CGContextSetAllowsFontSmoothingPtr (state.cgMaskContext, TRUE);
++            }
++            break;
++        case CAIRO_ANTIALIAS_NONE:
++            CGContextSetShouldAntialias (state.cgMaskContext, FALSE);
++            break;
++        case CAIRO_ANTIALIAS_GRAY:
++        case CAIRO_ANTIALIAS_GOOD:
++        case CAIRO_ANTIALIAS_FAST:
++            CGContextSetShouldAntialias (state.cgMaskContext, TRUE);
++            CGContextSetShouldSmoothFonts (state.cgMaskContext, FALSE);
++            break;
++        case CAIRO_ANTIALIAS_DEFAULT:
++            /* Don't do anything */
++            break;
++        }
+     }
+ 
+     if (num_glyphs > ARRAY_LENGTH (glyphs_static)) {
+@@ -2171,12 +2177,14 @@ _cairo_quartz_surface_glyphs (void *surface,
+ 			      cairo_glyph_t *glyphs,
+ 			      int num_glyphs,
+ 			      cairo_scaled_font_t *scaled_font,
+-			      const cairo_clip_t *clip)
++			      const cairo_clip_t *clip,
++			      const cairo_antialias_t antialias)
+ {
+     return _cairo_compositor_glyphs (&_cairo_quartz_cg_compositor,
+ 				     surface, op, source,
+ 				     glyphs, num_glyphs, scaled_font,
+-				     clip);
++				     clip,
++				     antialias);
+ }
+ 
+ static cairo_status_t
+diff --git a/src/cairo-recording-surface.c b/src/cairo-recording-surface.c
+index edbeed7..48bb765 100644
+--- a/src/cairo-recording-surface.c
++++ b/src/cairo-recording-surface.c
+@@ -997,7 +997,8 @@ _cairo_recording_surface_show_text_glyphs (void				*abstract_surface,
+ 					   int				 num_clusters,
+ 					   cairo_text_cluster_flags_t	 cluster_flags,
+ 					   cairo_scaled_font_t		*scaled_font,
+-					   const cairo_clip_t		*clip)
++					   const cairo_clip_t		*clip,
++					   const cairo_antialias_t antialias)
+ {
+     cairo_status_t status;
+     cairo_recording_surface_t *surface = abstract_surface;
+@@ -1758,7 +1759,8 @@ _cairo_recording_surface_replay_internal (cairo_recording_surface_t	*surface,
+ 							      command->show_text_glyphs.clusters, command->show_text_glyphs.num_clusters,
+ 							      command->show_text_glyphs.cluster_flags,
+ 							      command->show_text_glyphs.scaled_font,
+-							      command->header.clip);
++							      command->header.clip,
++							      CAIRO_ANTIALIAS_DEFAULT);
+ 	    break;
+ 
+ 	default:
+@@ -1865,7 +1867,8 @@ _cairo_recording_surface_replay_one (cairo_recording_surface_t	*surface,
+ 							  command->show_text_glyphs.clusters, command->show_text_glyphs.num_clusters,
+ 							  command->show_text_glyphs.cluster_flags,
+ 							  command->show_text_glyphs.scaled_font,
+-							  command->header.clip);
++							  command->header.clip,
++							  CAIRO_ANTIALIAS_DEFAULT);
+ 	break;
+ 
+     default:
+diff --git a/src/cairo-script-surface.c b/src/cairo-script-surface.c
+index b84aed9..8189b0e 100644
+--- a/src/cairo-script-surface.c
++++ b/src/cairo-script-surface.c
+@@ -2431,7 +2431,7 @@ _cairo_script_surface_paint (void			*abstract_surface,
+     if (unlikely (status))
+ 	return status;
+ 
+-    status = _cairo_surface_clipper_set_clip (&surface->clipper, clip);
++    status = _cairo_surface_clipper_set_clip (&surface->clipper, clip, CAIRO_ANTIALIAS_DEFAULT);
+     if (unlikely (status))
+ 	goto BAIL;
+ 
+@@ -2478,7 +2478,7 @@ _cairo_script_surface_mask (void			*abstract_surface,
+     if (unlikely (status))
+ 	return status;
+ 
+-    status = _cairo_surface_clipper_set_clip (&surface->clipper, clip);
++    status = _cairo_surface_clipper_set_clip (&surface->clipper, clip, CAIRO_ANTIALIAS_DEFAULT);
+     if (unlikely (status))
+ 	goto BAIL;
+ 
+@@ -2541,7 +2541,7 @@ _cairo_script_surface_stroke (void				*abstract_surface,
+     if (unlikely (status))
+ 	return status;
+ 
+-    status = _cairo_surface_clipper_set_clip (&surface->clipper, clip);
++    status = _cairo_surface_clipper_set_clip (&surface->clipper, clip, CAIRO_ANTIALIAS_DEFAULT);
+     if (unlikely (status))
+ 	goto BAIL;
+ 
+@@ -2631,7 +2631,7 @@ _cairo_script_surface_fill (void			*abstract_surface,
+     if (unlikely (status))
+ 	return status;
+ 
+-    status = _cairo_surface_clipper_set_clip (&surface->clipper, clip);
++    status = _cairo_surface_clipper_set_clip (&surface->clipper, clip, CAIRO_ANTIALIAS_DEFAULT);
+     if (unlikely (status))
+ 	goto BAIL;
+ 
+@@ -3293,7 +3293,8 @@ _cairo_script_surface_show_text_glyphs (void			    *abstract_surface,
+ 					int			     num_clusters,
+ 					cairo_text_cluster_flags_t   backward,
+ 					cairo_scaled_font_t	    *scaled_font,
+-					const cairo_clip_t	    *clip)
++					const cairo_clip_t	    *clip,
++					const cairo_antialias_t antialias)
+ {
+     cairo_script_surface_t *surface = abstract_surface;
+     cairo_script_context_t *ctx = to_context (surface);
+@@ -3309,7 +3310,7 @@ _cairo_script_surface_show_text_glyphs (void			    *abstract_surface,
+     if (unlikely (status))
+ 	return status;
+ 
+-    status = _cairo_surface_clipper_set_clip (&surface->clipper, clip);
++    status = _cairo_surface_clipper_set_clip (&surface->clipper, clip, CAIRO_ANTIALIAS_DEFAULT);
+     if (unlikely (status))
+ 	goto BAIL;
+ 
+@@ -3531,7 +3532,8 @@ _cairo_script_surface_show_text_glyphs (void			    *abstract_surface,
+ 							clusters, num_clusters,
+ 							backward,
+ 							scaled_font,
+-							clip);
++							clip,
++							antialias);
+     }
+ 
+     return CAIRO_STATUS_SUCCESS;
+diff --git a/src/cairo-shape-mask-compositor.c b/src/cairo-shape-mask-compositor.c
+index c2425b0..41cd07d 100644
+--- a/src/cairo-shape-mask-compositor.c
++++ b/src/cairo-shape-mask-compositor.c
+@@ -237,7 +237,8 @@ _cairo_shape_mask_compositor_glyphs (const cairo_compositor_t *_compositor,
+ 				     cairo_scaled_font_t	*scaled_font,
+ 				     cairo_glyph_t		*glyphs,
+ 				     int			 num_glyphs,
+-				     cairo_bool_t		 overlap)
++				     cairo_bool_t		 overlap,
++				     const cairo_antialias_t antialias)
+ {
+     cairo_surface_t *mask;
+     cairo_surface_pattern_t pattern;
+diff --git a/src/cairo-surface-backend-private.h b/src/cairo-surface-backend-private.h
+index 955a79f..68677d4 100644
+--- a/src/cairo-surface-backend-private.h
++++ b/src/cairo-surface-backend-private.h
+@@ -179,7 +179,8 @@ struct _cairo_surface_backend {
+ 				 cairo_glyph_t		*glyphs,
+ 				 int			 num_glyphs,
+ 				 cairo_scaled_font_t	*scaled_font,
+-				 const cairo_clip_t     *clip);
++				 const cairo_clip_t     *clip,
++				 const cairo_antialias_t antialias);
+ 
+     cairo_bool_t
+     (*has_show_text_glyphs)	(void			    *surface);
+@@ -196,7 +197,8 @@ struct _cairo_surface_backend {
+ 				 int			     num_clusters,
+ 				 cairo_text_cluster_flags_t  cluster_flags,
+ 				 cairo_scaled_font_t	    *scaled_font,
+-				 const cairo_clip_t               *clip);
++				 const cairo_clip_t               *clip,
++				 const cairo_antialias_t antialias);
+ 
+     const char **
+     (*get_supported_mime_types)	(void			    *surface);
+diff --git a/src/cairo-surface-clipper-private.h b/src/cairo-surface-clipper-private.h
+index e5b00af..1dc574b 100644
+--- a/src/cairo-surface-clipper-private.h
++++ b/src/cairo-surface-clipper-private.h
+@@ -57,7 +57,7 @@ struct _cairo_surface_clipper {
+ 
+ cairo_private cairo_status_t
+ _cairo_surface_clipper_set_clip (cairo_surface_clipper_t *clipper,
+-				 const cairo_clip_t *clip);
++				 const cairo_clip_t *clip, cairo_antialias_t antialias);
+ 
+ cairo_private void
+ _cairo_surface_clipper_init (cairo_surface_clipper_t *clipper,
+diff --git a/src/cairo-surface-clipper.c b/src/cairo-surface-clipper.c
+index 5309362..6ed5923 100644
+--- a/src/cairo-surface-clipper.c
++++ b/src/cairo-surface-clipper.c
+@@ -69,7 +69,8 @@ _cairo_path_fixed_add_box (cairo_path_fixed_t *path,
+ 
+ static cairo_status_t
+ _cairo_surface_clipper_intersect_clip_boxes (cairo_surface_clipper_t *clipper,
+-					     const cairo_clip_t *clip)
++					     const cairo_clip_t *clip,
++					     cairo_antialias_t antialias)
+ {
+     cairo_path_fixed_t path;
+     cairo_status_t status;
+@@ -94,7 +95,7 @@ _cairo_surface_clipper_intersect_clip_boxes (cairo_surface_clipper_t *clipper,
+     status = clipper->intersect_clip_path (clipper, &path,
+ 					   CAIRO_FILL_RULE_WINDING,
+ 					   0.,
+-					   CAIRO_ANTIALIAS_DEFAULT);
++					   antialias);
+     _cairo_path_fixed_fini (&path);
+ 
+     return status;
+@@ -125,7 +126,8 @@ _cairo_surface_clipper_intersect_clip_path_recursive (cairo_surface_clipper_t *c
+ 
+ cairo_status_t
+ _cairo_surface_clipper_set_clip (cairo_surface_clipper_t *clipper,
+-				 const cairo_clip_t *clip)
++				 const cairo_clip_t *clip,
++				 cairo_antialias_t antialias)
+ {
+     cairo_status_t status;
+     cairo_bool_t incremental = FALSE;
+@@ -167,7 +169,7 @@ _cairo_surface_clipper_set_clip (cairo_surface_clipper_t *clipper,
+     if (clip == NULL)
+ 	return CAIRO_STATUS_SUCCESS;
+ 
+-    status = _cairo_surface_clipper_intersect_clip_boxes (clipper, clip);
++    status = _cairo_surface_clipper_intersect_clip_boxes (clipper, clip, antialias);
+     if (unlikely (status))
+ 	return status;
+ 
+diff --git a/src/cairo-surface-fallback-private.h b/src/cairo-surface-fallback-private.h
+index ecf7b0e..4fe4bd6 100644
+--- a/src/cairo-surface-fallback-private.h
++++ b/src/cairo-surface-fallback-private.h
+@@ -88,7 +88,8 @@ _cairo_surface_fallback_glyphs (void			*abstract_surface,
+ 				cairo_glyph_t		*glyphs,
+ 				int			 num_glyphs,
+ 				cairo_scaled_font_t	*scaled_font,
+-				const cairo_clip_t	*clip);
++				const cairo_clip_t	*clip,
++				const cairo_antialias_t antialias);
+ 
+ CAIRO_END_DECLS
+ 
+diff --git a/src/cairo-surface-fallback.c b/src/cairo-surface-fallback.c
+index a0af159..f6530ea 100644
+--- a/src/cairo-surface-fallback.c
++++ b/src/cairo-surface-fallback.c
+@@ -106,10 +106,12 @@ _cairo_surface_fallback_glyphs (void			*surface,
+ 				cairo_glyph_t		*glyphs,
+ 				int			 num_glyphs,
+ 				cairo_scaled_font_t	*scaled_font,
+-				const cairo_clip_t	*clip)
++				const cairo_clip_t	*clip,
++				const cairo_antialias_t antialias)
+ {
+     return _cairo_compositor_glyphs (&_cairo_fallback_compositor,
+ 				     surface, op, source,
+ 				     glyphs, num_glyphs, scaled_font,
+-				     clip);
++				     clip,
++				     antialias);
+ }
+diff --git a/src/cairo-surface-observer.c b/src/cairo-surface-observer.c
+index 64036b6..dc9e4ac 100644
+--- a/src/cairo-surface-observer.c
++++ b/src/cairo-surface-observer.c
+@@ -1110,7 +1110,8 @@ add_record_glyphs (cairo_observation_t	*log,
+ 							      glyphs, num_glyphs,
+ 							      NULL, 0, 0,
+ 							      scaled_font,
+-							      clip);
++							      clip,
++							      CAIRO_ANTIALIAS_DEFAULT);
+ 	assert (status == CAIRO_INT_STATUS_SUCCESS);
+     }
+ 
+@@ -1126,7 +1127,8 @@ _cairo_surface_observer_glyphs (void			*abstract_surface,
+ 				cairo_glyph_t		*glyphs,
+ 				int			 num_glyphs,
+ 				cairo_scaled_font_t	*scaled_font,
+-				const cairo_clip_t		*clip)
++				const cairo_clip_t		*clip,
++				const cairo_antialias_t antialias)
+ {
+     cairo_surface_observer_t *surface = abstract_surface;
+     cairo_device_observer_t *device = to_device (surface);
+@@ -1178,7 +1180,8 @@ _cairo_surface_observer_glyphs (void			*abstract_surface,
+ 					      dev_glyphs, num_glyphs,
+ 					      NULL, 0, 0,
+ 					      scaled_font,
+-					      clip);
++					      clip,
++					      CAIRO_ANTIALIAS_DEFAULT);
+     free (dev_glyphs);
+     if (unlikely (status))
+ 	return status;
+diff --git a/src/cairo-surface-offset.c b/src/cairo-surface-offset.c
+index 98f57f2..1617116 100644
+--- a/src/cairo-surface-offset.c
++++ b/src/cairo-surface-offset.c
+@@ -298,7 +298,8 @@ _cairo_surface_offset_glyphs (cairo_surface_t		*surface,
+ 					      dev_glyphs, num_glyphs,
+ 					      NULL, 0, 0,
+ 					      scaled_font,
+-					      dev_clip);
++					      dev_clip,
++                          CAIRO_ANTIALIAS_DEFAULT);
+ 
+     if (dev_clip != clip)
+ 	_cairo_clip_destroy (dev_clip);
+diff --git a/src/cairo-surface-subsurface.c b/src/cairo-surface-subsurface.c
+index 051e95f..a23e2b3 100644
+--- a/src/cairo-surface-subsurface.c
++++ b/src/cairo-surface-subsurface.c
+@@ -204,7 +204,8 @@ _cairo_surface_subsurface_glyphs (void			*abstract_surface,
+ 				  cairo_glyph_t		*glyphs,
+ 				  int			 num_glyphs,
+ 				  cairo_scaled_font_t	*scaled_font,
+-				  const cairo_clip_t	*clip)
++				  const cairo_clip_t	*clip,
++				  const cairo_antialias_t antialias)
+ {
+     cairo_surface_subsurface_t *surface = abstract_surface;
+     cairo_rectangle_int_t rect = { 0, 0, surface->extents.width, surface->extents.height };
+diff --git a/src/cairo-surface-wrapper-private.h b/src/cairo-surface-wrapper-private.h
+index 6529ebc..78f263d 100644
+--- a/src/cairo-surface-wrapper-private.h
++++ b/src/cairo-surface-wrapper-private.h
+@@ -157,7 +157,8 @@ _cairo_surface_wrapper_show_text_glyphs (cairo_surface_wrapper_t *wrapper,
+ 					 int			     num_clusters,
+ 					 cairo_text_cluster_flags_t  cluster_flags,
+ 					 cairo_scaled_font_t	    *scaled_font,
+-					 const cairo_clip_t	    *clip);
++					 const cairo_clip_t	    *clip,
++					 const cairo_antialias_t antialias);
+ 
+ cairo_private cairo_surface_t *
+ _cairo_surface_wrapper_create_similar (cairo_surface_wrapper_t *wrapper,
+diff --git a/src/cairo-surface-wrapper.c b/src/cairo-surface-wrapper.c
+index 578e8e2..c40d82d 100644
+--- a/src/cairo-surface-wrapper.c
++++ b/src/cairo-surface-wrapper.c
+@@ -411,7 +411,8 @@ _cairo_surface_wrapper_show_text_glyphs (cairo_surface_wrapper_t *wrapper,
+ 					 int			     num_clusters,
+ 					 cairo_text_cluster_flags_t  cluster_flags,
+ 					 cairo_scaled_font_t	    *scaled_font,
+-					 const cairo_clip_t	    *clip)
++					 const cairo_clip_t	    *clip,
++					 const cairo_antialias_t antialias)
+ {
+     cairo_status_t status;
+     cairo_clip_t *dev_clip;
+@@ -498,7 +499,8 @@ _cairo_surface_wrapper_show_text_glyphs (cairo_surface_wrapper_t *wrapper,
+ 					      clusters, num_clusters,
+ 					      cluster_flags,
+ 					      dev_scaled_font,
+-					      dev_clip);
++					      dev_clip,
++					      antialias);
+  FINISH:
+     _cairo_clip_destroy (dev_clip);
+     if (dev_glyphs != stack_glyphs)
+diff --git a/src/cairo-surface.c b/src/cairo-surface.c
+index 5c6969c..c0fcb69 100644
+--- a/src/cairo-surface.c
++++ b/src/cairo-surface.c
+@@ -2427,7 +2427,8 @@ _cairo_surface_show_text_glyphs (cairo_surface_t	    *surface,
+ 				 int			     num_clusters,
+ 				 cairo_text_cluster_flags_t  cluster_flags,
+ 				 cairo_scaled_font_t	    *scaled_font,
+-				 const cairo_clip_t		*clip)
++				 const cairo_clip_t		*clip,
++				 const cairo_antialias_t antialias)
+ {
+     cairo_int_status_t status;
+     cairo_scaled_font_t *dev_scaled_font = scaled_font;
+@@ -2486,7 +2487,8 @@ _cairo_surface_show_text_glyphs (cairo_surface_t	    *surface,
+ 							 glyphs, num_glyphs,
+ 							 clusters, num_clusters, cluster_flags,
+ 							 dev_scaled_font,
+-							 clip);
++							 clip,
++							 antialias);
+ 	}
+ 	if (status == CAIRO_INT_STATUS_UNSUPPORTED &&
+ 	    surface->backend->show_glyphs)
+@@ -2495,7 +2497,8 @@ _cairo_surface_show_text_glyphs (cairo_surface_t	    *surface,
+ 						    source,
+ 						    glyphs, num_glyphs,
+ 						    dev_scaled_font,
+-						    clip);
++						    clip,
++						    antialias);
+ 	}
+     } else {
+ 	/* A mere show_glyphs call.  Try show_glyphs backend method first */
+@@ -2504,7 +2507,8 @@ _cairo_surface_show_text_glyphs (cairo_surface_t	    *surface,
+ 						    source,
+ 						    glyphs, num_glyphs,
+ 						    dev_scaled_font,
+-						    clip);
++						    clip,
++						    antialias);
+ 	} else if (surface->backend->show_text_glyphs != NULL) {
+ 	    /* Intentionally only try show_text_glyphs method for show_glyphs
+ 	     * calls if backend does not have show_glyphs.  If backend has
+@@ -2520,7 +2524,8 @@ _cairo_surface_show_text_glyphs (cairo_surface_t	    *surface,
+ 							 glyphs, num_glyphs,
+ 							 clusters, num_clusters, cluster_flags,
+ 							 dev_scaled_font,
+-							 clip);
++							 clip,
++							 antialias);
+ 	}
+     }
+ 
+diff --git a/src/cairo-svg-surface.c b/src/cairo-svg-surface.c
+index f32d522..89d69da 100644
+--- a/src/cairo-svg-surface.c
++++ b/src/cairo-svg-surface.c
+@@ -2165,7 +2165,7 @@ _cairo_svg_surface_fill_stroke (void			*abstract_surface,
+     cairo_svg_surface_t *surface = abstract_surface;
+     cairo_status_t status;
+ 
+-    status = _cairo_surface_clipper_set_clip (&surface->clipper, clip);
++    status = _cairo_surface_clipper_set_clip (&surface->clipper, clip, CAIRO_ANTIALIAS_DEFAULT);
+     if (unlikely (status))
+ 	return status;
+ 
+@@ -2208,7 +2208,7 @@ _cairo_svg_surface_fill (void			*abstract_surface,
+ 
+     assert (_cairo_svg_surface_operation_supported (surface, op, source));
+ 
+-    status = _cairo_surface_clipper_set_clip (&surface->clipper, clip);
++    status = _cairo_surface_clipper_set_clip (&surface->clipper, clip, CAIRO_ANTIALIAS_DEFAULT);
+     if (unlikely (status))
+ 	return status;
+ 
+@@ -2342,7 +2342,7 @@ _cairo_svg_surface_paint (void		    *abstract_surface,
+ 	assert (_cairo_svg_surface_operation_supported (surface, op, source));
+     }
+ 
+-    status = _cairo_surface_clipper_set_clip (&surface->clipper, clip);
++    status = _cairo_surface_clipper_set_clip (&surface->clipper, clip, CAIRO_ANTIALIAS_DEFAULT);
+     if (unlikely (status))
+ 	return status;
+ 
+@@ -2387,7 +2387,7 @@ _cairo_svg_surface_mask (void		    *abstract_surface,
+     assert (_cairo_svg_surface_operation_supported (surface, op, source));
+     assert (_cairo_svg_surface_operation_supported (surface, CAIRO_OPERATOR_OVER, mask));
+ 
+-    status = _cairo_surface_clipper_set_clip (&surface->clipper, clip);
++    status = _cairo_surface_clipper_set_clip (&surface->clipper, clip, CAIRO_ANTIALIAS_DEFAULT);
+     if (unlikely (status))
+ 	return status;
+ 
+@@ -2461,7 +2461,7 @@ _cairo_svg_surface_stroke (void			*abstract_dst,
+ 
+     assert (_cairo_svg_surface_operation_supported (surface, op, source));
+ 
+-    status = _cairo_surface_clipper_set_clip (&surface->clipper, clip);
++    status = _cairo_surface_clipper_set_clip (&surface->clipper, clip, CAIRO_ANTIALIAS_DEFAULT);
+     if (unlikely (status))
+ 	return status;
+ 
+@@ -2488,7 +2488,8 @@ _cairo_svg_surface_show_glyphs (void			*abstract_surface,
+ 				cairo_glyph_t		*glyphs,
+ 				int			 num_glyphs,
+ 				cairo_scaled_font_t	*scaled_font,
+-				const cairo_clip_t	*clip)
++				const cairo_clip_t	*clip,
++				const cairo_antialias_t antialias)
+ {
+     cairo_svg_surface_t *surface = abstract_surface;
+     cairo_svg_document_t *document = surface->document;
+@@ -2505,7 +2506,7 @@ _cairo_svg_surface_show_glyphs (void			*abstract_surface,
+     if (num_glyphs <= 0)
+ 	return CAIRO_STATUS_SUCCESS;
+ 
+-    status = _cairo_surface_clipper_set_clip (&surface->clipper, clip);
++    status = _cairo_surface_clipper_set_clip (&surface->clipper, clip, CAIRO_ANTIALIAS_DEFAULT);
+     if (unlikely (status))
+ 	return status;
+ 
+diff --git a/src/cairo-traps-compositor.c b/src/cairo-traps-compositor.c
+index 02fbe75..648a9d5 100644
+--- a/src/cairo-traps-compositor.c
++++ b/src/cairo-traps-compositor.c
+@@ -2282,7 +2282,8 @@ _cairo_traps_compositor_glyphs (const cairo_compositor_t	*_compositor,
+ 				cairo_scaled_font_t		*scaled_font,
+ 				cairo_glyph_t			*glyphs,
+ 				int				 num_glyphs,
+-				cairo_bool_t			 overlap)
++				cairo_bool_t			 overlap,
++				const cairo_antialias_t antialias)
+ {
+     const cairo_traps_compositor_t *compositor = (cairo_traps_compositor_t *)_compositor;
+     cairo_int_status_t status;
+diff --git a/src/cairo-type3-glyph-surface.c b/src/cairo-type3-glyph-surface.c
+index 5bb6bfc..adda2c5 100644
+--- a/src/cairo-type3-glyph-surface.c
++++ b/src/cairo-type3-glyph-surface.c
+@@ -200,7 +200,7 @@ _cairo_type3_glyph_surface_paint (void			*abstract_surface,
+     if (source->type != CAIRO_PATTERN_TYPE_SURFACE)
+ 	return CAIRO_INT_STATUS_IMAGE_FALLBACK;
+ 
+-    status = _cairo_surface_clipper_set_clip (&surface->clipper, clip);
++    status = _cairo_surface_clipper_set_clip (&surface->clipper, clip, CAIRO_ANTIALIAS_DEFAULT);
+     if (unlikely (status))
+ 	return status;
+ 
+@@ -247,7 +247,7 @@ _cairo_type3_glyph_surface_stroke (void			*abstract_surface,
+     cairo_type3_glyph_surface_t *surface = abstract_surface;
+     cairo_int_status_t status;
+ 
+-    status = _cairo_surface_clipper_set_clip (&surface->clipper, clip);
++    status = _cairo_surface_clipper_set_clip (&surface->clipper, clip, CAIRO_ANTIALIAS_DEFAULT);
+     if (unlikely (status))
+ 	return status;
+ 
+@@ -271,7 +271,7 @@ _cairo_type3_glyph_surface_fill (void			*abstract_surface,
+     cairo_type3_glyph_surface_t *surface = abstract_surface;
+     cairo_int_status_t status;
+ 
+-    status = _cairo_surface_clipper_set_clip (&surface->clipper, clip);
++    status = _cairo_surface_clipper_set_clip (&surface->clipper, clip, CAIRO_ANTIALIAS_DEFAULT);
+     if (unlikely (status))
+ 	return status;
+ 
+@@ -287,14 +287,15 @@ _cairo_type3_glyph_surface_show_glyphs (void		     *abstract_surface,
+ 					cairo_glyph_t        *glyphs,
+ 					int		      num_glyphs,
+ 					cairo_scaled_font_t  *scaled_font,
+-					const cairo_clip_t     *clip)
++					const cairo_clip_t     *clip,
++					const cairo_antialias_t antialias)
+ {
+     cairo_type3_glyph_surface_t *surface = abstract_surface;
+     cairo_int_status_t status;
+     cairo_scaled_font_t *font;
+     cairo_matrix_t new_ctm, invert_y_axis;
+ 
+-    status = _cairo_surface_clipper_set_clip (&surface->clipper, clip);
++    status = _cairo_surface_clipper_set_clip (&surface->clipper, clip, CAIRO_ANTIALIAS_DEFAULT);
+     if (unlikely (status))
+ 	return status;
+ 
+diff --git a/src/cairoint.h b/src/cairoint.h
+index 861e2f7..01cbfcd 100644
+--- a/src/cairoint.h
++++ b/src/cairoint.h
+@@ -1386,7 +1386,8 @@ _cairo_surface_show_text_glyphs (cairo_surface_t	    *surface,
+ 				 int			     num_clusters,
+ 				 cairo_text_cluster_flags_t  cluster_flags,
+ 				 cairo_scaled_font_t	    *scaled_font,
+-				 const cairo_clip_t		    *clip);
++				 const cairo_clip_t		    *clip,
++				 const cairo_antialias_t     antialias);
+ 
+ cairo_private cairo_status_t
+ _cairo_surface_acquire_source_image (cairo_surface_t         *surface,
