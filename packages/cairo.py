@@ -4,6 +4,7 @@ class CairoPackage (CairoGraphicsXzPackage):
 		self.sources.extend ([
 			'patches/cairo-quartz-crash.patch',
 			'patches/cairo-fix-color-bitmap-fonts.patch',
+			'patches/cairo-disablable-antialiasing.patch',
 #			'patches/cairo-cglayer.patch',
 		])
 
