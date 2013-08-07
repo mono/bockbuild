@@ -1,0 +1,18 @@
+diff --git a/gdk/quartz/gdkevents-quartz.c b/gdk/quartz/gdkevents-quartz.c
+index 53f1962..b398dab 100644
+--- a/gdk/quartz/gdkevents-quartz.c
++++ b/gdk/quartz/gdkevents-quartz.c
+@@ -1479,8 +1479,12 @@ gdk_event_translate (GdkEvent *event,
+       }
+       break;
+ 
+-    case NSMouseEntered:
+     case NSMouseExited:
++      if (WINDOW_IS_TOPLEVEL(window))
++        {
++          [[NSCursor arrowCursor] set];
++        }
++    case NSMouseEntered:
+       return_val = synthesize_crossing_event (window, event, nsevent, x, y, x_root, y_root);
+       break;
+ 
