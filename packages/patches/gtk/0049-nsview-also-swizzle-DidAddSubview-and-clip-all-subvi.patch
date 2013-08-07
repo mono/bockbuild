@@ -1,7 +1,7 @@
-From 55a648879004e8a3a74da6ba845763a1200e28c0 Mon Sep 17 00:00:00 2001
+From ef95f0fc2917e98ea48ea5a07031b6e4b4152634 Mon Sep 17 00:00:00 2001
 From: Michael Natterer <mitch@gimp.org>
 Date: Thu, 25 Apr 2013 12:22:28 +0200
-Subject: [PATCH 49/66] nsview: also swizzle DidAddSubview and clip all
+Subject: [PATCH 49/68] nsview: also swizzle DidAddSubview and clip all
  subviews that are added
 
 Finally makes textviews being clipped correctly. Original patch
@@ -17,7 +17,7 @@ index e2d8f96..bc3cbfb 100644
 @@ -139,6 +139,25 @@ gtk_ns_view_init (GtkNSView *ns_view)
    gtk_widget_set_has_window (GTK_WIDGET (ns_view), FALSE);
  }
-
+ 
 +
 +static void   gtk_ns_view_swizzle_draw_rect_recursive (NSView      *view,
 +                                                       const gchar *associated_key,
@@ -43,7 +43,7 @@ index e2d8f96..bc3cbfb 100644
 @@ -164,7 +183,8 @@ gtk_ns_view_init (GtkNSView *ns_view)
          }
      }
-
+ 
 -  if (! ns_view)
 +  if (! ns_view ||
 +      ns_view->priv->view != [ns_view->priv->view ancestorSharedWithView: self])
@@ -53,7 +53,7 @@ index e2d8f96..bc3cbfb 100644
 @@ -215,6 +235,18 @@ gtk_ns_view_init (GtkNSView *ns_view)
        rect.size.width = viewport_allocation.width;
        rect.size.height = viewport_allocation.height;
-
+ 
 +      /*  need to translate rect if this is not the view itself but a subview  */
 +      if (ns_view->priv->view != self)
 +        {
@@ -68,7 +68,7 @@ index e2d8f96..bc3cbfb 100644
 +
        CGContextClipToRect (cg_context, rect);
      }
-
+ 
 @@ -231,9 +263,20 @@ gtk_ns_view_swizzle_draw_rect_recursive (NSView      *view,
  {
    Method original_drawRect;
@@ -77,7 +77,7 @@ index e2d8f96..bc3cbfb 100644
 +  Method my_didAddSubview;
    NSArray *subviews;
    gint i;
-
+ 
 +  /* This is a private method that disable automatic focus ring handling.
 +   * It looks like automatic focus ring drawing is handled by a toplevel
 +   * NSView, so it cannot be caught by our clipping. If we disable this
@@ -93,7 +93,7 @@ index e2d8f96..bc3cbfb 100644
 @@ -250,6 +293,24 @@ gtk_ns_view_swizzle_draw_rect_recursive (NSView      *view,
                             method_getTypeEncoding (my_drawRect));
      }
-
+ 
 +  /* Swizzle didAddSubView */
 +  original_didAddSubview = class_getInstanceMethod ([view class],
 +                                                    @selector (didAddSubview:));
@@ -114,6 +114,7 @@ index e2d8f96..bc3cbfb 100644
 +
    objc_setAssociatedObject (view, associated_key, (id) associated_object,
                              OBJC_ASSOCIATION_ASSIGN);
-
---
+ 
+-- 
 1.7.10.2 (Apple Git-33)
+

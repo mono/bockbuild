@@ -1,7 +1,7 @@
-From f8ceb9100668286ac46d907e9b853c4473870e12 Mon Sep 17 00:00:00 2001
+From aba260146c099864e69379e31bd3decbf3681817 Mon Sep 17 00:00:00 2001
 From: Carlos Garnacho <carlosg@gnome.org>
 Date: Tue, 12 Feb 2013 14:04:37 +0100
-Subject: [PATCH 63/66] entry: Use scaled icons on windows with a scale factor
+Subject: [PATCH 63/68] entry: Use scaled icons on windows with a scale factor
 
 ---
  gtk/gtkentry.c |  184 ++++++++++++++++++++++++++++++++++++++++++++++++++------
@@ -17,13 +17,13 @@ index 0d16d71..313804e 100644
    gchar        *icon_name;
    GIcon        *gicon;
 +  GtkIconSet   *icon_set;
-
+ 
    GtkTargetList *target_list;
    GdkDragAction actions;
 +  gdouble render_scale;
  } EntryIconInfo;
-
- struct _GtkEntryPrivate
+ 
+ struct _GtkEntryPrivate 
 @@ -207,6 +209,8 @@ enum {
    PROP_ICON_NAME_SECONDARY,
    PROP_GICON_PRIMARY,
@@ -37,7 +37,7 @@ index 0d16d71..313804e 100644
                                                          P_("GIcon for secondary icon"),
                                                          G_TYPE_ICON,
                                                          GTK_PARAM_READWRITE));
--
+-  
 +  g_object_class_install_property (gobject_class,
 +                                   PROP_ICON_SET_PRIMARY,
 +                                   g_param_spec_boxed ("primary-icon-set",
@@ -59,7 +59,7 @@ index 0d16d71..313804e 100644
 @@ -1940,6 +1958,18 @@ gtk_entry_set_property (GObject         *object,
                                       g_value_get_object (value));
        break;
-
+ 
 +    case PROP_ICON_SET_PRIMARY:
 +      gtk_entry_set_icon_from_icon_set (entry,
 +                                        GTK_ENTRY_ICON_PRIMARY,
@@ -78,7 +78,7 @@ index 0d16d71..313804e 100644
 @@ -2158,6 +2188,18 @@ gtk_entry_get_property (GObject         *object,
                                                      GTK_ENTRY_ICON_SECONDARY));
        break;
-
+ 
 +    case PROP_ICON_SET_PRIMARY:
 +      g_value_set_boxed (value,
 +                         gtk_entry_get_icon_set (entry,
@@ -93,17 +93,17 @@ index 0d16d71..313804e 100644
 +
      case PROP_STORAGE_TYPE_PRIMARY:
        g_value_set_enum (value,
-                         gtk_entry_get_icon_storage_type (entry,
+                         gtk_entry_get_icon_storage_type (entry, 
 @@ -2334,7 +2376,9 @@ get_icon_width (GtkEntry             *entry,
    gtk_icon_size_lookup_for_settings (settings, GTK_ICON_SIZE_MENU,
                                       &menu_icon_width, NULL);
-
+ 
 -  return MAX (gdk_pixbuf_get_width (icon_info->pixbuf), menu_icon_width);
 +  return MAX (gdk_pixbuf_get_width (icon_info->pixbuf) /
 +              gtk_widget_get_scale_factor (GTK_WIDGET (entry)),
 +              menu_icon_width);
  }
-
+ 
  static void
 @@ -3188,6 +3232,7 @@ draw_icon (GtkWidget            *widget,
    EntryIconInfo *icon_info = priv->icons[icon_pos];
@@ -111,30 +111,30 @@ index 0d16d71..313804e 100644
    gint x, y, width, height;
 +  gdouble window_scale;
    cairo_t *cr;
-
+ 
    if (!icon_info)
 @@ -3198,8 +3243,9 @@ draw_icon (GtkWidget            *widget,
    if (icon_info->pixbuf == NULL)
      return;
-
+ 
 -  width = gdk_window_get_width (icon_info->window);
 -  height = gdk_window_get_height (icon_info->window);
 +  window_scale = gdk_window_get_scale_factor (widget->window);
 +  width = gdk_window_get_width (icon_info->window) / window_scale;
 +  height = gdk_window_get_height (icon_info->window) / window_scale;
-
+ 
    /* size_allocate hasn't been called yet. These are the default values.
     */
 @@ -3209,20 +3255,20 @@ draw_icon (GtkWidget            *widget,
    pixbuf = icon_info->pixbuf;
    g_object_ref (pixbuf);
-
+ 
 -  if (gdk_pixbuf_get_height (pixbuf) > height)
 +  if (gdk_pixbuf_get_height (pixbuf) > (height * window_scale))
      {
        GdkPixbuf *temp_pixbuf;
        gint scale;
-
+ 
 -      scale = height - 2 * priv->icon_margin;
 +      scale = (height - 2 * priv->icon_margin) * window_scale;
        temp_pixbuf = gdk_pixbuf_scale_simple (pixbuf, scale, scale,
@@ -142,18 +142,18 @@ index 0d16d71..313804e 100644
        g_object_unref (pixbuf);
        pixbuf = temp_pixbuf;
      }
-
+ 
 -  x = (width  - gdk_pixbuf_get_width (pixbuf)) / 2;
 -  y = (height - gdk_pixbuf_get_height (pixbuf)) / 2;
 +  x = (width  - (gdk_pixbuf_get_width (pixbuf) / window_scale)) / 2;
 +  y = (height - (gdk_pixbuf_get_height (pixbuf) / window_scale)) / 2;
-
+ 
    if (!gtk_widget_is_sensitive (widget) ||
        icon_info->insensitive)
 @@ -6455,6 +6501,17 @@ gtk_entry_clear (GtkEntry             *entry,
                         icon_pos == GTK_ENTRY_ICON_PRIMARY ? "primary-icon-gicon" : "secondary-icon-gicon");
        break;
-
+ 
 +    case GTK_IMAGE_ICON_SET:
 +      if (icon_info->icon_set)
 +        {
@@ -194,35 +194,35 @@ index 0d16d71..313804e 100644
 +                                                           &icon_info->render_scale);
        gtk_widget_set_state (widget, state);
        break;
-
+ 
 @@ -6514,8 +6574,9 @@ gtk_entry_ensure_pixbuf (GtkEntry             *entry,
            settings = gtk_settings_get_for_screen (screen);
-
+           
            gtk_icon_size_lookup_for_settings (settings,
 -                                             GTK_ICON_SIZE_MENU,
 -                                             &width, &height);
 +                                       GTK_ICON_SIZE_MENU,
 +                                //                                       gdk_window_get_scale_factor (widget->window),
 +                                       &width, &height);
-
+ 
            icon_info->pixbuf = gtk_icon_theme_load_icon (icon_theme,
                                                          icon_info->icon_name,
 @@ -6543,8 +6604,9 @@ gtk_entry_ensure_pixbuf (GtkEntry             *entry,
            settings = gtk_settings_get_for_screen (screen);
-
+ 
            gtk_icon_size_lookup_for_settings (settings,
 -                                             GTK_ICON_SIZE_MENU,
 -                                             &width, &height);
 +                                       GTK_ICON_SIZE_MENU,
 +                                             //gdk_window_get_scale_factor (widget->window),
 +                                       &width, &height);
-
+ 
            info = gtk_icon_theme_lookup_by_gicon (icon_theme,
                                                   icon_info->gicon,
 @@ -6569,6 +6631,17 @@ gtk_entry_ensure_pixbuf (GtkEntry             *entry,
          }
        break;
-
+ 
 +    case GTK_IMAGE_ICON_SET:
 +      icon_info->render_scale = gtk_widget_get_scale_factor (widget);
 +      icon_info->pixbuf =
@@ -240,7 +240,7 @@ index 0d16d71..313804e 100644
 @@ -7847,6 +7920,58 @@ gtk_entry_set_icon_from_gicon (GtkEntry             *entry,
    g_object_thaw_notify (G_OBJECT (entry));
  }
-
+ 
 +void
 +gtk_entry_set_icon_from_icon_set (GtkEntry             *entry,
 +                                  GtkEntryIconPosition  icon_pos,
@@ -299,7 +299,7 @@ index 0d16d71..313804e 100644
 @@ -8050,6 +8175,25 @@ gtk_entry_get_icon_name (GtkEntry             *entry,
    return icon_info->storage_type == GTK_IMAGE_ICON_NAME ? icon_info->icon_name : NULL;
  }
-
+ 
 +const GtkIconSet *
 +gtk_entry_get_icon_set (GtkEntry             *entry,
 +                        GtkEntryIconPosition  icon_pos)
@@ -328,24 +328,25 @@ index f771e17..0153f49 100644
 +++ b/gtk/gtkentry.h
 @@ -264,6 +264,9 @@ void           gtk_entry_set_icon_from_icon_name         (GtkEntry             *
  void           gtk_entry_set_icon_from_gicon             (GtkEntry             *entry,
-							  GtkEntryIconPosition  icon_pos,
-							  GIcon                *icon);
+ 							  GtkEntryIconPosition  icon_pos,
+ 							  GIcon                *icon);
 +void           gtk_entry_set_icon_from_icon_set          (GtkEntry             *entry,
 +							  GtkEntryIconPosition  icon_pos,
 +							  GtkIconSet           *icon_set);
  GtkImageType gtk_entry_get_icon_storage_type             (GtkEntry             *entry,
-							  GtkEntryIconPosition  icon_pos);
+ 							  GtkEntryIconPosition  icon_pos);
  GdkPixbuf*   gtk_entry_get_icon_pixbuf                   (GtkEntry             *entry,
 @@ -274,6 +277,10 @@ const gchar* gtk_entry_get_icon_name                     (GtkEntry             *
-							  GtkEntryIconPosition  icon_pos);
+ 							  GtkEntryIconPosition  icon_pos);
  GIcon*       gtk_entry_get_icon_gicon                    (GtkEntry             *entry,
-							  GtkEntryIconPosition  icon_pos);
+ 							  GtkEntryIconPosition  icon_pos);
 +const GtkIconSet *
 +             gtk_entry_get_icon_set                      (GtkEntry             *entry,
 +                                                          GtkEntryIconPosition  icon_pos);
 +
  void         gtk_entry_set_icon_activatable              (GtkEntry             *entry,
-							  GtkEntryIconPosition  icon_pos,
-							  gboolean              activatable);
---
+ 							  GtkEntryIconPosition  icon_pos,
+ 							  gboolean              activatable);
+-- 
 1.7.10.2 (Apple Git-33)
+

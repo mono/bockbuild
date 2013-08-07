@@ -21,3 +21,8 @@ aot:
 		mono --aot $(MONO_INSTALL_PREFIX)/lib/mono/2.0/mscorlib.dll && \
 		mono --aot $(MONO_INSTALL_PREFIX)/lib/mono/4.5/mscorlib.dll && \
 		for i in $(MONO_INSTALL_PREFIX)/lib/mono/gac/*/*/*.dll; do mono --aot $$i; done
+
+deaot:
+	find $(MONO_INSTALL_PREFIX)/lib/mono/2.0 -name *.dylib | xargs rm && \
+	find $(MONO_INSTALL_PREFIX)/lib/mono/4.5 -name *.dylib | xargs rm && \
+	find $(MONO_INSTALL_PREFIX)/lib/mono/gac -name *.dylib | xargs rm

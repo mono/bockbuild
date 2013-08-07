@@ -1,7 +1,7 @@
-From c7ee2e8df5932ea735ec2e8d8d02ee1dbdc6c80f Mon Sep 17 00:00:00 2001
+From 4c79075b4d396ba009b0f0e70d05c1c253cc3da6 Mon Sep 17 00:00:00 2001
 From: Kristian Rietveld <kris@lanedo.com>
 Date: Fri, 24 Aug 2012 12:12:04 +0200
-Subject: [PATCH 07/66] Implement gtk-enable-overlay-scrollbars GtkSetting
+Subject: [PATCH 07/68] Implement gtk-enable-overlay-scrollbars GtkSetting
 
 And set this up such that on OS X
 NSPreferredScrollerDidChangeNotification is followed.
@@ -22,7 +22,7 @@ index 53f1962..c99a2c9 100644
 +                            CFSTR("NSPreferredScrollerStyleDidChangeNotification"),
 +                            0) == kCFCompareEqualTo)
 +    new_event.setting.name = "gtk-enable-overlay-scrollbars";
-
+ 
    if (!new_event.setting.name)
      return;
 @@ -114,6 +118,20 @@ gdk_quartz_events_init_notifications (void)
@@ -44,13 +44,13 @@ index 53f1962..c99a2c9 100644
 +                                       CFNotificationSuspensionBehaviorDeliverImmediately);
 +    }
  }
-
+ 
  void
 @@ -1686,7 +1704,43 @@ gdk_screen_get_setting (GdkScreen   *screen,
-
+ 
        return TRUE;
      }
--
+-  
 +  else if (strcmp (name, "gtk-enable-overlay-scrollbars") == 0)
 +    {
 +      gboolean enabled = FALSE;
@@ -87,9 +87,9 @@ index 53f1962..c99a2c9 100644
 +
 +      return TRUE;
 +    }
-+
++ 
    /* FIXME: Add more settings */
-
+ 
    return FALSE;
 diff --git a/gtk/gtksettings.c b/gtk/gtksettings.c
 index 3fbbf00..1455db1 100644
@@ -103,7 +103,7 @@ index 3fbbf00..1455db1 100644
 +  PROP_IM_STATUS_STYLE,
 +  PROP_ENABLE_OVERLAY_SCROLLBARS
  };
-
+ 
  /* --- prototypes --- */
 @@ -1205,6 +1206,23 @@ gtk_settings_class_init (GtkSettingsClass *class)
                                                                  GTK_PARAM_READWRITE),
@@ -127,7 +127,8 @@ index 3fbbf00..1455db1 100644
 +
 +  g_assert (result == PROP_ENABLE_OVERLAY_SCROLLBARS);
  }
-
+ 
  static void
---
+-- 
 1.7.10.2 (Apple Git-33)
+

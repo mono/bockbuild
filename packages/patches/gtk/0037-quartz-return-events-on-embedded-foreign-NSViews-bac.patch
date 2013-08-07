@@ -1,7 +1,7 @@
-From 2a8b706daa0ac4d6c8700d4c2eb8cd3290d8717d Mon Sep 17 00:00:00 2001
+From 6437422a8153939d06563d02fc938b90f36204d0 Mon Sep 17 00:00:00 2001
 From: Michael Natterer <mitch@gimp.org>
 Date: Fri, 23 Mar 2012 12:22:31 +0100
-Subject: [PATCH 37/66] quartz: return events on embedded foreign NSViews back
+Subject: [PATCH 37/68] quartz: return events on embedded foreign NSViews back
  to Cocoa
 
 ---
@@ -30,11 +30,11 @@ index 2db0c0b..a6b582c 100644
 +  NATIVE_CHILD_EVENT,
    LAST_SIGNAL
  };
-
+ 
 @@ -595,6 +596,19 @@ gdk_window_class_init (GdkWindowObjectClass *klass)
-		  G_TYPE_DOUBLE,
-		  G_TYPE_POINTER,
-		  G_TYPE_POINTER);
+ 		  G_TYPE_DOUBLE,
+ 		  G_TYPE_POINTER,
+ 		  G_TYPE_POINTER);
 +
 +  signals[NATIVE_CHILD_EVENT] =
 +    g_signal_new (g_intern_static_string ("native-child-event"),
@@ -49,7 +49,7 @@ index 2db0c0b..a6b582c 100644
 +		  G_TYPE_POINTER);
 +
  }
-
+ 
  static void
 diff --git a/gdk/quartz/gdkevents-quartz.c b/gdk/quartz/gdkevents-quartz.c
 index f3ba2c8..f6742f0 100644
@@ -61,12 +61,12 @@ index f3ba2c8..f6742f0 100644
                  GdkWindowImplQuartz *toplevel_impl;
 +                guint n_subviews;
 +                guint i;
-
+ 
                  toplevel = toplevel_under_pointer;
-
+ 
                  toplevel_private = (GdkWindowObject *)toplevel;
                  toplevel_impl = (GdkWindowImplQuartz *)toplevel_private->impl;
-
+ 
 +                n_subviews = [[toplevel_impl->view subviews] count];
 +
 +                for (i = 0; i < n_subviews; ++i)
@@ -88,5 +88,6 @@ index f3ba2c8..f6742f0 100644
                  *x = x_tmp;
                  *y = y_tmp;
                }
---
+-- 
 1.7.10.2 (Apple Git-33)
+

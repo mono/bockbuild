@@ -1,7 +1,7 @@
-From 82f2115b58bc0332e707a53bbed95fbe21873e50 Mon Sep 17 00:00:00 2001
+From 0f14c053a91185715f276dffe286698e0c3b43ba Mon Sep 17 00:00:00 2001
 From: Carlos Garnacho <carlosg@gnome.org>
 Date: Fri, 28 Jun 2013 19:35:02 +0200
-Subject: [PATCH 66/66] cellrendererpixbuf: let 2x variants go through
+Subject: [PATCH 66/68] cellrendererpixbuf: let 2x variants go through
  pixel-mangling code
 
 ---
@@ -14,11 +14,11 @@ index 7c767b6..5969792 100644
 +++ b/gtk/gtkcellrendererpixbuf.c
 @@ -614,8 +614,8 @@ gtk_cell_renderer_pixbuf_create_themed_pixbuf (GtkCellRendererPixbuf *cellpixbuf
  }
-
+ 
  static GdkPixbuf *
--create_colorized_pixbuf (GdkPixbuf *src,
+-create_colorized_pixbuf (GdkPixbuf *src, 
 -			 GdkColor  *new_color)
-+create_colorized_pixbuf_single (GdkPixbuf *src,
++create_colorized_pixbuf_single (GdkPixbuf *src, 
 +				GdkColor  *new_color)
  {
    gint i, j;
@@ -26,7 +26,7 @@ index 7c767b6..5969792 100644
 @@ -659,6 +659,28 @@ create_colorized_pixbuf (GdkPixbuf *src,
    return dest;
  }
-
+ 
 +static GdkPixbuf *
 +create_colorized_pixbuf (GdkPixbuf *src,
 +			 GdkColor  *new_color)
@@ -49,8 +49,9 @@ index 7c767b6..5969792 100644
 +
 +  return colorized;
 +}
-
+ 
  static void
  gtk_cell_renderer_pixbuf_get_size (GtkCellRenderer *cell,
---
+-- 
 1.7.10.2 (Apple Git-33)
+

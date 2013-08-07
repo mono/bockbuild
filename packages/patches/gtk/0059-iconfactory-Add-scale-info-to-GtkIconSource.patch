@@ -1,7 +1,7 @@
-From 8cf6357fe353e7cf299db2a978ae2e1431f09796 Mon Sep 17 00:00:00 2001
+From 431d1225b153c1a1389686920aed1d26ff3218b2 Mon Sep 17 00:00:00 2001
 From: Carlos Garnacho <carlos@lanedo.com>
 Date: Fri, 10 May 2013 18:24:26 +0200
-Subject: [PATCH 59/66] iconfactory: Add scale info to GtkIconSource
+Subject: [PATCH 59/68] iconfactory: Add scale info to GtkIconSource
 
 GtkIconSource now has notions knows about scale, so it can correctly
 fetch the icon at the right scale for ICON_NAME source types.
@@ -22,7 +22,7 @@ index 0dc31e6..41d1ee7 100644
    GtkStateType state;
    GtkIconSize size;
 +  gdouble scale;
-
+ 
    /* If TRUE, then the parameter is wildcarded, and the above
     * fields should be ignored. If FALSE, the parameter is
 @@ -74,6 +75,7 @@ struct _GtkIconSource
@@ -30,13 +30,13 @@ index 0dc31e6..41d1ee7 100644
    guint any_state : 1;
    guint any_size : 1;
 +  guint any_scale : 1;
-
+ 
  #if defined (G_OS_WIN32) && !defined (_WIN64)
    /* System codepage version of filename, for DLL ABI backward
 @@ -106,10 +108,10 @@ static GtkIconSize icon_size_register_intern (const gchar *name,
-					      gint         width,
-					      gint         height);
-
+ 					      gint         width,
+ 					      gint         height);
+ 
 -#define GTK_ICON_SOURCE_INIT(any_direction, any_state, any_size)	\
 +#define GTK_ICON_SOURCE_INIT(any_direction, any_state, any_size, any_scale)	\
    { GTK_ICON_SOURCE_EMPTY, { NULL }, NULL,				\
@@ -44,16 +44,16 @@ index 0dc31e6..41d1ee7 100644
 -   any_direction, any_state, any_size }
 +   0, 0, 0, 1,								\
 +   any_direction, any_state, any_size, any_scale }
-
+ 
  G_DEFINE_TYPE_WITH_CODE (GtkIconFactory, gtk_icon_factory, G_TYPE_OBJECT,
-			 G_IMPLEMENT_INTERFACE (GTK_TYPE_BUILDABLE,
+ 			 G_IMPLEMENT_INTERFACE (GTK_TYPE_BUILDABLE,
 @@ -349,7 +351,7 @@ register_stock_icon (GtkIconFactory *factory,
                       const gchar    *icon_name)
  {
    GtkIconSet *set = gtk_icon_set_new ();
 -  GtkIconSource source = GTK_ICON_SOURCE_INIT (TRUE, TRUE, TRUE);
 +  GtkIconSource source = GTK_ICON_SOURCE_INIT (TRUE, TRUE, TRUE, TRUE);
-
+ 
    source.type = GTK_ICON_SOURCE_STATIC_ICON_NAME;
    source.source.icon_name = (gchar *)icon_name;
 @@ -366,7 +368,7 @@ register_bidi_stock_icon (GtkIconFactory *factory,
@@ -62,7 +62,7 @@ index 0dc31e6..41d1ee7 100644
    GtkIconSet *set = gtk_icon_set_new ();
 -  GtkIconSource source = GTK_ICON_SOURCE_INIT (FALSE, TRUE, TRUE);
 +  GtkIconSource source = GTK_ICON_SOURCE_INIT (FALSE, TRUE, TRUE, TRUE);
-
+ 
    source.type = GTK_ICON_SOURCE_STATIC_ICON_NAME;
    source.source.icon_name = (gchar *)icon_name;
 @@ -1094,12 +1096,14 @@ static GdkPixbuf *find_in_cache     (GtkIconSet       *icon_set,
@@ -84,34 +84,34 @@ index 0dc31e6..41d1ee7 100644
 @@ -1179,7 +1183,7 @@ gtk_icon_set_new_from_pixbuf (GdkPixbuf *pixbuf)
  {
    GtkIconSet *set;
-
+ 
 -  GtkIconSource source = GTK_ICON_SOURCE_INIT (TRUE, TRUE, TRUE);
 +  GtkIconSource source = GTK_ICON_SOURCE_INIT (TRUE, TRUE, TRUE, TRUE);
-
+ 
    g_return_val_if_fail (pixbuf != NULL, NULL);
-
+ 
 @@ -1319,6 +1323,7 @@ find_best_matching_source (GtkIconSet       *icon_set,
-			   GtkTextDirection  direction,
-			   GtkStateType      state,
-			   GtkIconSize       size,
+ 			   GtkTextDirection  direction,
+ 			   GtkStateType      state,
+ 			   GtkIconSize       size,
 +			   gdouble           scale,
-			   GSList           *failed)
+ 			   GSList           *failed)
  {
    GtkIconSource *source;
 @@ -1340,7 +1345,8 @@ find_best_matching_source (GtkIconSet       *icon_set,
-
+ 
        if ((s->any_direction || (s->direction == direction)) &&
            (s->any_state || (s->state == state)) &&
 -          (s->any_size || size == (GtkIconSize)-1 || (sizes_equivalent (size, s->size))))
 +          (s->any_size || size == (GtkIconSize)-1 || (sizes_equivalent (size, s->size))) &&
 +          (s->any_scale || (s->scale == scale)))
          {
-	  if (!g_slist_find (failed, s))
-	    {
+ 	  if (!g_slist_find (failed, s))
+ 	    {
 @@ -1392,7 +1398,7 @@ render_icon_name_pixbuf (GtkIconSource    *icon_source,
-			 GtkIconSize       size,
-			 GtkWidget        *widget,
-			 const char       *detail,
+ 			 GtkIconSize       size,
+ 			 GtkWidget        *widget,
+ 			 const char       *detail,
 -                         gboolean          scale_requested)
 +                         gdouble           scale)
  {
@@ -122,13 +122,13 @@ index 0dc31e6..41d1ee7 100644
    gint *sizes, *s, dist;
    GError *error = NULL;
 -  gdouble scale = 1;
-
+ 
    if (widget && gtk_widget_has_screen (widget))
      screen = gtk_widget_get_screen (widget);
 @@ -1419,14 +1424,6 @@ render_icon_name_pixbuf (GtkIconSource    *icon_source,
    icon_theme = gtk_icon_theme_get_for_screen (screen);
    settings = gtk_settings_get_for_screen (screen);
-
+ 
 -  if (scale_requested && widget)
 -    {
 -      if (!widget->window)
@@ -141,18 +141,18 @@ index 0dc31e6..41d1ee7 100644
      {
        if (size == (GtkIconSize)-1)
 @@ -1469,7 +1466,7 @@ render_icon_name_pixbuf (GtkIconSource    *icon_source,
-	}
+ 	}
      }
-
+ 
 -  pixel_size = MIN (width, height) * scale;
 +  pixel_size = MIN (width, height);
-
+ 
    if (icon_source->direction != GTK_TEXT_DIR_NONE)
      {
 @@ -1483,9 +1480,10 @@ render_icon_name_pixbuf (GtkIconSource    *icon_source,
        names[1] = icon_source->source.icon_name;
        names[2] = NULL;
-
+ 
 -      info = gtk_icon_theme_choose_icon (icon_theme,
 -                                         names,
 -                                         pixel_size, GTK_ICON_LOOKUP_USE_BUILTIN);
@@ -176,12 +176,12 @@ index 0dc31e6..41d1ee7 100644
 +                                                       pixel_size, scale, 0,
 +                                                       &error);
      }
-
+ 
    if (!tmp_pixbuf)
 @@ -1534,7 +1532,7 @@ find_and_render_icon_source (GtkIconSet       *icon_set,
-			     GtkIconSize       size,
-			     GtkWidget         *widget,
-			     const char        *detail,
+ 			     GtkIconSize       size,
+ 			     GtkWidget         *widget,
+ 			     const char        *detail,
 -                             gboolean           scale_requested)
 +			     gdouble           scale)
  {
@@ -193,35 +193,35 @@ index 0dc31e6..41d1ee7 100644
      {
 -      GtkIconSource *source = find_best_matching_source (icon_set, direction, state, size, failed);
 +      GtkIconSource *source = find_best_matching_source (icon_set, direction, state, size, scale, failed);
-
+ 
        if (source == NULL)
-	break;
+ 	break;
 @@ -1576,7 +1574,7 @@ find_and_render_icon_source (GtkIconSet       *icon_set,
-	case GTK_ICON_SOURCE_STATIC_ICON_NAME:
-	  pixbuf = render_icon_name_pixbuf (source, style,
-					    direction, state, size,
+ 	case GTK_ICON_SOURCE_STATIC_ICON_NAME:
+ 	  pixbuf = render_icon_name_pixbuf (source, style,
+ 					    direction, state, size,
 -					    widget, detail, scale_requested);
 +					    widget, detail, scale);
-	  if (!pixbuf)
-	    failed = g_slist_prepend (failed, source);
-	  break;
+ 	  if (!pixbuf)
+ 	    failed = g_slist_prepend (failed, source);
+ 	  break;
 @@ -1601,7 +1599,7 @@ render_fallback_image (GtkStyle          *style,
                         const char        *detail)
  {
    /* This icon can be used for any direction/state/size */
 -  static GtkIconSource fallback_source = GTK_ICON_SOURCE_INIT (TRUE, TRUE, TRUE);
 +  static GtkIconSource fallback_source = GTK_ICON_SOURCE_INIT (TRUE, TRUE, TRUE, TRUE);
-
+ 
    if (fallback_source.type == GTK_ICON_SOURCE_EMPTY)
      {
 @@ -1652,7 +1650,7 @@ _get_real_scale (GtkWidget   *widget,
    settings = gtk_settings_get_for_screen (screen);
    gtk_icon_size_lookup_for_settings (settings, size, &icon_width, NULL);
-
+ 
 -  return (gdouble) gdk_pixbuf_get_width (icon) / icon_width;
 +  return round ((gdouble) gdk_pixbuf_get_width (icon) / icon_width);
  }
-
+ 
  GdkPixbuf*
 @@ -1663,28 +1661,23 @@ gtk_icon_set_render_icon_internal (GtkIconSet        *icon_set,
                                     GtkIconSize        size,
@@ -232,48 +232,48 @@ index 0dc31e6..41d1ee7 100644
 +				   gdouble           *scale)
  {
    GdkPixbuf *icon;
-
+ 
 -  if (real_scale)
 -    *real_scale = 1;
 -
    if (icon_set->sources == NULL)
      return render_fallback_image (style, direction, state, size, widget, detail);
-
+ 
    if (detail == NULL)
      {
        icon = find_in_cache (icon_set, style, direction,
 -                        state, size);
 +			    state, size, *scale);
-
+ 
        if (icon)
-	{
-	  g_object_ref (icon);
-
+ 	{
+ 	  g_object_ref (icon);
+ 
 -          if (scale_requested && real_scale)
 -            *real_scale = _get_real_scale (widget, style, size, icon);
 +	  *scale = _get_real_scale (widget, style, size, icon);
-
-	  return icon;
-	}
+ 
+ 	  return icon;
+ 	}
 @@ -1692,16 +1685,15 @@ gtk_icon_set_render_icon_internal (GtkIconSet        *icon_set,
-
-
+ 
+ 
    icon = find_and_render_icon_source (icon_set, style, direction, state, size,
 -				      widget, detail, scale_requested);
 +				      widget, detail, *scale);
-
+ 
    if (icon == NULL)
      icon = render_fallback_image (style, direction, state, size, widget, detail);
-
+ 
 -  if (detail == NULL)
 -    add_to_cache (icon_set, style, direction, state, size, icon);
 +  *scale = _get_real_scale (widget, style, size, icon);
-
+ 
 -  if (scale_requested && real_scale)
 -    *real_scale = _get_real_scale (widget, style, size, icon);
 +  if (detail == NULL)
 +    add_to_cache (icon_set, style, direction, state, size, *scale, icon);
-
+ 
    return icon;
  }
 @@ -1739,12 +1731,14 @@ gtk_icon_set_render_icon (GtkIconSet        *icon_set,
@@ -284,13 +284,13 @@ index 0dc31e6..41d1ee7 100644
 +
    g_return_val_if_fail (icon_set != NULL, NULL);
    g_return_val_if_fail (style == NULL || GTK_IS_STYLE (style), NULL);
-
+ 
    return gtk_icon_set_render_icon_internal (icon_set, style, direction,
                                              state, size, widget, detail,
 -                                            FALSE, NULL);
 +                                            &scale);
  }
-
+ 
  GdkPixbuf*
 @@ -1755,19 +1749,22 @@ gtk_icon_set_render_icon_scaled (GtkIconSet        *icon_set,
                                   GtkIconSize        size,
@@ -304,19 +304,19 @@ index 0dc31e6..41d1ee7 100644
 +  g_return_val_if_fail (scale != NULL, NULL);
 +
 +  *scale = MAX (*scale, 1);
-
+ 
    return gtk_icon_set_render_icon_internal (icon_set, style, direction,
                                              state, size, widget, detail,
 -                                            TRUE, real_scale);
 +                                            scale);
  }
-
+ 
  /* Order sources by their "wildness", so that "wilder" sources are
   * greater than "specific" sources; for determining ordering,
 - * direction beats state beats size.
 + * direction beats state beats size beats scale.
   */
-
+ 
  static int
 @@ -1788,6 +1785,10 @@ icon_source_compare (gconstpointer ap, gconstpointer bp)
      return -1;
@@ -334,18 +334,18 @@ index 0dc31e6..41d1ee7 100644
    src->size = GTK_ICON_SIZE_INVALID;
    src->state = GTK_STATE_NORMAL;
 +  src->scale = 1;
-
+ 
    src->any_direction = TRUE;
    src->any_state = TRUE;
    src->any_size = TRUE;
 +  src->any_scale = TRUE;
-
+ 
    return src;
  }
 @@ -2319,6 +2322,15 @@ gtk_icon_source_set_size_wildcarded (GtkIconSource *source,
    source->any_size = setting != FALSE;
  }
-
+ 
 +void
 +gtk_icon_source_set_scale_wildcarded (GtkIconSource *source,
 +                                      gboolean       setting)
@@ -361,7 +361,7 @@ index 0dc31e6..41d1ee7 100644
 @@ -2367,6 +2379,14 @@ gtk_icon_source_get_direction_wildcarded (const GtkIconSource *source)
    return source->any_direction;
  }
-
+ 
 +gboolean
 +gtk_icon_source_get_scale_wildcarded (const GtkIconSource *source)
 +{
@@ -376,7 +376,7 @@ index 0dc31e6..41d1ee7 100644
 @@ -2433,6 +2453,15 @@ gtk_icon_source_set_size (GtkIconSource *source,
    source->size = size;
  }
-
+ 
 +void
 +gtk_icon_source_set_scale (GtkIconSource *source,
 +                           gdouble        scale)
@@ -392,7 +392,7 @@ index 0dc31e6..41d1ee7 100644
 @@ -2486,6 +2515,14 @@ gtk_icon_source_get_size (const GtkIconSource *source)
    return source->size;
  }
-
+ 
 +gdouble
 +gtk_icon_source_get_scale (const GtkIconSource *source)
 +{
@@ -402,14 +402,14 @@ index 0dc31e6..41d1ee7 100644
 +}
 +
  #define NUM_CACHED_ICONS 8
-
+ 
  typedef struct _CachedIcon CachedIcon;
 @@ -2499,6 +2536,7 @@ struct _CachedIcon
    GtkTextDirection direction;
    GtkStateType state;
    GtkIconSize size;
 +  gdouble scale;
-
+ 
    GdkPixbuf *pixbuf;
  };
 @@ -2529,7 +2567,8 @@ find_in_cache (GtkIconSet      *icon_set,
@@ -444,7 +444,7 @@ index 0dc31e6..41d1ee7 100644
    icon->size = size;
 +  icon->scale = scale;
    icon->pixbuf = pixbuf;
-
+ 
    if (icon->style)
 diff --git a/gtk/gtkiconfactory.h b/gtk/gtkiconfactory.h
 index e38f8e6..d646ed9 100644
@@ -473,8 +473,9 @@ index e38f8e6..d646ed9 100644
  GtkIconSize      gtk_icon_source_get_size                 (const GtkIconSource *source);
 -
 +gdouble          gtk_icon_source_get_scale                (const GtkIconSource *source);
-
+ 
  /* ignore this */
  void _gtk_icon_set_invalidate_caches (void);
---
+-- 
 1.7.10.2 (Apple Git-33)
+
