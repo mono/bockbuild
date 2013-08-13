@@ -83,6 +83,7 @@ class GtkPackage (GnomeGitPackage):
 				'patches/gtk/0066-cellrendererpixbuf-let-2x-variants-go-through-pixel-.patch',
 				'patches/gtk/0067-quartz-Make-event-loop-deal-with-recursive-poll-invo.patch',
 				'patches/gtk/0068-nsview-implement-a-few-text-view-command-accelerator.patch',
+				'patches/gtk/0069-menu-scrolling.patch',
 
                 'patches/gtk/0069-reset-cursor-on-NSMouseExited.patch',
 
