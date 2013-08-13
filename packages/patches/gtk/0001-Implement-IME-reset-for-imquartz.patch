@@ -1,25 +1,13 @@
-From 7c74575030512224a79c3de2dfa4b7ed40115f23 Mon Sep 17 00:00:00 2001
-From: Michael Hutchinson <m.j.hutchinson@gmail.com>
-Date: Sat, 29 Jun 2013 05:11:25 -0400
-Subject: [PATCH] Implement IME reset for imquartz
-
-Reset the Cocoa IME state when the immodule is reset.
-
-This means that IME state is cleared correctly when moving the
-caret within a widget, or transferring focus between widgets, and
-the preedit string is cleared.
----
- modules/input/imquartz.c | 21 +++++++++++++++++++++
- 1 file changed, 21 insertions(+)
-
 diff --git a/modules/input/imquartz.c b/modules/input/imquartz.c
-index 9788ad3..f70399e 100644
+index 61ad914..720f039 100644
 --- a/modules/input/imquartz.c
 +++ b/modules/input/imquartz.c
-@@ -211,6 +211,24 @@ static void
- quartz_reset (GtkIMContext *context)
- {
-   GTK_NOTE (MISC, g_print ("quartz_reset\n"));
+@@ -211,9 +211,37 @@ quartz_filter_keypress (GtkIMContext *context,
+ }
+ 
+ static void
++discard_preedit (GtkIMContext *context, gboolean commit)
++{
 +  GtkIMContextQuartz *qc = GTK_IM_CONTEXT_QUARTZ (context);
 +
 +  if (!qc->client_window)
@@ -29,28 +17,36 @@ index 9788ad3..f70399e 100644
 +  if (!nsview)
 +    return;
 +
-+  // reset any partial input for this NSView
++  /* reset any partial input for this NSView */
 +  NSInputManager *currentInputManager = [NSInputManager currentInputManager];
 +  [currentInputManager markedTextAbandoned:nsview];
 +
-+  if (qc->preedit_str) {
-+    g_free (qc->preedit_str);
-+    qc->preedit_str = NULL;
-+    g_signal_emit_by_name (context, "preedit_changed");
-+  }
++  if (qc->preedit_str)
++    {
++      if (commit)
++        g_signal_emit_by_name (context, "commit", qc->preedit_str);
++
++      g_free (qc->preedit_str);
++      qc->preedit_str = NULL;
++      g_signal_emit_by_name (context, "preedit_changed");
++    }
++}
++
++static void
+ quartz_reset (GtkIMContext *context)
+ {
+   GTK_NOTE (MISC, g_print ("quartz_reset\n"));
++  discard_preedit (context, TRUE);
  }
  
  static void
-@@ -239,6 +257,9 @@ quartz_focus_out (GtkIMContext *context)
+@@ -242,6 +270,9 @@ quartz_focus_out (GtkIMContext *context)
  
    GtkIMContextQuartz *qc = GTK_IM_CONTEXT_QUARTZ (context);
    qc->focused = FALSE;
 +
-+  // clear any partially built strings or it'll mess up other GTK+ widgets in the window
-+  quartz_reset (context);
++  /* Clear any partially built strings or it'll mess up other GTK+ widgets in the window */
++  discard_preedit (context, FALSE);
  }
  
  static void
--- 
-1.8.2.3
-
