@@ -25,7 +25,7 @@ index 61ad914..9e42d8f 100644
 +  NSInputManager *currentInputManager = [NSInputManager currentInputManager];
 +  [currentInputManager markedTextAbandoned:nsview];
 +
-+  if (qc->preedit_str)
++  if (qc->preedit_str && strlen (qc->preedit_str) > 0)
 +    {
 +      g_signal_emit_by_name (context, "commit", qc->preedit_str);
 +
