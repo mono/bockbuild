@@ -1,6 +1,6 @@
 class GtkPackage (GnomeGitPackage):
 	def __init__ (self):
-		GnomeGitPackage.__init__ (self, 'gtk+', '2.24', 'cc2d29771daee4f88474497c3b596968a4ebb31a',
+		GnomeGitPackage.__init__ (self, 'gtk+', '2.24', '36e26c8a031bab3365e7a2818666ec41bbb6693b',
 			configure_flags = [
 				'--with-gdktarget=%{gdk_target}',
 #				'--disable-cups',
@@ -109,9 +109,7 @@ class GtkPackage (GnomeGitPackage):
 
 				# Bug  10256 - Mac window manipulation tools get confused by Xamarin Studio
 				# https://bugzilla.xamarin.com/attachment.cgi?id=3465
-				'patches/gtk/bxc_10256_window_tools_get_confused.diff',
-				
-				'patches/gtk/0001-Implement-IME-reset-for-imquartz.patch',
+				'patches/gtk/bxc_10256_window_tools_get_confused.diff'
 			])
 
 	def prep (self):
