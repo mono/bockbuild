@@ -84,6 +84,7 @@ class GtkPackage (GnomeGitPackage):
 				'patches/gtk/0067-quartz-Make-event-loop-deal-with-recursive-poll-invo.patch',
 				'patches/gtk/0068-nsview-implement-a-few-text-view-command-accelerator.patch',
 				'patches/gtk/0069-menu-scrolling.patch',
+				'patches/gtk/0070-tooltips-focus.patch',
 
 				# Bug 702841 - GdkQuartz does not distinguish Eisu, Kana and Space keys on Japanese keyrboard
 				# https://bugzilla.gnome.org/show_bug.cgi?id=702841
