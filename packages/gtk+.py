@@ -1,6 +1,6 @@
 class GtkPackage (GnomeGitPackage):
 	def __init__ (self):
-		GnomeGitPackage.__init__ (self, 'gtk+', '2.24', '36e26c8a031bab3365e7a2818666ec41bbb6693b',
+		GnomeGitPackage.__init__ (self, 'gtk+', '2.24', 'a2149a671aeff4200f3a72a350e503366ce99da8',
 			configure_flags = [
 				'--with-gdktarget=%{gdk_target}',
 #				'--disable-cups',
