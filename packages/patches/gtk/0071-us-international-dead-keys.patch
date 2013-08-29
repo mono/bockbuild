@@ -1,0 +1,198 @@
+diff --git a/gdk/win32/gdkevents-win32.c b/gdk/win32/gdkevents-win32.c
+index 1cde4fc..96171de 100644
+--- a/gdk/win32/gdkevents-win32.c
++++ b/gdk/win32/gdkevents-win32.c
+@@ -2047,6 +2047,7 @@ gdk_event_translate (MSG  *msg,
+   BYTE key_state[256];
+   HIMC himc;
+   WINDOWPOS *windowpos;
++  gchar klname[KL_NAMELENGTH];
+   gboolean ignore_leave;
+ 
+   GdkEvent *event;
+@@ -2196,6 +2197,8 @@ gdk_event_translate (MSG  *msg,
+     {
+     case WM_INPUTLANGCHANGE:
+       _gdk_input_locale = (HKL) msg->lParam;
++      GetKeyboardLayoutName (klname);
++      _gdk_keyboard_layout = strtoul (klname, NULL, 16);
+       _gdk_input_locale_is_ime = ImmIsIME (_gdk_input_locale);
+       GetLocaleInfo (MAKELCID (LOWORD (_gdk_input_locale), SORT_DEFAULT),
+ 		     LOCALE_IDEFAULTANSICODEPAGE,
+@@ -3526,6 +3529,12 @@ done:
+   return return_val;
+ }
+ 
++unsigned
++gdk_win32_keyboard_layout_libgtk_only (void)
++{
++  return _gdk_keyboard_layout;
++}
++
+ void
+ _gdk_events_queue (GdkDisplay *display)
+ {
+diff --git a/gdk/win32/gdkglobals-win32.c b/gdk/win32/gdkglobals-win32.c
+index 1a876d0..6be65cf 100644
+--- a/gdk/win32/gdkglobals-win32.c
++++ b/gdk/win32/gdkglobals-win32.c
+@@ -43,6 +43,7 @@ HINSTANCE	  _gdk_dll_hinstance;
+ HINSTANCE	  _gdk_app_hmodule;
+ 
+ HKL		  _gdk_input_locale;
++unsigned	  _gdk_keyboard_layout;
+ gboolean	  _gdk_input_locale_is_ime;
+ UINT		  _gdk_input_codepage;
+ 
+diff --git a/gdk/win32/gdkmain-win32.c b/gdk/win32/gdkmain-win32.c
+index dc139be..95d4b8d 100644
+--- a/gdk/win32/gdkmain-win32.c
++++ b/gdk/win32/gdkmain-win32.c
+@@ -78,6 +78,7 @@ void
+ _gdk_windowing_init (void)
+ {
+   gchar buf[10];
++  gchar klname[KL_NAMELENGTH];
+ 
+   if (getenv ("GDK_IGNORE_WINTAB") != NULL)
+     _gdk_input_ignore_wintab = TRUE;
+@@ -90,6 +91,8 @@ _gdk_windowing_init (void)
+   _gdk_app_hmodule = GetModuleHandle (NULL);
+   _gdk_display_hdc = CreateDC ("DISPLAY", NULL, NULL, NULL);
+   _gdk_input_locale = GetKeyboardLayout (0);
++  GetKeyboardLayoutName (klname);
++  _gdk_keyboard_layout = strtoul (klname, NULL, 16);
+   _gdk_input_locale_is_ime = ImmIsIME (_gdk_input_locale);
+   GetLocaleInfo (MAKELCID (LOWORD (_gdk_input_locale), SORT_DEFAULT),
+ 		 LOCALE_IDEFAULTANSICODEPAGE,
+diff --git a/gdk/win32/gdkprivate-win32.h b/gdk/win32/gdkprivate-win32.h
+index 7899533..ca21d13 100644
+--- a/gdk/win32/gdkprivate-win32.h
++++ b/gdk/win32/gdkprivate-win32.h
+@@ -400,6 +400,7 @@ extern HINSTANCE	 _gdk_app_hmodule;
+  * from a single thread anyway.
+  */
+ extern HKL		 _gdk_input_locale;
++extern unsigned		 _gdk_keyboard_layout;
+ extern gboolean		 _gdk_input_locale_is_ime;
+ extern UINT		 _gdk_input_codepage;
+ 
+diff --git a/gtk/gtkimcontextsimple.c b/gtk/gtkimcontextsimple.c
+index 1c40e9d..b7fc272 100644
+--- a/gtk/gtkimcontextsimple.c
++++ b/gtk/gtkimcontextsimple.c
+@@ -288,23 +288,47 @@ check_table (GtkIMContextSimple    *context_simple,
+  * compose tables are different for dead acute and diaeresis, which
+  * when followed by space produce a plain ASCII apostrophe and double
+  * quote respectively. So special-case those.
++ *
++ * On the US International keyboard, the expected behaviour of the
++ * dead_acute key (which is labeled with an apostrophe) and
++ * dead_diaeresis keys is weird. Handle them specially. Don't bother
++ * yet with making the US International keyboard work exactly like in
++ * "most other" Windows apps for the other dead keys (dead_grave,
++ * dead_tilde and dead_circumflex) as there has been no complaints
++ * about those.
++ *
++ * If we would want to mimic the dead key behaviour in "other" Windows
++ * apps exactly for all keyboard layouts, then obviously the table
++ * data from the X compose sequences, and the check_algorithmically()
++ * function, would not be used on Windows. Instead we would need to
++ * determine over in gdkkeys-win32.c in update_keymap() exactly how
++ * each dead key is supposed to behave, and here just use that
++ * information. We probably don't want to do that. It would be a pity
++ * to actively drop useful functionality.
+  */
+ 
+ static gboolean
+ check_win32_special_cases (GtkIMContextSimple    *context_simple,
+ 			   gint                   n_compose)
+ {
+-  if (n_compose == 2 &&
+-      context_simple->compose_buffer[1] == GDK_space)
++  extern unsigned gdk_win32_keyboard_layout_libgtk_only (void);
++
++  if (n_compose != 2)
++    return FALSE;
++
++  if (context_simple->compose_buffer[1] == GDK_space &&
++      gdk_win32_keyboard_layout_libgtk_only () != 0x00020409)
+     {
+       gunichar value = 0;
+ 
+       switch (context_simple->compose_buffer[0])
+ 	{
+ 	case GDK_dead_acute:
+-	  value = 0x00B4; break;
++	  value = 0x00B4;
++	  break;
+ 	case GDK_dead_diaeresis:
+-	  value = 0x00A8; break;
++	  value = 0x00A8;
++	  break;
+ 	}
+       if (value > 0)
+ 	{
+@@ -315,6 +339,53 @@ check_win32_special_cases (GtkIMContextSimple    *context_simple,
+ 	  return TRUE;
+ 	}
+     }
++  else if (gdk_win32_keyboard_layout_libgtk_only () == 0x00020409 &&
++	   (context_simple->compose_buffer[0] == GDK_dead_acute &&
++	   ((context_simple->compose_buffer[1] >= 'b' && context_simple->compose_buffer[1] <= 'z') ||
++	    (context_simple->compose_buffer[1] >= 'B' && context_simple->compose_buffer[1] <= 'Z'))))
++    {
++      guint c = context_simple->compose_buffer[1];
++
++      switch (c)
++	{
++	case 'c':
++	  gtk_im_context_simple_commit_char (GTK_IM_CONTEXT (context_simple), 0x00E7);
++	  return TRUE;
++	case 'C':
++	  gtk_im_context_simple_commit_char (GTK_IM_CONTEXT (context_simple), 0x00C7);
++	  return TRUE;
++	case 'e': case 'E':	case 'i': case 'I':
++	case 'o': case 'O': case 'u': case 'U': case 'y': case 'Y':
++	  return FALSE;
++	}
++      gtk_im_context_simple_commit_char (GTK_IM_CONTEXT (context_simple), '\'');
++      gtk_im_context_simple_commit_char (GTK_IM_CONTEXT (context_simple), c);
++      context_simple->compose_buffer[0] = 0;
++
++      GTK_NOTE (MISC, g_print ("win32: ' %c\n", c));
++      return TRUE;
++    }
++  else if (gdk_win32_keyboard_layout_libgtk_only () == 0x00020409 &&
++	   (context_simple->compose_buffer[0] == GDK_dead_diaeresis &&
++	   ((context_simple->compose_buffer[1] >= 'b' && context_simple->compose_buffer[1] <= 'z') ||
++	    (context_simple->compose_buffer[1] >= 'B' && context_simple->compose_buffer[1] <= 'Z'))))
++    {
++      guint c = context_simple->compose_buffer[1];
++
++      switch (c)
++	{
++	case 'e': case 'E': case 'i': case 'I':
++	case 'o': case 'O': case 'u': case 'U': case 'y':
++	  return FALSE;
++	}
++      gtk_im_context_simple_commit_char (GTK_IM_CONTEXT (context_simple), '"');
++      gtk_im_context_simple_commit_char (GTK_IM_CONTEXT (context_simple), c);
++      context_simple->compose_buffer[0] = 0;
++
++      GTK_NOTE (MISC, g_print ("win32: \" %c\n", c));
++      return TRUE;
++    }
++
+   return FALSE;
+ }
+ 
+@@ -470,7 +541,7 @@ check_compact_table (GtkIMContextSimple    *context_simple,
+       value = seq[row_stride - 1];
+ 
+       gtk_im_context_simple_commit_char (GTK_IM_CONTEXT (context_simple), value);
+-#ifdef G_OS_WIN32
++#ifdef GDK_WINDOWING_WIN32
+       check_win32_special_case_after_compact_match (context_simple, n_compose, value);
+ #endif
+       context_simple->compose_buffer[0] = 0;
