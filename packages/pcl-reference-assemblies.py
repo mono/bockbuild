@@ -8,7 +8,7 @@ class PCLReferenceAssembliesPackage(Package):
         Package.__init__(self,
                          name='PortableReferenceAssemblies',
                          version='2013-09-10',
-                         sources=['http://storage.bos.xamarin.com/bot-provisioning/mono-pcl-2013-09-11-2.tar.gz'])
+                         sources=['http://storage.bos.xamarin.com/bot-provisioning/mono-pcl-profiles.gm-2013-09-17.tar.gz'])
         self.source_dir_name = "mono-pcl-profiles"
 
     def prep(self):
