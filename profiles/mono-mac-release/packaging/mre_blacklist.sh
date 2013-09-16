@@ -195,3 +195,6 @@ rm -rf share/xml/libglade/*
 
 # No debug files in the runtime
 find . -name '*.mdb' -delete
+
+# Remove PCL files
+rm -rf lib/mono/xbuild-frameworks/.NETPortable
