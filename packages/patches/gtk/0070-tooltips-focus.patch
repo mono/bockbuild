@@ -1,5 +1,5 @@
 diff --git a/gtk/gtktooltip.c b/gtk/gtktooltip.c
-index 9918165..ef40265 100644
+index 9918165..0efe4ff 100644
 --- a/gtk/gtktooltip.c
 +++ b/gtk/gtktooltip.c
 @@ -98,6 +98,9 @@ static void       gtk_tooltip_display_closed       (GdkDisplay      *display,
@@ -52,7 +52,7 @@ index 9918165..ef40265 100644
    tooltip->tooltip_widget = NULL;
  
    if (!tooltip->keyboard_mode_enabled)
-@@ -1302,6 +1317,16 @@ gtk_tooltip_hide_tooltip (GtkTooltip *tooltip)
+@@ -1302,6 +1317,14 @@ gtk_tooltip_hide_tooltip (GtkTooltip *tooltip)
      }
  }
  
@@ -62,8 +62,6 @@ index 9918165..ef40265 100644
 +                    GtkTooltip    *tooltip)
 +{
 +  gtk_tooltip_hide_tooltip (tooltip);
-+
-+  return FALSE;
 +}
 +
  static gint
