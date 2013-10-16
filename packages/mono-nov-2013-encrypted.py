@@ -9,7 +9,7 @@ class MonoNovember2013EncryptedPackage(Package):
 
         Package.__init__(self, 'mono', os.getenv('MONO_VERSION'),
                          sources=[
-                             'git://github.com/xamarin/mono.git',
+                             'git@github.com:xamarin/mono.git',
                              'git@github.com:xamarin/mono-extensions.git'],
                          git_branch='mono-nov-2013-branch',
                          revision=os.getenv('MONO_BUILD_REVISION'),
