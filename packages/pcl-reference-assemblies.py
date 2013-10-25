@@ -9,7 +9,7 @@ class PCLReferenceAssembliesPackage(Package):
                          name='mono-pcl-profiles-2013-10-25',
                          version='2013-10-25',
                          sources=['http://storage.bos.xamarin.com/bot-provisioning/mono-pcl-profiles-2013-10-25.tar.gz'])
-        self.source_dir_name = "mono-pcl-profiles"
+        self.source_dir_name = "mono-pcl-profiles-2013-10-25"
 
     def prep(self):
         self.extract_archive(self.sources[0],
