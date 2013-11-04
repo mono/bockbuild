@@ -26,6 +26,9 @@ class MonoMasterEncryptedPackage(Package):
                 '--enable-loadedllvm'
             ])
 
+            if os.getenv('MONO_BRANCH') == 'master':
+                self.configure_flags.extend(['--enable-extension-module=crypto'])
+
         self.sources.extend([
             # Fixes up pkg-config usage on the Mac
             'patches/mcs-pkgconfig.patch'
@@ -73,7 +76,9 @@ class MonoMasterEncryptedPackage(Package):
 
     def prep(self):
         Package.prep(self)
-        self.apply_extensions()
+        if os.getenv('MONO_BRANCH') != 'master':
+            self.apply_extensions()
+
         self.cd('%{source_dir_name}')
         if Package.profile.name == 'darwin':
             for p in range(2, len(self.sources)):
