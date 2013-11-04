@@ -27,7 +27,7 @@ class MonoMasterEncryptedPackage(Package):
             ])
 
             if os.getenv('MONO_BRANCH') == 'master':
-                self.configure_flags.extend(['--enable-extension-module=crypto'])
+                self.configure_flags.extend(['--enable-extension-module=crypto,native-types'])
 
         self.sources.extend([
             # Fixes up pkg-config usage on the Mac
