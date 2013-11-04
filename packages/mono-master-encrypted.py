@@ -37,17 +37,21 @@ class MonoMasterEncryptedPackage(Package):
         self.configure = 'CFLAGS=-O2 ./autogen.sh'
         self.make = 'make'
 
-    def apply_extensions(self):
-        # Copied from Package#prep, makes sure we get the latest
-        # extensions
+    def checkout_mono_extensions(self, build_root):
         ext = self.sources[1]
-        build_root = os.path.abspath(os.path.join(os.getcwd(), ".."))
         dirname = os.path.join(build_root, "mono-extensions")
         if not os.path.exists(dirname):
             self.sh('%' + '{git} clone --local --shared "%s" "%s"' % (ext, dirname))
-            self.cd(dirname)
-            self.sh('%{git} clean -xfd')
-            self.sh('%{git} pull')
+        self.cd(dirname)
+        self.sh('%{git} clean -xfd')
+        self.sh('%{git} pull')
+
+
+    def apply_crypto(self):
+        # Copied from Package#prep, makes sure we get the latest
+        # extensions
+        build_root = os.path.abspath(os.path.join(os.getcwd(), ".."))
+        self.checkout_mono_extensions(build_root)
 
         # Use quilt to apply the patch queue
         self.cd(build_root)
@@ -64,7 +68,7 @@ class MonoMasterEncryptedPackage(Package):
                 os.symlink(full_mono, mono)
 
         # ignore 'quilt pop' return code because the tree might be pristine
-        prologue = "cd %s; export QUILT_PATCHES=mono-extensions" % build_root
+        prologue = "cd %s; export QUILT_PATCHES=mono-extensions/crypto" % build_root
         self.sh("%s; /usr/local/bin/quilt upgrade || true" % prologue)
         self.sh("%s; /usr/local/bin/quilt pop -af || true" % prologue)
         self.sh("%s; /usr/local/bin/quilt push -a" % prologue)
@@ -76,9 +80,19 @@ class MonoMasterEncryptedPackage(Package):
 
     def prep(self):
         Package.prep(self)
-        if os.getenv('MONO_BRANCH') != 'master':
-            self.apply_extensions()
+        print os.getenv('MONO_BRANCH')
+        build_root = os.path.abspath(os.path.join(os.getcwd(), ".."))
+        mono_dir = self.name + "-" + self.version
 
+        if os.getenv('MONO_BRANCH') != 'master':
+            self.apply_crypto()
+        else:
+            source_dir = os.path.join(build_root, mono_dir)
+            dest_dir = os.path.join(build_root, "mono")
+            self.sh("ln -s %s %s" % (source_dir, dest_dir))
+            self.checkout_mono_extensions(build_root)
+
+        self.cd(build_root)
         self.cd('%{source_dir_name}')
         if Package.profile.name == 'darwin':
             for p in range(2, len(self.sources)):
