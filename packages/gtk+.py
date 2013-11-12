@@ -86,7 +86,7 @@ class GtkPackage (GnomeGitPackage):
 				'patches/gtk/0069-menu-scrolling.patch',
 				'patches/gtk/0070-tooltips-focus.patch',
 				'patches/gtk/0071-light-and-dark-overlay-scrollbars.patch',
-				'patches/gtk/0072-let-global-keyboard-shortcuts-pass-through.patch',
+#				'patches/gtk/0072-let-global-keyboard-shortcuts-pass-through.patch',
 				'patches/gtk/0073-disable-combobox-scrolling.patch',
 
 				# Bug 702841 - GdkQuartz does not distinguish Eisu, Kana and Space keys on Japanese keyrboard
