@@ -3,7 +3,7 @@ class GlibPackage (GnomeXzPackage):
 		GnomeXzPackage.__init__ (self,
 			'glib',
 			version_major = '2.36',
-			version_minor = '3')
+			version_minor = '4')
 
 		self.darwin = Package.profile.name == 'darwin'
 

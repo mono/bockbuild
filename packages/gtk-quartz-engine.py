@@ -3,5 +3,5 @@ Package ('gtk-quartz-engine', 'master',
 	override_properties = {
 		'configure': './autogen.sh --prefix=%{prefix}'
 	},
-	revision = '8df9784d4572c69938f05da009bd3646e253ff9d'
+	revision = '8e0437c006eae316389fa89a670de6a7b56e9136'
 )

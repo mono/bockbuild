@@ -1,6 +1,6 @@
 class GtkPackage (GnomeGitPackage):
 	def __init__ (self):
-		GnomeGitPackage.__init__ (self, 'gtk+', '2.24', 'cc2d29771daee4f88474497c3b596968a4ebb31a',
+		GnomeGitPackage.__init__ (self, 'gtk+', '2.24', '280fc402be5fb46b66bcd32056963bb1afb8b54b',
 			configure_flags = [
 				'--with-gdktarget=%{gdk_target}',
 #				'--disable-cups',
@@ -84,6 +84,10 @@ class GtkPackage (GnomeGitPackage):
 				'patches/gtk/0067-quartz-Make-event-loop-deal-with-recursive-poll-invo.patch',
 				'patches/gtk/0068-nsview-implement-a-few-text-view-command-accelerator.patch',
 				'patches/gtk/0069-menu-scrolling.patch',
+				'patches/gtk/0070-tooltips-focus.patch',
+				'patches/gtk/0071-light-and-dark-overlay-scrollbars.patch',
+#				'patches/gtk/0072-let-global-keyboard-shortcuts-pass-through.patch',
+				'patches/gtk/0073-disable-combobox-scrolling.patch',
 
 				# Bug 702841 - GdkQuartz does not distinguish Eisu, Kana and Space keys on Japanese keyrboard
 				# https://bugzilla.gnome.org/show_bug.cgi?id=702841
@@ -109,9 +113,7 @@ class GtkPackage (GnomeGitPackage):
 
 				# Bug  10256 - Mac window manipulation tools get confused by Xamarin Studio
 				# https://bugzilla.xamarin.com/attachment.cgi?id=3465
-				'patches/gtk/bxc_10256_window_tools_get_confused.diff',
-				
-				'patches/gtk/0001-Implement-IME-reset-for-imquartz.patch',
+				'patches/gtk/bxc_10256_window_tools_get_confused.diff'
 			])
 
 	def prep (self):
