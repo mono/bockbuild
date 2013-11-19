@@ -7,7 +7,7 @@ class MonoLlvmPackage (GitHubPackage):
 
 		if Package.profile.name == 'darwin' and not Package.profile.m64:
 				self.configure_flags.extend ([
-					'--build=i386-apple-darwin10.8.0'
+					'--build=i386-apple-darwin11.4.0'
 				])
 
 MonoLlvmPackage ()
