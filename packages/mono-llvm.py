@@ -1,3 +1,5 @@
+import os
+
 class MonoLlvmPackage (GitHubPackage):
 	def __init__ (self):
 		GitHubPackage.__init__ (self, 'mono', 'llvm', '3.0',
@@ -9,5 +11,6 @@ class MonoLlvmPackage (GitHubPackage):
 				self.configure_flags.extend ([
 					'--build=i386-apple-darwin11.4.0'
 				])
+				os.environ ['MACOSX_DEPLOYMENT_TARGET'] = '10.8'
 
 MonoLlvmPackage ()
