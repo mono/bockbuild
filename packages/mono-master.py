@@ -4,7 +4,7 @@ class MonoMasterPackage(Package):
 
 	def __init__(self):
 		Package.__init__(self, 'mono', os.getenv('MONO_VERSION'),
-			sources = ['git://github.com/mono/mono.git'],
+			sources = [os.getenv('MONO_REPOSITORY') or 'git://github.com/mono/mono.git'],
 			revision = os.getenv('MONO_BUILD_REVISION'),
 			configure_flags = [
 				'--enable-nls=no',
