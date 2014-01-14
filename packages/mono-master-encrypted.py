@@ -34,7 +34,7 @@ class MonoMasterEncryptedPackage(Package):
             'patches/mcs-pkgconfig.patch'
         ])
 
-        self.configure = 'CFLAGS=-O2 ./autogen.sh'
+        self.configure = expand_macros ('CFLAGS="%{env.CFLAGS} -O2" ./autogen.sh', Package.profile)
         self.make = 'make'
 
     def checkout_mono_extensions(self, build_root):
