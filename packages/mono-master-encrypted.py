@@ -98,4 +98,8 @@ class MonoMasterEncryptedPackage(Package):
             for p in range(2, len(self.sources)):
                 self.sh('patch -p1 < "%{sources[' + str(p) + ']}"')
 
+    def build(self):
+        Package.build (self)
+        self.sh ('%{make} -C mono/metadata/ pecrypt')
+
 MonoMasterEncryptedPackage()
