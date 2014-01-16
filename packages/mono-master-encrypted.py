@@ -25,9 +25,7 @@ class MonoMasterEncryptedPackage(Package):
                 '--build=i386-apple-darwin11.2.0',
                 '--enable-loadedllvm'
             ])
-
-            if os.getenv('MONO_BRANCH') == 'master':
-                self.configure_flags.extend(['--enable-extension-module=crypto,native-types'])
+        self.configure_flags.extend(['--enable-extension-module=crypto --enable-native-types'])
 
         self.sources.extend([
             # Fixes up pkg-config usage on the Mac
@@ -84,13 +82,10 @@ class MonoMasterEncryptedPackage(Package):
         build_root = os.path.abspath(os.path.join(os.getcwd(), ".."))
         mono_dir = self.name + "-" + self.version
 
-        if os.getenv('MONO_BRANCH') != 'master':
-            self.apply_crypto()
-        else:
-            source_dir = os.path.join(build_root, mono_dir)
-            dest_dir = os.path.join(build_root, "mono")
-            self.sh("ln -s %s %s" % (source_dir, dest_dir))
-            self.checkout_mono_extensions(build_root)
+        source_dir = os.path.join(build_root, mono_dir)
+        dest_dir = os.path.join(build_root, "mono")
+        self.sh("ln -s %s %s" % (source_dir, dest_dir))
+        self.checkout_mono_extensions(build_root)
 
         self.cd(build_root)
         self.cd('%{source_dir_name}')
