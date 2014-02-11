@@ -27,14 +27,6 @@ class MonoReleaseProfile(DarwinProfile, MonoReleasePackages):
         if self.RELEASE_VERSION is None:
             raise Exception("Please define the environment variable: MONO_VERSION")
 
-        # Create the updateid
-        parts = self.RELEASE_VERSION.split(".")
-        version_list = (parts + ["0"] * (3 - len(parts)))[:4]
-        for i in range(1, 3):
-            version_list[i] = version_list[i].zfill(2)
-            self.updateid = "".join(version_list)
-            self.updateid += self.BUILD_NUMBER.replace(".", "").zfill(9 - len(self.updateid))
-
         versions_root = os.path.join(self.MONO_ROOT, "Versions")
         self.release_root = os.path.join(versions_root, self.RELEASE_VERSION)
 
@@ -72,6 +64,31 @@ class MonoReleaseProfile(DarwinProfile, MonoReleasePackages):
                 os.unlink(dest)
             os.symlink(src, dest)
 
+    def find_git(self):
+        self.git = 'git'
+        for git in ['/usr/local/bin/git', '/usr/local/git/bin/git', '/usr/bin/git']:
+			if os.path.isfile (git):
+				self.git = git
+				break
+
+    def calculate_updateid(self):
+        # Create the updateid
+        if os.getenv('BOCKBUILD_ADD_BUILD_NUMBER'):
+            self.find_git()
+            version_number_str = 'cd build-root/mono; %s log `%s blame configure.in HEAD | grep AC_INIT | sed \'s/ .*//\' `..HEAD --oneline | wc -l | sed \'s/ //g\'' % (self.git, self.git)
+            self.BUILD_NUMBER = " ".join(backtick(version_number_str))
+            self.FULL_VERSION = self.RELEASE_VERSION + "." + self.BUILD_NUMBER
+        else:
+            self.BUILD_NUMBER="0"
+            self.FULL_VERSION = self.RELEASE_VERSION
+
+        parts = self.RELEASE_VERSION.split(".")
+        version_list = (parts + ["0"] * (3 - len(parts)))[:4]
+        for i in range(1, 3):
+            version_list[i] = version_list[i].zfill(2)
+            self.updateid = "".join(version_list)
+            self.updateid += self.BUILD_NUMBER.replace(".", "").zfill(9 - len(self.updateid))
+
     # creates and returns the path to a working directory containing:
     #   PKGROOT/ - this root will be bundled into the .pkg and extracted at /
     #   uninstallMono.sh - copied onto the DMG
@@ -82,6 +99,8 @@ class MonoReleaseProfile(DarwinProfile, MonoReleasePackages):
         monoroot = os.path.join(tmpdir, "PKGROOT", self.MONO_ROOT[1:])
         versions = os.path.join(monoroot, "Versions")
         os.makedirs(versions)
+
+        self.calculate_updateid();
 
         print "setup_working_dir " + tmpdir
         # setup metadata
@@ -165,7 +184,7 @@ class MonoReleaseProfile(DarwinProfile, MonoReleasePackages):
             updateinfo.write(guid + ' ' + self.updateid + "\n")
 
     def package_info(self, pkg_type):
-        version = self.RELEASE_VERSION
+        version = self.FULL_VERSION
         info = (pkg_type, version)
         filename = "MonoFramework-%s-%s.macos10.xamarin.x86.pkg" % info
         return {
