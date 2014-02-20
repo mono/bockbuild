@@ -76,7 +76,9 @@ class MonoReleaseProfile(DarwinProfile, MonoReleasePackages):
         if os.getenv('BOCKBUILD_ADD_BUILD_NUMBER'):
             self.find_git()
             version_number_str = 'cd build-root/mono; %s log `%s blame configure.in HEAD | grep AC_INIT | sed \'s/ .*//\' `..HEAD --oneline | wc -l | sed \'s/ //g\'' % (self.git, self.git)
-            self.BUILD_NUMBER = " ".join(backtick(version_number_str))
+            build_number = backtick(version_number_str)
+            print "Calculating commit distance, %s" % (build_number)
+            self.BUILD_NUMBER = " ".join(build_number)
             self.FULL_VERSION = self.RELEASE_VERSION + "." + self.BUILD_NUMBER
         else:
             self.BUILD_NUMBER="0"
