@@ -81,7 +81,7 @@ class MonoReleaseProfile(DarwinProfile, MonoReleasePackages):
             blame_rev = backtick(blame_rev_str)
             print "Last commit to the version string %s" % (blame_rev)
             blame_rev = " ".join(blame_rev)
-            version_number_str = '%s/mono; %s log %s..HEAD --oneline | wc -l | sed \'s/ //g\'' % (self.build_root, self.git, blame_rev)
+            version_number_str = 'cd %s/mono; %s log %s..HEAD --oneline | wc -l | sed \'s/ //g\'' % (self.build_root, self.git, blame_rev)
             print version_number_str
             build_number = backtick(version_number_str)
             print "Calculating commit distance, %s" % (build_number)
