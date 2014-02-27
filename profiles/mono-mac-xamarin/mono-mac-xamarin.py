@@ -76,12 +76,12 @@ class MonoReleaseProfile(DarwinProfile, MonoReleasePackages):
         if os.getenv('BOCKBUILD_ADD_BUILD_NUMBER'):
             self.find_git()
             print "cur path is %s and git is %s" % (os.getcwd(), self.git)
-            blame_rev_str = 'cd build-root/mono; %s blame configure.in HEAD | grep AC_INIT | sed \'s/ .*//\' ' % (self.git)
+            blame_rev_str = 'cd %s/mono; %s blame configure.in HEAD | grep AC_INIT | sed \'s/ .*//\' ' % (self.build_root, self.git)
             print blame_rev_str
             blame_rev = backtick(blame_rev_str)
             print "Last commit to the version string %s" % (blame_rev)
             blame_rev = " ".join(blame_rev)
-            version_number_str = 'cd build-root/mono; %s log %s..HEAD --oneline | wc -l | sed \'s/ //g\'' % (self.git, blame_rev)
+            version_number_str = '%s/mono; %s log %s..HEAD --oneline | wc -l | sed \'s/ //g\'' % (self.build_root, self.git, blame_rev)
             print version_number_str
             build_number = backtick(version_number_str)
             print "Calculating commit distance, %s" % (build_number)
