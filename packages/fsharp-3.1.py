@@ -1,10 +1,10 @@
 
-class Fsharp30Package(GitHubTarballPackage):
+class Fsharp31Package(GitHubTarballPackage):
 	def __init__(self):
 		GitHubTarballPackage.__init__(self,
 			'fsharp', 'fsharp',
-			'3.0.34',
-			'b0c16bb496fbc4df88b56957efc70c80c8624d2d',
+			'3.1.1.5',
+			'da9d13ce525adfaa2577ea956f22bc5fed8dfb9',
 			configure = '')
 
 	def build(self):
@@ -12,4 +12,4 @@ class Fsharp30Package(GitHubTarballPackage):
 		self.sh ('./configure --prefix="%{prefix}"')
 		self.sh ('make')
 
-Fsharp30Package()
+Fsharp31Package()
