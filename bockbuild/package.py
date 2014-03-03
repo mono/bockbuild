@@ -230,13 +230,16 @@ class Package:
 	def get_timestamp (self):
 		return datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
+	def namever (self):
+		return '%s-%s' % (self.name, self.version)
+
 	def start_build (self):
 		Package.last_instance = None
 
 		expand_macros (self, self)
 
 		profile = Package.profile
-		namever = '%s-%s' % (self.name, self.version)
+		namever = self.namever ()
 		package_dir = self.package_dir ()
 		package_build_dir = self.package_build_dir()
 		workspace = os.path.join (profile.build_root, namever)
@@ -452,19 +455,19 @@ class GitHubPackage (Package):
 			git_branch = git_branch,
 			configure_flags = configure_flags,
 			configure = configure,
-			sources = ['git://github.com/%{organization}/%{name}.git'],
+			sources = ['git@github.com:%{organization}/%{name}.git'],
 			override_properties = override_properties)
-			
+
 		profile = Package.profile
 		namever = '%s-%s' % (self.name, self.version)
-			
+
 		self.revision_file = os.path.join (profile.build_root, namever + '.revision')
-		
+
 	def is_successful_build(self, build_success_file, package_dir):
 		if not Package.is_successful_build(self, build_success_file, package_dir):
 			return False
 		return self.check_version_hash ()
-			
+
 	def check_version_hash (self):
 		if os.path.isfile (self.revision_file):
 			f = open (self.revision_file, 'r')
@@ -473,7 +476,7 @@ class GitHubPackage (Package):
 				return True
 		self.create_version_hash ()
 		return False
-		
+
 	def create_version_hash (self):
 		f = open (self.revision_file, 'w')
 		f.write (self.revision)
