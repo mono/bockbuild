@@ -18,7 +18,7 @@ class Package:
 		self.version = version
 		self.organization = organization
 
-		self.configure_flags = []
+		self.configure_flags = ['--enable-debug']
 		if Package.profile.global_configure_flags:
 			self.configure_flags.extend (Package.profile.global_configure_flags)
 		if configure_flags:
