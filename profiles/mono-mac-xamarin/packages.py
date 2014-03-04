@@ -74,9 +74,10 @@ class MonoReleasePackages:
             'boo.py',
             # 'nant.py',
             'ironlangs.py',
-            'fsharp-3.0.py',
+            'fsharp-3.1.py',
             'mono-addins.py',
             'mono-basic.py',
+            'ms-test-suite.py',
         ])
 
         self.packages = [os.path.join('..', '..', 'packages', p) for p in self.packages]
