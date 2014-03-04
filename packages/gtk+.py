@@ -115,7 +115,12 @@ class GtkPackage (GnomeGitPackage):
 
 				# Bug  10256 - Mac window manipulation tools get confused by Xamarin Studio
 				# https://bugzilla.xamarin.com/attachment.cgi?id=3465
-				'patches/gtk/bxc_10256_window_tools_get_confused.diff'
+				'patches/gtk/bxc_10256_window_tools_get_confused.diff',
+
+#                                'patches/gtk/gdk-pixmap-get-cgimage-2.patch',
+
+				# https://bugzilla.xamarin.com/show_bug.cgi?id=18157
+				'patches/gtk/gtk-check-grab_toplevel-is-destroyed.patch'
 			])
 
 	def prep (self):
