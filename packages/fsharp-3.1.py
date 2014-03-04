@@ -4,7 +4,7 @@ class Fsharp31Package(GitHubTarballPackage):
 		GitHubTarballPackage.__init__(self,
 			'fsharp', 'fsharp',
 			'3.1.1.5',
-			'da9d13ce525adfaa2577ea956f22bc5fed8dfb9',
+			'ada9d13ce525adfaa2577ea956f22bc5fed8dfb9',
 			configure = '')
 
 	def build(self):
