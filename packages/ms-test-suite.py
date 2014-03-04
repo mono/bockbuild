@@ -14,6 +14,7 @@ class MSTestSuitePackage(GitHubPackage):
     def build(self):
         pass
     def install(self):
+        pass
         # self.sh ("cd %s/ms-test-suite/conformance; make build && make run || true" % (self.package_build_dir()))
 
 MSTestSuitePackage()
