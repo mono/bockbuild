@@ -1,4 +1,4 @@
-class MSTestSuitePackage(GitHubPackage):
+class MSTestSuitePackage(Package):
     def __init__(self):
         Package.__init__(self,
                          name='ms-test-suite',
