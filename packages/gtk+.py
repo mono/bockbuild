@@ -120,7 +120,12 @@ class GtkPackage (GnomeGitPackage):
 #                                'patches/gtk/gdk-pixmap-get-cgimage-2.patch',
 
 				# https://bugzilla.xamarin.com/show_bug.cgi?id=18157
-				'patches/gtk/gtk-check-grab_toplevel-is-destroyed.patch'
+				'patches/gtk/gtk-check-grab_toplevel-is-destroyed.patch',
+
+				# https://bugzilla.xamarin.com/show_bug.cgi?id=18241
+				# https://bugzilla.xamarin.com/show_bug.cgi?id=17631
+				# https://bugzilla.xamarin.com/show_bug.cgi?id=17692
+				'patches/gtk/gtk-imquartz-defer-signals-in-output_result.patch'
 			])
 
 	def prep (self):
