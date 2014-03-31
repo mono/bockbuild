@@ -8,7 +8,7 @@ class MonoLlvmPackage (GitHubPackage):
 		)
 
 		if Package.profile.name == 'darwin':
-				self.configure_flags.extend (['CXXFLAGS=-stdlib=libc++']
+				self.configure_flags.extend (['CXXFLAGS=-stdlib=libc++'])
 
 		if Package.profile.name == 'darwin' and not Package.profile.m64:
 				self.configure_flags.extend ([
