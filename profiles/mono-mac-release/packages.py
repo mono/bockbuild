@@ -71,7 +71,7 @@ class MonoReleasePackages:
 				'boo.py',
 				# 'nant.py',
 				'ironlangs.py',
-				'fsharp-3.0.py',
+				'fsharp-3.1.py',
 				'mono-addins.py',
 				'mono-basic.py',
 				])
