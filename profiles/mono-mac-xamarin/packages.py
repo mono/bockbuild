@@ -77,6 +77,7 @@ class MonoReleasePackages:
             'fsharp-3.1.py',
             'mono-addins.py',
             'mono-basic.py',
+            'nuget.py'
         ])
 
         self.packages = [os.path.join('..', '..', 'packages', p) for p in self.packages]
