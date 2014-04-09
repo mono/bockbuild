@@ -10,7 +10,7 @@ class FontConfigPackage (Package):
 		if Package.profile.name == 'darwin':
 			self.configure_flags.extend ([
 				'--with-default-fonts=/System/Library/Fonts',
-				'--with-add-fonts=/Library/Fonts,/Network/Library/Fonts,/System/Library/Fonts,/usr/X11/lib/X11/fonts,/usr/X11R6/lib/X11/fonts,/usr/share/fonts'
+				'--with-add-fonts=/Library/Fonts,/Network/Library/Fonts,/System/Library/Fonts'
 			])
 		Package.build (self)
 
