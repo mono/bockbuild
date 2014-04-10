@@ -59,7 +59,10 @@ class MonoDevelopMacDevPackages:
 			'mono-llvm.py',
 			'mono-master.py',
 			'gtk-sharp.py',
-			'mono-addins.py'
+			'mono-addins.py',
+			'xsp.py',
+			'fsharp-3.0.py',
+			'fsharp-3.1.py',
 		])
 
 		self.packages = [os.path.join ('..', '..', 'packages', p)
