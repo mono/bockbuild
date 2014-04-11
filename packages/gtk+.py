@@ -128,7 +128,8 @@ class GtkPackage (GnomeGitPackage):
 				'patches/gtk/gtk-imquartz-defer-signals-in-output_result.patch',
 
 				# https://bugzilla.xamarin.com/show_bug.cgi?id=17401
-				'patches/gtk/gtknsview-defer-map-and-lock-in-clipping.patch'
+				'patches/gtk/gtknsview-defer-map-and-lock-in-clipping.patch',
+				'patches/gtk/gtknsview-timeout-fix.patch'
 			])
 
 	def prep (self):
