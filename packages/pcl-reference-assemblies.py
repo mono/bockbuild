@@ -6,10 +6,9 @@ import shutil
 class PCLReferenceAssembliesPackage(Package):
     def __init__(self):
         Package.__init__(self,
-                         name='PortableReferenceAssemblies',
-                         version='2013-06-27',
-                         sources=['http://storage.bos.xamarin.com/bot-provisioning/PortableReferenceAssemblies2013-06-27.zip'])
-        self.source_dir_name = "PortableReferenceAssemblies2013-06-27"
+                         name='PortableReferenceAssemblies-2014-04-14',
+                         version='2014-04-14',
+                         sources=['http://storage.bos.xamarin.com/bot-provisioning/PortableReferenceAssemblies-2014-04-14.zip'])
 
     def prep(self):
         self.extract_archive(self.sources[0],
@@ -27,26 +26,7 @@ class PCLReferenceAssembliesPackage(Package):
 
         shutil.rmtree(dest, ignore_errors=True)
 
-        pcldir = os.path.join(self.package_build_dir(), self.source_dir_name)
+        pcldir = os.path.join(self.package_build_dir(), self.source_dir_name, ".NETPortable")
         self.sh("rsync -abv -q %s/* %s" % (pcldir, dest))
-
-        # Remove v4.6 until we support it
-        shutil.rmtree(os.path.join(dest, "v4.6"))
-
-        for f in glob.glob("%s/*/Profile/*/SupportedFrameworks" % dest):
-            self.write_xml(f)
-
-    def write_xml(self, directory):
-        print "Writing iOS/Android listings for " + directory
-        data = {
-            os.path.join(directory, "Xamarin.iOS.xml"):
-            """<Framework Identifier="MonoTouch" MinimumVersion="1.0" Profile="*" DisplayName="Xamarin.iOS"/>""",
-            os.path.join(directory, "Xamarin.Android.xml"):
-            """<Framework Identifier="MonoAndroid" MinimumVersion="1.0" Profile="*" DisplayName="Xamarin.Android"/>"""
-        }
-        for filename, content in data.iteritems():
-            f = open(filename, "w")
-            f.write(content + "\n")
-            f.close()
 
 PCLReferenceAssembliesPackage()
