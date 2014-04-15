@@ -4,7 +4,7 @@ class NuGetPackage(GitHubTarballPackage):
 		GitHubTarballPackage.__init__(self,
 			'mono', 'nuget',
 			'2.8.1',
-			'a3941ea07d84d4bf86ab1b7678d5ae6f60f355b7',
+			'8466c6d912d0b03726c3c025a8eaf9397bdd30c3',
 			configure = '')
 
 	def build(self):
