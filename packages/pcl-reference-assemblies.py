@@ -6,7 +6,7 @@ import shutil
 class PCLReferenceAssembliesPackage(Package):
     def __init__(self):
         Package.__init__(self,
-                         name='PortableReferenceAssemblies-2014-04-14',
+                         name='PortableReferenceAssemblies',
                          version='2014-04-14',
                          sources=['http://storage.bos.xamarin.com/bot-provisioning/PortableReferenceAssemblies-2014-04-14.zip'])
 
