@@ -6,10 +6,9 @@ import shutil
 class PCLReferenceAssembliesPackage(Package):
     def __init__(self):
         Package.__init__(self,
-                         name='mono-pcl-profiles-2013-10-25',
-                         version='2013-10-25',
-                         sources=['http://storage.bos.xamarin.com/bot-provisioning/mono-pcl-profiles-2013-10-25.tar.gz'])
-        self.source_dir_name = "mono-pcl-profiles-2013-10-25"
+                         name='PortableReferenceAssemblies',
+                         version='2014-04-14',
+                         sources=['http://storage.bos.xamarin.com/bot-provisioning/PortableReferenceAssemblies-2014-04-14.zip'])
 
     def prep(self):
         self.extract_archive(self.sources[0],
