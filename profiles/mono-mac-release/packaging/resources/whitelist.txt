@@ -93,6 +93,7 @@ mono-xmltool
 mozroots
 mprof-report
 nant
+nuget
 nunit-console
 nunit-console2
 pdb2mdb
