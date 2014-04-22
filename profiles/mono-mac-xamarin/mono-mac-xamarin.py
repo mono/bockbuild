@@ -208,6 +208,9 @@ class MonoReleaseProfile(DarwinProfile, MonoReleasePackages):
 
         # Unlock the keychain
         key = os.getenv("CODESIGN_KEY")
+        if not key:
+            raise Exception("CODESIGN_KEY needs to be defined")
+
         password = os.getenv("CODESIGN_KEYCHAIN_PASSWORD")
         output = backtick("security -v find-identity")
         if key not in " ".join(output):
