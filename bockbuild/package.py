@@ -323,9 +323,11 @@ class Package:
 			flags = ["-qq"]
 			if overwrite:
 				flags.extend(["-o"])
+			if validate_only:
+				flags.extend(["-t"])
 			command = ' '.join(['unzip'] + flags + [local_dest_file])
 			if validate_only:
-				command = command + ' -t > /dev/null'
+				command = command + ' > /dev/null'
 		else:
 			command = '%{tar} xf ' + local_dest_file
 			if validate_only:
