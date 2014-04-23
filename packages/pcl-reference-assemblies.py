@@ -26,7 +26,7 @@ class PCLReferenceAssembliesPackage(Package):
 
         shutil.rmtree(dest, ignore_errors=True)
 
-        pcldir = os.path.join(self.package_build_dir(), self.source_dir_name, ".NETPortable")
+        pcldir = os.path.join(self.package_build_dir(), self.source_dir_name)
         self.sh("rsync -abv -q %s/* %s" % (pcldir, dest))
 
 PCLReferenceAssembliesPackage()
