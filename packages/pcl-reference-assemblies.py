@@ -27,6 +27,6 @@ class PCLReferenceAssembliesPackage(Package):
         shutil.rmtree(dest, ignore_errors=True)
 
         pcldir = os.path.join(self.package_build_dir(), self.source_dir_name)
-        self.sh("rsync -abv -q %s/* %s" % (pcldir, dest))
+        self.sh("rsync -abv -q --exclude '%s' %s/* %s" % ("v4.6", pcldir, dest))
 
 PCLReferenceAssembliesPackage()
