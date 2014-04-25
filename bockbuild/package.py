@@ -19,6 +19,15 @@ class Package:
 		self.organization = organization
 
 		self.configure_flags = ['--enable-debug']
+		self.cpp_flags = []
+
+		self.local_cpp_flags = []
+		self.local_gcc_flags = []
+		self.local_ld_flags = []
+		self.local_configure_flags = []
+
+
+
 		if Package.profile.global_configure_flags:
 			self.configure_flags.extend (Package.profile.global_configure_flags)
 		if configure_flags:
@@ -338,7 +347,30 @@ class Package:
 		if self.sources == None:
 			log (1, '<skipping - no sources defined>')
 			return
-		self.sh ('%{configure} %{configure_flags}')
+
+		self.gcc_flags = Package.profile.gcc_flags
+		if self.local_gcc_flags:
+			self.gcc_flags.extend (self.local_gcc_flags)
+
+		if self.local_cpp_flags:
+			self.cpp_flags.extend (self.local_cpp_flags)
+
+		self.ld_flags = Package.profile.ld_flags
+		if self.local_ld_flags:
+			self.ld_flags.extend (self.local_ld_flags)
+
+		if self.local_configure_flags:
+			self.configure_flags.extend (self.local_configure_flags)
+
+		#self.env.set ('CFLAGS',          '%{gcc_flags}')
+		#self.env.set ('CXXFLAGS',        '%{env.CFLAGS}')
+		#self.env.set ('CPPFLAGS',        '%{env.CFLAGS}')
+		#self.env.set ('C_INCLUDE_PATH',  '%{prefix}/include')
+
+		#self.env.set ('LD_LIBRARY_PATH', '%{prefix}/lib')
+		#self.env.set ('LDFLAGS',         '%{ld_flags}')
+
+		self.sh ('CFLAGS="%{gcc_flags}" CXXFLAGS="%{gcc_flags}" CPPFLAGS="%{cpp_flags}" LDFLAGS="%{ld_flags}" %{configure} %{configure_flags}')
 		self.sh ('%{make}')
 
 	def install (self):
@@ -352,6 +384,24 @@ Package.default_sources = None
 # -------------------------------------
 # Package Templates
 # -------------------------------------
+
+class LipoPackage (Package):
+	def __init__ (self):
+		Package.__init__ (self)
+
+	def build (self):
+		if self.profile.name == 'darwin':
+			if self.profile.m64:
+				print 'Lipo (dual 32/64 build) mode enabled.'
+				self.local_gcc_flags = ['-m64', '-arch x86_64']
+				self.local_ld_flags = ['-arch x86_64']
+				Package.build (self)
+			else:
+				self.local_gcc_flags = ['-m32', '-arch i386']
+				# fix build on lion, it uses 64-bit host even with -m32
+				self.local_configure_flags = ['--build=i386-apple-darwin11.2.0']
+				Package.build (self)
+
 
 class GnomePackage (Package):
 	def __init__ (self, name, version_major = '0', version_minor = '0',
