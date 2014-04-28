@@ -8,7 +8,7 @@ class NuGetPackage(GitHubTarballPackage):
 			configure = '')
 
 	def build(self):
-		self.sh ('%{make}')
+		self.sh ('%{make} PREFIX=%{prefix}')
 
 	def install(self):
 		self.sh ('%{makeinstall} PREFIX=%{prefix}')
