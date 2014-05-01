@@ -19,7 +19,10 @@ class Package:
 		self.organization = organization
 
 		self.configure_flags = ['--enable-debug']
-		self.cpp_flags = []
+
+		self.gcc_flags = Package.profile.gcc_flags
+		self.cpp_flags = Package.profile.gcc_flags
+		self.ld_flags = Package.profile.ld_flags
 
 		self.local_cpp_flags = []
 		self.local_gcc_flags = []
@@ -52,7 +55,7 @@ class Package:
 		if configure:
 			self.configure = configure
 		else:
-			self.configure = './configure --prefix="%{prefix}"'
+			self.configure = './configure --prefix="%{package_prefix}"'
 
 		self.make = 'make -j%s' % Package.profile.cpu_count
 		self.makeinstall = 'make install'
@@ -242,7 +245,7 @@ class Package:
 	def start_build (self):
 		Package.last_instance = None
 
-		expand_macros (self, self)
+		expand_macros (self.sources, self)
 
 		profile = Package.profile
 		namever = '%s-%s' % (self.name, self.version)
@@ -344,18 +347,36 @@ class Package:
 		self.sh (command)
 
 	def build (self):
+		orig_prefix = self.prefix
+		if self.profile.name == 'darwin' and self.m64:
+			log (1, 'Lipo (universal binaries) mode enabled.')			
+
+			self.package_prefix = orig_prefix + '-arch-x86_64' #switch to a temporary prefix 
+			log (1, 'Building 64-bit binaries at ' + self.package_prefix)
+			self.arch_build ()
+
+			self.package_prefix = orig_prefix #switch back, reset m64 
+			self.m64 = False
+			log (1, 'Building 32-bit binaries at ' + self.package_prefix)
+			self.arch_build ()
+
+		else:
+			self.package_prefix = orig_prefix
+			self.arch_build ()
+
+#	def lipo_dirs (dir_64, dir_32): 
+
+	def arch_build (self):
 		if self.sources == None:
 			log (1, '<skipping - no sources defined>')
 			return
 
-		self.gcc_flags = Package.profile.gcc_flags
 		if self.local_gcc_flags:
 			self.gcc_flags.extend (self.local_gcc_flags)
 
 		if self.local_cpp_flags:
 			self.cpp_flags.extend (self.local_cpp_flags)
 
-		self.ld_flags = Package.profile.ld_flags
 		if self.local_ld_flags:
 			self.ld_flags.extend (self.local_ld_flags)
 
@@ -386,15 +407,13 @@ Package.default_sources = None
 # -------------------------------------
 
 class LipoPackage (Package):
-	def __init__ (self):
-		Package.__init__ (self)
-
 	def build (self):
 		if self.profile.name == 'darwin':
 			if self.profile.m64:
 				print 'Lipo (dual 32/64 build) mode enabled.'
 				self.local_gcc_flags = ['-m64', '-arch x86_64']
 				self.local_ld_flags = ['-arch x86_64']
+				self.local_configure_flags = ['--build=x86_64-apple-darwin11.2.0']
 				Package.build (self)
 			else:
 				self.local_gcc_flags = ['-m32', '-arch i386']
