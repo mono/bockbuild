@@ -26,7 +26,26 @@ class PCLReferenceAssembliesPackage(Package):
 
         shutil.rmtree(dest, ignore_errors=True)
 
+        # Omit v4.6 until we support it
         pcldir = os.path.join(self.package_build_dir(), self.source_dir_name)
+
         self.sh("rsync -abv -q --exclude '%s' %s/* %s" % ("v4.6", pcldir, dest))
+
+        for f in glob.glob("%s/*/Profile/*/SupportedFrameworks" % dest):
+            self.write_xml(f)
+
+    def write_xml(self, directory):
+        print "Writing iOS/Android listings for " + directory
+        data = {
+            os.path.join(directory, "Xamarin.iOS.xml"):
+            """<Framework Identifier="MonoTouch" MinimumVersion="1.0" Profile="*" DisplayName="Xamarin.iOS"/>""",
+            os.path.join(directory, "Xamarin.Android.xml"):
+            """<Framework Identifier="MonoAndroid" MinimumVersion="1.0" Profile="*" DisplayName="Xamarin.Android"/>"""
+        }
+        for filename, content in data.iteritems():
+            f = open(filename, "w")
+            f.write(content + "\n")
+            f.close()
+
 
 PCLReferenceAssembliesPackage()
