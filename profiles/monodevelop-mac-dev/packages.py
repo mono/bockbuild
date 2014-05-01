@@ -63,6 +63,7 @@ class MonoDevelopMacDevPackages:
 			'xsp.py',
 			'fsharp-3.0.py',
 			'fsharp-3.1.py',
+			'pcl-reference-assemblies.py',
 		])
 
 		self.packages = [os.path.join ('..', '..', 'packages', p)
