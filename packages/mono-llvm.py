@@ -20,16 +20,19 @@ class MonoLlvmPackage (GitHubPackage):
 		self.gcc_flags = []
 		self.cpp_flags = []		
 
-	def arch_build (self):
+	def arch_build (self, arch):
 
-		if self.m64: #64-bit  build pass
+		if arch == 'darwin-64': #64-bit  build pass
 			self.configure_flags.extend ([
 				'--build=x86_64-apple-darwin11.2.0'
 			])
-		else:
+		
+		if arch == 'darwin-32':
 			self.configure_flags.extend ([
 				'--build=i386-apple-darwin11.2.0'
 			])
+
+
 		Package.arch_build (self)
 		
 
