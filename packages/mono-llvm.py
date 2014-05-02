@@ -17,6 +17,8 @@ class MonoLlvmPackage (GitHubPackage):
 		#		os.environ ['MACOSX_DEPLOYMENT_TARGET'] = '10.8'
 
 		self.ld_flags = [] # reset ld_flags
+		self.gcc_flags = []
+		self.cpp_flags = []		
 
 	def arch_build (self):
 

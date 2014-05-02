@@ -29,7 +29,7 @@ class Package:
 		self.local_ld_flags = []
 		self.local_configure_flags = []
 
-
+		self.m64 = False
 
 		if Package.profile.global_configure_flags:
 			self.configure_flags.extend (Package.profile.global_configure_flags)
@@ -349,22 +349,60 @@ class Package:
 	def build (self):
 		orig_prefix = self.prefix
 		if self.profile.name == 'darwin' and self.m64:
-			log (1, 'Lipo (universal binaries) mode enabled.')			
-
-			self.package_prefix = orig_prefix + '-arch-x86_64' #switch to a temporary prefix 
+			log (1, 'Lipo (universal binaries) mode enabled.')	
+			bin64_prefix = orig_prefix  + '-arch-x86_64' #switch to a temporary prefix 
+			self.package_prefix = bin64_prefix
 			log (1, 'Building 64-bit binaries at ' + self.package_prefix)
 			self.arch_build ()
+			self.sh ('%{makeinstall}')
+			self.sh ('%{make} clean')
+
 
 			self.package_prefix = orig_prefix #switch back, reset m64 
 			self.m64 = False
 			log (1, 'Building 32-bit binaries at ' + self.package_prefix)
 			self.arch_build ()
 
+			#lipo
+			lipo_dir = orig_prefix + '-lipo'
+
+			if not os.path.exists(lipo_dir):
+				os.mkdir (lipo_dir)
+
+			log (1, 'Lipo''ing binaries (lib)' + self.package_prefix)
+			self.lipo_dirs (bin64_prefix, orig_prefix, lipo_dir, 'lib')
+			log (1, 'Lipo''ing binaries (bin)' + self.package_prefix)
+			self.lipo_dirs (bin64_prefix, orig_prefix, lipo_dir, 'bin')
+
 		else:
 			self.package_prefix = orig_prefix
 			self.arch_build ()
 
-#	def lipo_dirs (dir_64, dir_32): 
+	def lipo_dirs (self, dir_64, dir_32, lipo_dir, bin_subdir, replace_32 = True): 
+		dir64_bin = os.path.join (dir_64, bin_subdir)
+		dir32_bin = os.path.join (dir_32, bin_subdir)
+		lipo_bin = os.path.join (lipo_dir, bin_subdir)
+
+		if not os.path.exists(lipo_bin):
+				os.mkdir (lipo_bin)
+
+		#take each 64-bit binary, lipo with binary of same name
+
+		for file in next(os.walk(dir64_bin))[2]:
+			if file.endswith ('.a') or file.endswith ('.dylib'):
+				dir64_file = os.path.join (dir64_bin, file)
+				dir32_file = os.path.join (dir32_bin, file)
+				lipo_file = os.path.join (lipo_bin, file)
+				if os.path.exists (dir32_file):
+					lipo_cmd = 'lipo -create %s %s -output %s ' % (dir64_file, dir32_file, lipo_file) 
+					run_shell(lipo_cmd)
+					if replace_32:
+						#replace all 32-bit binaries with the new fat binaries
+						shutil.copy2 (lipo_file, dir32_file)
+				else:
+					print "lipo warning: 32-bit version of file %s not found"  %file
+
+			
 
 	def arch_build (self):
 		if self.sources == None:
