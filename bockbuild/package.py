@@ -378,7 +378,7 @@ class Package:
 					self.package_prefix = self.prefix
 					self.arch_build ('darwin-32')
 				else:
-					raise Exception ("Package does not specify m64 strategy (one of needs_lipo,fat_build or m32_only) must be set.")
+					raise Exception ("Package does not specify m64 strategy (one of needs_lipo,fat_build or m32_only must be set.)")
 
 			else:
 				self.package_prefix = self.prefix
