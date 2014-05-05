@@ -29,7 +29,15 @@ class Package:
 		self.local_ld_flags = []
 		self.local_configure_flags = []
 
-		self.m64 = False
+		# fat binary parameters. On a 64-bit Darwin profile (m64 = True) 
+		# each package must decide if it will a) perform a multi-arch (64/32) build 
+		# b) request two builds that are lipoed at the end or c) request a 32-bit
+		# build only.
+
+		self.m64 = Package.profile.m64
+		self.fat_build = False
+		self.needs_lipo = False
+		self.m32_only = False
 
 		if Package.profile.global_configure_flags:
 			self.configure_flags.extend (Package.profile.global_configure_flags)
@@ -347,25 +355,36 @@ class Package:
 		self.sh (command)
 
 	def build (self):
-		if self.profile.name == 'darwin' and self.m64:
-			log (1, 'Lipo (universal binaries) mode enabled.')	
-			self.bin64_prefix = self.prefix  + '-arch-x86_64' #switch to a temporary prefix 
-			self.package_prefix = self.bin64_prefix
-			log (1, 'Building 64-bit binaries at ' + self.package_prefix)
-			self.arch_build ('darwin-64')
-			self.sh ('%{makeinstall}')
-			self.sh ('%{make} clean')
+		if self.profile.name == 'darwin':
+			if self.m64:
+				if self.needs_lipo:
+					log (1, 'Lipo (universal binaries) mode enabled.')	
+					self.bin64_prefix = self.prefix  + '-darwin-64' #switch to a temporary prefix 
+					self.package_prefix = self.bin64_prefix
+					log (1, 'Building 64-bit binaries at ' + self.package_prefix)
+					self.arch_build ('darwin-64')
+					self.sh ('%{makeinstall}')
+					self.sh ('%{make} clean')
 
-			# arch_build has a change to turn off 'm64' at this point, signifying that it doesn't need lipoing
-			# (usually because it was able to create fat binaries directly)
-			if self.m64: 
-				self.package_prefix = self.prefix #switch back, reset m64 
-				log (1, 'Building 32-bit binaries at ' + self.package_prefix)
+					self.package_prefix = self.prefix #switch back, reset m64 
+					log (1, 'Building 32-bit binaries at ' + self.package_prefix)
+					self.arch_build ('darwin-32')
+
+				elif self.fat_build:
+					self.package_prefix = self.prefix
+					log (1, 'Building 32/64-bit binaries at ' + self.package_prefix)
+					self.arch_build ('darwin-fat')
+				elif self.m32_only:
+					self.package_prefix = self.prefix
+					self.arch_build ('darwin-32')
+				else:
+					raise Exception ("Package does not specify m64 strategy (one of needs_lipo,fat_build or m32_only) must be set.")
+
+			else:
+				self.package_prefix = self.prefix
 				self.arch_build ('darwin-32')
-
 		else:
-			self.package_prefix = self.prefix
-			self.arch_build ()
+			self.arch_build (self.profile.name)
 
 	def lipo_dirs (self, dir_64, dir_32, lipo_dir, bin_subdir, replace_32 = True): 
 		dir64_bin = os.path.join (dir_64, bin_subdir)
@@ -392,32 +411,12 @@ class Package:
 					print "lipo warning: 32-bit version of file %s not found"  %file
 
 			
-	def arch_build (self):
+	def arch_build (self, arch):
 		if self.sources == None:
 			log (1, '<skipping - no sources defined>')
 			return
 
-		if self.local_gcc_flags:
-			self.gcc_flags.extend (self.local_gcc_flags)
-
-		if self.local_cpp_flags:
-			self.cpp_flags.extend (self.local_cpp_flags)
-
-		if self.local_ld_flags:
-			self.ld_flags.extend (self.local_ld_flags)
-
-		if self.local_configure_flags:
-			self.configure_flags.extend (self.local_configure_flags)
-
-		#self.env.set ('CFLAGS',          '%{gcc_flags}')
-		#self.env.set ('CXXFLAGS',        '%{env.CFLAGS}')
-		#self.env.set ('CPPFLAGS',        '%{env.CFLAGS}')
-		#self.env.set ('C_INCLUDE_PATH',  '%{prefix}/include')
-
-		#self.env.set ('LD_LIBRARY_PATH', '%{prefix}/lib')
-		#self.env.set ('LDFLAGS',         '%{ld_flags}')
-
-		self.sh ('CFLAGS="%{gcc_flags}" CXXFLAGS="%{gcc_flags}" CPPFLAGS="%{cpp_flags}" LDFLAGS="%{ld_flags}" %{configure} %{configure_flags}')
+		self.sh ('CFLAGS="%{gcc_flags} %{local_gcc_flags}" CXXFLAGS="%{gcc_flags} %{local_gcc_flags}" CPPFLAGS="%{cpp_flags} %{local_cpp_flags}" LDFLAGS="%{ld_flags} %{local_ld_flags}" %{configure} %{configure_flags} %{local_configure_flags}')
 		self.sh ('%{make}')
 
 	def install (self):
@@ -426,7 +425,7 @@ class Package:
 			return
 		self.sh ('%{makeinstall}')
 
-		if self.profile.name == 'darwin' and self.m64: #lipo here
+		if self.needs_lipo: #lipo here
 			lipo_dir = self.prefix + '-lipo'
 
 			if not os.path.exists(lipo_dir):
@@ -436,6 +435,10 @@ class Package:
 			self.lipo_dirs (self.bin64_prefix, self.prefix, lipo_dir, 'lib')
 			log (1, 'Lipoing binaries (bin)' + self.package_prefix)
 			self.lipo_dirs (self.bin64_prefix, self.prefix, lipo_dir, 'bin')
+
+			#delete the lipo build dirs
+			shutil.rmtree (lipo_dir, ignore_errors = True)
+			shutil.rmtree (self.bin64_prefix, ignore_errors = True)
 
 Package.default_sources = None
 
