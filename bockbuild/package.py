@@ -355,6 +355,7 @@ class Package:
 		self.sh (command)
 
 	def build (self):
+		self.package_prefix = self.prefix
 		if self.profile.name == 'darwin':
 			if self.m64:
 				if self.needs_lipo:
@@ -366,22 +367,21 @@ class Package:
 					self.sh ('%{makeinstall}')
 					self.sh ('%{make} clean')
 
-					self.package_prefix = self.prefix #switch back, reset m64 
+					self.package_prefix = self.prefix #switch back to main prefix
 					log (1, 'Building 32-bit binaries at ' + self.package_prefix)
 					self.arch_build ('darwin-32')
 
 				elif self.fat_build:
-					self.package_prefix = self.prefix
 					log (1, 'Building 32/64-bit binaries at ' + self.package_prefix)
 					self.arch_build ('darwin-fat')
 				elif self.m32_only:
-					self.package_prefix = self.prefix
 					self.arch_build ('darwin-32')
+				elif self.build_dependency: # build dependencies can be built in the default architecture if not otherwise specified
+					self.arch_build ('darwin-64')
 				else:
 					raise Exception ("Package does not specify m64 strategy (one of needs_lipo,fat_build or m32_only must be set.)")
 
 			else:
-				self.package_prefix = self.prefix
 				self.arch_build ('darwin-32')
 		else:
 			self.arch_build (self.profile.name)
