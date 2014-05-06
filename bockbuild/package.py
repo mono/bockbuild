@@ -38,6 +38,7 @@ class Package:
 		self.fat_build = False
 		self.needs_lipo = False
 		self.m32_only = False
+		self.build_dependency = False
 
 		if Package.profile.global_configure_flags:
 			self.configure_flags.extend (Package.profile.global_configure_flags)
@@ -379,9 +380,14 @@ class Package:
 				elif self.build_dependency: # build dependencies can be built in the default architecture if not otherwise specified
 					self.arch_build ('darwin-64')
 				else:
-					raise Exception ("Package does not specify m64 strategy (one of needs_lipo,fat_build or m32_only must be set.)")
+					#the package does not define the strategy for buildling lipos. This is the default.
+					log (1, 'Building 32/64-bit binaries (default settings) at ' + self.package_prefix)
+					self.local_ld_flags = ['-arch i386' , '-arch x86_64']
+					self.local_gcc_flags = ['-arch i386' , '-arch x86_64']
+					self.local_configure_flags = ['--disable-dependency-tracking']
+					self.arch_build ('darwin-fat')
 
-			else:
+			else:	
 				self.arch_build ('darwin-32')
 		else:
 			self.arch_build (self.profile.name)
@@ -415,8 +421,13 @@ class Package:
 		if self.sources == None:
 			log (1, '<skipping - no sources defined>')
 			return
+		Package.configure (self)
+		Package.make (self)
 
+	def configure (self):
 		self.sh ('CFLAGS="%{gcc_flags} %{local_gcc_flags}" CXXFLAGS="%{gcc_flags} %{local_gcc_flags}" CPPFLAGS="%{cpp_flags} %{local_cpp_flags}" LDFLAGS="%{ld_flags} %{local_ld_flags}" %{configure} %{configure_flags} %{local_configure_flags}')
+
+	def make (self):
 		self.sh ('%{make}')
 
 	def install (self):
