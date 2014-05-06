@@ -37,22 +37,30 @@ class GlibPackage (GnomeXzPackage):
 				self.sh ('patch -p0 < %{sources[' + str (p) + ']}')
 			for p in range (8, len (self.sources)):
 				self.sh ('patch --ignore-whitespace -p1 < %{sources[' + str (p) + ']}')
+
+	def arch_build (self, arch):
+
+		if arch == 'darwin-fat': #multi-arch  build pass
+			self.local_ld_flags = ['-arch i386' , '-arch x86_64']
+			self.local_gcc_flags = ['-arch i386' , '-arch x86_64', '-Os']
+			self.local_configure_flags = ['--disable-dependency-tracking']
+
+		if arch.startswith ('darwin'): #for all darwin builds
+			self.local_configure_flags.extend (['--disable-compile-warnings'])
+			Package.configure (self)
+			self.sh (
+				# 'autoconf',
+				#'%{configure} --disable-compile-warnings',
+				'ed - config.h < %{sources[1]}',
+				# work around https://bugzilla.gnome.org/show_bug.cgi?id=700350
+				'touch docs/reference/*/Makefile.in',
+				'touch docs/reference/*/*/Makefile.in',
+				#'%{make}'
+			)
+			Package.make (self)
+		else:
+			Package.arch_build (self, arch)
 	
-	def build (self):
-		if not self.darwin:
-			Package.build (self)
-			return
-
-		self.sh (
-			# 'autoconf',
-			'%{configure} --disable-compile-warnings',
-			'ed - config.h < %{sources[1]}',
-			# work around https://bugzilla.gnome.org/show_bug.cgi?id=700350
-			'touch docs/reference/*/Makefile.in',
-			'touch docs/reference/*/*/Makefile.in',
-			'%{make}'
-		)
-
 	def install (self):
 		Package.install (self)
 		if self.darwin:
