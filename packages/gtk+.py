@@ -90,6 +90,7 @@ class GtkPackage (GnomeGitPackage):
 				'patches/gtk/0073-disable-combobox-scrolling.patch',
 				'patches/gtk/0074-fix-NULL-pointer-in-clipboard.patch',
 				'patches/gtk/0075-filechooserwidget-location-entry-activation.patch',
+				'patches/gtk/0076-iconfactory-treat-gt-1-0-icons-as-2-0.patch',
 
 				# Bug 702841 - GdkQuartz does not distinguish Eisu, Kana and Space keys on Japanese keyrboard
 				# https://bugzilla.gnome.org/show_bug.cgi?id=702841
