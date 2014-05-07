@@ -397,7 +397,10 @@ class Package:
 		dir32_bin = os.path.join (dir_32, bin_subdir)
 		lipo_bin = os.path.join (lipo_dir, bin_subdir)
 
-		if not os.path.exists(lipo_bin):
+		if not os.path.exists (dir64_bin):
+			return # we don't always have bin/lib dirs
+
+		if not os.path.exists (lipo_bin):
 				os.mkdir (lipo_bin)
 
 		#take each 64-bit binary, lipo with binary of same name
@@ -409,6 +412,7 @@ class Package:
 				lipo_file = os.path.join (lipo_bin, file)
 				if os.path.exists (dir32_file):
 					lipo_cmd = 'lipo -create %s %s -output %s ' % (dir64_file, dir32_file, lipo_file) 
+					# print lipo_cmd
 					run_shell(lipo_cmd)
 					if replace_32:
 						#replace all 32-bit binaries with the new fat binaries
