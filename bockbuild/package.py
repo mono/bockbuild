@@ -405,20 +405,25 @@ class Package:
 
 		#take each 64-bit binary, lipo with binary of same name
 
-		for file in next(os.walk(dir64_bin))[2]:
-			if file.endswith ('.a') or file.endswith ('.dylib'):
-				dir64_file = os.path.join (dir64_bin, file)
-				dir32_file = os.path.join (dir32_bin, file)
-				lipo_file = os.path.join (lipo_bin, file)
-				if os.path.exists (dir32_file):
-					lipo_cmd = 'lipo -create %s %s -output %s ' % (dir64_file, dir32_file, lipo_file) 
-					# print lipo_cmd
-					run_shell(lipo_cmd)
-					if replace_32:
-						#replace all 32-bit binaries with the new fat binaries
-						shutil.copy2 (lipo_file, dir32_file)
-				else:
-					print "lipo warning: 32-bit version of file %s not found"  %file
+		for root,dirs,filelist in os.walk(dir64_bin):
+			relpath = os.path.relpath (root, dir64_bin)
+			for file in filelist:
+				if file.endswith ('.a') or file.endswith ('.dylib') or file.endswith ('.so'):
+					dir64_file = os.path.join (dir64_bin, relpath, file)
+					dir32_file = os.path.join (dir32_bin, relpath, file)
+					lipo_file = os.path.join (lipo_bin, relpath, file)
+					if os.path.exists (dir32_file):
+						if not os.path.exists (os.path.join (lipo_bin, root)):
+							os.mkdir (package_dest_dir)
+
+						lipo_cmd = 'lipo -create %s %s -output %s ' % (dir64_file, dir32_file, lipo_file) 
+						print lipo_cmd
+						run_shell(lipo_cmd)
+						if replace_32:
+							#replace all 32-bit binaries with the new fat binaries
+							shutil.copy2 (lipo_file, dir32_file)
+					else:
+						print "lipo warning: 32-bit version of file %s not found"  %file
 
 			
 	def arch_build (self, arch):
@@ -452,8 +457,8 @@ class Package:
 			self.lipo_dirs (self.bin64_prefix, self.prefix, lipo_dir, 'bin')
 
 			#delete the lipo build dirs
-			shutil.rmtree (lipo_dir, ignore_errors = True)
-			shutil.rmtree (self.bin64_prefix, ignore_errors = True)
+			#shutil.rmtree (lipo_dir, ignore_errors = True)
+			#shutil.rmtree (self.bin64_prefix, ignore_errors = True)
 
 Package.default_sources = None
 
