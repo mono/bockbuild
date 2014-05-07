@@ -461,22 +461,6 @@ Package.default_sources = None
 # Package Templates
 # -------------------------------------
 
-class LipoPackage (Package):
-	def build (self):
-		if self.profile.name == 'darwin':
-			if self.profile.m64:
-				print 'Lipo (dual 32/64 build) mode enabled.'
-				self.local_gcc_flags = ['-m64', '-arch x86_64']
-				self.local_ld_flags = ['-arch x86_64']
-				self.local_configure_flags = ['--build=x86_64-apple-darwin11.2.0']
-				Package.build (self)
-			else:
-				self.local_gcc_flags = ['-m32', '-arch i386']
-				# fix build on lion, it uses 64-bit host even with -m32
-				self.local_configure_flags = ['--build=i386-apple-darwin11.2.0']
-				Package.build (self)
-
-
 class GnomePackage (Package):
 	def __init__ (self, name, version_major = '0', version_minor = '0',
 		configure_flags = None, sources = None, override_properties = None):
