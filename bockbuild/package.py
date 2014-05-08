@@ -367,6 +367,7 @@ class Package:
 					self.arch_build ('darwin-64')
 					self.sh ('%{makeinstall}')
 					self.sh ('%{make} clean')
+					self.sh ('%{make} distclean')
 
 					self.package_prefix = self.prefix #switch back to main prefix
 					log (1, 'Building 32-bit binaries at ' + self.package_prefix)
@@ -413,8 +414,8 @@ class Package:
 					dir32_file = os.path.join (dir32_bin, relpath, file)
 					lipo_file = os.path.join (lipo_bin, relpath, file)
 					if os.path.exists (dir32_file):
-						if not os.path.exists (os.path.join (lipo_bin, root)):
-							os.mkdir (package_dest_dir)
+						if not os.path.exists (os.path.join (lipo_bin, relpath)):
+							os.makedirs (os.path.join (lipo_bin, relpath))
 
 						lipo_cmd = 'lipo -create %s %s -output %s ' % (dir64_file, dir32_file, lipo_file) 
 						print lipo_cmd
@@ -434,7 +435,7 @@ class Package:
 		Package.make (self)
 
 	def configure (self):
-		self.sh ('CFLAGS="%{gcc_flags} %{local_gcc_flags}" CXXFLAGS="%{gcc_flags} %{local_gcc_flags}" CPPFLAGS="%{cpp_flags} %{local_cpp_flags}" LDFLAGS="%{ld_flags} %{local_ld_flags}" %{configure} %{configure_flags} %{local_configure_flags}')
+		self.sh ('OBJCFLAGS="%{gcc_flags} %{local_gcc_flags}" CFLAGS="%{gcc_flags} %{local_gcc_flags}" CXXFLAGS="%{gcc_flags} %{local_gcc_flags}" CPPFLAGS="%{cpp_flags} %{local_cpp_flags}" LDFLAGS="%{ld_flags} %{local_ld_flags}" %{configure} %{configure_flags} %{local_configure_flags}')
 
 	def make (self):
 		self.sh ('%{make}')
