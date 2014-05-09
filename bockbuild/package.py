@@ -254,7 +254,13 @@ class Package:
 	def start_build (self):
 		Package.last_instance = None
 
-		expand_macros (self.sources, self)
+		# hack: we need to expand macros in fields, but not for self.configure.
+		# if we expand self.configure now, we can't adjust the prefix for multiple builds
+		# needed for lipoing
+		temp = self.configure
+		self.configure = ""
+		expand_macros (self, self)
+		self.configure = temp
 
 		profile = Package.profile
 		namever = '%s-%s' % (self.name, self.version)
@@ -418,7 +424,7 @@ class Package:
 							os.makedirs (os.path.join (lipo_bin, relpath))
 
 						lipo_cmd = 'lipo -create %s %s -output %s ' % (dir64_file, dir32_file, lipo_file) 
-						print lipo_cmd
+						#print lipo_cmd
 						run_shell(lipo_cmd)
 						if replace_32:
 							#replace all 32-bit binaries with the new fat binaries
@@ -458,8 +464,8 @@ class Package:
 			self.lipo_dirs (self.bin64_prefix, self.prefix, lipo_dir, 'bin')
 
 			#delete the lipo build dirs
-			#shutil.rmtree (lipo_dir, ignore_errors = True)
-			#shutil.rmtree (self.bin64_prefix, ignore_errors = True)
+			shutil.rmtree (lipo_dir, ignore_errors = True)
+			shutil.rmtree (self.bin64_prefix, ignore_errors = True)
 
 Package.default_sources = None
 
