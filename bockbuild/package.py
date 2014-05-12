@@ -373,7 +373,6 @@ class Package:
 					self.arch_build ('darwin-64')
 					self.sh ('%{makeinstall}')
 					self.sh ('%{make} clean')
-					self.sh ('%{make} distclean')
 
 					self.package_prefix = self.prefix #switch back to main prefix
 					log (1, 'Building 32-bit binaries at ' + self.package_prefix)
