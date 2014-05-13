@@ -278,7 +278,7 @@ class Package:
 		if self.delete_stale_workspace_cache (workspace):
 			if os.path.exists (build_success_file): os.remove (build_success_file)
 
-		if self.is_successful_build(build_success_file, package_dir):
+		if self.is_successful_build(build_success_file, package_dir) and not self.needs_lipo: 
 			print 'Skipping %s - already built' % namever
 			if not os.path.exists (install_success_file):
 				print '%s: Installing %s' % (self.get_timestamp (), namever)
@@ -468,9 +468,9 @@ class Package:
 			if not os.path.exists(lipo_dir):
 				os.mkdir (lipo_dir)
 
-			log (1, 'Lipoing binaries (lib)' + self.package_prefix)
+			log (1, 'Lipoing binaries (lib)' + self.prefix)
 			self.lipo_dirs (self.bin64_prefix, self.prefix, lipo_dir, 'lib')
-			log (1, 'Lipoing binaries (bin)' + self.package_prefix)
+			log (1, 'Lipoing binaries (bin)' + self.prefix)
 			self.lipo_dirs (self.bin64_prefix, self.prefix, lipo_dir, 'bin')
 
 			#delete the lipo build dirs
