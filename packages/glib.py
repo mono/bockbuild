@@ -59,7 +59,7 @@ class GlibPackage (GnomeXzPackage):
 			)
 			Package.make (self)
 		else:
-			Package.arch_build (self, arch)
+			Package.arch_build (self, arch, defaults = False)
 	
 	def install (self):
 		Package.install (self)

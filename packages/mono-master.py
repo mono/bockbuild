@@ -46,6 +46,6 @@ class MonoMasterPackage(Package):
 			self.local_gcc_flags.extend (['-m32'])
 			self.local_configure_flags = ['--build=i386-apple-darwin11.2.0']
 
-		Package.arch_build (self, arch)
+		Package.arch_build (self, arch, defaults = False)
 
 MonoMasterPackage()

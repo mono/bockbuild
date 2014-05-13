@@ -27,7 +27,7 @@ class MonoLlvmPackage (GitHubPackage):
 		if arch == 'darwin-32':
 			self.local_configure_flags = ['--build=i386-apple-darwin11.2.0']
 
-		Package.arch_build (self, arch)
+		Package.arch_build (self, arch, defaults = False)
 		
 
 MonoLlvmPackage ()

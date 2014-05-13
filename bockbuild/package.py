@@ -386,11 +386,7 @@ class Package:
 				elif self.build_dependency: # build dependencies can be built in the default architecture if not otherwise specified
 					self.arch_build ('darwin-64')
 				else:
-					#the package does not define the strategy for buildling lipos. This is the default.
 					log (1, 'Building 32/64-bit binaries (default settings) at ' + self.package_prefix)
-					self.local_ld_flags = ['-arch i386' , '-arch x86_64']
-					self.local_gcc_flags = ['-arch i386' , '-arch x86_64']
-					self.local_configure_flags = ['--disable-dependency-tracking']
 					self.arch_build ('darwin-fat')
 
 			else:	
@@ -432,15 +428,30 @@ class Package:
 						print "lipo warning: 32-bit version of file %s not found"  %file
 
 			
-	def arch_build (self, arch):
+	def arch_build (self, arch, defaults = True):
 		if self.sources == None:
 			log (1, '<skipping - no sources defined>')
 			return
+
+		if defaults: #the package does not define the strategy for buildling lipos. These are the defaults
+			if (arch == 'darwin-fat'):					
+					self.local_ld_flags = ['-arch i386' , '-arch x86_64']
+					self.local_gcc_flags = ['-arch i386' , '-arch x86_64']
+					self.local_configure_flags = ['--disable-dependency-tracking']
+			elif (arch == 'darwin-32'):
+					self.local_ld_flags = ['-arch i386']
+					self.local_gcc_flags = ['-arch i386']
+					self.local_configure_flags = ['--disable-dependency-tracking']
+			elif (arch == 'darwin-64'):
+					self.local_ld_flags = ['-arch x86_64']
+					self.local_gcc_flags = ['-arch x86_64']
+					self.local_configure_flags = ['--disable-dependency-tracking']
+
 		Package.configure (self)
 		Package.make (self)
 
 	def configure (self):
-		self.sh ('OBJCFLAGS="%{gcc_flags} %{local_gcc_flags}" CFLAGS="%{gcc_flags} %{local_gcc_flags}" CXXFLAGS="%{gcc_flags} %{local_gcc_flags}" CPPFLAGS="%{cpp_flags} %{local_cpp_flags}" LDFLAGS="%{ld_flags} %{local_ld_flags}" %{configure} %{configure_flags} %{local_configure_flags}')
+		self.sh ('CXXFLAGS="%{gcc_flags} %{local_gcc_flags}" OBJCFLAGS="%{gcc_flags} %{local_gcc_flags}" CFLAGS="%{gcc_flags} %{local_gcc_flags}" CXXFLAGS="%{gcc_flags} %{local_gcc_flags}" CPPFLAGS="%{cpp_flags} %{local_cpp_flags}" LDFLAGS="%{ld_flags} %{local_ld_flags}" %{configure} %{configure_flags} %{local_configure_flags}')
 
 	def make (self):
 		self.sh ('%{make}')
