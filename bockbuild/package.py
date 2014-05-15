@@ -278,7 +278,7 @@ class Package:
 		if self.delete_stale_workspace_cache (workspace):
 			if os.path.exists (build_success_file): os.remove (build_success_file)
 
-		if self.is_successful_build(build_success_file, package_dir) and not self.needs_lipo: 
+		if self.is_successful_build(build_success_file, package_dir) and not (self.needs_lipo and self.m64): 
 			print 'Skipping %s - already built' % namever
 			if not os.path.exists (install_success_file):
 				print '%s: Installing %s' % (self.get_timestamp (), namever)
@@ -462,7 +462,7 @@ class Package:
 			return
 		self.sh ('%{makeinstall}')
 
-		if self.needs_lipo: #lipo here
+		if self.m64 and self.needs_lipo: #lipo here
 			lipo_dir = self.prefix + '-lipo'
 
 			if not os.path.exists(lipo_dir):

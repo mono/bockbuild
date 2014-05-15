@@ -44,8 +44,17 @@ class GlibPackage (GnomeXzPackage):
 			self.local_ld_flags = ['-arch i386' , '-arch x86_64']
 			self.local_gcc_flags = ['-arch i386' , '-arch x86_64', '-Os']
 			self.local_configure_flags = ['--disable-dependency-tracking']
+		elif arch == 'darwin-32':
+				self.local_ld_flags = ['-arch i386']
+				self.local_gcc_flags = ['-arch i386']
+				self.local_configure_flags = ['--disable-dependency-tracking']
+		elif arch == 'darwin-64':
+				self.local_ld_flags = ['-arch x86_64']
+				self.local_gcc_flags = ['-arch x86_64']
+				self.local_configure_flags = ['--disable-dependency-tracking']
 
-		if arch.startswith ('darwin'): #for all darwin builds
+		#modified build for darwin
+		if arch.startswith ('darwin'): 
 			self.local_configure_flags.extend (['--disable-compile-warnings'])
 			Package.configure (self)
 			self.sh (
@@ -58,7 +67,7 @@ class GlibPackage (GnomeXzPackage):
 				#'%{make}'
 			)
 			Package.make (self)
-		else:
+		else:	
 			Package.arch_build (self, arch, defaults = False)
 	
 	def install (self):

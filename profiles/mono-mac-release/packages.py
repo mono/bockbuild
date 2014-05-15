@@ -28,16 +28,16 @@ class MonoReleasePackages:
 
 		# # Base Libraries
 		self.packages.extend([
-				'libpng.py',
+				'libpng.py', #needed by cairo
 				'libjpeg.py',
 				'libtiff.py',
 				'libgif.py',
 				'libxml2.py',
 				'freetype.py',
-				'fontconfig.py',
-				'pixman.py',
-				'cairo.py',
-				'libffi.py',
+				'fontconfig.py', 
+				'pixman.py', #needed by cairo
+				'cairo.py', #needed by Mono graphics functions (System.Drawing)
+				'libffi.py', #needed by glib
 				'glib.py',
 				'pango.py',
 				'atk.py',
