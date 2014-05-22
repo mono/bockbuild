@@ -433,7 +433,7 @@ class Package:
 			log (1, '<skipping - no sources defined>')
 			return
 
-		if defaults: #the package does not define the strategy for buildling lipos. These are the defaults
+		if defaults == True: #the package does not define the strategy for buildling lipos. These are the defaults
 			if (arch == 'darwin-fat'):					
 					self.local_ld_flags = ['-arch i386' , '-arch x86_64']
 					self.local_gcc_flags = ['-arch i386' , '-arch x86_64']

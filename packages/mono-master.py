@@ -39,8 +39,12 @@ class MonoMasterPackage(Package):
 
 	def arch_build (self, arch):	
 		if arch == 'darwin-64': #64-bit  build pass
-			self.local_gcc_flags.extend (['-m64'])
-			self.local_configure_flags = ['--build=x86_64-apple-darwin11.2.0']
+			#self.local_gcc_flags.extend (['-m64'])
+			#self.local_configure_flags = ['--build=x86_64-apple-darwin11.2.0']
+			#testing: the above flags should be benign but something is causing a faulty runtime to be built
+			self.local_gcc_flags = []
+			self.local_configure_flags = []
+			self.local.ld_flags = []
 		
 		if arch == 'darwin-32':
 			self.local_gcc_flags.extend (['-m32'])
