@@ -384,7 +384,7 @@ class Package:
 				elif self.m32_only:
 					self.arch_build ('darwin-32')
 				elif self.build_dependency: # build dependencies can be built in the default architecture if not otherwise specified
-					self.arch_build ('darwin-64')
+					self.arch_build ('darwin-32')
 				else:
 					log (1, 'Building 32/64-bit binaries (default settings) at ' + self.package_prefix)
 					self.arch_build ('darwin-fat')
@@ -441,7 +441,7 @@ class Package:
 			elif (arch == 'darwin-32'):
 					self.local_ld_flags = ['-arch i386']
 					self.local_gcc_flags = ['-arch i386']
-					self.local_configure_flags = ['--disable-dependency-tracking']
+					self.local_configure_flags = ['--build=i386-apple-darwin11.2.0', '--disable-dependency-tracking']
 			elif (arch == 'darwin-64'):
 					self.local_ld_flags = ['-arch x86_64']
 					self.local_gcc_flags = ['-arch x86_64']
