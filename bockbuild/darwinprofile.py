@@ -20,7 +20,6 @@ class DarwinProfile (UnixProfile):
 			self.os_x_minor = 6
 			self.mac_sdk_path = sdkroot + 'MacOSX10.6.sdk'
 			self.gcc_flags.extend ([
-				'-D_XOPEN_SOURCE',
 				'-isysroot %{mac_sdk_path}',
 				'-mmacosx-version-min=10.6',
 			])
@@ -28,7 +27,6 @@ class DarwinProfile (UnixProfile):
 			self.os_x_minor = 7
 			self.mac_sdk_path = sdkroot + 'MacOSX10.7.sdk'
 			self.gcc_flags.extend ([
-				'-D_XOPEN_SOURCE',
 				'-isysroot %{mac_sdk_path}',
 				'-mmacosx-version-min=10.7',
 			])
@@ -36,7 +34,6 @@ class DarwinProfile (UnixProfile):
 			self.os_x_minor = 8
 			self.mac_sdk_path = sdkroot + 'MacOSX10.8.sdk'
 			self.gcc_flags.extend ([
-				'-D_XOPEN_SOURCE',
 				'-isysroot %s' % self.mac_sdk_path,
 				'-mmacosx-version-min=10.8',
 			])
@@ -44,7 +41,6 @@ class DarwinProfile (UnixProfile):
 			self.os_x_minor = 9
 			self.mac_sdk_path = sdkroot + 'MacOSX10.9.sdk'
 			self.gcc_flags.extend ([
-				'-D_XOPEN_SOURCE',
 				'-isysroot %{mac_sdk_path}',
 				'-mmacosx-version-min=10.9',
 			])
