@@ -26,13 +26,12 @@ class MonoMasterPackage(Package):
 					'patches/mcs-pkgconfig.patch'
 					])
 
-		self.local_gcc_flags = ['-O2']
+		self.gcc_flags.extend = ['-O2']
 
 		self.configure = './autogen.sh --prefix="%{package_prefix}"'
 
 	def prep (self):
 		Package.prep (self)
-		if Package.profile.name == 'darwin':
 			for p in range (1, len (self.sources)):
 				self.sh ('patch -p1 < "%{sources[' + str (p) + ']}"')
 

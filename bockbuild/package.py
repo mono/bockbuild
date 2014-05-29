@@ -468,14 +468,15 @@ class Package:
 			if not os.path.exists(lipo_dir):
 				os.mkdir (lipo_dir)
 
-			log (1, 'Lipoing binaries (lib)' + self.prefix)
-			self.lipo_dirs (self.bin64_prefix, self.prefix, lipo_dir, 'lib')
-			log (1, 'Lipoing binaries (bin)' + self.prefix)
-			self.lipo_dirs (self.bin64_prefix, self.prefix, lipo_dir, 'bin')
-
-			#delete the lipo build dirs
-			shutil.rmtree (lipo_dir, ignore_errors = True)
-			shutil.rmtree (self.bin64_prefix, ignore_errors = True)
+			try:
+				log (1, 'Lipoing binaries(lib)' + self.prefix)
+				self.lipo_dirs (self.bin64_prefix, self.prefix, lipo_dir, 'lib')
+				log (1, 'Lipoing binaries (bin)' + self.prefix)
+				self.lipo_dirs (self.bin64_prefix, self.prefix, lipo_dir, 'bin')
+			finally:
+				#delete the lipo build dirs
+				shutil.rmtree (lipo_dir, ignore_errors = True)
+				shutil.rmtree (self.bin64_prefix, ignore_errors = True)
 
 Package.default_sources = None
 
