@@ -37,11 +37,11 @@ class MonoMasterPackage(Package):
 
 	def arch_build (self, arch):	
 		if arch == 'darwin-64': #64-bit build pass
-			self.local_gcc_flags.extend (['-m64'])
+			self.local_gcc_flags = ['-m64']
 			self.local_configure_flags = ['--build=x86_64-apple-darwin11.2.0']
 		
 		if arch == 'darwin-32': #32-bit build pass
-			self.local_gcc_flags.extend (['-m32'])
+			self.local_gcc_flags =['-m32']
 			self.local_configure_flags = ['--build=i386-apple-darwin11.2.0']
 
 		Package.arch_build (self, arch, defaults = False)
