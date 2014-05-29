@@ -26,7 +26,7 @@ class MonoMasterPackage(Package):
 					'patches/mcs-pkgconfig.patch'
 					])
 
-		self.gcc_flags.extend = ['-O2']
+		self.gcc_flags.extend (['-O2'])
 
 		self.configure = './autogen.sh --prefix="%{package_prefix}"'
 
