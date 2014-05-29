@@ -32,8 +32,8 @@ class MonoMasterPackage(Package):
 
 	def prep (self):
 		Package.prep (self)
-			for p in range (1, len (self.sources)):
-				self.sh ('patch -p1 < "%{sources[' + str (p) + ']}"')
+		for p in range (1, len (self.sources)):
+			self.sh ('patch -p1 < "%{sources[' + str (p) + ']}"')
 
 	def arch_build (self, arch):	
 		if arch == 'darwin-64': #64-bit build pass
