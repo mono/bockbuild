@@ -418,6 +418,8 @@ class Package:
 						if not os.path.exists (os.path.join (lipo_bin, relpath)):
 							os.makedirs (os.path.join (lipo_bin, relpath))
 
+						if os.path.islink (dir64_file):
+							continue
 						lipo_cmd = 'lipo -create %s %s -output %s ' % (dir64_file, dir32_file, lipo_file) 
 						#print lipo_cmd
 						run_shell(lipo_cmd)
@@ -451,7 +453,7 @@ class Package:
 		Package.make (self)
 
 	def configure (self):
-		self.sh ('CXXFLAGS="%{gcc_flags} %{local_gcc_flags}" OBJCFLAGS="%{gcc_flags} %{local_gcc_flags}" CFLAGS="%{gcc_flags} %{local_gcc_flags}" CXXFLAGS="%{gcc_flags} %{local_gcc_flags}" CPPFLAGS="%{cpp_flags} %{local_cpp_flags}" LDFLAGS="%{ld_flags} %{local_ld_flags}" %{configure} %{configure_flags} %{local_configure_flags}')
+		self.sh ('OBJCFLAGS="%{gcc_flags} %{local_gcc_flags}" CFLAGS="%{gcc_flags} %{local_gcc_flags}" CXXFLAGS="%{gcc_flags} %{local_gcc_flags}" CPPFLAGS="%{cpp_flags} %{local_cpp_flags}" LDFLAGS="%{ld_flags} %{local_ld_flags}" %{configure} %{configure_flags} %{local_configure_flags}')
 
 	def make (self):
 		self.sh ('%{make}')
