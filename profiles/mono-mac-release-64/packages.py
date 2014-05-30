@@ -69,7 +69,7 @@ class MonoReleasePackages:
 				'xsp.py',
 				'gtk-sharp-2.12-release.py',
 				'boo.py',
-				'nant.py',
+				# 'nant.py',
 				'ironlangs.py',
 				'fsharp-3.1.py',
 				'mono-addins.py',
