@@ -49,9 +49,10 @@ class MonoReleaseProfile(DarwinProfile, MonoReleasePackages):
             os.makedirs(aclocal_dir)
 
     def build(self):
-        if not os.path.exists(os.path.join(self.release_root, "bin")):
-            log(0, "Rebuilding world - new prefix: " + self.release_root)
-            shutil.rmtree(self.build_root, ignore_errors=True)
+        if os.path.exists(self.release_root):          
+            log(0, "Purging prefix path: " + self.release_root)
+            shutil.rmtree(self.release_root, ignore_errors=False)
+            
         DarwinProfile.build(self)
 
     def make_package_symlinks(self, root):
