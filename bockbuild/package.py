@@ -429,7 +429,19 @@ class Package:
 					else:
 						print "lipo warning: 32-bit version of file %s not found"  %file
 
-			
+	def copy_side_by_side (self, src_dir, dest_dir, suffix):
+		if not os.path.exists (src_dir):
+			return # we don't always have bin/lib dirs
+
+		for root,dirs,filelist in os.walk(src_dir):
+			relpath = os.path.relpath (root, src_dir)
+			for file in filelist:
+				if os.path.islink (src_dir):
+					continue
+				src_file = os.path.join (src_dir, relpath, file)
+				dest_file = os.path.join (dest_dir, relpath, file + suffix) #FIXME: perhaps add suffix before any .'s
+				shutil.copy2 (src_file, dest_file)
+
 	def arch_build (self, arch, defaults = True):
 		if self.sources == None:
 			log (1, '<skipping - no sources defined>')
@@ -471,10 +483,10 @@ class Package:
 				os.mkdir (lipo_dir)
 
 			try:
-				log (1, 'Lipoing binaries(lib)' + self.prefix)
+				log (1, 'Lipoing 32/64-bit libraries' + self.prefix)
 				self.lipo_dirs (self.bin64_prefix, self.prefix, lipo_dir, 'lib')
-				log (1, 'Lipoing binaries (bin)' + self.prefix)
-				self.lipo_dirs (self.bin64_prefix, self.prefix, lipo_dir, 'bin')
+				log (1, 'Installing side-by-side bin directory' + self.prefix)
+				self.copy_side_by_side (os.path.join (self.bin64_prefix, 'bin'), os.path.join (self.prefix, 'bin'), '64')
 			finally:
 				#delete the lipo build dirs
 				shutil.rmtree (lipo_dir, ignore_errors = True)
