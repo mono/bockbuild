@@ -256,12 +256,11 @@ class Package:
 
 		if self.is_successful_build(build_success_file, package_dir):
 			print 'Skipping %s - already built' % namever
-			if not os.path.exists (install_success_file):
-				print '%s: Installing %s' % (self.get_timestamp (), namever)
-				os.chdir (package_build_dir)
-				self.cd ('%{source_dir_name}')
-				self.install ()
-				open (install_success_file, 'w').close ()
+			print '%s: Installing %s' % (self.get_timestamp (), namever)
+			os.chdir (package_build_dir)
+			self.cd ('%{source_dir_name}')
+			self.install ()
+			open (install_success_file, 'w').close ()
 			return
 
 		print '\n\n%s: Building %s on %s (%s CPU)' % (self.get_timestamp (), self.name, profile.host, profile.cpu_count)
