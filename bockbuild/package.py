@@ -369,15 +369,27 @@ class Package:
 			if self.m64:
 				if self.needs_lipo:
 					log (1, 'Lipo (universal binaries) mode enabled.')	
+
+					#copy out built dir for later use (make check etc.)
+					package_build_dir = self.source_dir_name
+					package_build_dir64 = package_build_dir + '-x86_64'
+					print 'Copying ' + package_build_dir + ' to ' + package_build_dir64
+					os.chdir ('..')
+					if (os.path.exists (package_build_dir64)):
+						shutil.rmtree (package_build_dir64)
+					shutil.copytree (package_build_dir, package_build_dir64)
+					os.chdir (package_build_dir64)
+					
 					self.bin64_prefix = self.prefix  + '-darwin-64' #switch to a temporary prefix 
 					self.package_prefix = self.bin64_prefix
-					log (1, 'Building 64-bit binaries at ' + self.package_prefix)
+					log (1, 'Building 64-bit binaries at ' + self.package_prefix + ' from ' + package_build_dir64)
 					self.arch_build ('darwin-64')
 					self.sh ('%{makeinstall}')
-					self.sh ('%{make} clean')
 
+					os.chdir ('..')
+					os.chdir (package_build_dir)
 					self.package_prefix = self.prefix #switch back to main prefix
-					log (1, 'Building 32-bit binaries at ' + self.package_prefix)
+					log (1, 'Building 32-bit binaries at ' + self.package_prefix + ' from ' + package_build_dir64)
 					self.arch_build ('darwin-32')
 
 				elif self.fat_build:
