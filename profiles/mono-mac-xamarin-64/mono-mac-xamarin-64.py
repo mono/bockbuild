@@ -195,7 +195,7 @@ class MonoReleaseProfile(DarwinProfile, MonoReleasePackages):
     def package_info(self, pkg_type):
         version = self.FULL_VERSION
         info = (pkg_type, version)
-        filename = "MonoFramework-%s-%s.macos10.xamarin.x86.pkg" % info
+        filename = "MonoFramework-%s-%s.macos10.xamarin.x86_64.pkg" % info
         return {
             "type": pkg_type,
             "filename": filename,
