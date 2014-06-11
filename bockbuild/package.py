@@ -366,11 +366,14 @@ class Package:
 			if self.m64:
 				if self.needs_lipo:
 					log (1, 'Lipo (universal binaries) mode enabled.')	
+
 					#copy out built dir for later use (make check etc.)
 					package_build_dir = self.source_dir_name
 					package_build_dir64 = package_build_dir + '-x86_64'
 					print 'Copying ' + package_build_dir + ' to ' + package_build_dir64
 					os.chdir ('..')
+					if (os.path.exists (package_build_dir64)):
+						shutil.rmtree (package_build_dir64)
 					shutil.copytree (package_build_dir, package_build_dir64)
 					os.chdir (package_build_dir64)
 					
