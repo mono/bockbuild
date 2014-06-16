@@ -9,7 +9,6 @@ class FontConfigPackage (Package):
 	def build (self):
 		if Package.profile.name == 'darwin':
 			self.configure_flags.extend ([
-				'--with-cache-dir=~/Library/Caches/com.xamarin.fontconfig',
 				'--with-default-fonts=/System/Library/Fonts',
 				'--with-add-fonts=/Library/Fonts,/Network/Library/Fonts,/System/Library/Fonts'
 			])
