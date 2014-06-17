@@ -38,7 +38,7 @@ class MonoReleaseProfile(DarwinProfile, MonoReleasePackages):
         versions_root = os.path.join(self.MONO_ROOT, "Versions")
         self.release_root = os.path.join(versions_root, self.RELEASE_VERSION)
 
-        DarwinProfile.__init__(self, self.release_root)
+        DarwinProfile.__init__(self, self.release_root, min_version = '10.7')
         MonoReleasePackages.__init__(self)
 
         self.self_dir = os.path.realpath(os.path.dirname(sys.argv[0]))
