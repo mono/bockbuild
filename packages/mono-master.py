@@ -21,6 +21,7 @@ class MonoMasterPackage(Package):
 					])
 
 			self.configure_flags.extend([
+				'--with-libgdiplus=%s/lib/libgdiplus.dylib' % Package.profile.prefix,
 				'--enable-loadedllvm'
 				])
 
@@ -28,6 +29,10 @@ class MonoMasterPackage(Package):
 					# Fixes up pkg-config usage on the Mac
 					'patches/mcs-pkgconfig.patch'
 					])
+		else:
+			self.configure_flags.extend([
+				'--with-libgdiplus=%s/lib/libgdiplus.so' % Package.profile.prefix,
+				])
 
 		self.configure = expand_macros ('CFLAGS="%{env.CFLAGS} -O2" ./autogen.sh', Package.profile)
 
