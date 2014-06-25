@@ -76,7 +76,7 @@ class MonoReleaseProfile(DarwinProfile, MonoReleasePackages):
         if os.getenv('BOCKBUILD_ADD_BUILD_NUMBER'):
             self.find_git()
             print "cur path is %s and git is %s" % (os.getcwd(), self.git)
-            blame_rev_str = 'cd %s/mono; %s blame configure.in HEAD | grep AC_INIT | sed \'s/ .*//\' ' % (self.build_root, self.git)
+            blame_rev_str = 'cd %s/mono; %s blame configure.ac HEAD | grep AC_INIT | sed \'s/ .*//\' ' % (self.build_root, self.git)
             print blame_rev_str
             blame_rev = backtick(blame_rev_str)
             print "Last commit to the version string %s" % (blame_rev)
