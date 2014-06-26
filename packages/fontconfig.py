@@ -4,12 +4,15 @@ class FontConfigPackage (Package):
 			configure_flags = [ '--disable-docs' ],
 			sources = [
 				'http://www.fontconfig.org/release/%{name}-%{version}.tar.gz'
-			])
+			],
+			#a non-empty DESTDIR keeps fc-cache from running at install-time
+			override_properties = { 'makeinstall': 'make DESTDIR="/" install' }
+			) 
 
 	def build (self):
 		if Package.profile.name == 'darwin':
 			self.configure_flags.extend ([
-				'--with-cache-dir=~/Library/Caches/com.xamarin.fontconfig',
+				'--with-cache-dir="~/Library/Caches/com.xamarin.fontconfig"',
 				'--with-default-fonts=/System/Library/Fonts',
 				'--with-add-fonts=/Library/Fonts,/Network/Library/Fonts,/System/Library/Fonts'
 			])
