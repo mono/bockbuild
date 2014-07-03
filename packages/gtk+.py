@@ -132,7 +132,8 @@ class GtkPackage (GnomeGitPackage):
 				'patches/gtk/gtknsview-defer-map-and-lock-in-clipping.patch',
 				'patches/gtk/gtknsview-timeout-fix.patch',
 
-                                'patches/gtk/nsview-embedding.patch'
+                                'patches/gtk/nsview-embedding.patch',
+                                'patches/gtk/nsview-embedding-check.patch'
 			])
 
 	def prep (self):
