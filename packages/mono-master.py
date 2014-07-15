@@ -18,6 +18,7 @@ class MonoMasterPackage(Package):
 		
 		if Package.profile.name == 'darwin':
 			self.configure_flags.extend([
+				'--with-libgdiplus=%s/lib/libgdiplus.dylib' % Package.profile.prefix,
 				'--enable-loadedllvm'
 				])
 
@@ -25,6 +26,10 @@ class MonoMasterPackage(Package):
 					# Fixes up pkg-config usage on the Mac
 					'patches/mcs-pkgconfig.patch'
 					])
+		else:
+			self.configure_flags.extend([
+				'--with-libgdiplus=%s/lib/libgdiplus.so' % Package.profile.prefix,
+				])
 
 		self.gcc_flags.extend (['-O2'])
 
