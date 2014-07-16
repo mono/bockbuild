@@ -68,7 +68,7 @@ class MonoReleasePackages:
             'mono-master-encrypted.py',
             'pcl-reference-assemblies.py',
             'ms-test-suite.py',
-            #'libgdiplus.py',
+            'libgdiplus.py',
             'xsp.py',
             'gtk-sharp-2.12-release.py',
             'boo.py',

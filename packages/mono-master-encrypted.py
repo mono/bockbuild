@@ -18,9 +18,15 @@ class MonoMasterEncryptedPackage(Package):
                              '--with-ikvm=yes',
                              '--with-moonlight=no'
                          ])
+        #This package would like to be lipoed.
+        if Package.profile.m64 == True:
+            self.needs_lipo = True
 
         if Package.profile.name == 'darwin':
-            self.configure_flags.extend(['--enable-loadedllvm'])
+            self.configure_flags.extend([
+                '--with-libgdiplus=%s/lib/libgdiplus.dylib' % Package.profile.prefix,
+                '--enable-loadedllvm'
+                ])
 
         self.configure_flags.extend(['--enable-extension-module=crypto --enable-native-types'])
 
