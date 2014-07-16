@@ -38,7 +38,7 @@ class MonoReleaseProfile(DarwinProfile, MonoReleasePackages):
         versions_root = os.path.join(self.MONO_ROOT, "Versions")
         self.release_root = os.path.join(versions_root, self.RELEASE_VERSION)
 
-        DarwinProfile.__init__(self, self.release_root)
+        DarwinProfile.__init__(self, self.release_root, min_version = '10.7')
         MonoReleasePackages.__init__(self)
 
         self.self_dir = os.path.realpath(os.path.dirname(sys.argv[0]))
@@ -217,11 +217,6 @@ class MonoReleaseProfile(DarwinProfile, MonoReleasePackages):
         os.rename(temp, config)
         os.system('chmod a+r %s' % config)
 
-    def fix_libMonoPosixHelper(self):
-        config = os.path.join(self.prefix, "etc", "mono", "config")
-        self.fix_dllmap(
-            config, lambda line: "libMonoPosixHelper.dylib" in line)
-
     def fix_gtksharp_configs(self):
         libs = [
             'atk-sharp',
@@ -240,7 +235,6 @@ class MonoReleaseProfile(DarwinProfile, MonoReleasePackages):
 
     # THIS IS THE MAIN METHOD FOR MAKING A PACKAGE
     def package(self):
-        self.fix_libMonoPosixHelper()
         self.fix_gtksharp_configs()
         self.generate_dsym()
         blacklist = os.path.join(self.packaging_dir, 'mdk_blacklist.sh')

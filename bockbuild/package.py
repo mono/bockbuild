@@ -281,7 +281,7 @@ class Package:
 		if self.delete_stale_workspace_cache (workspace):
 			if os.path.exists (build_success_file): os.remove (build_success_file)
 
-		if self.is_successful_build(build_success_file, package_dir) and not (self.needs_lipo and self.m64): 
+		if self.is_successful_build(build_success_file, package_dir) and os.path.exists (workspace) and not (self.needs_lipo and self.m64): 
 			print 'Skipping %s - already built' % namever
 			print '%s: Installing %s' % (self.get_timestamp (), namever)
 			os.chdir (package_build_dir)
@@ -389,7 +389,7 @@ class Package:
 					os.chdir ('..')
 					os.chdir (package_build_dir)
 					self.package_prefix = self.prefix #switch back to main prefix
-					log (1, 'Building 32-bit binaries at ' + self.package_prefix + ' from ' + package_build_dir64)
+					log (1, 'Building 32-bit binaries at ' + self.package_prefix + ' from ' + package_build_dir)
 					self.arch_build ('darwin-32')
 
 				elif self.fat_build:
