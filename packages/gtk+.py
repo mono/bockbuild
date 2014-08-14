@@ -130,7 +130,12 @@ class GtkPackage (GnomeGitPackage):
 
 				# https://bugzilla.xamarin.com/show_bug.cgi?id=17401
 				'patches/gtk/gtknsview-defer-map-and-lock-in-clipping.patch',
-				'patches/gtk/gtknsview-timeout-fix.patch'
+				'patches/gtk/gtknsview-timeout-fix.patch',
+
+                                'patches/gtk/nsview-embedding.patch',
+                                'patches/gtk/nsview-embedding-check.patch',
+
+                                'patches/gtk/enable-swizzle-property.patch'
 			])
 
 	def prep (self):

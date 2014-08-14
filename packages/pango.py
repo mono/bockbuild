@@ -19,6 +19,10 @@ class PangoPackage (GnomeXzPackage):
 			# https://bugzilla.xamarin.com/show_bug.cgi?id=10257
 			'patches/pango-coretext-astral-plane-1.patch',
 			'patches/pango-coretext-astral-plane-2.patch',
+
+                        # Bug 15787 - Caret position is wrong when there are ligatures
+                        # https://bugzilla.xamarin.com/show_bug.cgi?id=15787
+                        'patches/pango-disable-ligatures.patch'
 		])
 
 	def prep (self):
