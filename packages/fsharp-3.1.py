@@ -3,8 +3,8 @@ class Fsharp31Package(GitHubTarballPackage):
 	def __init__(self):
 		GitHubTarballPackage.__init__(self,
 			'fsharp', 'fsharp',
-			'3.1.1.19',
-			'60fafa267ca9771ed7947d8438732d962cd44149',
+			'3.1.1.21',
+			'79256a0bcb20912ae4fa15dc4e4badc566e4cfbb',
 			configure = '')
 
 	def build(self):
