@@ -1,0 +1,31 @@
+diff --git a/gdk/gdkwindow.h b/gdk/gdkwindow.h
+index 95a3665..e9428d0 100644
+--- a/gdk/gdkwindow.h
++++ b/gdk/gdkwindow.h
+@@ -722,6 +722,9 @@ void       gdk_window_redirect_to_drawable   (GdkWindow     *window,
+                                               gint           height);
+ void       gdk_window_remove_redirection     (GdkWindow     *window);
+ 
++/* NSView embedding */
++gboolean   gdk_window_supports_nsview_embedding ();
++
+ #ifndef GDK_DISABLE_DEPRECATED
+ #ifndef GDK_MULTIHEAD_SAFE
+ GdkPointerHooks *gdk_set_pointer_hooks (const GdkPointerHooks *new_hooks);   
+diff --git a/gdk/quartz/gdkwindow-quartz.c b/gdk/quartz/gdkwindow-quartz.c
+index ee15b9f..6bfc096 100644
+--- a/gdk/quartz/gdkwindow-quartz.c
++++ b/gdk/quartz/gdkwindow-quartz.c
+@@ -889,6 +889,12 @@ get_nsscreen_for_point (gint x, gint y)
+   return screen;
+ }
+ 
++gboolean
++gdk_window_supports_nsview_embedding ()
++{
++  return TRUE;
++}
++
+ void
+ _gdk_window_impl_new (GdkWindow     *window,
+ 		      GdkWindow     *real_parent,
