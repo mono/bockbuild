@@ -45,7 +45,7 @@ class GlibPackage (GnomeXzPackage):
 
 		self.sh (
 			# 'autoconf',
-			'%{configure} --disable-compile-warnings',
+			'%{configure} --enable-debug --disable-compile-warnings',
 			'ed - config.h < %{sources[1]}',
 			# work around https://bugzilla.gnome.org/show_bug.cgi?id=700350
 			'touch docs/reference/*/Makefile.in',
