@@ -23,7 +23,10 @@ class PangoPackage (GnomeXzPackage):
 
                         # Bug 15787 - Caret position is wrong when there are ligatures
                         # https://bugzilla.xamarin.com/show_bug.cgi?id=15787
-                        'patches/pango-disable-ligatures.patch'
+                        'patches/pango-disable-ligatures.patch',
+
+                        # https://bugzilla.xamarin.com/show_bug.cgi?id=22199
+                        'patches/pango-fix-ct_font_descriptor_get_weight-crasher.patch'
 		])
 
 	def prep (self):
