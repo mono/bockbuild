@@ -134,7 +134,6 @@ class GtkPackage (GnomeGitPackage):
 				'patches/gtk/gtknsview-timeout-fix.patch',
 
                                 'patches/gtk/nsview-embedding.patch',
-                                'patches/gtk/nsview-embedding-check.patch',
 
                                 'patches/gtk/enable-swizzle-property.patch'
 			])
