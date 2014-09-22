@@ -44,7 +44,7 @@ class PCLReferenceAssembliesPackage(Package):
             os.path.join(directory, "Xamarin.Android.xml"):
             """<Framework Identifier="MonoAndroid" MinimumVersion="1.0" Profile="*" DisplayName="Xamarin.Android"/>""",
             os.path.join(directory, "Xamarin.Mac.xml"):
-            """<Framework Identifier="Xamarin.Mac" MinimumVersion="1.0" Profile="*" DisplayName="Xamarin.Mac Unified"/>""",
+            """<Framework Identifier="Xamarin.Mac" MinimumVersion="2.0" Profile="*" DisplayName="Xamarin.Mac Unified"/>""",
         }
         for filename, content in data.iteritems():
             f = open(filename, "w")
