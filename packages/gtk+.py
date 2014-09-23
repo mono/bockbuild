@@ -3,6 +3,7 @@ class GtkPackage (GnomeGitPackage):
 		GnomeGitPackage.__init__ (self, 'gtk+', '2.24', '280fc402be5fb46b66bcd32056963bb1afb8b54b',
 			configure_flags = [
 				'--with-gdktarget=%{gdk_target}',
+				'--enable-debug',
 #				'--disable-cups',
 			]
 		)
@@ -133,7 +134,6 @@ class GtkPackage (GnomeGitPackage):
 				'patches/gtk/gtknsview-timeout-fix.patch',
 
                                 'patches/gtk/nsview-embedding.patch',
-                                'patches/gtk/nsview-embedding-check.patch',
 
                                 'patches/gtk/enable-swizzle-property.patch'
 			])

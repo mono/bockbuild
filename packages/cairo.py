@@ -16,7 +16,8 @@ class CairoPackage (CairoGraphicsXzPackage):
 
 	def build (self):
 		self.configure_flags = [
-			'--enable-pdf'
+			'--enable-pdf',
+			'--enable-debug'
 		]
 
 		if Package.profile.name == 'darwin':
