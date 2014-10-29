@@ -3,7 +3,7 @@ import os
 class MonoLlvmPackage (GitHubPackage):
 	def __init__ (self):
 		GitHubPackage.__init__ (self, 'mono', 'llvm', '3.0',
-			revision = 'e656caccc7dfb5c51c208906f0e176f0973f030f',
+			revision = '74259cd683e9799b0e5ec9cb25a041c1ec0eb3d1',
 			configure_flags  = ['--enable-optimized', '--enable-assertions=no', '--enable-targets="x86 x86_64"' ]
 		)
 
