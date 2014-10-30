@@ -27,10 +27,18 @@ class MonoReleaseProfile(DarwinProfile, MonoReleasePackages):
         if self.RELEASE_VERSION is None:
             raise Exception("Please define the environment variable: MONO_VERSION")
 
+        # Create the updateid
+        parts = self.RELEASE_VERSION.split(".")
+        version_list = (parts + ["0"] * (3 - len(parts)))[:4]
+        for i in range(1, 3):
+            version_list[i] = version_list[i].zfill(2)
+            self.updateid = "".join(version_list)
+            self.updateid += self.BUILD_NUMBER.replace(".", "").zfill(9 - len(self.updateid))
+
         versions_root = os.path.join(self.MONO_ROOT, "Versions")
         self.release_root = os.path.join(versions_root, self.RELEASE_VERSION)
 
-        DarwinProfile.__init__(self, self.release_root, min_version = '10.7')
+        DarwinProfile.__init__(self, self.release_root, m64 = True, min_version = '10.7')
         MonoReleasePackages.__init__(self)
 
         self.self_dir = os.path.realpath(os.path.dirname(sys.argv[0]))
@@ -41,9 +49,10 @@ class MonoReleaseProfile(DarwinProfile, MonoReleasePackages):
             os.makedirs(aclocal_dir)
 
     def build(self):
-        if not os.path.exists(os.path.join(self.release_root, "bin")):
-            log(0, "Rebuilding world - new prefix: " + self.release_root)
-            shutil.rmtree(self.build_root, ignore_errors=True)
+        if os.path.exists(self.release_root):          
+            log(0, "Purging prefix path: " + self.release_root)
+            shutil.rmtree(self.release_root, ignore_errors=False)
+            
         DarwinProfile.build(self)
 
     def make_package_symlinks(self, root):
@@ -64,40 +73,6 @@ class MonoReleaseProfile(DarwinProfile, MonoReleasePackages):
                 os.unlink(dest)
             os.symlink(src, dest)
 
-    def find_git(self):
-        self.git = 'git'
-        for git in ['/usr/local/bin/git', '/usr/local/git/bin/git', '/usr/bin/git']:
-			if os.path.isfile (git):
-				self.git = git
-				break
-
-    def calculate_updateid(self):
-        # Create the updateid
-        if os.getenv('BOCKBUILD_ADD_BUILD_NUMBER'):
-            self.find_git()
-            print "cur path is %s and git is %s" % (os.getcwd(), self.git)
-            blame_rev_str = 'cd %s/mono; %s blame configure.ac HEAD | grep AC_INIT | sed \'s/ .*//\' ' % (self.build_root, self.git)
-            print blame_rev_str
-            blame_rev = backtick(blame_rev_str)
-            print "Last commit to the version string %s" % (blame_rev)
-            blame_rev = " ".join(blame_rev)
-            version_number_str = 'cd %s/mono; %s log %s..HEAD --oneline | wc -l | sed \'s/ //g\'' % (self.build_root, self.git, blame_rev)
-            print version_number_str
-            build_number = backtick(version_number_str)
-            print "Calculating commit distance, %s" % (build_number)
-            self.BUILD_NUMBER = " ".join(build_number)
-            self.FULL_VERSION = self.RELEASE_VERSION + "." + self.BUILD_NUMBER
-        else:
-            self.BUILD_NUMBER="0"
-            self.FULL_VERSION = self.RELEASE_VERSION
-
-        parts = self.RELEASE_VERSION.split(".")
-        version_list = (parts + ["0"] * (3 - len(parts)))[:4]
-        for i in range(1, 3):
-            version_list[i] = version_list[i].zfill(2)
-            self.updateid = "".join(version_list)
-            self.updateid += self.BUILD_NUMBER.replace(".", "").zfill(9 - len(self.updateid))
-
     # creates and returns the path to a working directory containing:
     #   PKGROOT/ - this root will be bundled into the .pkg and extracted at /
     #   uninstallMono.sh - copied onto the DMG
@@ -108,8 +83,6 @@ class MonoReleaseProfile(DarwinProfile, MonoReleasePackages):
         monoroot = os.path.join(tmpdir, "PKGROOT", self.MONO_ROOT[1:])
         versions = os.path.join(monoroot, "Versions")
         os.makedirs(versions)
-
-        self.calculate_updateid();
 
         print "setup_working_dir " + tmpdir
         # setup metadata
@@ -141,10 +114,9 @@ class MonoReleaseProfile(DarwinProfile, MonoReleasePackages):
         root = os.path.join(working_dir, "PKGROOT", self.release_root[1:])
         backtick(blacklist + ' "%s"' % root)
 
-    def run_pkgbuild(self, working_dir, package_type, codesign_key):
+    def run_pkgbuild(self, working_dir, package_type):
         info = self.package_info(package_type)
         output = os.path.join(self.self_dir, info["filename"])
-        temp = os.path.join(self.self_dir, "mono-%s.pkg" % package_type)
         identifier = "com.xamarin.mono-" + info["type"] + ".pkg"
         resources_dir = os.path.join(working_dir, "resources")
         distribution_xml = os.path.join(resources_dir, "distribution.xml")
@@ -152,13 +124,11 @@ class MonoReleaseProfile(DarwinProfile, MonoReleasePackages):
         old_cwd = os.getcwd()
         os.chdir(working_dir)
         pkgbuild = "/usr/bin/pkgbuild"
-        identity = "Developer ID Installer: Xamarin Inc"
         pkgbuild_cmd = ' '.join([pkgbuild,
                                  "--identifier " + identifier,
                                  "--root '%s/PKGROOT'" % working_dir,
                                  "--version '%s'" % self.RELEASE_VERSION,
                                  "--install-location '/'",
-                                 # "--sign '%s'" % identity,
                                  "--scripts '%s'" % resources_dir,
                                  os.path.join(working_dir, "mono.pkg")])
         print pkgbuild_cmd
@@ -168,21 +138,10 @@ class MonoReleaseProfile(DarwinProfile, MonoReleasePackages):
         productbuild_cmd = ' '.join([productbuild,
                                      "--resources %s" % resources_dir,
                                      "--distribution %s" % distribution_xml,
-                                     # "--sign '%s'" % identity,
                                      "--package-path %s" % working_dir,
-                                     temp])
+                                     output])
         print productbuild_cmd
         backtick(productbuild_cmd)
-
-        productsign = "/usr/bin/productsign"
-        productsign_cmd = ' '.join([productsign,
-                                    "-s '%s'" % codesign_key,
-                                    "'%s'" % temp,
-                                    "'%s'" % output])
-        print productsign_cmd
-        backtick(productsign_cmd)
-        os.remove(temp)
-
         os.chdir(old_cwd)
         return output
 
@@ -193,9 +152,9 @@ class MonoReleaseProfile(DarwinProfile, MonoReleasePackages):
             updateinfo.write(guid + ' ' + self.updateid + "\n")
 
     def package_info(self, pkg_type):
-        version = self.FULL_VERSION
+        version = self.RELEASE_VERSION
         info = (pkg_type, version)
-        filename = "MonoFramework-%s-%s.macos10.xamarin.x86.pkg" % info
+        filename = "MonoFramework-%s-%s.macos10.xamarin.x86_64.pkg" % info
         return {
             "type": pkg_type,
             "filename": filename,
@@ -204,59 +163,23 @@ class MonoReleaseProfile(DarwinProfile, MonoReleasePackages):
 
     def build_package(self):
         working = self.setup_working_dir()
-        # uninstall_script = os.path.join(working, "uninstallMono.sh")
-
-        # Unlock the keychain
-        key = os.getenv("CODESIGN_KEY")
-        if not key:
-            raise Exception("CODESIGN_KEY needs to be defined")
-
-        password = os.getenv("CODESIGN_KEYCHAIN_PASSWORD")
-        output = backtick("security -v find-identity")
-        if key not in " ".join(output):
-            raise Exception("%s is not a valid codesign key" % key)
-
-        if password:
-            print "Unlocking the keychain"
-            backtick("security unlock-keychain -p %s" % password)
-        else:
-            raise Exception("CODESIGN_KEYCHAIN_PASSWORD needs to be defined")
+        uninstall_script = os.path.join(working, "uninstallMono.sh")
 
         # make the MDK
         self.apply_blacklist(working, 'mdk_blacklist.sh')
         self.make_updateinfo(working, self.MDK_GUID)
-        mdk_pkg = self.run_pkgbuild(working, "MDK", key)
+        mdk_pkg = self.run_pkgbuild(working, "MDK")
         print "Saving: " + mdk_pkg
-        self.verify_codesign(mdk_pkg)
         # self.make_dmg(mdk_dmg, title, mdk_pkg, uninstall_script)
 
         # make the MRE
         self.apply_blacklist(working, 'mre_blacklist.sh')
         self.make_updateinfo(working, self.MRE_GUID)
-        mre_pkg = self.run_pkgbuild(working, "MRE", key)
+        mre_pkg = self.run_pkgbuild(working, "MRE")
         print "Saving: " + mre_pkg
-        self.verify_codesign(mre_pkg)
         # self.make_dmg(mre_dmg, title, mre_pkg, uninstall_script)
 
         shutil.rmtree(working)
-
-    def verify_codesign(self, pkg):
-        oldcwd = os.getcwd()
-        try:
-            name = os.path.basename(pkg)
-            pkgdir = os.path.dirname(pkg)
-            os.chdir(pkgdir)
-            spctl = "/usr/sbin/spctl"
-            spctl_cmd = ' '.join(
-                [spctl, "-vvv", "--assess", "--type install", name, "2>&1"])
-            output = backtick(spctl_cmd)
-
-            if "accepted" in " ".join(output):
-                log(0, "%s IS SIGNED" % pkg)
-            else:
-                log(0, "%s IS NOT SIGNED" % pkg)
-        finally:
-            os.chdir(oldcwd)
 
     def generate_dsym(self):
         for path, dirs, files in os.walk(self.prefix):
@@ -268,21 +191,6 @@ class MonoReleaseProfile(DarwinProfile, MonoReleasePackages):
                 if "Mach-O" in "".join(file_type):
                     print "Generating dsyms for %s" % f
                     backtick('dsymutil "%s"' % f)
-
-    def verify(self, f):
-        result = " ".join(backtick("otool -L " + f))
-        regex = os.path.join(self.MONO_ROOT, "Versions", r"(\d+\.\d+\.\d+)")
-        match = re.search(regex, result).group(1)
-        if self.RELEASE_VERSION not in match:
-            raise Exception("%s references Mono %s\n%s" % (f, match, result))
-
-    def verify_binaries(self, binaries):
-        for path, dirs, files in os.walk(binaries):
-            for name in files:
-                f = os.path.join(path, name)
-                file_type = backtick('file "%s"' % f)
-                if "Mach-O executable" in "".join(file_type):
-                    self.verify(f)
 
     def install_root(self):
         return os.path.join(self.MONO_ROOT, "Versions", self.RELEASE_VERSION)
@@ -335,10 +243,33 @@ class MonoReleaseProfile(DarwinProfile, MonoReleasePackages):
         self.fix_libMonoPosixHelper()
         self.fix_gtksharp_configs()
         self.generate_dsym()
-        self.verify_binaries(os.path.join(self.release_root, "bin"))
         blacklist = os.path.join(self.packaging_dir, 'mdk_blacklist.sh')
         backtick(blacklist + ' ' + self.release_root)
         self.build_package()
 
 MonoReleaseProfile().build()
 
+profname = "mono-mac-release-env"
+dir = os.path.realpath(os.path.dirname(sys.argv[0]))
+envscript = '''#!/bin/sh
+PROFNAME="%s"
+INSTALLDIR=%s/build-root/_install
+export DYLD_FALLBACK_LIBRARY_PATH="$INSTALLDIR/lib:/lib:/usr/lib:$DYLD_FALLBACK_LIBRARY_PATH"
+export C_INCLUDE_PATH="$INSTALLDIR/include:$C_INCLUDE_PATH"
+export ACLOCAL_PATH="$INSTALLDIR/share/aclocal:$ACLOCAL_PATH"
+export ACLOCAL_FLAGS="-I $INSTALLDIR/share/aclocal $ACLOCAL_FLAGS"
+export PKG_CONFIG_PATH="$INSTALLDIR/lib/pkgconfig:$INSTALLDIR/lib64/pkgconfig:$INSTALLDIR/share/pkgconfig:$PKG_CONFIG_PATH"
+export CONFIG_SITE="$INSTALLDIR/$PROFNAME-config.site"
+export MONO_GAC_PREFIX="$INSTALLDIR:MONO_GAC_PREFIX"
+export MONO_ADDINS_REGISTRY="$INSTALLDIR/addinreg"
+export PATH="$INSTALLDIR/bin:$PATH"
+export MONO_INSTALL_PREFIX="$INSTALLDIR"
+
+#mkdir -p "$INSTALLDIR"
+#echo "test \"\$prefix\" = NONE && prefix=\"$INSTALLDIR\"" > $CONFIG_SITE
+
+PS1="[$PROFNAME] \w @ "
+''' % (profname, dir)
+
+with open(os.path.join(dir, profname), 'w') as f:
+    f.write(envscript)

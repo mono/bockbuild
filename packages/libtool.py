@@ -1,6 +1,6 @@
 class LibtoolPackage (GnuPackage):
         def __init__ (self):
-                GnuPackage.__init__ (self, 'libtool', '2.4.2')
+                GnuPackage.__init__ (self, 'libtool', '2.4.2', override_properties = { 'build_dependency' : True })
 
         def install (self):
 		Package.install (self)

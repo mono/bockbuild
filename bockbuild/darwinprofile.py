@@ -5,7 +5,7 @@ from util.util import *
 from unixprofile import UnixProfile
 
 class DarwinProfile (UnixProfile):
-	def __init__ (self, prefix = False, m64 = False):
+	def __init__ (self, prefix = False, m64 = False, min_version = None):
 		UnixProfile.__init__ (self, prefix)
 		
 		self.name = 'darwin'
@@ -19,50 +19,31 @@ class DarwinProfile (UnixProfile):
 		if (os.path.isdir (sdkroot + 'MacOSX10.6.sdk')):
 			self.os_x_minor = 6
 			self.mac_sdk_path = sdkroot + 'MacOSX10.6.sdk'
-			self.gcc_flags.extend ([
-				'-D_XOPEN_SOURCE',
-				'-isysroot %{mac_sdk_path}',
-				'-mmacosx-version-min=10.6',
-			])
 		elif (os.path.isdir (sdkroot + 'MacOSX10.7.sdk')):
 			self.os_x_minor = 7
 			self.mac_sdk_path = sdkroot + 'MacOSX10.7.sdk'
-			self.gcc_flags.extend ([
-				'-D_XOPEN_SOURCE',
-				'-isysroot %{mac_sdk_path}',
-				'-mmacosx-version-min=10.7',
-			])
 		elif (os.path.isdir (sdkroot + 'MacOSX10.8.sdk')):
 			self.os_x_minor = 8
-			self.mac_sdk_path = sdkroot + 'MacOSX10.8.sdk'
-			self.gcc_flags.extend ([
-				'-D_XOPEN_SOURCE',
-				'-isysroot %{mac_sdk_path}',
-				'-mmacosx-version-min=10.8',
-			])
+			self.mac_sdk_path = sdkroot + 'MacOSX10.8.sdk'	
 		elif (os.path.isdir (sdkroot + 'MacOSX10.9.sdk')):
 			self.os_x_minor = 9
 			self.mac_sdk_path = sdkroot + 'MacOSX10.9.sdk'
-			self.gcc_flags.extend ([
-				'-D_XOPEN_SOURCE',
-				'-isysroot %{mac_sdk_path}',
-				'-mmacosx-version-min=10.9',
-			])
 		else:
 			raise IOError ('Mac OS X SDKs 10.6, 10.7, 10.8 or 10.9 not found')
 
-		if m64:
-			self.gcc_arch_flags = [ '-m64', '-arch x86_64'  ]
-		else:
-			self.gcc_arch_flags = [ '-m32', '-arch i386' ]
+		self.gcc_flags.extend ([
+				'-D_XOPEN_SOURCE',
+				'-isysroot %s' % self.mac_sdk_path
+			])
+
+		if min_version:
+			self.gcc_flags.extend (['-mmacosx-version-min=%s' % min_version])
+			os.environ ['MACOSX_DEPLOYMENT_TARGET'] = min_version
 
 		self.gcc_debug_flags = [ '-O0', '-ggdb3' ]
 		
 		if self.cmd_options.debug is True:
 			self.gcc_flags.extend (self.gcc_debug_flags)
-
-		self.gcc_flags.extend (self.gcc_arch_flags)
-		self.ld_flags.extend (self.gcc_arch_flags)
 
 		#if (os.path.isfile ('/usr/bin/gcc-4.2')):
 		#	self.env.set ('CC',  'gcc-4.2')

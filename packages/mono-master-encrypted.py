@@ -18,13 +18,16 @@ class MonoMasterEncryptedPackage(Package):
                              '--with-ikvm=yes',
                              '--with-moonlight=no'
                          ])
+        #This package would like to be lipoed.
+        if Package.profile.m64 == True:
+            self.needs_lipo = True
 
         if Package.profile.name == 'darwin':
             self.configure_flags.extend([
-                # fix build on lion, it uses 64-bit host even with -m32
-                '--build=i386-apple-darwin11.2.0',
+                '--with-libgdiplus=%s/lib/libgdiplus.dylib' % Package.profile.prefix,
                 '--enable-loadedllvm'
-            ])
+                ])
+
         self.configure_flags.extend(['--enable-extension-module=crypto --enable-native-types'])
 
         self.sources.extend([
@@ -32,8 +35,9 @@ class MonoMasterEncryptedPackage(Package):
             'patches/mcs-pkgconfig.patch'
         ])
 
-        self.configure = expand_macros ('CFLAGS="%{env.CFLAGS} -O2" ./autogen.sh', Package.profile)
-        self.make = 'make'
+        self.gcc_flags.extend (['-O2'])
+
+        self.configure = './autogen.sh --prefix="%{package_prefix}"'
 
     def checkout_mono_extensions(self, build_root):
         ext = self.sources[1]
@@ -92,6 +96,17 @@ class MonoMasterEncryptedPackage(Package):
         if Package.profile.name == 'darwin':
             for p in range(2, len(self.sources)):
                 self.sh('patch -p1 < "%{sources[' + str(p) + ']}"')
+
+    def arch_build (self, arch):    
+        if arch == 'darwin-64': #64-bit build pass
+            self.local_gcc_flags = ['-m64']
+            self.local_configure_flags = ['--build=x86_64-apple-darwin11.2.0']
+        
+        if arch == 'darwin-32': #32-bit build pass
+            self.local_gcc_flags =['-m32']
+            self.local_configure_flags = ['--build=i386-apple-darwin11.2.0']
+
+        Package.arch_build (self, arch, defaults = False)
 
     def build(self):
         Package.build (self)
