@@ -19,6 +19,27 @@ class Package:
 		self.organization = organization
 
 		self.configure_flags = ['--enable-debug']
+
+		self.gcc_flags = Package.profile.gcc_flags
+		self.cpp_flags = Package.profile.gcc_flags
+		self.ld_flags = Package.profile.ld_flags
+
+		self.local_cpp_flags = []
+		self.local_gcc_flags = []
+		self.local_ld_flags = []
+		self.local_configure_flags = []
+
+		# fat binary parameters. On a 64-bit Darwin profile (m64 = True) 
+		# each package must decide if it will a) perform a multi-arch (64/32) build 
+		# b) request two builds that are lipoed at the end or c) request a 32-bit
+		# build only.
+
+		self.m64 = Package.profile.m64
+		self.fat_build = False
+		self.needs_lipo = False
+		self.m32_only = False
+		self.build_dependency = False
+
 		if Package.profile.global_configure_flags:
 			self.configure_flags.extend (Package.profile.global_configure_flags)
 		if configure_flags:
@@ -43,7 +64,7 @@ class Package:
 		if configure:
 			self.configure = configure
 		else:
-			self.configure = './configure --prefix="%{prefix}"'
+			self.configure = './configure --prefix="%{package_prefix}"'
 
 		self.make = 'make -j%s' % Package.profile.cpu_count
 		self.makeinstall = 'make install'
@@ -233,7 +254,13 @@ class Package:
 	def start_build (self):
 		Package.last_instance = None
 
+		# hack: we need to expand macros in fields, but not for self.configure.
+		# if we expand self.configure now, we can't adjust the prefix for multiple builds
+		# needed for lipoing
+		temp = self.configure
+		self.configure = ""
 		expand_macros (self, self)
+		self.configure = temp
 
 		profile = Package.profile
 		namever = '%s-%s' % (self.name, self.version)
@@ -251,7 +278,7 @@ class Package:
 		if self.delete_stale_workspace_cache (workspace):
 			if os.path.exists (build_success_file): os.remove (build_success_file)
 
-		if self.is_successful_build(build_success_file, package_dir):
+		if self.is_successful_build(build_success_file, package_dir) and os.path.exists (workspace) and not (self.needs_lipo and self.m64): 
 			print 'Skipping %s - already built' % namever
 			print '%s: Installing %s' % (self.get_timestamp (), namever)
 			os.chdir (package_build_dir)
@@ -334,10 +361,124 @@ class Package:
 		self.sh (command)
 
 	def build (self):
+		self.package_prefix = self.prefix
+		if self.profile.name == 'darwin':
+			if self.m64:
+				if self.needs_lipo:
+					log (1, 'Lipo (universal binaries) mode enabled.')	
+
+					#copy out built dir for later use (make check etc.)
+					package_build_dir = self.source_dir_name
+					package_build_dir64 = package_build_dir + '-x86_64'
+					print 'Copying ' + package_build_dir + ' to ' + package_build_dir64
+					os.chdir ('..')
+					if (os.path.exists (package_build_dir64)):
+						shutil.rmtree (package_build_dir64)
+					shutil.copytree (package_build_dir, package_build_dir64)
+					os.chdir (package_build_dir64)
+					
+					self.bin64_prefix = self.prefix  + '-darwin-64' #switch to a temporary prefix 
+					self.package_prefix = self.bin64_prefix
+					log (1, 'Building 64-bit binaries at ' + self.package_prefix + ' from ' + package_build_dir64)
+					self.arch_build ('darwin-64')
+					self.sh ('%{makeinstall}')
+
+					os.chdir ('..')
+					os.chdir (package_build_dir)
+					self.package_prefix = self.prefix #switch back to main prefix
+					log (1, 'Building 32-bit binaries at ' + self.package_prefix + ' from ' + package_build_dir)
+					self.arch_build ('darwin-32')
+
+				elif self.fat_build:
+					log (1, 'Building 32/64-bit binaries at ' + self.package_prefix)
+					self.arch_build ('darwin-fat')
+				elif self.m32_only:
+					self.arch_build ('darwin-32')
+				elif self.build_dependency: # build dependencies can be built in the default architecture if not otherwise specified
+					self.arch_build ('darwin-32')
+				else:
+					log (1, 'Building 32/64-bit binaries (default settings) at ' + self.package_prefix)
+					self.arch_build ('darwin-fat')
+
+			else:	
+				self.arch_build ('darwin-32')
+		else:
+			self.arch_build (self.profile.name)
+
+	def lipo_dirs (self, dir_64, dir_32, lipo_dir, bin_subdir, replace_32 = True): 
+		dir64_bin = os.path.join (dir_64, bin_subdir)
+		dir32_bin = os.path.join (dir_32, bin_subdir)
+		lipo_bin = os.path.join (lipo_dir, bin_subdir)
+
+		if not os.path.exists (dir64_bin):
+			return # we don't always have bin/lib dirs
+
+		if not os.path.exists (lipo_bin):
+				os.mkdir (lipo_bin)
+
+		#take each 64-bit binary, lipo with binary of same name
+
+		for root,dirs,filelist in os.walk(dir64_bin):
+			relpath = os.path.relpath (root, dir64_bin)
+			for file in filelist:
+				if file.endswith ('.a') or file.endswith ('.dylib') or file.endswith ('.so'):
+					dir64_file = os.path.join (dir64_bin, relpath, file)
+					dir32_file = os.path.join (dir32_bin, relpath, file)
+					lipo_file = os.path.join (lipo_bin, relpath, file)
+					if os.path.exists (dir32_file):
+						if not os.path.exists (os.path.join (lipo_bin, relpath)):
+							os.makedirs (os.path.join (lipo_bin, relpath))
+
+						if os.path.islink (dir64_file):
+							continue
+						lipo_cmd = 'lipo -create %s %s -output %s ' % (dir64_file, dir32_file, lipo_file) 
+						#print lipo_cmd
+						run_shell(lipo_cmd)
+						if replace_32:
+							#replace all 32-bit binaries with the new fat binaries
+							shutil.copy2 (lipo_file, dir32_file)
+					else:
+						print "lipo warning: 32-bit version of file %s not found"  %file
+
+	def copy_side_by_side (self, src_dir, dest_dir, suffix):
+		if not os.path.exists (src_dir):
+			return # we don't always have bin/lib dirs
+
+		for root,dirs,filelist in os.walk(src_dir):
+			relpath = os.path.relpath (root, src_dir)
+			for file in filelist:
+				if os.path.islink (src_dir):
+					continue
+				src_file = os.path.join (src_dir, relpath, file)
+				dest_file = os.path.join (dest_dir, relpath, file + suffix) #FIXME: perhaps add suffix before any .'s
+				shutil.copy2 (src_file, dest_file)
+
+	def arch_build (self, arch, defaults = True):
 		if self.sources == None:
 			log (1, '<skipping - no sources defined>')
 			return
-		self.sh ('%{configure} %{configure_flags}')
+
+		if defaults == True: #the package does not define the strategy for buildling lipos. These are the defaults
+			if (arch == 'darwin-fat'):					
+					self.local_ld_flags = ['-arch i386' , '-arch x86_64']
+					self.local_gcc_flags = ['-arch i386' , '-arch x86_64']
+					self.local_configure_flags = ['--disable-dependency-tracking']
+			elif (arch == 'darwin-32'):
+					self.local_ld_flags = ['-arch i386']
+					self.local_gcc_flags = ['-arch i386']
+					self.local_configure_flags = ['--build=i386-apple-darwin11.2.0', '--disable-dependency-tracking']
+			elif (arch == 'darwin-64'):
+					self.local_ld_flags = ['-arch x86_64']
+					self.local_gcc_flags = ['-arch x86_64']
+					self.local_configure_flags = ['--disable-dependency-tracking']
+
+		Package.configure (self)
+		Package.make (self)
+
+	def configure (self):
+		self.sh ('OBJCFLAGS="%{gcc_flags} %{local_gcc_flags}" CFLAGS="%{gcc_flags} %{local_gcc_flags}" CXXFLAGS="%{gcc_flags} %{local_gcc_flags}" CPPFLAGS="%{cpp_flags} %{local_cpp_flags}" LDFLAGS="%{ld_flags} %{local_ld_flags}" %{configure} %{configure_flags} %{local_configure_flags}')
+
+	def make (self):
 		self.sh ('%{make}')
 
 	def install (self):
@@ -345,6 +486,22 @@ class Package:
 			log (1, '<skipping - no sources defined>')
 			return
 		self.sh ('%{makeinstall}')
+
+		if self.m64 and self.needs_lipo: #lipo here
+			lipo_dir = self.prefix + '-lipo'
+
+			if not os.path.exists(lipo_dir):
+				os.mkdir (lipo_dir)
+
+			try:
+				log (1, 'Lipoing 32/64-bit libraries' + self.prefix)
+				self.lipo_dirs (self.bin64_prefix, self.prefix, lipo_dir, 'lib')
+				log (1, 'Installing side-by-side bin directory' + self.prefix)
+				self.copy_side_by_side (os.path.join (self.bin64_prefix, 'bin'), os.path.join (self.prefix, 'bin'), '64')
+			finally:
+				#delete the lipo build dirs
+				shutil.rmtree (lipo_dir, ignore_errors = True)
+				shutil.rmtree (self.bin64_prefix, ignore_errors = True)
 
 Package.default_sources = None
 

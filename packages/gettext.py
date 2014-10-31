@@ -20,6 +20,10 @@ class GettextPackage (GnuPackage):
 				'patches/gettext-no-samples.patch',
 			])
 
+		#This package would like to be built with fat binaries
+		if Package.profile.m64 == True:
+			self.fat_build = True
+
 	def prep (self):
 		Package.prep (self)
 		if Package.profile.name == 'darwin':
