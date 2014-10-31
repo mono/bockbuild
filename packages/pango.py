@@ -26,7 +26,10 @@ class PangoPackage (GnomeXzPackage):
                         'patches/pango-disable-ligatures.patch',
 
                         # https://bugzilla.xamarin.com/show_bug.cgi?id=22199
-                        'patches/pango-fix-ct_font_descriptor_get_weight-crasher.patch'
+                        'patches/pango-fix-ct_font_descriptor_get_weight-crasher.patch',
+
+                        # https://bugzilla.gnome.org/show_bug.cgi?id=734372
+                        'patches/pango-coretext-condensed-trait.patch'
 		])
 
 	def prep (self):
