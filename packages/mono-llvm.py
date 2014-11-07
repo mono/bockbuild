@@ -11,12 +11,6 @@ class MonoLlvmPackage (GitHubPackage):
 		if Package.profile.m64 == True:
 			self.needs_lipo = True
 
-		#LLVM says that libstdc++4.6 is broken and we should use libstdc++4.7. This swithces it to the right libstdc++.
-		if Package.profile.name == 'darwin':
-				self.configure_flags.extend (['CXXFLAGS=-stdlib=libc++'])
-
-		#		os.environ ['MACOSX_DEPLOYMENT_TARGET'] = '10.8'
-
 		self.ld_flags = [] # TODO: find out which flags are causing issues. reset ld_flags for the package 
 		self.gcc_flags = []
 		self.cpp_flags = []		
@@ -27,6 +21,10 @@ class MonoLlvmPackage (GitHubPackage):
 		
 		if arch == 'darwin-32':
 			self.local_configure_flags = ['--build=i386-apple-darwin11.2.0']
+
+		#LLVM says that libstdc++4.6 is broken and we should use libstdc++4.7. This switches it to the right libstdc++.
+		if Package.profile.name == 'darwin':
+				self.local_configure_flags.extend (['CXXFLAGS=-stdlib=libc++'])
 
 		Package.arch_build (self, arch, defaults = False)
 		
