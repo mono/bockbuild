@@ -1,4 +1,4 @@
-GitHubTarballPackage ('mono', 'mono-basic', '3.0', 'a74642af7f72d1012c87d82d7a12ac04a17858d5',
-	configure = './configure --prefix="%{prefix}"',
+GitHubTarballPackage ('mono', 'mono-basic', '3.0', 'bd316e914e1a230c29b5d637239334df41a79c7f',
+	configure = './configure --prefix="%{prefix}" --with-profile2=no',
 	override_properties = { 'make': 'make' }
 )

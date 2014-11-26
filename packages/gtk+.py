@@ -135,7 +135,10 @@ class GtkPackage (GnomeGitPackage):
 
                                 'patches/gtk/nsview-embedding.patch',
 
-                                'patches/gtk/enable-swizzle-property.patch'
+                                'patches/gtk/enable-swizzle-property.patch',
+
+				# https://bugzilla.xamarin.com/show_bug.cgi?id=12618
+				'patches/gtk/disable-eye-dropper.patch'
 			])
 
 	def prep (self):
