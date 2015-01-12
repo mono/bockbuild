@@ -2,7 +2,7 @@ MD_BUILD_EXE="../../../monodevelop/main/build/bin/MonoDevelop.exe"
 MD_APP_EXE="../../../md-addins/Xamarin Studio.app/Contents/MacOS/lib/monodevelop/bin/XamarinStudio.exe"
 MONO_OPTIONS=--gc=sgen --debug
 MD_OPTIONS=--no-redirect
-
+DYLD="../../../md-addins/MonoDevelop.IPhone/build:$DYLD_LIBRARY_PATH"
 
 all:
 	./monodevelop-mac-dev.py -b
@@ -11,7 +11,7 @@ verbose:
 	./monodevelop-mac-dev.py -bv
 
 run:
-	mono $(MONO_OPTIONS) $(MD_BUILD_EXE) $(MD_OPTIONS)
+	DYLD_LIBRARY_PATH=$(DYLD) mono $(MONO_OPTIONS) $(MD_BUILD_EXE) $(MD_OPTIONS)
 
 run-app:
 	mono $(MONO_OPTIONS) $(MD_APP_EXE) $(MD_OPTIONS)
