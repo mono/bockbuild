@@ -138,7 +138,11 @@ class GtkPackage (GnomeGitPackage):
                                 'patches/gtk/enable-swizzle-property.patch',
 
 				# https://bugzilla.xamarin.com/show_bug.cgi?id=12618
-				'patches/gtk/disable-eye-dropper.patch'
+				'patches/gtk/disable-eye-dropper.patch',
+
+				# https://bugzilla.xamarin.com/show_bug.cgi?id=13100
+				'patches/gtk/flip-command-mask-between-mod1-and-mod2.patch',
+				'patches/gtk/nsview-embedding-fix-keyboard-routing.patch'
 			])
 
 	def prep (self):
