@@ -6,6 +6,6 @@ class GtkQuartzEnginePackage (Package):
 				'configure': './autogen.sh --prefix=%{package_prefix}',
 				'needs_lipo' : True
 			},
-			revision = '8e0437c006eae316389fa89a670de6a7b56e9136')
+			revision = '355d5f123281e88e2ec5bc2e5093cee8b13923fb')
 
 GtkQuartzEnginePackage ()
