@@ -143,6 +143,7 @@ class GtkPackage (GnomeGitPackage):
 				# https://bugzilla.xamarin.com/show_bug.cgi?id=13100
 				'patches/gtk/flip-command-mask-between-mod1-and-mod2.patch',
 				'patches/gtk/nsview-embedding-fix-keyboard-routing.patch',
+				'patches/gtk/nsview-check-for-superview.patch',
 
 				'patches/gtk/gtknsview-forward-cmdz-to-textview-undo-manager.patch'
 			])
