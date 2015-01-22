@@ -145,7 +145,10 @@ class GtkPackage (GnomeGitPackage):
 				'patches/gtk/nsview-embedding-fix-keyboard-routing.patch',
 				'patches/gtk/nsview-check-for-superview.patch',
 
-				'patches/gtk/gtknsview-forward-cmdz-to-textview-undo-manager.patch'
+				'patches/gtk/gtknsview-forward-cmdz-to-textview-undo-manager.patch',
+
+				# https://bugzilla.xamarin.com/show_bug.cgi?id=20732
+				'patches/gtk/embedded-nstextview-has-focus.patch'
 			])
 
 	def prep (self):
