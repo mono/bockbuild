@@ -4,6 +4,7 @@ class CairoPackage (CairoGraphicsXzPackage):
 		self.sources.extend ([
 			'patches/cairo-quartz-crash.patch',
 			'patches/cairo-fix-color-bitmap-fonts.patch',
+			'patches/cairo-fix-CGFontGetGlyphPath-deprecation.patch',
 #			'patches/cairo-cglayer.patch',
 		])
 		#This package would like to be built with fat binaries
