@@ -1,8 +1,8 @@
 diff --git a/gdk/quartz/gdkkeys-quartz.c b/gdk/quartz/gdkkeys-quartz.c
-index a034bbd..2169428 100644
+index a034bbd..e81ea4d 100644
 --- a/gdk/quartz/gdkkeys-quartz.c
 +++ b/gdk/quartz/gdkkeys-quartz.c
-@@ -812,9 +812,42 @@ gdk_keymap_map_virtual_modifiers (GdkKeymap       *keymap,
+@@ -812,9 +812,41 @@ gdk_keymap_map_virtual_modifiers (GdkKeymap       *keymap,
  GdkEventType
  _gdk_quartz_keys_event_type (NSEvent *event)
  {
@@ -11,6 +11,10 @@ index a034bbd..2169428 100644
 +  unsigned short keycode = [event keyCode];
 +  unsigned int flags = [event modifierFlags];
 +  CFArrayRef global_keys = NULL;
++  unsigned int eventmods = (flags & NSCommandKeyMask ? cmdKey : 0) |
++                           (flags & NSAlternateKeyMask ? optionKey : 0) |
++                           (flags & NSControlKeyMask ? controlKey : 0) |
++                           (flags & NSShiftKeyMask ? shiftKey : 0);
    int i;
 +
 +  if (CopySymbolicHotKeys (&global_keys) == noErr && global_keys != NULL)
@@ -31,14 +35,9 @@ index a034bbd..2169428 100644
 +	  CFNumberGetValue (mods, kCFNumberSInt32Type, &mod_value);
 +	  CFNumberGetValue (code, kCFNumberShortType, &tmp_keycode);
 +
-+	  if (CFBooleanGetValue (enabled) && keycode == tmp_keycode)
++	  if (CFBooleanGetValue (enabled) && keycode == tmp_keycode && mod_value == eventmods)
 +	    {
-+	      if ((!!(mod_value & (1 << cmdKeyBit)) == !!(flags & NSCommandKeyMask)) &&
-+		  (!!(mod_value & (1 << controlKeyBit)) == !!(flags & NSControlKeyMask)) &&
-+		  (!!(mod_value & (1 << shiftKeyBit)) == !!(flags & NSShiftKeyMask)))
-+		{
-+		  return GDK_NOTHING;
-+		}
++	      return GDK_NOTHING;
 +	    }
 +	}
 +    }
@@ -47,7 +46,7 @@ index a034bbd..2169428 100644
    
    switch ([event type])
      {
-@@ -830,9 +863,6 @@ _gdk_quartz_keys_event_type (NSEvent *event)
+@@ -830,9 +862,6 @@ _gdk_quartz_keys_event_type (NSEvent *event)
    
    /* For flags-changed events, we have to find the special key that caused the
     * event, and see if it's in the modifier mask. */

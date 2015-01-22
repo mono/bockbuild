@@ -87,7 +87,7 @@ class GtkPackage (GnomeGitPackage):
 				'patches/gtk/0069-menu-scrolling.patch',
 				'patches/gtk/0070-tooltips-focus.patch',
 				'patches/gtk/0071-light-and-dark-overlay-scrollbars.patch',
-#				'patches/gtk/0072-let-global-keyboard-shortcuts-pass-through.patch',
+				'patches/gtk/0072-let-global-keyboard-shortcuts-pass-through.patch',
 				'patches/gtk/0073-disable-combobox-scrolling.patch',
 				'patches/gtk/0074-fix-NULL-pointer-in-clipboard.patch',
 				'patches/gtk/0075-filechooserwidget-location-entry-activation.patch',
