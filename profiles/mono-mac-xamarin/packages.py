@@ -70,7 +70,7 @@ class MonoReleasePackages:
             'ms-test-suite.py',
             'libgdiplus.py',
             'xsp.py',
-            'gtk-sharp-2.12-release.py',
+            'gtk-sharp-2.12-release-net4.5.py',
             'boo.py',
             # 'nant.py',
             'ironlangs.py',
