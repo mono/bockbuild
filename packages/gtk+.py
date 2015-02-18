@@ -148,7 +148,11 @@ class GtkPackage (GnomeGitPackage):
 				'patches/gtk/gtknsview-forward-cmdz-to-textview-undo-manager.patch',
 
 				# https://bugzilla.xamarin.com/show_bug.cgi?id=20732
-				'patches/gtk/embedded-nstextview-has-focus.patch'
+				'patches/gtk/embedded-nstextview-has-focus.patch',
+
+				# This fixes an issue in where in some situations the user needed
+				# to click a native text entry twice in order to be able to focus it.
+				'patches/gtk/gtknsview-only-unset-first-responder-if-it-is-our-view.patch'
 			])
 
 	def prep (self):

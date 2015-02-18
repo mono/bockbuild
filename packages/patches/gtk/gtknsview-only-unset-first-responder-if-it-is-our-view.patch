@@ -1,0 +1,21 @@
+diff --git a/gtk/gtknsview.c b/gtk/gtknsview.c
+index b325bda..71fd917 100644
+--- a/gtk/gtknsview.c
++++ b/gtk/gtknsview.c
+@@ -549,9 +549,13 @@ gtk_ns_view_notify (GObject    *object,
+ #endif
+ 
+       if (gtk_widget_has_focus (GTK_WIDGET (object)))
+-        [ns_window makeFirstResponder:ns_view->priv->view];
+-      else
+-        [ns_window makeFirstResponder:nil];
++	{
++	  [ns_window makeFirstResponder:ns_view->priv->view];
++	}
++      else if ([ns_window firstResponder] == ns_view->priv->view)
++	{
++	  [ns_window makeFirstResponder:nil];
++	}
+     }
+ }
+ 
