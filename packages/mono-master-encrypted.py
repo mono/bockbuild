@@ -26,6 +26,7 @@ class MonoMasterEncryptedPackage(Package):
             self.configure_flags.extend([
                 '--with-libgdiplus=%s/lib/libgdiplus.dylib' % Package.profile.prefix,
                 '--enable-loadedllvm'
+                'CXXFLAGS=-stdlib=libc++'
                 ])
 
         self.configure_flags.extend(['--enable-extension-module=crypto --enable-native-types'])
