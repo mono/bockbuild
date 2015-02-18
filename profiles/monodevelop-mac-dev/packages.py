@@ -61,7 +61,6 @@ class MonoDevelopMacDevPackages:
 			'gtk-sharp.py',
 			'mono-addins.py',
 			'xsp.py',
-			'fsharp-3.0.py',
 			'fsharp-3.1.py',
 			'pcl-reference-assemblies.py',
 		])
