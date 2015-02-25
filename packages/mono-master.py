@@ -8,8 +8,7 @@ class MonoMasterPackage(Package):
 			revision = os.getenv('MONO_BUILD_REVISION'),
 			configure_flags = [
 				'--enable-nls=no',
-				'--with-ikvm=yes',
-				'--with-moonlight=no'
+				'--with-ikvm=yes'
 			]
 		)
 		#This package would like to be lipoed.
