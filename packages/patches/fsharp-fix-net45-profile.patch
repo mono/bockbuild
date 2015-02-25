@@ -1,0 +1,72 @@
+From 647fa25b77d7eb329226b74b24368214b3ef2648 Mon Sep 17 00:00:00 2001
+From: Rodrigo Kumpera <kumpera@gmail.com>
+Date: Mon, 2 Feb 2015 11:04:37 -0500
+Subject: [PATCH] Fix mono 4.0 installation.
+
+Mono 4.0 no longer ships a functioning 4.0 profile. $install/lib/mono/4.0 only has reference assemblies with no IL.
+
+Which means we cannot have fsc.exe there as mono will try to use the mscorlib on that directory and fail.
+
+The solution is to change the build to default to install things on 4.5 and symlink the libraries on 4.0.
+---
+ config.make.in          |  2 +-
+ src/fsharp/targets.make | 24 ++++++++++++------------
+ 2 files changed, 13 insertions(+), 13 deletions(-)
+
+diff --git a/config.make.in b/config.make.in
+index 040bf1c..da8e788 100644
+--- a/config.make.in
++++ b/config.make.in
+@@ -42,7 +42,7 @@ endif
+ 
+ ifeq (x-$(TargetFramework)-$(FSharpCoreBackVersion),x-net40-)
+ VERSION = 4.3.1.0
+-TARGET = 4.0
++TARGET = 4.5
+ outsuffix = .
+ endif
+ 
+diff --git a/src/fsharp/targets.make b/src/fsharp/targets.make
+index 2bf9071..3fc8e38 100644
+--- a/src/fsharp/targets.make
++++ b/src/fsharp/targets.make
+@@ -105,27 +105,27 @@ install-lib:
+ 	    $(INSTALL_LIB) $(outdir)$(NAME).dll $(DESTDIR)$(gacdir)/Reference\ Assemblies/Microsoft/FSharp/3.0/Runtime/$(PCLPATH)/$(NAME).dll; \
+ 	fi
+ 
+-# Also place some .NET 4.0 libraries into .NET 4.5
++# Also place some .NET 4.5 libraries into .NET 4.0
+ install-lib-net45: 
+ 	@if test '$(TargetFramework)' = 'net40'; then \
+-	  if test -e $(DESTDIR)$(gacdir)/4.5/; then \
+-		ln -fs ../4.0/$(ASSEMBLY) $(DESTDIR)$(gacdir)/4.5/$(ASSEMBLY); \
+-		if test -e $(DESTDIR)$(gacdir)/4.0/$(ASSEMBLY).config; then \
+-		    ln -fs ../4.0/$(ASSEMBLY).config $(DESTDIR)$(gacdir)/4.5/$(ASSEMBLY).config; \
++	  if test -e $(DESTDIR)$(gacdir)/4.0/; then \
++		ln -fs ../4.5/$(ASSEMBLY) $(DESTDIR)$(gacdir)/4.0/$(ASSEMBLY); \
++		if test -e $(DESTDIR)$(gacdir)/4.5/$(ASSEMBLY).config; then \
++		    ln -fs ../4.5/$(ASSEMBLY).config $(DESTDIR)$(gacdir)/4.0/$(ASSEMBLY).config; \
+ 		fi; \
+-		if test -e $(DESTDIR)$(gacdir)/4.0/$(NAME).sigdata; then \
+-		    ln -fs ../4.0/$(NAME).sigdata $(DESTDIR)$(gacdir)/4.5/$(NAME).sigdata; \
++		if test -e $(DESTDIR)$(gacdir)/4.5/$(NAME).sigdata; then \
++		    ln -fs ../4.5/$(NAME).sigdata $(DESTDIR)$(gacdir)/4.0/$(NAME).sigdata; \
+ 		fi; \
+-		if test -e $(DESTDIR)$(gacdir)/4.0/$(NAME).xml; then \
+-		    ln -fs ../4.0/$(NAME).xml $(DESTDIR)$(gacdir)/4.5/$(NAME).xml; \
++		if test -e $(DESTDIR)$(gacdir)/4.5/$(NAME).xml; then \
++		    ln -fs ../4.5/$(NAME).xml $(DESTDIR)$(gacdir)/4.0/$(NAME).xml; \
+ 		fi; \
+-		if test -e $(DESTDIR)$(gacdir)/4.0/$(NAME).optdata; then \
+-		    ln -fs ../4.0/$(NAME).optdata $(DESTDIR)$(gacdir)/4.5/$(NAME).optdata; \
++		if test -e $(DESTDIR)$(gacdir)/4.5/$(NAME).optdata; then \
++		    ln -fs ../4.5/$(NAME).optdata $(DESTDIR)$(gacdir)/4.0/$(NAME).optdata; \
+ 		fi; \
+ 	  fi \
+ 	fi
+ 
+-# The binaries fsc.exe and fsi.exe only get installed for Mono 4.0 profile
++# The binaries fsc.exe and fsi.exe only get installed for Mono 4.5 profile
+ # This also installs 'fsharpc' and 'fsharpi'
+ install-bin:
+ 	chmod +x $(outdir)$(ASSEMBLY)
