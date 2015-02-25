@@ -7,7 +7,7 @@ class Fsharp31Package(GitHubTarballPackage):
 			'1f79c0455fb8b5ec816985f922413894ce19359a',
 			configure = '')
 		self.sources.extend ([
-			'fsharp-fix-net45-profile.patch')
+			'patches/fsharp-fix-net45-profile.patch'])
 
 	def prep(self):
 		Package.prep (self)
