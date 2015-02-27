@@ -1,21 +1,40 @@
+commit f49c998f5ac0e647764f4df2a6859e682385f05c
+Author: Cody Russell <cody@jhu.edu>
+Date:   Fri Feb 27 13:29:07 2015 -0600
+
+    GtkNSView should only unset the first responder if either it is our
+    embedded view, or if our toplevel window is no longer focused.
+
 diff --git a/gtk/gtknsview.c b/gtk/gtknsview.c
-index b325bda..71fd917 100644
+index 71fd917..bff6d84 100644
 --- a/gtk/gtknsview.c
 +++ b/gtk/gtknsview.c
-@@ -549,9 +549,13 @@ gtk_ns_view_notify (GObject    *object,
+@@ -541,6 +541,7 @@ gtk_ns_view_notify (GObject    *object,
+   if (!strcmp (pspec->name, "has-focus"))
+     {
+       NSWindow *ns_window = [ns_view->priv->view window];
++      GtkWindow *window = GTK_WINDOW (gtk_widget_get_toplevel (GTK_WIDGET (object)));
+
+ #if DEBUG_FOCUS
+       g_printerr ("%s has-focus: %d\n",
+@@ -549,13 +550,13 @@ gtk_ns_view_notify (GObject    *object,
  #endif
  
        if (gtk_widget_has_focus (GTK_WIDGET (object)))
--        [ns_window makeFirstResponder:ns_view->priv->view];
--      else
--        [ns_window makeFirstResponder:nil];
-+	{
-+	  [ns_window makeFirstResponder:ns_view->priv->view];
-+	}
-+      else if ([ns_window firstResponder] == ns_view->priv->view)
-+	{
-+	  [ns_window makeFirstResponder:nil];
-+	}
+-	{
+-	  [ns_window makeFirstResponder:ns_view->priv->view];
+-	}
+-      else if ([ns_window firstResponder] == ns_view->priv->view)
+-	{
+-	  [ns_window makeFirstResponder:nil];
+-	}
++        {
++          [ns_window makeFirstResponder:ns_view->priv->view];
++        }
++      else if ([ns_window firstResponder] == ns_view->priv->view || !gtk_window_is_active (window))
++        {
++          [ns_window makeFirstResponder:nil];
++        }
      }
  }
  
