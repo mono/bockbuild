@@ -1,17 +1,12 @@
-From 647fa25b77d7eb329226b74b24368214b3ef2648 Mon Sep 17 00:00:00 2001
-From: Rodrigo Kumpera <kumpera@gmail.com>
-Date: Mon, 2 Feb 2015 11:04:37 -0500
-Subject: [PATCH] Fix mono 4.0 installation.
+commit bc158686baf64dcb0fb492a3a39177e3e7ecf3cd
+Author: Alexis Christoforides <alexis@thenull.net>
+Date:   Sun Mar 1 00:31:32 2015 -0500
 
-Mono 4.0 no longer ships a functioning 4.0 profile. $install/lib/mono/4.0 only has reference assemblies with no IL.
-
-Which means we cannot have fsc.exe there as mono will try to use the mscorlib on that directory and fail.
-
-The solution is to change the build to default to install things on 4.5 and symlink the libraries on 4.0.
----
- config.make.in          |  2 +-
- src/fsharp/targets.make | 24 ++++++++++++------------
- 2 files changed, 13 insertions(+), 13 deletions(-)
+    Mono 4.0 no longer ships a functioning 4.0 profile. $install/lib/mono/4.0 only has reference assemblies with no IL.
+    
+    Which means we cannot have fsc.exe there as mono will try to use the mscorlib on that directory and fail.
+    
+    The solution is to change the build to default to install things on 4.5 and symlink the libraries (and the MSBuild .Targets files) to 4.0.
 
 diff --git a/config.make.in b/config.make.in
 index 040bf1c..da8e788 100644
@@ -27,10 +22,29 @@ index 040bf1c..da8e788 100644
  endif
  
 diff --git a/src/fsharp/targets.make b/src/fsharp/targets.make
-index 2bf9071..3fc8e38 100644
+index 2bf9071..0aee503 100644
 --- a/src/fsharp/targets.make
 +++ b/src/fsharp/targets.make
-@@ -105,27 +105,27 @@ install-lib:
+@@ -70,6 +70,18 @@ install-lib:
+ 	    $(INSTALL_LIB) $(tmpdir)Microsoft.Portable.FSharp.Targets $(DESTDIR)$(gacdir)/xbuild/Microsoft/VisualStudio/v/FSharp/; \
+ 	    $(INSTALL_LIB) $(tmpdir)Microsoft.Portable.FSharp.Targets $(DESTDIR)$(gacdir)/xbuild/Microsoft/VisualStudio/v12.0/FSharp/; \
+ 	    \
++	    if test $(TARGET) = 4.5; then \
++		mkdir -p $(DESTDIR)$(gacdir)/Microsoft\ F#/v4.0/; \
++		mkdir -p $(DESTDIR)$(gacdir)/Microsoft\ SDKs/F#/3.0/Framework/v4.0/; \
++		mkdir -p $(DESTDIR)$(gacdir)/Microsoft\ SDKs/F#/3.1/Framework/v4.0/; \
++		ln -fs $(DESTDIR)$(gacdir)/Microsoft\ F#/v4.5/Microsoft.FSharp.Targets $(DESTDIR)$(gacdir)/Microsoft\ F#/v4.0/; \
++		ln -fs $(DESTDIR)$(gacdir)/Microsoft\ F#/v4.5/Microsoft.FSharp.Targets $(DESTDIR)$(gacdir)/Microsoft\ SDKs/F#/3.0/Framework/v4.0/; \
++		ln -fs $(DESTDIR)$(gacdir)/Microsoft\ F#/v4.5/Microsoft.FSharp.Targets $(DESTDIR)$(gacdir)/Microsoft\ SDKs/F#/3.1/Framework/v4.0/; \
++		ln -fs $(DESTDIR)$(gacdir)/Microsoft\ F#/v4.5/Microsoft.Portable.FSharp.Targets $(DESTDIR)$(gacdir)/Microsoft\ F#/v4.0/; \
++		ln -fs $(DESTDIR)$(gacdir)/Microsoft\ F#/v4.5/Microsoft.Portable.FSharp.Targets $(DESTDIR)$(gacdir)/Microsoft\ SDKs/F#/3.0/Framework/v4.0/; \
++		ln -fs $(DESTDIR)$(gacdir)/Microsoft\ F#/v4.5/Microsoft.Portable.FSharp.Targets $(DESTDIR)$(gacdir)/Microsoft\ SDKs/F#/3.1/Framework/v4.0/; \
++	    fi; \
++	    \
+ 	    echo $(INSTALL_LIB) $(outdir)$(ASSEMBLY) $(DESTDIR)$((gacdir)/$(TARGET); \
+ 	    $(INSTALL_LIB) $(outdir)$(ASSEMBLY) $(DESTDIR)$(gacdir)/$(TARGET); \
+ 	    $(INSTALL_LIB) $(outdir)$(NAME).xml $(DESTDIR)$(gacdir)/$(TARGET); \
+@@ -105,27 +117,27 @@ install-lib:
  	    $(INSTALL_LIB) $(outdir)$(NAME).dll $(DESTDIR)$(gacdir)/Reference\ Assemblies/Microsoft/FSharp/3.0/Runtime/$(PCLPATH)/$(NAME).dll; \
  	fi
  
