@@ -37,6 +37,7 @@ gapi2-parser
 genxs
 gmcs
 httpcfg
+ikdasm
 ilasm
 installvst
 ipy
