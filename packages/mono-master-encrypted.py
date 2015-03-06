@@ -47,7 +47,8 @@ class MonoMasterEncryptedPackage(Package):
             self.sh('%' + '{git} clone --local --shared "%s" "%s"' % (ext, dirname))
         self.cd(dirname)
         self.sh('%{git} clean -xfd')
-        self.sh('%{git} pull')
+        self.sh('%{git} fetch --all --prune')
+        self.sh('%{git} checkout origin/%s' % os.getenv('MONO_BRANCH'))
 
 
     def apply_crypto(self):
