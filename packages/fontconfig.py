@@ -5,8 +5,7 @@ class FontConfigPackage (Package):
 			sources = [
 				'http://www.fontconfig.org/release/%{name}-%{version}.tar.gz'
 			],
-			#a non-empty DESTDIR keeps fc-cache from running at install-time
-			override_properties = { 'makeinstall': 'make DESTDIR="/" install' }
+			#note: a non-empty DESTDIR keeps fc-cache from running at install-time
 			)
 
 	def build (self):

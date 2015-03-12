@@ -1,4 +1,4 @@
-#!/bin/bash -x
+#!/bin/bash
 
 if test x$1 = x; then
    echo usage is cleanup MONODIR

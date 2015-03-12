@@ -5,50 +5,39 @@ from util.util import *
 from unixprofile import UnixProfile
 
 class DarwinProfile (UnixProfile):
-	def __init__ (self, prefix = False, m64 = False, min_version = None):
+	def __init__ (self, prefix = False, m64 = False, min_version = 6):
 		UnixProfile.__init__ (self, prefix)
 		
 		self.name = 'darwin'
-		self.os_x_major = 10
 		self.m64 = m64
 
 		sdkroot = '/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/'
 		if (not os.path.isdir (sdkroot)):
 			sdkroot = '/Developer/SDKs/'
 
-		if (os.path.isdir (sdkroot + 'MacOSX10.6.sdk')):
-			self.os_x_minor = 6
-			self.mac_sdk_path = sdkroot + 'MacOSX10.6.sdk'
-		elif (os.path.isdir (sdkroot + 'MacOSX10.7.sdk')):
-			self.os_x_minor = 7
-			self.mac_sdk_path = sdkroot + 'MacOSX10.7.sdk'
-		elif (os.path.isdir (sdkroot + 'MacOSX10.8.sdk')):
-			self.os_x_minor = 8
-			self.mac_sdk_path = sdkroot + 'MacOSX10.8.sdk'	
-		elif (os.path.isdir (sdkroot + 'MacOSX10.9.sdk')):
-			self.os_x_minor = 9
-			self.mac_sdk_path = sdkroot + 'MacOSX10.9.sdk'
-		else:
-			raise IOError ('Mac OS X SDKs 10.6, 10.7, 10.8 or 10.9 not found')
+		sdk_paths = (sdkroot + 'MacOSX10.%s.sdk' % v for v in range (min_version, 20)) #future-proof! :P
+
+		for sdk in sdk_paths:
+			if os.path.isdir (sdk):
+				self.mac_sdk_path = sdk
+				break
+
+		if self.mac_sdk_path is None: error ('Mac OS X SDK (>=10.%s) not found under %s' % (min_version, sdkroot))
 
 		self.gcc_flags.extend ([
 				'-D_XOPEN_SOURCE',
 				'-isysroot %s' % self.mac_sdk_path
 			])
 
-		if min_version:
-			self.gcc_flags.extend (['-mmacosx-version-min=%s' % min_version])
-			os.environ ['MACOSX_DEPLOYMENT_TARGET'] = min_version
+		self.target_osx = '10.%s' % min_version
 
-		self.gcc_debug_flags = [ '-O0', '-ggdb3' ]
+		if min_version:
+			self.gcc_flags.extend (['-mmacosx-version-min=%s' % self.target_osx])
+			self.env.set ('MACOSX_DEPLOYMENT_TARGET', self.target_osx)
 		
 		if self.cmd_options.debug is True:
-			self.gcc_flags.extend (self.gcc_debug_flags)
+			self.gcc_flags.extend ('-O0', '-ggdb3')
 
-		#if (os.path.isfile ('/usr/bin/gcc-4.2')):
-		#	self.env.set ('CC',  'gcc-4.2')
-		#	self.env.set ('CXX', 'g++-4.2')
-		#else:
 		if os.getenv('BOCKBUILD_USE_CCACHE') is None:
 			self.env.set ('CC',  'xcrun gcc')
 			self.env.set ('CXX', 'xcrun g++')

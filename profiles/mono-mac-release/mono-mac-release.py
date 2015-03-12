@@ -36,42 +36,47 @@ class MonoReleaseProfile(DarwinProfile, MonoReleasePackages):
             self.updateid += self.BUILD_NUMBER.replace(".", "").zfill(9 - len(self.updateid))
 
         versions_root = os.path.join(self.MONO_ROOT, "Versions")
-        self.release_root = os.path.join(versions_root, self.RELEASE_VERSION)
+        release_root = os.path.join(versions_root, self.RELEASE_VERSION)
 
-        DarwinProfile.__init__(self, self.release_root, min_version = '10.7')
+        DarwinProfile.__init__(self, prefix = release_root, min_version = 7)
         MonoReleasePackages.__init__(self)
 
         self.self_dir = os.path.realpath(os.path.dirname(sys.argv[0]))
         self.packaging_dir = os.path.join(self.self_dir, "packaging")
 
-        aclocal_dir = os.path.join(self.prefix, "share", "aclocal")
+        aclocal_dir = os.path.join(self.staged_prefix, "share", "aclocal")
         if not os.path.exists(aclocal_dir):
             os.makedirs(aclocal_dir)
 
     def build(self):
-        if os.path.exists(self.release_root):          
-            log(0, "Purging prefix path: " + self.release_root)
-            shutil.rmtree(self.release_root, ignore_errors=False)
-            
+        self.staged_binaries = []
+        self.staged_textfiles = []
         DarwinProfile.build(self)
 
-    def make_package_symlinks(self, root):
-        os.symlink(self.prefix, os.path.join(root, "Versions", "Current"))
-        currentlink = os.path.join(self.MONO_ROOT, "Versions", "Current")
-        links = [
-            ("bin", "Commands"),
-            ("include", "Headers"),
-            ("lib", "Libraries"),
-            ("", "Home"),
-            (os.path.join("lib", "libmono-2.0.dylib"), "Mono")
-        ]
-        for srcname, destname in links:
-            src = os.path.join(currentlink, srcname)
-            dest = os.path.join(root, destname)
-            #If the symlink exists, we remove it so we can create a fresh one
-            if os.path.exists(dest):
-                os.unlink(dest)
-            os.symlink(src, dest)
+    # THIS IS THE MAIN METHOD FOR MAKING A PACKAGE
+    def package(self):
+        self.restore_binaries ()
+        self.restore_textfiles ()
+        self.fix_gtksharp_configs()
+        self.generate_dsym()
+
+        working = self.setup_working_dir()
+        uninstall_script = os.path.join(working, "uninstallMono.sh")
+
+        # make the MDK
+        self.apply_blacklist(working, 'mdk_blacklist.sh')
+        self.make_updateinfo(working, self.MDK_GUID)
+        mdk_pkg = self.run_pkgbuild(working, "MDK")
+        print "Saving: " + mdk_pkg
+        # self.make_dmg(mdk_dmg, title, mdk_pkg, uninstall_script)
+
+        # make the MRE
+        self.apply_blacklist(working, 'mre_blacklist.sh')
+        self.make_updateinfo(working, self.MRE_GUID)
+        mre_pkg = self.run_pkgbuild(working, "MRE")
+        # self.make_dmg(mre_dmg, title, mre_pkg, uninstall_script)
+        shutil.rmtree(working)
+
 
     # creates and returns the path to a working directory containing:
     #   PKGROOT/ - this root will be bundled into the .pkg and extracted at /
@@ -79,14 +84,37 @@ class MonoReleaseProfile(DarwinProfile, MonoReleasePackages):
     #   Info{_sdk}.plist - used by packagemaker to make the installer
     #   resources/ - other resources used by packagemaker for the installer
     def setup_working_dir(self):
+        def make_package_symlinks(root):
+            os.symlink(self.prefix, os.path.join(root, "Versions", "Current"))
+            currentlink = os.path.join(self.MONO_ROOT, "Versions", "Current")
+            links = [ 
+                ("bin", "Commands"),
+                ("include", "Headers"),
+                ("lib", "Libraries"),
+                ("", "Home"),
+                (os.path.join("lib", "libmono-2.0.dylib"), "Mono")
+            ]
+            for srcname, destname in links:
+                src = os.path.join(currentlink, srcname)
+                dest = os.path.join(root, destname)
+                #If the symlink exists, we remove it so we can create a fresh one
+                if os.path.exists(dest):
+                    os.unlink(dest)
+                os.symlink(src, dest)
+
+        print "Setting up package directory..."
+
         tmpdir = tempfile.mkdtemp()
         monoroot = os.path.join(tmpdir, "PKGROOT", self.MONO_ROOT[1:])
         versions = os.path.join(monoroot, "Versions")
         os.makedirs(versions)
 
-        print "setup_working_dir " + tmpdir
         # setup metadata
-        backtick('rsync -aP %s/* %s' % (self.packaging_dir, tmpdir))
+        run_shell('rsync -aPq %s/* %s' % (self.packaging_dir, tmpdir), False)
+
+        packages_list = string.join([pkg.get_package_string () for pkg in self.release_packages], "\\\n")
+        deps_list = 'bockbuild (rev. %s)\\\n' % self.bockbuild_revision + string.join([pkg.get_package_string () for pkg in self.toolchain_packages], "\\\n")
+
         parameter_map = {
             '@@MONO_VERSION@@': self.RELEASE_VERSION,
             '@@MONO_RELEASE@@': self.BUILD_NUMBER,
@@ -94,27 +122,29 @@ class MonoReleaseProfile(DarwinProfile, MonoReleasePackages):
             '@@MONO_PACKAGE_GUID@@': self.MRE_GUID,
             '@@MONO_CSDK_GUID@@': self.MDK_GUID,
             '@@MONO_VERSION_RELEASE_INT@@': self.updateid,
-            '@@PACKAGES@@': string.join(set([root for root, ext in map(os.path.splitext, os.listdir(self.build_root))]), "\\\n"),
-            '@@DEP_PACKAGES@@': ""
+            '@@PACKAGES@@': packages_list,
+            '@@DEP_PACKAGES@@': deps_list
         }
         for dirpath, d, files in os.walk(tmpdir):
             for name in files:
                 if not name.startswith('.'):
                     replace_in_file(os.path.join(dirpath, name), parameter_map)
 
-        self.make_package_symlinks(monoroot)
+        make_package_symlinks(monoroot)
 
         # copy to package root
-        backtick('rsync -aP "%s" "%s"' % (self.release_root, versions))
+        run_shell('rsync -aPq "%s" "%s"' % (self.staged_prefix, versions), False)
 
         return tmpdir
 
     def apply_blacklist(self, working_dir, blacklist_name):
-        blacklist = os.path.join(working_dir, blacklist_name)
-        root = os.path.join(working_dir, "PKGROOT", self.release_root[1:])
-        backtick(blacklist + ' "%s"' % root)
+        print "Applying blacklist script:", blacklist_name
+        blacklist = os.path.join(self.packaging_dir, blacklist_name)
+        root = os.path.join(working_dir, "PKGROOT", self.prefix[1:])
+        run_shell('%s "%s" > /dev/null' % (blacklist, root), print_cmd = False)
 
     def run_pkgbuild(self, working_dir, package_type):
+        print 'Running pkgbuild & productbuild...',
         info = self.package_info(package_type)
         output = os.path.join(self.self_dir, info["filename"])
         identifier = "com.xamarin.mono-" + info["type"] + ".pkg"
@@ -130,24 +160,27 @@ class MonoReleaseProfile(DarwinProfile, MonoReleasePackages):
                                  "--version '%s'" % self.RELEASE_VERSION,
                                  "--install-location '/'",
                                  "--scripts '%s'" % resources_dir,
+                                 "--quiet",
                                  os.path.join(working_dir, "mono.pkg")])
-        print pkgbuild_cmd
-        backtick(pkgbuild_cmd)
+
+        run_shell(pkgbuild_cmd)
 
         productbuild = "/usr/bin/productbuild"
         productbuild_cmd = ' '.join([productbuild,
                                      "--resources %s" % resources_dir,
                                      "--distribution %s" % distribution_xml,
                                      "--package-path %s" % working_dir,
+                                     "--quiet",
                                      output])
-        print productbuild_cmd
-        backtick(productbuild_cmd)
+
+        run_shell(productbuild_cmd)
         os.chdir(old_cwd)
+        print output
         return output
 
     def make_updateinfo(self, working_dir, guid):
         updateinfo = os.path.join(
-            working_dir, "PKGROOT", self.release_root[1:], "updateinfo")
+            working_dir, "PKGROOT", self.prefix[1:], "updateinfo")
         with open(updateinfo, "w") as updateinfo:
             updateinfo.write(guid + ' ' + self.updateid + "\n")
 
@@ -161,43 +194,23 @@ class MonoReleaseProfile(DarwinProfile, MonoReleasePackages):
             "title": "Mono Framework %s %s " % info
         }
 
-    def build_package(self):
-        working = self.setup_working_dir()
-        uninstall_script = os.path.join(working, "uninstallMono.sh")
-
-        # make the MDK
-        self.apply_blacklist(working, 'mdk_blacklist.sh')
-        self.make_updateinfo(working, self.MDK_GUID)
-        mdk_pkg = self.run_pkgbuild(working, "MDK")
-        print "Saving: " + mdk_pkg
-        # self.make_dmg(mdk_dmg, title, mdk_pkg, uninstall_script)
-
-        # make the MRE
-        self.apply_blacklist(working, 'mre_blacklist.sh')
-        self.make_updateinfo(working, self.MRE_GUID)
-        mre_pkg = self.run_pkgbuild(working, "MRE")
-        print "Saving: " + mre_pkg
-        # self.make_dmg(mre_dmg, title, mre_pkg, uninstall_script)
-
-        shutil.rmtree(working)
-
     def generate_dsym(self):
-        for path, dirs, files in os.walk(self.prefix):
+        print 'Generating dsyms...',
+        x = 0
+        for path, dirs, files in os.walk(self.staged_prefix):
             for name in files:
                 f = os.path.join(path, name)
                 file_type = backtick('file "%s"' % f)
                 if "dSYM" in f:
                     continue
                 if "Mach-O" in "".join(file_type):
-                    print "Generating dsyms for %s" % f
-                    backtick('dsymutil "%s"' % f)
-
-    def install_root(self):
-        return os.path.join(self.MONO_ROOT, "Versions", self.RELEASE_VERSION)
+                    run_shell('dsymutil "%s" >/dev/null' % f)
+                    x = x + 1
+        print x
 
     def fix_line(self, line, matcher):
         def insert_install_root(matches):
-            root = self.install_root()
+            root = self.prefix
             captures = matches.groupdict()
             return 'target="%s"' % os.path.join(root, "lib", captures["lib"])
 
@@ -218,6 +231,8 @@ class MonoReleaseProfile(DarwinProfile, MonoReleasePackages):
         os.system('chmod a+r %s' % config)
 
     def fix_gtksharp_configs(self):
+        print 'Fixing GTK# configuration files...',
+        count = 0
         libs = [
             'atk-sharp',
             'gdk-sharp',
@@ -227,19 +242,47 @@ class MonoReleaseProfile(DarwinProfile, MonoReleasePackages):
             'gtk-sharp',
             'pango-sharp'
         ]
-        gac = os.path.join(self.install_root(), "lib", "mono", "gac")
+        gac = os.path.join(self.staged_prefix, "lib", "mono", "gac")
         confs = [glob(os.path.join(gac, x, "*", "*.dll.config")) for x in libs]
         for c in itertools.chain(*confs):
-            print "Fixing up " + c
+            count = count + 1
             self.fix_dllmap(c, lambda line: "dllmap" in line)
+        print count
 
-    # THIS IS THE MAIN METHOD FOR MAKING A PACKAGE
-    def package(self):
-        self.fix_gtksharp_configs()
-        self.generate_dsym()
-        blacklist = os.path.join(self.packaging_dir, 'mdk_blacklist.sh')
-        backtick(blacklist + ' ' + self.release_root)
-        self.build_package()
+    def restore_binaries (self):
+        print 'Unstaging binaries...',
+        x = 0
+        for staged_path in self.staged_binaries:
+            final_path = staged_path.replace (self.staged_prefix, self.prefix)
+            run_shell ('install_name_tool -id %s %s' % (final_path, staged_path ))
+            libs = backtick ('otool -L %s' % staged_path)
+            for line in libs:
+                rpath = line.split(' ')[0]
+                if rpath.find (self.staged_prefix) != -1:
+                        remap = rpath.replace (self.staged_prefix,self.prefix)
+                        run_shell ('install_name_tool -change %s %s %s' % (rpath, remap, staged_path))
+            os.remove (staged_path + '.release')
+            x = x + 1
+        print x
+
+    def restore_textfiles (self):
+        print 'Unstaging textfiles...',
+        x = 0
+        for staged_path in self.staged_textfiles:
+            with open(staged_path) as text:
+                output = open(staged_path + '.unstage', 'w')
+                for line in text:
+                    tokens = line.split (" ")
+                    for idx,token in enumerate(tokens):
+                        if  token.find (self.staged_prefix) != -1:
+                            tokens[idx] = token.replace(self.staged_prefix,self.prefix)
+                    output.write (" ".join(tokens))
+                output.close
+            shutil.move (staged_path + '.unstage', staged_path)
+            os.chmod (staged_path, os.stat (staged_path + '.release').st_mode)
+            os.remove (staged_path + '.release')
+            x = x + 1
+        print x
 
 MonoReleaseProfile().build()
 

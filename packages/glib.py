@@ -34,9 +34,9 @@ class GlibPackage (GnomeXzPackage):
 		Package.prep (self)
 		if self.darwin:
 			for p in range (2, 8):
-				self.sh ('patch -p0 < %{sources[' + str (p) + ']}')
-			for p in range (8, len (self.sources)):
-				self.sh ('patch --ignore-whitespace -p1 < %{sources[' + str (p) + ']}')
+				self.sh ('patch -p0 < %{local_sources[' + str (p) + ']}')
+			for p in range (8, len (self.local_sources)):
+				self.sh ('patch --ignore-whitespace -p1 < %{local_sources[' + str (p) + ']}')
 
 	def arch_build (self, arch):
 
@@ -60,7 +60,7 @@ class GlibPackage (GnomeXzPackage):
 			self.sh (
 				# 'autoconf',
 				#'%{configure} --disable-compile-warnings',
-				'ed - config.h < %{sources[1]}',
+				'ed - config.h < %{local_sources[1]}',
 				# work around https://bugzilla.gnome.org/show_bug.cgi?id=700350
 				'touch docs/reference/*/Makefile.in',
 				'touch docs/reference/*/*/Makefile.in',
@@ -74,6 +74,6 @@ class GlibPackage (GnomeXzPackage):
 		Package.install (self)
 		if self.darwin:
 			# FIXME: necessary?
-			self.sh ('rm -f %{prefix}/lib/charset.alias')
+			self.sh ('rm -f %{staged_prefix}/lib/charset.alias')
 
 GlibPackage ()

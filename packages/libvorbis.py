@@ -11,6 +11,6 @@ class LibvorbisPackage (XiphPackage):
 
         def prep (self):
                 Package.prep (self)
-                self.sh ('patch -p1 < "%{sources[1]}"')
+                self.sh ('patch -p1 < "%{local_sources[1]}"')
 
 LibvorbisPackage ()

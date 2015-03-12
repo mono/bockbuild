@@ -5,11 +5,11 @@ class Fsharp31Package(GitHubTarballPackage):
 			'fsharp', 'fsharp',
 			'3.1.1.28',
 			'ce0ba4e7c63ceda9df244e9a2bac196eecad1e80',
-			configure = '')
+			configure = './configure --prefix="%{package_prefix}"')
 
 	def build(self):
 		self.sh ('autoreconf')
-		self.sh ('./configure --prefix="%{prefix}"')
-		self.sh ('make')
+		Package.configure (self)
+		Package.make (self)
 
 Fsharp31Package()

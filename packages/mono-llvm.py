@@ -12,7 +12,6 @@ class MonoLlvmPackage (GitHubPackage):
 			self.needs_lipo = True
 
 		self.ld_flags = [] # TODO: find out which flags are causing issues. reset ld_flags for the package 
-		self.gcc_flags = []
 		self.cpp_flags = []		
 
 	def arch_build (self, arch):	

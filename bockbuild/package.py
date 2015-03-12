@@ -5,6 +5,7 @@ import shutil
 import tempfile
 import filecmp
 import datetime
+import stat
 from urllib import FancyURLopener
 from util.util import *
 
@@ -20,12 +21,12 @@ class Package:
 
 		self.configure_flags = ['--enable-debug']
 
-		self.gcc_flags = Package.profile.gcc_flags
-		self.cpp_flags = Package.profile.gcc_flags
-		self.ld_flags = Package.profile.ld_flags
+		self.gcc_flags = list(Package.profile.gcc_flags)
+		self.cpp_flags = list(Package.profile.gcc_flags)
+		self.ld_flags = list(Package.profile.ld_flags)
 
-		self.local_cpp_flags = []
 		self.local_gcc_flags = []
+		self.local_cpp_flags = []
 		self.local_ld_flags = []
 		self.local_configure_flags = []
 
@@ -40,8 +41,6 @@ class Package:
 		self.m32_only = False
 		self.build_dependency = False
 
-		if Package.profile.global_configure_flags:
-			self.configure_flags.extend (Package.profile.global_configure_flags)
 		if configure_flags:
 			self.configure_flags.extend (configure_flags)
 
@@ -55,19 +54,17 @@ class Package:
 
 		self.source_dir_name = source_dir_name
 		if self.source_dir_name == None:
-			self.source_dir_name = '%{name}-%{version}'
+			self.source_dir_name = "%s-%s" % (name, version)
 
 		self.revision = revision
-
-		self.prefix = Package.profile.prefix
-
+		self.stage_root = Package.profile.stage_root
 		if configure:
 			self.configure = configure
 		else:
 			self.configure = './configure --prefix="%{package_prefix}"'
 
 		self.make = 'make -j%s' % Package.profile.cpu_count
-		self.makeinstall = 'make install'
+		self.makeinstall = 'make install DESTDIR=%{stage_root}'
 		self.git = 'git'
 		self.git_branch = git_branch
 		for git in ['/usr/local/bin/git', '/usr/local/git/bin/git', '/usr/bin/git']:
@@ -79,8 +76,16 @@ class Package:
 			for k, v in override_properties.iteritems ():
 				self.__dict__[k] = v
 
-		self._sources_dir = None
-		self._package_dir = None
+		if self.build_dependency:
+			self.profile_prefix = Package.profile.toolchain_root
+			self.staged_prefix = Package.profile.toolchain_root
+			self.makeinstall = 'make install'
+			self.ld_flags = '-L%{staged_prefix}/lib' # XXX
+		else:
+			self.profile_prefix = Package.profile.prefix
+			self.staged_prefix = Package.profile.staged_prefix
+
+		self.package_prefix = self.profile_prefix
 
 	def extract_organization (self, source):
 		if (not "git" in source) or ("http" in source):
@@ -97,223 +102,271 @@ class Package:
 		else:
 			raise Exception ("Cannot determine organization for %s" % source)
 
-	def _fetch_sources (self, workspace, package_dir, package_dest_dir):
+	def try_get_version (self, source_dir):
+		configure_ac = os.path.join (source_dir, 'configure.ac')
+		if os.path.exists (configure_ac):
+			with open (configure_ac) as file:
+				pattern = r"AC_INIT\(\S+?\s*,\s*\[(\d\S+?)\]" #AC_INIT (...,[VERSION]...
+				for x in range (40):
+					line = file.readline ()
+					match = re.search(pattern, line)
+					if match:
+						return match.group(1)
 
+	def get_package_string (self):
+		str = self.name
+		if self.version:
+			str+= ' v.' + self.version
+		if self.revision:
+			str+= ' (rev. ' + self.revision + ')'
+		return str
+
+	def _fetch_sources (self, build_root, workspace, resource_dir, source_cache_dir):
 		def checkout (self, source_url, cache_dir, workspace_dir):
+			def clean_git_workspace ():
+				print 'Cleaning git workspace:', self.name
+				self.pushd (workspace_dir)
+				self.sh ('%{git} reset --hard')
+				self.sh ('%{git} clean -xffd')
+				self.popd ()
+
+			# Explicitly reset the working dir to a known directory which has not been deleted
+			# 'git clone' does not work if you are in a directory which has been deleted
+			os.chdir (build_root)
 			if not os.path.exists (cache_dir):
-				print 'No cache detected. Cloning a fresh cache'
+				# since this is a fresh cache, the workspace copy is invalid if it exists
+				if os.path.exists (workspace_dir):
+					self.rm (workspace_dir)
+				print 'Cloning git repo: %s' % source_url
 				self.sh ('%' + '{git} clone --mirror "%s" "%s"' % (source_url, cache_dir))
 			else:
-				print 'Updating existing cache'
-				self.cd (cache_dir)
+				log (1, 'Updating cache')
+				self.pushd (cache_dir)
 				self.sh ('%{git} fetch --all --prune')
+				self.popd ()
 
 			if not os.path.exists(workspace_dir):
-				print 'No workspace checkout detected. Cloning a fresh workspace checkout from the cache'
-				self.sh ('%' + '{git} clone --local --shared "%s" "%s"' % (cache_dir, workspace_dir))
+				log (1, 'Cloning a fresh workspace')
+				self.sh ('%' + '{git} clone --local --shared 	"%s" "%s"' % (cache_dir, workspace_dir))
 				self.cd (workspace_dir)
 			else:
-				print 'Updating existing workspace checkout'
+				log (1, 'Updating workspace')
 				self.cd (workspace_dir)
-				self.sh ('%{git} clean -xffd')
-				self.sh ('%{git} reset --hard')
 				self.sh ('%{git} fetch --all --prune')
+				self.sh ('%{git} reset')
+
+			current_revision = self.backtick ('%{git} rev-parse HEAD')[0]
 
 			if self.revision != None:
-				self.sh ('%' + '{git} checkout %s' % self.revision)
+				target_revision = self.revision
 			elif self.git_branch != None:
-				self.sh ('%' + '{git} checkout origin/%s' % self.git_branch)
-			else:
-				self.sh ('%{git} checkout origin/master')
+				self.git_branch = self.git_branch or 'master'
+				target_revision = self.backtick ('%' +'{git} rev-parse origin/%s' % self.git_branch)[0]
 
-		def get_local_filename(source):
-			return source if os.path.isfile(source) else os.path.join (package_dest_dir, os.path.basename (source))
+			if (current_revision != target_revision):
+				self.sh ('%{git} reset --hard')
+				self.sh ('%{git} clean -xffd')
+				self.sh ('%' + '{git} checkout %s' % target_revision)
 
-		def get_cache_name (name):
+			current_revision = self.backtick ('%{git} rev-parse HEAD')[0]
+
+			if (self.revision != None and self.revision != current_revision):
+				raise Exception ('Workspace error: Revision is %s, package specifies %s' % (current_revision, self.revision))
+
+			self.revision = current_revision
+
+			return clean_git_workspace
+
+
+		def get_download_dest(url):
+			return os.path.join (source_cache_dir, os.path.basename (url))
+
+		def get_git_cache_path ():
 			if self.organization is None:
-				return self.name
+				name = self.name
 			else:
-				return self.organization + "+" + name
-
-		if self.sources is None:
-			return
-
-		if not os.path.exists (package_dest_dir):
-			os.mkdir (package_dest_dir)
+				name = self.organization + "+" + self.name
+			return os.path.join (source_cache_dir, name)
 
 		local_sources = []
-		for source in self.sources:
-			local_source = os.path.join (package_dir, source)
-			local_source_file = os.path.basename (local_source)
-			local_dest_file = get_local_filename (local_source)
-			local_sources.append (local_dest_file)
+		self.cd (build_root)
+		clean_func = None # what to run if the workspace needs to be redone
 
-			if os.path.isfile (local_source):
-				if filecmp.cmp(local_source, local_dest_file):
-					log (1, 'using cached source: %s' % local_dest_file)
+		try:
+			for source in self.sources:
+				#if source.startswith ('http://'):
+				#	raise Exception ('HTTP downloads are no longer allowed: %s', source)
+
+				if source.startswith (('http://', 'https://', 'ftp://')):
+					cache = get_download_dest (source)
+
+					def checkout_archive (source, cache, workspace):
+						self.pushd (build_root)
+						if not os.path.exists (cache):
+							# since this is a fresh cache, the workspace copy is invalid if it exists
+							if os.path.exists (workspace):
+								self.rm (workspace)
+							print 'Downloading: %s' % source
+							filename, message = FancyURLopener ().retrieve (source, cache)
+						if not os.path.exists (workspace):
+							self.extract_archive (cache, False)
+							os.utime (workspace, None)
+						if not os.path.exists (workspace):
+							raise Exception ('Archive %s was extracted but not found at workspace path %s' % (cache, workspace))
+						self.popd ()
+
+					def clean_archive ():
+						print 'Re-extracting archive: ' + self.name + ' ('+ source + ')'
+						try:
+							self.rm (workspace)
+							checkout_archive (source, cache, workspace)
+						except Exception as e:
+							if os.path.exists (cache):
+								self.rm (cache)
+							if os.path.exists (workspace):
+								self.rm (workspace)
+							raise e
+
+					checkout_archive (source, cache, workspace)
+
+					local_sources.append (workspace)
+					clean_func = clean_archive
+
+				elif source.startswith (('git://','file://', 'ssh://')) or source.endswith ('.git'):
+					cache = get_git_cache_path ()
+					clean_func = checkout (self, source, cache, workspace)
+					local_sources.append (workspace)
+				elif os.path.isfile (os.path.join (resource_dir, source)):
+					#local_source_file = os.path.basename (local_source)
+					#cache = get_local_filename (local_source)
+					#print 'local_source', local_source
+					#print 'cache', cache
+
+					#if not filecmp.cmp(local_source, cache):
+					#	log (1, 'copying local source: %s -> %s' % (local_source_file, cache))
+					#	shutil.copy2 (local_source, cache)
+					#	local_sources.append (cache)
+					#else:
+					local_sources.append (os.path.join (resource_dir, source))
 				else:
-					log (1, 'copying local source: %s' % local_source_file)
-					shutil.copy2 (local_source, local_dest_file)
-			elif source.startswith (('http://', 'https://', 'ftp://')):
-				if os.path.isfile(local_dest_file):
-					try:
-						self.extract_archive (local_dest_file, True)
-						log (1, 'using cached source: %s' % local_dest_file)
-					except:
-						log (1, 'local cache is corrupt for: %s' % local_dest_file)
-						os.remove (local_dest_file)
+					raise Exception ('could not resolve source: %s' % source)
 
-				if not os.path.isfile(local_dest_file):
-					log (1, 'downloading remote source: %s' % source)
-					filename, message = FancyURLopener ().retrieve (source, local_dest_file)
+			self.local_sources = local_sources
+			if len(self.sources) != len(self.local_sources):
+				error ('Source number mismatch after processing: %s before, %s after ' % (self.sources, self.local_sources))
 
-			elif source.startswith (('git://','file://', 'ssh://')) or source.endswith ('.git'):
-				log (1, 'cloning or updating git repository: %s' % source)
-				local_name = os.path.splitext(os.path.basename(source))[0]
-				local_dest_file = os.path.join (package_dest_dir, '%s.gitmirror' % (get_cache_name (local_name)))
+			if clean_func is None:
+				error ('workspace cleaning function (clean_func) must be set')
 
-				local_sources.pop ()
-				local_sources.append (local_dest_file)
+			package_version = expand_macros (self.version, self)
+			found_version = self.try_get_version (workspace) or package_version
+			if found_version[0] != package_version[0]:
+				warn ('Version in configure.ac is %s, package declares %s' % (found_version, package_version))
+			self.version = package_version
 
-	 			working_dir = os.getcwd ()
-				try:
-					checkout (self, source, local_dest_file, workspace)
-				except Exception as e:
-					if os.path.exists(local_dest_file):
-						print 'Deleting ' + local_dest_file + ' cache due to git error'
-						shutil.rmtree(local_dest_file, ignore_errors=True)
-					if os.path.exists(workspace):
-						print 'Deleting ' + workspace + ' cache due to git error'
-						shutil.rmtree(workspace, ignore_errors=True)
+			print self.get_package_string ()
 
-					# Explicitly reset the working dir to a known directory which has not been deleted
-					# 'git clone' does not work if you are in a directory which has been deleted
-					os.chdir (working_dir)
-					checkout (self, source, local_dest_file, workspace)
-				finally:
-					os.chdir (workspace)
-			else:
-				raise Exception ('missing source: %s' % source)
+			return clean_func
+		except Exception as e:
+			if os.path.exists (cache):
+				self.rm (cache)
+			if os.path.exists (workspace):
+				self.rm (workspace)
+			raise
 
-		self.sources = local_sources
-
-	def sources_dir (self):
-		if not self._sources_dir:
-			source_cache = os.getenv('BOCKBUILD_SOURCE_CACHE')
-			self._sources_dir = source_cache or os.path.realpath (os.path.join (self.package_dir(), "..", "cache"))
-		if not os.path.exists(self._sources_dir): os.mkdir (self._sources_dir)
-		return self._sources_dir
-
-	def package_dir (self):
-		if not self._package_dir:
-			self._package_dir = os.path.dirname (os.path.realpath (self._path))
-		return self._package_dir
-
-	def package_build_dir(self):
-		return Package.profile.build_root
-
-	def is_successful_build(self, build_success_file, package_dir):
-		def is_newer(success_file):
-			mtime = os.path.getmtime(success_file)
-			for s in self.sources:
-				src = os.path.join(package_dir, s)
-				if os.path.isfile(src) and os.path.getmtime(src) > mtime:
-						return False
-			return True
-
-		return os.path.exists (build_success_file) and is_newer(build_success_file)
-
-	def delete_stale_workspace_cache (self, dirname):
-		origin = backtick ('git --git-dir="%s" config --get remote.origin.url' % os.path.join (dirname, ".git"))
-		# Not pointing to a git repo
-		if not origin:
+	def is_successful_build(self, success_file):
+		if not os.path.exists (success_file):
 			return False
+		mtime = os.path.getmtime(success_file)
+		newer = True
+		src = list(self.local_sources)
+		src.append (self._path)
+		for s in (src):
+			if os.path.getmtime(s) > mtime:
+				print 'Updated source: %s' % s
+				newer = False
+			elif os.path.isdir (s):
+				for root, dirs, files in os.walk (s):
+					dirs[:] = [d for d in dirs if not d[0] == '.'] # http://stackoverflow.com/questions/13454164/os-walk-without-hidden-folders
+					for dir in dirs:
+						dir_path = os.path.join (root, dir)
+						if os.path.isdir(dir_path) and os.path.getmtime(dir_path) > mtime:
+							print 'Updated source: %s' % dir_path
+							newer = False
+		return newer
 
-		# Pointing to a non gitmirror repo
-		if not "gitmirror" in origin[0]:
-			print "Cache does not point to a gitmirror"
-			# Delete the old cache as well
-			if os.path.exists (origin[0]):
-				print "Deleting old cache " + origin[0]
-				shutil.rmtree (origin [0], ignore_errors = True)
-			print "Deleting workspace " + dirname
-			shutil.rmtree (dirname, ignore_errors = True)
-			return True
-
-		# Make sure gitmirror exists
-		if os.path.isfile (origin[0]) and not os.path.exists (origin[0]):
-			print "Cache does not exist"
-			return True
-		else:
-			# origin and "gitmirror" in origin[0] and os.path.exists (origin[0])
-			return False
-
-	def get_timestamp (self):
-		return datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+	def fetch (self):
+		expand_macros (self.sources, self)
+		profile = Package.profile
+		workspace = os.path.join (profile.build_root, self.source_dir_name)
+		return self._fetch_sources (profile.build_root, workspace, profile.resource_root, profile.source_cache)
 
 	def start_build (self):
-		Package.last_instance = None
+		try:
+			self.source_dir_name = expand_macros (self.source_dir_name, self)
+			profile = Package.profile
+			workspace = os.path.join (profile.build_root, self.source_dir_name)
+			build_artifact = os.path.join (profile.build_root, self.name + '.artifact')
+			print 'fetch', self.name
+			clean_func = retry (self.fetch)
 
-		# hack: we need to expand macros in fields, but not for self.configure.
-		# if we expand self.configure now, we can't adjust the prefix for multiple builds
-		# needed for lipoing
-		temp = self.configure
-		self.configure = ""
-		expand_macros (self, self)
-		self.configure = temp
+			if self.is_successful_build(build_artifact) and not (self.needs_lipo and self.m64):
+				print 'install', self.name
+				os.chdir (workspace)
+				self.install ()
+				return
 
-		profile = Package.profile
-		namever = '%s-%s' % (self.name, self.version)
-		package_dir = self.package_dir ()
-		package_build_dir = self.package_build_dir()
-		workspace = os.path.join (profile.build_root, namever)
-		build_success_file = os.path.join (profile.build_root, namever + '.success')
-		install_success_file = os.path.join (profile.build_root, namever + '.install')
-		sources_dir = self.sources_dir ()
+			if os.path.exists (build_artifact): #iterated build, so we need to clean
+				retry (clean_func)
 
-		old_package_build_dir = os.path.join (workspace, '_build')
-		if os.path.exists(old_package_build_dir):
-			shutil.rmtree (os.path.join(profile.build_root, namever))
+			for phase in Package.profile.run_phases:
+				log (0, '%s: %sing %s' % (datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"), phase.capitalize (), self.name))
+				self.cd (workspace)
+				print phase, self.name
+				getattr (self, phase) ()
 
-		if self.delete_stale_workspace_cache (workspace):
-			if os.path.exists (build_success_file): os.remove (build_success_file)
-
-		if self.is_successful_build(build_success_file, package_dir) and os.path.exists (workspace) and not (self.needs_lipo and self.m64): 
-			print 'Skipping %s - already built' % namever
-			print '%s: Installing %s' % (self.get_timestamp (), namever)
-			os.chdir (package_build_dir)
-			self.cd ('%{source_dir_name}')
-			self.install ()
-			open (install_success_file, 'w').close ()
-			return
-
-		print '\n\n%s: Building %s on %s (%s CPU)' % (self.get_timestamp (), self.name, profile.host, profile.cpu_count)
-
-		if not os.path.exists (profile.build_root) or \
-			not os.path.isdir (profile.build_root):
-			os.makedirs (profile.build_root, 0755)
-
-		# shutil.rmtree (package_build_dir, ignore_errors = True)
-		# os.makedirs (package_build_dir)
-
-		self._fetch_sources (workspace, package_dir, sources_dir)
-
-		os.chdir (package_build_dir)
-
-		for phase in Package.profile.run_phases:
-			log (0, '%s: %sing %s' % (datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"), phase.capitalize (), self.name))
-			getattr (self, phase) ()
-
-		open (build_success_file, 'w').close ()
-		open (install_success_file, 'w').close ()
+			open (build_artifact, 'w').close ()
+			os.utime (build_artifact, None)
+		except:
+			if os.path.exists (workspace):
+				self.rm (workspace)
+			#self.dump ()
+			raise
 
 	def sh (self, *commands):
 		for command in commands:
-			command = expand_macros (command, self)
-			log (1, command)
-			if not Package.profile.verbose:
-				command = '( %s ) > /dev/null 2>&1' % command
-			run_shell (command)
+			try:
+				env_command = expand_macros (self.env() + command, self)
+			except Exception as e:
+				error ('MACRO EXPANSION ERROR: ' + str(e))
+
+			log (1, env_command)
+			stdout = tempfile.NamedTemporaryFile()
+			stderr = tempfile.NamedTemporaryFile()
+			full_command = '%s  > %s 2> %s' % (env_command, stdout.name, stderr.name)
+			try:
+				run_shell (full_command)
+			except Exception as e:
+				output_text = stdout.readlines ()
+				if len(output_text) > 0:
+					warn ('stdout (last 20 lines):')
+					for line in output_text[-20:]:
+						print line,
+				error_text = stderr.readlines ()
+				if len(error_text) > 0:
+					print '\nstderr:\n'
+					for line in error_text:
+						print line,
+				warn('path: ' + os.getcwd ())
+				warn('full command: ' + env_command)
+				raise Exception ('command failed: %s' % command)
+			finally:
+				stdout.close ()
+				stderr.close ()
+
+	def backtick (self, command):
+		command = expand_macros (command, self)
+		return backtick (command)
 
 	def cd (self, dir):
 		dir = expand_macros (dir, self)
@@ -328,22 +381,33 @@ class Package:
 		self.cd (self._dirstack.pop ())
 
 	def prep (self):
-		if self.sources == None:
-			log (1, '<skipping - no sources defined>')
-			return
+		return
 
-		if self.sources[0].endswith ('.gitmirror'):
-			namever = '%s-%s' % (self.name, self.version)
-			os.chdir (os.path.join (os.getcwd (), namever))
+	def rm (self, path):
+		log (1, 'deleting %s' % path)
+		path = expand_macros (path, self)
+		if os.path.isfile (path):
+			os.remove (path)
+		elif os.path.isdir (path):
+			shutil.rmtree (path, ignore_errors=False)
 		else:
-			self.extract_archive (self.sources[0], False)
-			self.cd ('%{source_dir_name}')
+			raise Exception ('Invalid path to rm: %s' % path)
 
-	def extract_archive (self, local_dest_file, validate_only, overwrite=False):
-		self.tar = os.path.join (Package.profile.prefix, 'bin', 'tar')
+
+	def link (self, source, link):
+		if os.path.exists (link):
+			 self.rm(link)
+		log (1, 'linking %s -> %s' % (link, source))
+		source = expand_macros (source, self)
+		link = expand_macros (link, self)
+		os.symlink (source, link)
+
+	def extract_archive (self, archive, validate_only, overwrite=False):
+		self.pushd (self.profile.build_root)
+		self.tar = os.path.join (Package.profile.toolchain_root, 'bin', 'tar')
 		if not os.path.exists (self.tar):
 			self.tar = 'tar'
-		root, ext = os.path.splitext (local_dest_file)
+		root, ext = os.path.splitext (archive)
 		command = None
 		if ext == '.zip':
 			flags = ["-qq"]
@@ -351,17 +415,18 @@ class Package:
 				flags.extend(["-o"])
 			if validate_only:
 				flags.extend(["-t"])
-			command = ' '.join(['unzip'] + flags + [local_dest_file])
+			command = ' '.join(['unzip'] + flags + [archive])
 			if validate_only:
 				command = command + ' > /dev/null'
 		else:
-			command = '%{tar} xf ' + local_dest_file
+			command = '%{tar} xf ' + archive
 			if validate_only:
 				command = command + ' -O > /dev/null'
 		self.sh (command)
+		self.popd ()
 
 	def build (self):
-		self.package_prefix = self.prefix
+		profile_stage_root = self.stage_root
 		if self.profile.name == 'darwin':
 			if self.m64:
 				if self.needs_lipo:
@@ -370,23 +435,25 @@ class Package:
 					#copy out built dir for later use (make check etc.)
 					package_build_dir = self.source_dir_name
 					package_build_dir64 = package_build_dir + '-x86_64'
-					print 'Copying ' + package_build_dir + ' to ' + package_build_dir64
+					log (1, 'Copying ' + package_build_dir + ' to ' + package_build_dir64)
 					os.chdir ('..')
 					if (os.path.exists (package_build_dir64)):
 						shutil.rmtree (package_build_dir64)
 					shutil.copytree (package_build_dir, package_build_dir64)
+
+
 					os.chdir (package_build_dir64)
-					
-					self.bin64_prefix = self.prefix  + '-darwin-64' #switch to a temporary prefix 
-					self.package_prefix = self.bin64_prefix
+					bin64_stage_root = self.profile_stage_root + '-darwin-64' #switch to a temporary prefix
+					self.bin64_prefix = os.path.join (bin64_stage_root, self.package_prefix)
+					self.stage_root = bin64_stage_root
 					log (1, 'Building 64-bit binaries at ' + self.package_prefix + ' from ' + package_build_dir64)
 					self.arch_build ('darwin-64')
 					self.sh ('%{makeinstall}')
 
+					log (1, 'Building 32-bit binaries at ' + self.package_prefix + ' from ' + package_build_dir)
 					os.chdir ('..')
 					os.chdir (package_build_dir)
-					self.package_prefix = self.prefix #switch back to main prefix
-					log (1, 'Building 32-bit binaries at ' + self.package_prefix + ' from ' + package_build_dir)
+					self.stage_root = self.profile_stage_root #switch back to main stage path
 					self.arch_build ('darwin-32')
 
 				elif self.fat_build:
@@ -440,7 +507,7 @@ class Package:
 					else:
 						print "lipo warning: 32-bit version of file %s not found"  %file
 
-	def copy_side_by_side (self, src_dir, dest_dir, suffix):
+	def copy_side_by_side (self, src_dir, dest_dir, suffix, orig_suffix =  None):
 		if not os.path.exists (src_dir):
 			return # we don't always have bin/lib dirs
 
@@ -451,13 +518,82 @@ class Package:
 					continue
 				src_file = os.path.join (src_dir, relpath, file)
 				dest_file = os.path.join (dest_dir, relpath, file + suffix) #FIXME: perhaps add suffix before any .'s
+				dest_orig_file = os.path.join (dest_dir, relpath, file)
+				if orig_suffix != None and os.path.exists (dest_orig_file):
+					shutil.move (dest_orig_file, dest_orig_file + orig_suffix)
+
 				shutil.copy2 (src_file, dest_file)
 
-	def arch_build (self, arch, defaults = True):
-		if self.sources == None:
-			log (1, '<skipping - no sources defined>')
-			return
+	def stage_pkgs (self, pkg_dir):
+		log (1, 'Staging pkg-config packages')
+		for root,dirs,filelist in os.walk (pkg_dir):
+			for file in filelist:
+				if file.endswith ('.pc'):
+					self.stage_file (os.path.join (root, file))
 
+	def stage_file (self, path):
+		path = expand_macros (path, self)
+		if os.path.exists (path + '.release'):
+			return
+		with open(path) as text:
+			output = open(path + '.stage', 'w')
+			for line in text:
+				tokens = line.split (" ")
+				for idx,token in enumerate(tokens):
+					if  token.find (self.staged_prefix) == -1:
+						tokens[idx] = token.replace(self.profile_prefix,self.staged_prefix)
+				output.write (" ".join(tokens))
+			output.close
+		shutil.move (path, path + '.release')
+		shutil.move (path + '.stage', path)
+		os.chmod (path, os.stat (path + '.release').st_mode)
+		self.profile.staged_textfiles.append (path)
+
+
+	def stage_binaries (self, dir):
+		log (1, 'Staging binaries')
+		for root,dirs,filelist in os.walk (dir):
+			for file in filelist:
+				path = os.path.join (root, file)
+				if path.endswith ('.release') or os.path.exists (path + '.release'):
+					continue
+				if os.path.islink (path):
+					continue
+
+				filetype = backtick ('file -b %s' % path)[0]
+				if filetype.startswith('Mach-O'):
+					shutil.copy (path, path + '.release')
+					try:
+						run_shell ('install_name_tool -id %s %s' %(path,path))
+					except:
+						warn ('Staging failed for %s' % os.path.relpath (path,dir))
+						continue
+					libs = backtick ('otool -L %s' % path)
+					for line in libs:
+						rpath = line.split(' ')[0]
+						if rpath.find (self.profile_prefix) != -1:
+							if rpath.find (self.staged_prefix) == -1:
+								remap = rpath.replace (self.profile_prefix,self.staged_prefix)
+								if not os.path.exists (remap.strip ()):
+									raise Exception ('%s has a (staged) reference to %s, which is not found.' % (path, remap))
+								try:
+									run_shell ('install_name_tool -change %s %s %s' % (rpath, remap, path))
+								except:
+									warn ('Staging failed for %s' % os.path.relpath (path,dir))
+									continue
+					self.profile.staged_binaries.append (path)
+				elif filetype == 'POSIX shell script text executable':
+					self.stage_file (path)
+
+	def stage_la_files (self, lib_dir):
+		log (1, 'Staging .la files')
+		for root,dirs,filelist in os.walk (lib_dir):
+			for file in filelist:
+				if file.endswith ('.la'):
+					self.stage_file (os.path.join (root, file))
+
+
+	def arch_build (self, arch, defaults = True):
 		if defaults == True: #the package does not define the strategy for buildling lipos. These are the defaults
 			if (arch == 'darwin-fat'):					
 					self.local_ld_flags = ['-arch i386' , '-arch x86_64']
@@ -475,29 +611,41 @@ class Package:
 		Package.configure (self)
 		Package.make (self)
 
+	def env (self):
+		return str('OBJCFLAGS="%{gcc_flags} %{local_gcc_flags}" '
+		'CFLAGS="%{gcc_flags} %{local_gcc_flags}" '
+		'CXXFLAGS="%{gcc_flags} %{local_gcc_flags}" '
+		'CPPFLAGS="%{cpp_flags} %{local_cpp_flags}" '
+		'LDFLAGS="%{ld_flags} %{local_ld_flags}" ')
+		# 'PKG_CONFIG_PATH="%{profile.staged_pkgs}" '
+
 	def configure (self):
-		self.sh ('OBJCFLAGS="%{gcc_flags} %{local_gcc_flags}" CFLAGS="%{gcc_flags} %{local_gcc_flags}" CXXFLAGS="%{gcc_flags} %{local_gcc_flags}" CPPFLAGS="%{cpp_flags} %{local_cpp_flags}" LDFLAGS="%{ld_flags} %{local_ld_flags}" %{configure} %{configure_flags} %{local_configure_flags}')
+		self.sh ('%{configure} %{configure_flags} %{local_configure_flags}')
 
 	def make (self):
 		self.sh ('%{make}')
 
 	def install (self):
-		if self.sources == None:
-			log (1, '<skipping - no sources defined>')
-			return
 		self.sh ('%{makeinstall}')
 
+		if not self.build_dependency:
+			self.stage_la_files (os.path.join(self.staged_prefix, 'lib'))
+			self.stage_pkgs (os.path.join (self.staged_prefix, 'share', 'pkgconfig'))
+			self.stage_pkgs (os.path.join (self.staged_prefix, 'lib', 'pkgconfig'))
+			self.stage_binaries  (os.path.join(self.staged_prefix, 'lib'))
+			self.stage_binaries (os.path.join(self.staged_prefix, 'bin'))
+
 		if self.m64 and self.needs_lipo: #lipo here
-			lipo_dir = self.prefix + '-lipo'
+			lipo_dir = os.path.join (self.stage_root + '-lipo', self.staged_prefix)
 
 			if not os.path.exists(lipo_dir):
-				os.mkdir (lipo_dir)
+				os.mkdirs (lipo_dir)
 
 			try:
-				log (1, 'Lipoing 32/64-bit libraries' + self.prefix)
-				self.lipo_dirs (self.bin64_prefix, self.prefix, lipo_dir, 'lib')
-				log (1, 'Installing side-by-side bin directory' + self.prefix)
-				self.copy_side_by_side (os.path.join (self.bin64_prefix, 'bin'), os.path.join (self.prefix, 'bin'), '64')
+				log (1, 'Lipoing 32/64-bit libraries at ' + lipo_dir)
+				self.lipo_dirs (self.bin64_prefix, self.staged_prefix, lipo_dir, 'lib')
+				log (1, 'Installing side-by-side bin directory at ' + self.staged_prefix)
+				self.copy_side_by_side (os.path.join (self.bin64_prefix, 'bin'), os.path.join (self.staged_prefix, 'bin'), '64')
 			finally:
 				#delete the lipo build dirs
 				shutil.rmtree (lipo_dir, ignore_errors = True)
@@ -535,7 +683,7 @@ class GnomeGitPackage (Package):
 	def __init__ (self, name, version, revision,
 		configure_flags = None, sources = None, override_properties = None):
 		Package.__init__ (self, name, version,
-			configure = './autogen.sh --prefix="%{prefix}"',
+			configure = './autogen.sh --prefix="%{package_prefix}"',
 			configure_flags = configure_flags,
 			sources = sources,
 			override_properties = override_properties,
@@ -547,17 +695,17 @@ GnomeGitPackage.default_sources = [
 
 class GnuPackage (Package): pass
 GnuPackage.default_sources = [
-	'http://ftp.gnu.org/gnu/%{name}/%{name}-%{version}.tar.gz'
+	'https://ftp.gnu.org/gnu/%{name}/%{name}-%{version}.tar.gz'
 ]
 
 class GnuBz2Package (Package): pass
 GnuBz2Package.default_sources = [
-	'http://ftp.gnu.org/gnu/%{name}/%{name}-%{version}.tar.bz2'
+	'https://ftp.gnu.org/gnu/%{name}/%{name}-%{version}.tar.bz2'
 ]
 
 class GnuXzPackage (Package): pass
 GnuXzPackage.default_sources = [
-        'http://ftp.gnu.org/gnu/%{name}/%{name}-%{version}.tar.xz'
+        'https://ftp.gnu.org/gnu/%{name}/%{name}-%{version}.tar.xz'
 ]
 
 class CairoGraphicsPackage (Package): pass
@@ -582,7 +730,7 @@ class ProjectPackage (Package):
 
 class SourceForgePackage (ProjectPackage): pass
 SourceForgePackage.default_sources = [
-	'http://downloads.sourceforge.net/sourceforge/%{project}/%{name}-%{version}.tar.gz'
+	'https://downloads.sourceforge.net/sourceforge/%{project}/%{name}-%{version}.tar.gz'
 ]
 
 class FreeDesktopPackage (ProjectPackage): pass
@@ -592,14 +740,12 @@ FreeDesktopPackage.default_sources = [
 
 class GitHubTarballPackage (Package):
 	def __init__ (self, org, name, version, commit, configure, override_properties = None):
-		self.commit = commit
-		self.org = org
-		Package.__init__ (self, name, version,
+		Package.__init__ (self, name, version, revision = commit, organization = org,
 			override_properties = override_properties)
 		self.configure = configure
-		self.source_dir_name = '%s-%s-%s' % ( org, name, self.commit[:7] )
+		self.source_dir_name = '%s-%s-%s' % ( org, name, self.revision[:7] )
 GitHubTarballPackage.default_sources = [
-	'http://github.com/%{org}/%{name}/tarball/%{commit}'
+	'https://github.com/%{organization}/%{name}/tarball/%{revision}'
 ]
 
 class GitHubPackage (Package):
@@ -612,39 +758,14 @@ class GitHubPackage (Package):
 			configure = configure,
 			sources = ['git://github.com/%{organization}/%{name}.git'],
 			override_properties = override_properties)
-			
-		profile = Package.profile
-		namever = '%s-%s' % (self.name, self.version)
-			
-		self.revision_file = os.path.join (profile.build_root, namever + '.revision')
-		
-	def is_successful_build(self, build_success_file, package_dir):
-		if not Package.is_successful_build(self, build_success_file, package_dir):
-			return False
-		return self.check_version_hash ()
-			
-	def check_version_hash (self):
-		if os.path.isfile (self.revision_file):
-			f = open (self.revision_file, 'r')
-			check = f.readline ().strip ('\n')
-			if check == self.revision:
-				return True
-		self.create_version_hash ()
-		return False
-		
-	def create_version_hash (self):
-		f = open (self.revision_file, 'w')
-		f.write (self.revision)
-		f.write ('\n')
-		f.close()
 
 
 class GstreamerPackage (ProjectPackage): pass
 GstreamerPackage.default_sources = [
-	'http://%{project}.freedesktop.org/src/%{name}/%{name}-%{version}.tar.gz'
+	'https://%{project}.freedesktop.org/src/%{name}/%{name}-%{version}.tar.gz'
 ]
 
 class XiphPackage (ProjectPackage): pass
 XiphPackage.default_sources = [
-	'http://downloads.xiph.org/releases/%{project}/%{name}-%{version}.tar.gz'
+	'https://downloads.xiph.org/releases/%{project}/%{name}-%{version}.tar.gz'
 ]

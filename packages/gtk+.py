@@ -148,14 +148,17 @@ class GtkPackage (GnomeGitPackage):
 				'patches/gtk/gtknsview-forward-cmdz-to-textview-undo-manager.patch',
 
 				# https://bugzilla.xamarin.com/show_bug.cgi?id=20732
-				'patches/gtk/embedded-nstextview-has-focus.patch'
+				'patches/gtk/embedded-nstextview-has-focus.patch',
+				'patches/gtk/remove-demos-from-build.patch'
 			])
+
+		self.make = "GDK_PIXBUF_MODULEDIR=%{staged_prefix}/lib/gdk-pixbuf-2.0/2.10.0/loaders GDK_PIXBUF_MODULE_FILE=%{staged_prefix}/lib/gdk-pixbuf-2.0/2.10.0/loaders.cache " + self.make
 
 	def prep (self):
 		Package.prep (self)
 		if Package.profile.name == 'darwin':
-			for p in range (2, len (self.sources)):
-				self.sh ('patch -p1 --ignore-whitespace < "%{sources[' + str (p) + ']}"')
+			for p in range (2, len (self.local_sources)):
+				self.sh ('patch -p1 --ignore-whitespace < "%{local_sources[' + str (p) + ']}"')
 
 	def install(self):
 		Package.install(self)
@@ -163,11 +166,10 @@ class GtkPackage (GnomeGitPackage):
 			self.install_gtkrc ()
 
 	def install_gtkrc(self):
-		gtkrc = self.sources[1]
-		origin = gtkrc if os.path.isabs (gtkrc) else os.path.join (self.package_dir (), gtkrc)
-		destdir = os.path.join (self.prefix, "etc", "gtk-2.0")
+		gtkrc = self.local_sources[1]
+		destdir = os.path.join (self.staged_prefix, "etc", "gtk-2.0")
 		if not os.path.exists (destdir):
 			os.makedirs(destdir)
-		self.sh('cp %s %s' % (origin, destdir))
+		self.sh('cp %s %s' % (gtkrc, destdir))
 
 GtkPackage ()
