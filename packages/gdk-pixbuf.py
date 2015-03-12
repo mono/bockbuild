@@ -11,7 +11,12 @@ class GdkPixbufPackage (GnomeXzPackage):
 	def prep (self):
 		Package.prep (self)
 		if Package.profile.name == 'darwin':
-			for p in range (1, len (self.sources)):
-				self.sh ('patch -p1 --ignore-whitespace < "%{sources[' + str (p) + ']}"')
+			for p in range (1, len (self.local_sources)):
+				self.sh ('patch -p1 --ignore-whitespace < "%{local_sources[' + str (p) + ']}"')
+
+	def install (self):
+		Package.install (self)
+		self.sh ('gdk-pixbuf-query-loaders > %{staged_prefix}/lib/gdk-pixbuf-2.0/2.10.0/loaders.cache')
+		self.stage_file ('%{staged_prefix}/lib/gdk-pixbuf-2.0/2.10.0/loaders.cache')
 
 GdkPixbufPackage ()

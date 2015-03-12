@@ -72,7 +72,7 @@ class MonoReleasePackages:
 				# 'nant.py',
 				'ironlangs.py',
 				'fsharp-3.1.py',
-				'mono-basic.py',
+				'mono-basic.py'
 				])
 
-		self.packages = [os.path.join('..', '..', 'packages', p) for p in self.packages]
+		self.packages = [os.path.realpath (os.path.join(self.resource_root, p)) for p in self.packages]

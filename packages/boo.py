@@ -7,7 +7,7 @@ class BooPackage (Package):
 	def install(self):
 		# Unfortunately boo's build scripts don't seem to do a very good job 
 		for script in [ 'booc', 'booi', 'booish' ]:
-			replace_in_file (os.path.join ('extras', script), { '${exec_prefix}': self.prefix })
-		self.sh ('make install MIME_PREFIX=/tmp GTKSOURCEVIEW_PREFIX=/tmp')
+			replace_in_file (os.path.join ('extras', script), { '${exec_prefix}': self.package_prefix })
+		self.sh ('make install MIME_PREFIX=/tmp GTKSOURCEVIEW_PREFIX=/tmp DESTDIR=%{stage_root}')
 
 BooPackage ()

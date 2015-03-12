@@ -28,7 +28,7 @@ class MonoMasterPackage(Package):
 					])
 		else:
 			self.configure_flags.extend([
-				'--with-libgdiplus=%s/lib/libgdiplus.so' % Package.profile.prefix,
+				'--with-libgdiplus=%s/lib/libgdiplus.so' % Package.profile.prefix
 				])
 
 		self.gcc_flags.extend (['-O2'])
@@ -37,8 +37,8 @@ class MonoMasterPackage(Package):
 
 	def prep (self):
 		Package.prep (self)
-		for p in range (1, len (self.sources)):
-			self.sh ('patch -p1 < "%{sources[' + str (p) + ']}"')
+		for p in range (1, len (self.local_sources)):
+			self.sh ('patch -p1 < "%{local_sources[' + str (p) + ']}"')
 
 	def arch_build (self, arch):	
 		if arch == 'darwin-64': #64-bit build pass
