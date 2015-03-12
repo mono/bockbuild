@@ -29,12 +29,12 @@ class DarwinProfile (UnixProfile):
 
 		self.gcc_flags.extend ([
 				'-D_XOPEN_SOURCE',
-				'-isysroot %s' % self.mac_sdk_path
+				'-isysroot %s' % self.mac_sdk_path,
+				'-Wl,-headerpad_max_install_names' #needed to ensure install_name_tool can succeed staging binaries
 			])
 
-		#needed to ensure install_name_tool can succeed staging binaries
 		self.ld_flags.extend ([
-				'-headerpad_max_install_names'
+				'-headerpad_max_install_names' #needed to ensure install_name_tool can succeed staging binaries
 			])
 
 		self.target_osx = '10.%s' % min_version
