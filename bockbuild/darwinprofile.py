@@ -11,6 +11,9 @@ class DarwinProfile (UnixProfile):
 		self.name = 'darwin'
 		self.m64 = m64
 
+		if os.path.exists (prefix):
+			error ('Prefix %s exists, and may interfere with the staged build. Please remove and try again.')
+
 		sdkroot = '/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/'
 		if (not os.path.isdir (sdkroot)):
 			sdkroot = '/Developer/SDKs/'
@@ -27,6 +30,11 @@ class DarwinProfile (UnixProfile):
 		self.gcc_flags.extend ([
 				'-D_XOPEN_SOURCE',
 				'-isysroot %s' % self.mac_sdk_path
+			])
+
+		#needed to ensure install_name_tool can succeed staging binaries
+		self.ld_flags.extend ([
+				'-headerpad_max_install_names'
 			])
 
 		self.target_osx = '10.%s' % min_version
