@@ -10,7 +10,7 @@ from urllib import FancyURLopener
 from util.util import *
 
 class Package:
-	def __init__ (self, name, version, organization = None, configure_flags = None, sources = None, revision = None, git_branch = 'master', source_dir_name = None, override_properties = None, configure = None):
+	def __init__ (self, name, version, organization = None, configure_flags = None, sources = None, revision = None, git_branch = 'master', source_dir_name = None, override_properties = None, configure = None, build_dependency = False):
 		Package.last_instance = self
 
 		self._dirstack = []
@@ -35,11 +35,9 @@ class Package:
 		# b) request two builds that are lipoed at the end or c) request a 32-bit
 		# build only.
 
-		self.m64 = Package.profile.m64
-		self.fat_build = False
 		self.needs_lipo = False
 		self.m32_only = False
-		self.build_dependency = False
+		self.build_dependency = build_dependency
 
 		if configure_flags:
 			self.configure_flags.extend (configure_flags)
@@ -64,7 +62,7 @@ class Package:
 			self.configure = './configure --prefix="%{package_prefix}"'
 
 		self.make = 'make -j%s' % Package.profile.cpu_count
-		self.makeinstall = 'make install DESTDIR=%{stage_root}'
+		
 		self.git = 'git'
 		self.git_branch = git_branch
 		for git in ['/usr/local/bin/git', '/usr/local/git/bin/git', '/usr/bin/git']:
@@ -77,15 +75,14 @@ class Package:
 				self.__dict__[k] = v
 
 		if self.build_dependency:
-			self.profile_prefix = Package.profile.toolchain_root
+			self.package_prefix = Package.profile.toolchain_root
 			self.staged_prefix = Package.profile.toolchain_root
 			self.makeinstall = 'make install'
 			self.ld_flags = '-L%{staged_prefix}/lib' # XXX
 		else:
-			self.profile_prefix = Package.profile.prefix
+			self.package_prefix = Package.profile.prefix
 			self.staged_prefix = Package.profile.staged_prefix
-
-		self.package_prefix = self.profile_prefix
+			self.makeinstall = 'make install DESTDIR=%{stage_root}'
 
 	def extract_organization (self, source):
 		if (not "git" in source) or ("http" in source):
@@ -189,9 +186,10 @@ class Package:
 			return os.path.join (source_cache_dir, name)
 
 		local_sources = []
-		self.cd (build_root)
 		clean_func = None # what to run if the workspace needs to be redone
 		cache = None
+
+		self.cd (build_root)
 
 		try:
 			for source in self.sources:
@@ -303,7 +301,6 @@ class Package:
 		return self._fetch_sources (profile.build_root, workspace, profile.resource_root, profile.source_cache)
 
 	def start_build (self):
-		try:
 			self.source_dir_name = expand_macros (self.source_dir_name, self)
 			profile = Package.profile
 			workspace = os.path.join (profile.build_root, self.source_dir_name)
@@ -311,28 +308,77 @@ class Package:
 			print 'fetch', self.name
 			clean_func = retry (self.fetch)
 
-			if self.is_successful_build(build_artifact) and not (self.needs_lipo and self.m64):
+			if self.is_successful_build(build_artifact):
 				print 'install', self.name
 				os.chdir (workspace)
 				self.install ()
-				return
+			else:
+				try:
+					retry (clean_func)
 
-			if os.path.exists (build_artifact): #iterated build, so we need to clean
-				retry (clean_func)
+					if profile.arch == 'darwin-universal' and self.needs_lipo:				
+						self.do_build ('darwin-32', profile.prefix, workspace, profile.stage_root)
+						stagedir_x86 = profile.staged_prefix
 
-			for phase in Package.profile.run_phases:
-				log (0, '%s: %sing %s' % (datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"), phase.capitalize (), self.name))
-				self.cd (workspace)
-				print phase, self.name
-				getattr (self, phase) ()
+						workspace_x64 = workspace + '-x64'
+						if (os.path.exists (workspace_x64)):
+							shutil.rmtree (workspace_x64)
+						shutil.copytree (workspace, workspace_x64)
 
-			open (build_artifact, 'w').close ()
-			os.utime (build_artifact, None)
-		except:
-			if os.path.exists (workspace):
-				self.rm (workspace)
-			#self.dump ()
-			raise
+						self.do_build ('darwin-64', profile.prefix, workspace_x64, 
+							os.path.join (profile.build_root, 'stage-root-x64'))
+										
+						stagedir_x64 = self.staged_prefix
+
+						stagedir_lipo = os.path.join (profile.build_root + 'stage-lipo')
+
+						if not os.path.exists(stagedir_lipo):
+							os.mkdirs (stagedir_lipo)
+
+						try:
+							log (1, 'Lipoing 32/64-bit libraries at ' + stagedir_lipo)
+							self.lipo_dirs (stagedir_x64, stagedir_x86, stagedir_lipo, 'lib')
+							log (1, 'Installing side-by-side bin directory at ' + self.staged_prefix)
+							self.copy_side_by_side (os.path.join (stagedir_x64, 'bin'),
+								 os.path.join (stagedir_x86, 'bin'), '64', '32')
+						finally:
+							#delete the lipo build dirs
+							shutil.rmtree (stagedir_x64, ignore_errors = True)
+							shutil.rmtree (stagedir_lipo, ignore_errors = True)
+							raise
+					elif self.m32_only:
+						self.do_build ('darwin-32', profile.prefix, workspace, profile.stage_root)
+					else:
+						self.do_build (profile.arch, profile.prefix, workspace, profile.stage_root)
+				except:
+					if os.path.exists (workspace):
+						self.rm (workspace)
+					#self.dump ()
+					raise
+
+				self.make_artifact (profile.staged_prefix, build_artifact)
+				
+			if not self.build_dependency:
+				self.stage (profile.staged_prefix)
+
+			# self.deploy ()
+
+
+	def do_build (self, arch, install_prefix, workspace_dir, stage_root):
+		self.cd (workspace_dir)
+		self.stage_root  = stage_root
+		self.staged_prefix = os.path.join (self.stage_root, install_prefix [1:])
+		self.package_prefix = install_prefix
+		self.arch_build (arch)
+		self.prep ()
+		self.build ()
+		self.install ()
+
+	def make_artifact (stage_dir, build_artifact):
+		open (build_artifact, 'w').close ()
+		os.utime (build_artifact, None)
+		
+		return
 
 	def sh (self, *commands):
 		for command in commands:
@@ -427,51 +473,8 @@ class Package:
 		self.popd ()
 
 	def build (self):
-		profile_stage_root = self.stage_root
-		if self.profile.name == 'darwin':
-			if self.m64:
-				if self.needs_lipo:
-					log (1, 'Lipo (universal binaries) mode enabled.')	
-
-					#copy out built dir for later use (make check etc.)
-					package_build_dir = self.source_dir_name
-					package_build_dir64 = package_build_dir + '-x86_64'
-					log (1, 'Copying ' + package_build_dir + ' to ' + package_build_dir64)
-					os.chdir ('..')
-					if (os.path.exists (package_build_dir64)):
-						shutil.rmtree (package_build_dir64)
-					shutil.copytree (package_build_dir, package_build_dir64)
-
-
-					os.chdir (package_build_dir64)
-					bin64_stage_root = self.profile_stage_root + '-darwin-64' #switch to a temporary prefix
-					self.bin64_prefix = os.path.join (bin64_stage_root, self.package_prefix)
-					self.stage_root = bin64_stage_root
-					log (1, 'Building 64-bit binaries at ' + self.package_prefix + ' from ' + package_build_dir64)
-					self.arch_build ('darwin-64')
-					self.sh ('%{makeinstall}')
-
-					log (1, 'Building 32-bit binaries at ' + self.package_prefix + ' from ' + package_build_dir)
-					os.chdir ('..')
-					os.chdir (package_build_dir)
-					self.stage_root = self.profile_stage_root #switch back to main stage path
-					self.arch_build ('darwin-32')
-
-				elif self.fat_build:
-					log (1, 'Building 32/64-bit binaries at ' + self.package_prefix)
-					self.arch_build ('darwin-fat')
-				elif self.m32_only:
-					self.arch_build ('darwin-32')
-				elif self.build_dependency: # build dependencies can be built in the default architecture if not otherwise specified
-					self.arch_build ('darwin-32')
-				else:
-					log (1, 'Building 32/64-bit binaries (default settings) at ' + self.package_prefix)
-					self.arch_build ('darwin-fat')
-
-			else:	
-				self.arch_build ('darwin-32')
-		else:
-			self.arch_build (self.profile.name)
+		Package.configure (self)
+		Package.make (self)
 
 	def lipo_dirs (self, dir_64, dir_32, lipo_dir, bin_subdir, replace_32 = True): 
 		dir64_bin = os.path.join (dir_64, bin_subdir)
@@ -506,7 +509,7 @@ class Package:
 							#replace all 32-bit binaries with the new fat binaries
 							shutil.copy2 (lipo_file, dir32_file)
 					else:
-						print "lipo warning: 32-bit version of file %s not found"  %file
+						warn ("lipo: 32-bit version of file %s not found"  %file)
 
 	def copy_side_by_side (self, src_dir, dest_dir, suffix, orig_suffix =  None):
 		if not os.path.exists (src_dir):
@@ -594,23 +597,8 @@ class Package:
 					self.stage_file (os.path.join (root, file))
 
 
-	def arch_build (self, arch, defaults = True):
-		if defaults == True: #the package does not define the strategy for buildling lipos. These are the defaults
-			if (arch == 'darwin-fat'):					
-					self.local_ld_flags = ['-arch i386' , '-arch x86_64']
-					self.local_gcc_flags = ['-arch i386' , '-arch x86_64']
-					self.local_configure_flags = ['--disable-dependency-tracking']
-			elif (arch == 'darwin-32'):
-					self.local_ld_flags = ['-arch i386']
-					self.local_gcc_flags = ['-arch i386']
-					self.local_configure_flags = ['--build=i386-apple-darwin11.2.0', '--disable-dependency-tracking']
-			elif (arch == 'darwin-64'):
-					self.local_ld_flags = ['-arch x86_64']
-					self.local_gcc_flags = ['-arch x86_64']
-					self.local_configure_flags = ['--disable-dependency-tracking']
-
-		Package.configure (self)
-		Package.make (self)
+	def arch_build (self, arch):
+		Package.profile.arch_build (arch, self)
 
 	def env (self):
 		return str('OBJCFLAGS="%{gcc_flags} %{local_gcc_flags}" '
@@ -629,28 +617,13 @@ class Package:
 	def install (self):
 		self.sh ('%{makeinstall}')
 
-		if not self.build_dependency:
-			self.stage_la_files (os.path.join(self.staged_prefix, 'lib'))
-			self.stage_pkgs (os.path.join (self.staged_prefix, 'share', 'pkgconfig'))
-			self.stage_pkgs (os.path.join (self.staged_prefix, 'lib', 'pkgconfig'))
-			self.stage_binaries  (os.path.join(self.staged_prefix, 'lib'))
-			self.stage_binaries (os.path.join(self.staged_prefix, 'bin'))
+	def stage (self, dir, stage_to_dir = dir):
+		self.stage_la_files (os.path.join(dir, 'lib'))
+		self.stage_pkgs (os.path.join (dir, 'share', 'pkgconfig'))
+		self.stage_pkgs (os.path.join (dir, 'lib', 'pkgconfig'))
+		self.stage_binaries  (os.path.join(dir, 'lib'))
+		self.stage_binaries (os.path.join(dir, 'bin'))
 
-		if self.m64 and self.needs_lipo: #lipo here
-			lipo_dir = os.path.join (self.stage_root + '-lipo', self.staged_prefix)
-
-			if not os.path.exists(lipo_dir):
-				os.mkdirs (lipo_dir)
-
-			try:
-				log (1, 'Lipoing 32/64-bit libraries at ' + lipo_dir)
-				self.lipo_dirs (self.bin64_prefix, self.staged_prefix, lipo_dir, 'lib')
-				log (1, 'Installing side-by-side bin directory at ' + self.staged_prefix)
-				self.copy_side_by_side (os.path.join (self.bin64_prefix, 'bin'), os.path.join (self.staged_prefix, 'bin'), '64')
-			finally:
-				#delete the lipo build dirs
-				shutil.rmtree (lipo_dir, ignore_errors = True)
-				shutil.rmtree (self.bin64_prefix, ignore_errors = True)
 
 Package.default_sources = None
 

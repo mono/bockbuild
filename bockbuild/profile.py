@@ -11,10 +11,10 @@ class Profile:
 		self.root = os.getcwd ()
 		self.resource_root = os.path.realpath (os.path.join('..', '..', 'packages'))
 		self.build_root = os.path.join (self.root, 'build-root')
-		self.stage_root = os.path.join (self.root, 'stage-root')
+		self.stage_root = os.path.join (self.root, 'stage-root')		
 		self.toolchain_root = os.path.join (self.root, 'toolchain-root')
 		self.prefix = prefix if prefix else os.path.join (self.root, 'install-root')
-		self.staged_prefix = os.path.join (self.stage_root, self.prefix [1:])
+		self.staged_prefix = os.path.join (self.stage_root, prefix [1:])
                 self.source_cache = os.getenv('BOCKBUILD_SOURCE_CACHE') or os.path.realpath (os.path.join (self.root, 'cache'))
                 self.cpu_count = get_cpu_count ()
 		self.host = get_host ()
@@ -83,8 +83,8 @@ class Profile:
 		parser.add_option ('', '--csproj-insert', default = None,
 			action = 'store', dest = 'csproj_file',
 			help = 'Inserts the profile environment variables into VS/MonoDevelop .csproj files')
-		parser.add_option ('', '--arch', default = ['x86'],
-			action = 'store', dest = 'archs',
+		parser.add_option ('', '--arch', default = 'x86',
+			action = 'store', dest = 'arch',
 			help = 'Select the target architecture(s) for the package')
 
 		self.parser = parser
@@ -100,6 +100,7 @@ class Profile:
 		packages_to_build = self.cmd_args
 		self.verbose = self.cmd_options.verbose
 		self.run_phases = self.default_run_phases
+		self.arch = self.cmd_options.arch
 
 		if self.cmd_options.dump_environment:
 			self.env.compile ()
@@ -140,7 +141,7 @@ class Profile:
 				if phase not in self.default_run_phases:
 					sys.exit ('Invalid run phase \'%s\'' % phase)
 
-		log (0, 'Loaded profile \'%s\' (archs: %s)' % (self.name, self.cmd_options.archs))
+		log (0, 'Loaded profile \'%s\' (arch: %s)' % (self.name, self.cmd_options.arch))
 		log (0, 'Setting environment variables')
 
 		full_rebuild = False
@@ -186,7 +187,7 @@ class Profile:
 
 			print '\n** Building toolchain\n'
 			for pkg in self.toolchain_packages:
-				pkg.start_build ()
+				pkg.start_build () #start_build (workspace, install_root, stage_root)
 
 			print '\n** Building release\n'
 			for pkg in self.release_packages:
@@ -210,3 +211,11 @@ class Profile:
 				shutil.rmtree(d, ignore_errors=False)
 			else: return
 		os.makedirs (d, 0755)
+
+class Bockbuild:
+	def main ():
+		profile.prep_options ()
+		profile.build ()
+		profile.package ()
+
+

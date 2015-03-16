@@ -12,8 +12,7 @@ class MonoMasterPackage(Package):
 			]
 		)
 		#This package would like to be lipoed.
-		if Package.profile.m64 == True:
-			self.needs_lipo = True
+		self.needs_lipo = True
 		
 		if Package.profile.name == 'darwin':
 			self.configure_flags.extend([

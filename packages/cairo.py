@@ -7,9 +7,6 @@ class CairoPackage (CairoGraphicsXzPackage):
 			'patches/cairo-fix-CGFontGetGlyphPath-deprecation.patch',
 #			'patches/cairo-cglayer.patch',
 		])
-		#This package would like to be built with fat binaries
-		if Package.profile.m64 == True:
-			self.fat_build = True
 
 	def prep (self):
 		Package.prep (self)

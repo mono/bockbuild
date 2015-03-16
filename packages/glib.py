@@ -7,7 +7,7 @@ class GlibPackage (GnomeXzPackage):
 
 		self.darwin = Package.profile.name == 'darwin'
 
-		if Package.profile.name == 'darwin':
+		if self.darwin:
 			#link to specific revisions for glib 2.30.x
 			self.sources.extend ([
 				# https://trac.macports.org/export/91680/trunk/dports/devel/glib2/files/config.h.ed
@@ -39,22 +39,19 @@ class GlibPackage (GnomeXzPackage):
 				self.sh ('patch --ignore-whitespace -p1 < %{local_sources[' + str (p) + ']}')
 
 	def arch_build (self, arch):
-
-		if arch == 'darwin-fat': #multi-arch  build pass
+		if arch == 'darwin-universal': #multi-arch  build pass
 			self.local_ld_flags = ['-arch i386' , '-arch x86_64']
 			self.local_gcc_flags = ['-arch i386' , '-arch x86_64', '-Os']
 			self.local_configure_flags = ['--disable-dependency-tracking']
-		elif arch == 'darwin-32':
-				self.local_ld_flags = ['-arch i386']
-				self.local_gcc_flags = ['-arch i386']
-				self.local_configure_flags = ['--disable-dependency-tracking']
-		elif arch == 'darwin-64':
-				self.local_ld_flags = ['-arch x86_64']
-				self.local_gcc_flags = ['-arch x86_64']
-				self.local_configure_flags = ['--disable-dependency-tracking']
+		else:
+			Package.arch_build (self, arch)
 
+		if self.darwin: 
+			self.local_configure_flags.extend (['--disable-compile-warnings'])
+
+	def build (self):
 		#modified build for darwin
-		if arch.startswith ('darwin'): 
+		if self.darwin: 
 			self.local_configure_flags.extend (['--disable-compile-warnings'])
 			Package.configure (self)
 			self.sh (
@@ -68,7 +65,7 @@ class GlibPackage (GnomeXzPackage):
 			)
 			Package.make (self)
 		else:	
-			Package.arch_build (self, arch, defaults = False)
+			Package.build (self)
 	
 	def install (self):
 		Package.install (self)
