@@ -57,7 +57,7 @@ index e6a379a..02f3426 100644
  					0, 0);
  
 -    glyphPath = CGFontGetGlyphPathPtr (font_face->cgFont, &textMatrix, 0, glyph);
-+    ctFont = CTFontCreateWithGraphicsFont (font_face->cgFont, 0.0, NULL, NULL);
++    ctFont = CTFontCreateWithGraphicsFont (font_face->cgFont, 1.0, NULL, NULL);
 +    glyphPath = CTFontCreatePathForGlyph (ctFont, glyph, &textMatrix);
 +    CFRelease (ctFont);
      if (!glyphPath)
