@@ -40,7 +40,7 @@ class MonoReleaseProfile(DarwinProfile, MonoReleasePackages):
         if not os.path.exists(aclocal_dir):
             os.makedirs(aclocal_dir)
 
-        registry_dir = os.path.join(self.prefix, "etc", "mono", "registry", "Local Machine")
+        registry_dir = os.path.join(self.prefix, "etc", "mono", "registry", "LocalMachine")
         if not os.path.exists(registry_dir):
             os.makedirs(registry_dir)
 
