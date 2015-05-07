@@ -5,14 +5,14 @@ from util.util import *
 from unixprofile import UnixProfile
 
 class DarwinProfile (UnixProfile):
-	def __init__ (self, prefix = False, m64 = False, min_version = 6):
+	def __init__ (self, prefix = None, m64 = False, min_version = 6):
 		UnixProfile.__init__ (self, prefix)
 		
 		self.name = 'darwin'
 		self.m64 = m64
 
-		if os.path.exists (prefix):
-			error ('Prefix %s exists, and may interfere with the staged build. Please remove and try again.')
+		if os.path.exists (self.prefix):
+			error ('Prefix %s exists, and may interfere with the staged build. Please remove and try again.' % self.prefix)
 
 		sdkroot = '/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/'
 		if (not os.path.isdir (sdkroot)):
@@ -53,23 +53,29 @@ class DarwinProfile (UnixProfile):
 			self.env.set ('CC',  'ccache xcrun gcc')
 			self.env.set ('CXX', 'ccache xcrun g++')
 
+		self.staged_binaries = []
+		self.staged_textfiles = []
+
+		if self.arch == 'default':
+			self.arch = 'darwin-32'
+
 		# GTK2_RC_FILES must be a ":"-seperated list of files (NOT a single folder)
 		self.gtk2_rc_files = os.path.join (os.getcwd (), 'skeleton.darwin', 'Contents', 'Resources', 'etc', 'gtk-2.0', 'gtkrc')
 		self.env.set ('GTK2_RC_FILES', '%{gtk2_rc_files}')
 
 	
-	def arch_build (self, arch, Package):
-		if (arch == 'darwin-universal'):					
-				self.local_ld_flags = ['-arch i386' , '-arch x86_64']
-				self.local_gcc_flags = ['-arch i386' , '-arch x86_64']
-		elif (arch == 'darwin-32'):
-				self.local_ld_flags = ['-arch i386 -,32']
-				self.local_gcc_flags = ['-arch i386 -m32']
-				self.local_configure_flags = ['--build=i386-apple-darwin11.2.0', '--disable-dependency-tracking']
-		elif (arch == 'darwin-64'):
-				self.local_ld_flags = ['-arch x86_64 -m64']
-				self.local_gcc_flags = ['-arch x86_64 -m64']
-				self.local_configure_flags = ['--disable-dependency-tracking']
+	def arch_build (self, arch, package):
+		if arch == 'darwin-universal':
+			package.local_ld_flags = ['-arch i386' , '-arch x86_64']
+			package.local_gcc_flags = ['-arch i386' , '-arch x86_64']
+		elif arch == 'darwin-32':
+			package.local_ld_flags = ['-arch i386','-m32']
+			package.local_gcc_flags = ['-arch i386','-m32']
+			package.local_configure_flags = ['--build=i386-apple-darwin11.2.0', '--disable-dependency-tracking']
+		elif arch == 'darwin-64':
+			package.local_ld_flags = ['-arch x86_64 -m64']
+			package.local_gcc_flags = ['-arch x86_64 -m64']
+			package.local_configure_flags = ['--disable-dependency-tracking']
 		else:
 			error ('Unknown arch %s' % arch)
 

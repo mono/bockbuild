@@ -186,12 +186,20 @@ class MonoReleaseProfile(DarwinProfile, MonoReleasePackages):
 
     def package_info(self, pkg_type):
         version = self.RELEASE_VERSION
-        info = (pkg_type, version)
-        filename = "MonoFramework-%s-%s.macos10.xamarin.x86.pkg" % info
+
+        if self.arch == "darwin-32":
+            arch_str = "x86"
+        elif self.arch == "darwin-64":
+            arch_str = "x64"
+        elif self.arch == "darwin-universal":
+            arch_str = "universal"
+
+        info = (pkg_type, version, arch_str)
+
+        filename = "MonoFramework-%s-%s.macos10.xamarin.%s.pkg" % info
         return {
             "type": pkg_type,
-            "filename": filename,
-            "title": "Mono Framework %s %s " % info
+            "filename": filename
         }
 
     def generate_dsym(self):
@@ -204,8 +212,11 @@ class MonoReleaseProfile(DarwinProfile, MonoReleasePackages):
                 if "dSYM" in f:
                     continue
                 if "Mach-O" in "".join(file_type):
-                    run_shell('dsymutil "%s" >/dev/null' % f)
-                    x = x + 1
+                    try:
+                        run_shell('dsymutil "%s" >/dev/null' % f)
+                        x = x + 1
+                    except Exception as e:
+                        warn (e)
         print x
 
     def fix_line(self, line, matcher):

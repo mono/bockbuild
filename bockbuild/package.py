@@ -10,7 +10,7 @@ from urllib import FancyURLopener
 from util.util import *
 
 class Package:
-	def __init__ (self, name, version, organization = None, configure_flags = None, sources = None, revision = None, git_branch = 'master', source_dir_name = None, override_properties = None, configure = None, build_dependency = False):
+	def __init__ (self, name, version, organization = None, configure_flags = None, sources = None, revision = None, git_branch = 'master', source_dir_name = None, override_properties = None, configure = None):
 		Package.last_instance = self
 
 		self._dirstack = []
@@ -37,7 +37,7 @@ class Package:
 
 		self.needs_lipo = False
 		self.m32_only = False
-		self.build_dependency = build_dependency
+		self.build_dependency = False
 
 		if configure_flags:
 			self.configure_flags.extend (configure_flags)
@@ -300,7 +300,7 @@ class Package:
 		workspace = os.path.join (profile.build_root, self.source_dir_name)
 		return self._fetch_sources (profile.build_root, workspace, profile.resource_root, profile.source_cache)
 
-	def start_build (self):
+	def start_build (self, install_root, stage_root, arch):
 			self.source_dir_name = expand_macros (self.source_dir_name, self)
 			profile = Package.profile
 			workspace = os.path.join (profile.build_root, self.source_dir_name)
@@ -308,7 +308,7 @@ class Package:
 			print 'fetch', self.name
 			clean_func = retry (self.fetch)
 
-			if self.is_successful_build(build_artifact):
+			if self.is_successful_build(build_artifact) and not self.needs_lipo:
 				print 'install', self.name
 				os.chdir (workspace)
 				self.install ()
@@ -316,40 +316,46 @@ class Package:
 				try:
 					retry (clean_func)
 
-					if profile.arch == 'darwin-universal' and self.needs_lipo:				
-						self.do_build ('darwin-32', profile.prefix, workspace, profile.stage_root)
-						stagedir_x86 = profile.staged_prefix
+					if arch == 'darwin-universal' and self.needs_lipo:
+
+						workspace_x86 = workspace + '-x86'
+						if (os.path.exists (workspace_x86)):
+							shutil.rmtree (workspace_x86)
+						shutil.move (workspace, workspace_x86)
 
 						workspace_x64 = workspace + '-x64'
 						if (os.path.exists (workspace_x64)):
 							shutil.rmtree (workspace_x64)
-						shutil.copytree (workspace, workspace_x64)
+						shutil.copytree (workspace_x86, workspace_x64)
 
-						self.do_build ('darwin-64', profile.prefix, workspace_x64, 
-							os.path.join (profile.build_root, 'stage-root-x64'))
-										
+						self.do_build ('darwin-32', install_root, workspace_x86, workspace_x86 + '.install')
+						stagedir_x86 = self.staged_prefix
+
+						self.do_build ('darwin-64', install_root, workspace_x64, workspace_x64 + '.install')
 						stagedir_x64 = self.staged_prefix
 
-						stagedir_lipo = os.path.join (profile.build_root + 'stage-lipo')
+						stagedir_lipo = os.path.join (profile.build_root, 'stage-lipo')
 
 						if not os.path.exists(stagedir_lipo):
-							os.mkdirs (stagedir_lipo)
+							os.makedirs (stagedir_lipo)
 
 						try:
-							log (1, 'Lipoing 32/64-bit libraries at ' + stagedir_lipo)
+							print 'lipo', self.name
 							self.lipo_dirs (stagedir_x64, stagedir_x86, stagedir_lipo, 'lib')
-							log (1, 'Installing side-by-side bin directory at ' + self.staged_prefix)
+							run_shell('rsync -a --ignore-existing %s/* %s' % (stagedir_x86, profile.staged_prefix), False)
 							self.copy_side_by_side (os.path.join (stagedir_x64, 'bin'),
-								 os.path.join (stagedir_x86, 'bin'), '64', '32')
+								 os.path.join (profile.staged_prefix, 'bin'), '64', '32')
+
 						finally:
 							#delete the lipo build dirs
+							shutil.rmtree (stagedir_x86, ignore_errors = True)
 							shutil.rmtree (stagedir_x64, ignore_errors = True)
 							shutil.rmtree (stagedir_lipo, ignore_errors = True)
-							raise
+
 					elif self.m32_only:
-						self.do_build ('darwin-32', profile.prefix, workspace, profile.stage_root)
+						self.do_build ('darwin-32', install_root, workspace, stage_root)
 					else:
-						self.do_build (profile.arch, profile.prefix, workspace, profile.stage_root)
+						self.do_build (arch, install_root, workspace, stage_root)
 				except:
 					if os.path.exists (workspace):
 						self.rm (workspace)
@@ -365,16 +371,29 @@ class Package:
 
 
 	def do_build (self, arch, install_prefix, workspace_dir, stage_root):
-		self.cd (workspace_dir)
-		self.stage_root  = stage_root
-		self.staged_prefix = os.path.join (self.stage_root, install_prefix [1:])
-		self.package_prefix = install_prefix
-		self.arch_build (arch)
-		self.prep ()
-		self.build ()
-		self.install ()
+		try:
+			print 'build', self.name, arch
+			self.cd (workspace_dir)
+			self.stage_root  = stage_root
+			if install_prefix == stage_root:
+				self.staged_prefix = install_prefix
+			else:
+				self.staged_prefix = os.path.join (stage_root, install_prefix [1:])
+			self.package_prefix = install_prefix
+			self.arch_build (arch)
+			self.prep ()
+			self.build ()
+			self.install ()
+		except Exception as e:
+			if os.path.exists (workspace_dir):
+				problem_dir = os.path.basename (workspace_dir) + '.problem'
+				shutil.rmtree (problem_dir, ignore_errors = True)
+				shutil.move (workspace_dir,
+					os.path.join (self.profile.root,  problem_dir))
+			warn (str (e))
+			error ('Failed build at ./%s' % problem_dir)
 
-	def make_artifact (stage_dir, build_artifact):
+	def make_artifact (self, stage_dir, build_artifact):
 		open (build_artifact, 'w').close ()
 		os.utime (build_artifact, None)
 		
@@ -386,8 +405,9 @@ class Package:
 				env_command = expand_macros (self.env() + command, self)
 			except Exception as e:
 				error ('MACRO EXPANSION ERROR: ' + str(e))
+			if self.profile.verbose:
+				print expand_macros (command, self)
 
-			log (1, env_command)
 			stdout = tempfile.NamedTemporaryFile()
 			stderr = tempfile.NamedTemporaryFile()
 			full_command = '%s  > %s 2> %s' % (env_command, stdout.name, stderr.name)
@@ -518,15 +538,19 @@ class Package:
 		for root,dirs,filelist in os.walk(src_dir):
 			relpath = os.path.relpath (root, src_dir)
 			for file in filelist:
+				src_file = os.path.join (src_dir, relpath, file)
 				if os.path.islink (src_dir):
 					continue
-				src_file = os.path.join (src_dir, relpath, file)
-				dest_file = os.path.join (dest_dir, relpath, file + suffix) #FIXME: perhaps add suffix before any .'s
-				dest_orig_file = os.path.join (dest_dir, relpath, file)
-				if orig_suffix != None and os.path.exists (dest_orig_file):
-					shutil.move (dest_orig_file, dest_orig_file + orig_suffix)
 
-				shutil.copy2 (src_file, dest_file)
+				filetype = backtick ('file -b %s' % src_file)[0]
+				if filetype.startswith('Mach-O'):
+					dest_file = os.path.join (dest_dir, relpath, file + suffix) #FIXME: perhaps add suffix before any .'s
+					dest_orig_file = os.path.join (dest_dir, relpath, file)
+					if orig_suffix != None and os.path.exists (dest_orig_file):
+						shutil.move (dest_orig_file, dest_orig_file + orig_suffix)
+						os.symlink (os.path.basename (dest_orig_file + orig_suffix), dest_orig_file)
+
+					shutil.copy2 (src_file, dest_file)
 
 	def stage_pkgs (self, pkg_dir):
 		log (1, 'Staging pkg-config packages')
@@ -545,7 +569,10 @@ class Package:
 				tokens = line.split (" ")
 				for idx,token in enumerate(tokens):
 					if  token.find (self.staged_prefix) == -1:
-						tokens[idx] = token.replace(self.profile_prefix,self.staged_prefix)
+						tokens[idx] = token.replace(self.profile.prefix,self.profile.staged_prefix)
+					else:
+						tokens[idx] = token.replace(self.staged_prefix,self.profile.staged_prefix)
+
 				output.write (" ".join(tokens))
 			output.close
 		shutil.move (path, path + '.release')
@@ -555,7 +582,9 @@ class Package:
 
 
 	def stage_binaries (self, dir):
-		log (1, 'Staging binaries')
+		def abort_staging (path):
+			os.remove (path)
+			shutil.move (path + '.release', path)
 		for root,dirs,filelist in os.walk (dir):
 			for file in filelist:
 				path = os.path.join (root, file)
@@ -568,23 +597,29 @@ class Package:
 				if filetype.startswith('Mach-O'):
 					shutil.copy (path, path + '.release')
 					try:
-						run_shell ('install_name_tool -id %s %s' %(path,path))
+						staged_path = os.path.join (self.profile.staged_prefix, dir, os.path.relpath (path, dir))
+						run_shell ('install_name_tool -id %s %s' % (staged_path, path))
 					except:
 						warn ('Staging failed for %s' % os.path.relpath (path,dir))
+						abort_staging (path)
 						continue
 					libs = backtick ('otool -L %s' % path)
 					for line in libs:
-						rpath = line.split(' ')[0]
-						if rpath.find (self.profile_prefix) != -1:
+						#parse 'otool -L'
+						if not line.startswith ('\t'):
+							continue
+						rpath = line.strip ().split(' ')[0]
+						if rpath.find (self.profile.prefix) != -1:
 							if rpath.find (self.staged_prefix) == -1:
-								remap = rpath.replace (self.profile_prefix,self.staged_prefix)
-								if not os.path.exists (remap.strip ()):
-									raise Exception ('%s has a (staged) reference to %s, which is not found.' % (path, remap))
-								try:
-									run_shell ('install_name_tool -change %s %s %s' % (rpath, remap, path))
-								except:
-									warn ('Staging failed for %s' % os.path.relpath (path,dir))
-									continue
+								remap = rpath.replace (self.profile.prefix, self.profile.staged_prefix)
+							else:
+								remap = rpath.replace (self.staged_prefix, self.profile.staged_prefix)
+							try:
+								run_shell ('install_name_tool -change %s %s %s' % (rpath, remap, path))
+							except:
+								warn ('Staging failed for %s' % os.path.relpath (path,dir))
+								abort_staging (path)
+								continue
 					self.profile.staged_binaries.append (path)
 				elif filetype == 'POSIX shell script text executable':
 					self.stage_file (path)

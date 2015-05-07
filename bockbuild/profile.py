@@ -14,7 +14,7 @@ class Profile:
 		self.stage_root = os.path.join (self.root, 'stage-root')		
 		self.toolchain_root = os.path.join (self.root, 'toolchain-root')
 		self.prefix = prefix if prefix else os.path.join (self.root, 'install-root')
-		self.staged_prefix = os.path.join (self.stage_root, prefix [1:])
+		self.staged_prefix = os.path.join (self.stage_root, self.prefix [1:])
                 self.source_cache = os.getenv('BOCKBUILD_SOURCE_CACHE') or os.path.realpath (os.path.join (self.root, 'cache'))
                 self.cpu_count = get_cpu_count ()
 		self.host = get_host ()
@@ -37,6 +37,11 @@ class Profile:
 		print '---'
 
 		self.parse_options ()
+
+		packages_to_build = self.cmd_args
+		self.verbose = self.cmd_options.verbose
+		self.run_phases = self.default_run_phases
+		self.arch = self.cmd_options.arch
 
 	def parse_options (self):
 		self.default_run_phases = ['prep', 'build', 'install']
@@ -83,7 +88,7 @@ class Profile:
 		parser.add_option ('', '--csproj-insert', default = None,
 			action = 'store', dest = 'csproj_file',
 			help = 'Inserts the profile environment variables into VS/MonoDevelop .csproj files')
-		parser.add_option ('', '--arch', default = 'x86',
+		parser.add_option ('', '--arch', default = 'default',
 			action = 'store', dest = 'arch',
 			help = 'Select the target architecture(s) for the package')
 
@@ -97,11 +102,6 @@ class Profile:
 		sys.exit ('Bundle support not implemented for this profile')
 
 	def build (self):
-		packages_to_build = self.cmd_args
-		self.verbose = self.cmd_options.verbose
-		self.run_phases = self.default_run_phases
-		self.arch = self.cmd_options.arch
-
 		if self.cmd_options.dump_environment:
 			self.env.compile ()
 			self.env.dump ()
@@ -141,7 +141,7 @@ class Profile:
 				if phase not in self.default_run_phases:
 					sys.exit ('Invalid run phase \'%s\'' % phase)
 
-		log (0, 'Loaded profile \'%s\' (arch: %s)' % (self.name, self.cmd_options.arch))
+		log (0, 'Loaded profile \'%s\' (arch: %s)' % (self.name, self.arch))
 		log (0, 'Setting environment variables')
 
 		full_rebuild = False
@@ -187,11 +187,11 @@ class Profile:
 
 			print '\n** Building toolchain\n'
 			for pkg in self.toolchain_packages:
-				pkg.start_build () #start_build (workspace, install_root, stage_root)
+				pkg.start_build (self.toolchain_root, self.toolchain_root, 'darwin-64') #start_build (workspace, install_root, stage_root)
 
 			print '\n** Building release\n'
 			for pkg in self.release_packages:
-				pkg.start_build ()
+				pkg.start_build (self.prefix, self.stage_root, self.arch )
 
 		if self.cmd_options.do_bundle:
 			if not self.cmd_options.output_dir == None:
