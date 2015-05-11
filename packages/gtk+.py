@@ -153,7 +153,10 @@ class GtkPackage (GnomeGitPackage):
 
 				# This fixes an issue in where in some situations the user needed
 				# to click a native text entry twice in order to be able to focus it.
-				'patches/gtk/gtknsview-only-unset-first-responder-if-it-is-our-view.patch'
+				'patches/gtk/gtknsview-only-unset-first-responder-if-it-is-our-view.patch',
+
+				# For the test framework to be able to traverse down the NSView hierarchy
+				'patches/gtk/gtknsview-getter.patch'
 			])
 
 		self.make = "GDK_PIXBUF_MODULEDIR=%{staged_prefix}/lib/gdk-pixbuf-2.0/2.10.0/loaders GDK_PIXBUF_MODULE_FILE=%{staged_prefix}/lib/gdk-pixbuf-2.0/2.10.0/loaders.cache " + self.make
