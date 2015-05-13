@@ -3,8 +3,8 @@ class NuGetPackage(GitHubTarballPackage):
 	def __init__(self):
 		GitHubTarballPackage.__init__(self,
 			'mono', 'nuget',
-			'2.8.1',
-			'02b1ac03c36cb014e1c2d3d2c47b6992d15b413b',
+			'2.8.5',
+			'ea1d244b066338c9408646afdcf8acae6299f7fb',
 			configure = '')
 
 	def build(self):
