@@ -71,13 +71,10 @@ class MonoReleasePackages:
             'libgdiplus.py',
             'xsp.py',
             'gtk-sharp-2.12-release-net4.5.py',
-            'boo.py',
-            # 'nant.py',
             'ironlangs.py',
             'fsharp-3.1.py',
-            'mono-addins.py',
             'mono-basic.py',
             'nuget.py'
         ])
 
-        self.packages = [os.path.join('..', '..', 'packages', p) for p in self.packages]
+        self.packages = [os.path.realpath (os.path.join(self.resource_root, p)) for p in self.packages]

@@ -4,10 +4,8 @@ class MSTestSuitePackage(Package):
                          name='ms-test-suite',
                          version='0.1',
                          organization='xamarin',
-                         sources=['git@github.com:xamarin/ms-test-suite.git'])
-
-    def namever (self):
-        return "ms-test-suite"
+                         sources=['git@github.com:xamarin/ms-test-suite.git'],
+                         source_dir_name = "ms-test-suite")
 
     def prep(self):
         pass
