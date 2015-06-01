@@ -197,16 +197,17 @@ class Package:
 				#	raise Exception ('HTTP downloads are no longer allowed: %s', source)
 
 				if source.startswith (('http://', 'https://', 'ftp://')):
-					cache = get_download_dest (source)
+					archive = source
+					cache = get_download_dest (archive)
 
-					def checkout_archive (source, cache, workspace):
+					def checkout_archive (archive, cache, workspace):
 						self.pushd (build_root)
 						if not os.path.exists (cache):
 							# since this is a fresh cache, the workspace copy is invalid if it exists
 							if os.path.exists (workspace):
 								self.rm (workspace)
-							print 'Downloading: %s' % source
-							filename, message = FancyURLopener ().retrieve (source, cache)
+							print 'Downloading: %s' % archive
+							filename, message = FancyURLopener ().retrieve (archive, cache)
 						if not os.path.exists (workspace):
 							self.extract_archive (cache, False)
 							os.utime (workspace, None)
@@ -215,10 +216,10 @@ class Package:
 						self.popd ()
 
 					def clean_archive ():
-						print 'Re-extracting archive: ' + self.name + ' ('+ source + ')'
+						print 'Re-extracting archive: ' + self.name + ' ('+ archive + ')'
 						try:
 							self.rm (workspace)
-							checkout_archive (source, cache, workspace)
+							checkout_archive (archive, cache, workspace)
 						except Exception as e:
 							if os.path.exists (cache):
 								self.rm (cache)
@@ -226,7 +227,7 @@ class Package:
 								self.rm (workspace)
 							raise e
 
-					checkout_archive (source, cache, workspace)
+					checkout_archive (archive, cache, workspace)
 
 					local_sources.append (workspace)
 					clean_func = clean_archive
