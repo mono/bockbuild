@@ -10,24 +10,19 @@ class PCLReferenceAssembliesPackage(Package):
                          version='2014-04-14',
                          sources=['http://storage.bos.xamarin.com/bot-provisioning/PortableReferenceAssemblies-2014-04-14.zip'])
 
-    def prep(self):
-        self.extract_archive(self.sources[0],
-                             validate_only=False,
-                             overwrite=True)
-
     def build(self):
         pass
 
     # A bunch of shell script written inside python literals ;(
     def install(self):
-        dest = os.path.join(self.prefix, "lib", "mono", "xbuild-frameworks", ".NETPortable")
+        dest = os.path.join(self.staged_prefix, "lib", "mono", "xbuild-frameworks", ".NETPortable")
         if not os.path.exists(dest):
             os.makedirs(dest)
 
         shutil.rmtree(dest, ignore_errors=True)
 
         # Omit v4.6 until we support it
-        pcldir = os.path.join(self.package_build_dir(), self.source_dir_name)
+        pcldir = os.path.join(self.profile.build_root, self.source_dir_name)
 
         self.sh("rsync -abv -q --exclude '%s' %s/* %s" % ("v4.6", pcldir, dest))
 
@@ -35,7 +30,7 @@ class PCLReferenceAssembliesPackage(Package):
             self.write_xml(f)
 
     def write_xml(self, directory):
-        print "Writing iOS/Android/Mac listings for " + directory
+        # print "Writing iOS/Android/Mac listings for " + directory
         data = {
             os.path.join(directory, "MonoTouch.xml"):
             """<Framework Identifier="MonoTouch" MinimumVersion="1.0" Profile="*" DisplayName="Xamarin.iOS Classic"/>""",

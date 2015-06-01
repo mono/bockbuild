@@ -5,7 +5,7 @@ class Fsharp31Package(GitHubTarballPackage):
 			'fsharp', 'fsharp',
 			'3.1.1.31',
 			'1f79c0455fb8b5ec816985f922413894ce19359a',
-			configure = '')
+			configure = './configure --prefix="%{package_prefix}"')
 		self.sources.extend ([
 			'patches/fsharp-fix-net45-profile.patch'])
 
@@ -13,12 +13,12 @@ class Fsharp31Package(GitHubTarballPackage):
 		Package.prep (self)
 
 		for p in range (1, len (self.sources)):
-				self.sh ('patch -p1 < "%{sources[' + str (p) + ']}"')
+				self.sh ('patch -p1 < "%{local_sources[' + str (p) + ']}"')
 
 
 	def build(self):
 		self.sh ('autoreconf')
-		self.sh ('./configure --prefix="%{prefix}"')
-		self.sh ('make')
+		Package.configure (self)
+		Package.make (self)
 
 Fsharp31Package()

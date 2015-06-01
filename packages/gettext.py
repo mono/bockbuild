@@ -4,7 +4,8 @@ class GettextPackage (GnuPackage):
 			configure_flags = [
 				'--disable-java',
 				'--disable-libasprintf',
-				'--disable-openmp'
+				'--disable-openmp',
+				'--with-included-glib'
 			]
 		)
 
@@ -20,14 +21,10 @@ class GettextPackage (GnuPackage):
 				'patches/gettext-no-samples.patch',
 			])
 
-		#This package would like to be built with fat binaries
-		if Package.profile.m64 == True:
-			self.fat_build = True
-
 	def prep (self):
 		Package.prep (self)
 		if Package.profile.name == 'darwin':
-			for p in range (1, len (self.sources)):
-				self.sh ('patch -p1 < "%{sources[' + str (p) + ']}"')
+			for p in range (1, len (self.local_sources)):
+				self.sh ('patch -p1 < "%{local_sources[' + str (p) + ']}"')
 
 GettextPackage ()

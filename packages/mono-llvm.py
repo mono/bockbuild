@@ -4,15 +4,13 @@ class MonoLlvmPackage (GitHubPackage):
 	def __init__ (self):
 		GitHubPackage.__init__ (self, 'mono', 'llvm', '3.0',
 			revision = 'a173357a14509a4244c775c4494b169cd06b88ed',
-			configure_flags  = ['--enable-optimized', '--enable-assertions=no', '--enable-targets="x86 x86_64"' ]
+			configure_flags  = ['--enable-optimized', '--enable-assertions=no', '--enable-targets="x86,x86_64"' ]
 		)
 
 		#This package would like to be lipoed.
-		if Package.profile.m64 == True:
-			self.needs_lipo = True
+		self.needs_lipo = True
 
 		self.ld_flags = [] # TODO: find out which flags are causing issues. reset ld_flags for the package 
-		self.gcc_flags = []
 		self.cpp_flags = []		
 
 	def arch_build (self, arch):	
@@ -24,9 +22,6 @@ class MonoLlvmPackage (GitHubPackage):
 
 		#LLVM says that libstdc++4.6 is broken and we should use libstdc++4.7. This switches it to the right libstdc++.
 		if Package.profile.name == 'darwin':
-				self.local_configure_flags.extend (['CXXFLAGS=-stdlib=libc++'])
-
-		Package.arch_build (self, arch, defaults = False)
+			self.local_configure_flags.extend (['CXXFLAGS=-stdlib=libc++'])
 		
-
 MonoLlvmPackage ()

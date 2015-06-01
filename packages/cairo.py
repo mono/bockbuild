@@ -7,16 +7,13 @@ class CairoPackage (CairoGraphicsXzPackage):
 			'patches/cairo-fix-CGFontGetGlyphPath-deprecation.patch',
 #			'patches/cairo-cglayer.patch',
 		])
-		#This package would like to be built with fat binaries
-		if Package.profile.m64 == True:
-			self.fat_build = True
 
 	def prep (self):
 		Package.prep (self)
 
 		if Package.profile.name == 'darwin':
-			for p in range (1, len (self.sources)):
-				self.sh ('patch -p1 < "%{sources[' + str (p) + ']}"')
+			for p in range (1, len (self.local_sources)):
+				self.sh ('patch -p1 < "%{local_sources[' + str (p) + ']}"')
 
 	def build (self):
 		self.configure_flags = [

@@ -8,17 +8,43 @@ from package import *
 class Profile:
 	def __init__ (self, prefix = False):
 		self.name = 'default'
-		self.build_root = os.path.join (os.getcwd (), 'build-root')
-		self.prefix = prefix if prefix else os.path.join (self.build_root, '_install')
+		self.root = os.getcwd ()
+		self.resource_root = os.path.realpath (os.path.join('..', '..', 'packages'))
+		self.build_root = os.path.join (self.root, 'build-root')
+		self.stage_root = os.path.join (self.root, 'stage-root')		
+		self.toolchain_root = os.path.join (self.root, 'toolchain-root')
+		self.prefix = prefix if prefix else os.path.join (self.root, 'install-root')
+		self.staged_prefix = os.path.join (self.stage_root, self.prefix [1:])
+                self.source_cache = os.getenv('BOCKBUILD_SOURCE_CACHE') or os.path.realpath (os.path.join (self.root, 'cache'))
+                self.cpu_count = get_cpu_count ()
+		self.host = get_host ()
+		self.uname = backtick ('uname -a')
+
 		self.env = Environment (self)
 		self.env.set ('BUILD_PREFIX', self.prefix)
 		self.env.set ('BOCKBUILD_ENV', '1')
 		self.packages = []
-		self.cpu_count = get_cpu_count ()
-		self.global_configure_flags = []
-		self.host = get_host ()
+
+		self.find_git ()
+
+		self.bockbuild_revision = backtick (expand_macros ('%{git} rev-parse HEAD', self))[0]
+
+		print 'bockbuild rev.', self.bockbuild_revision
+		print '---'
 
 		self.parse_options ()
+
+		packages_to_build = self.cmd_args
+		self.verbose = self.cmd_options.verbose
+		self.run_phases = self.default_run_phases
+		self.arch = self.cmd_options.arch
+
+	def find_git(self):
+	        self.git = 'git'
+	        for git in ['/usr/local/bin/git', '/usr/local/git/bin/git', '/usr/bin/git']:
+				if os.path.isfile (git):
+					self.git = git
+					break
 
 	def parse_options (self):
 		self.default_run_phases = ['prep', 'build', 'install']
@@ -59,15 +85,15 @@ class Profile:
 		parser.add_option ('-r', '--release', default = False,
 			action = 'store_true', dest = 'release_build',
 			help = 'Whether or not this build is a release build')
-		parser.add_option ('-p', '--show-source-paths', default = False,
-			action = 'store_true', dest = 'show_source_paths',
-			help = 'Output a list of all source paths/URLs for all packages')
 		parser.add_option ('', '--csproj-env', default = False,
 			action = 'store_true', dest = 'dump_environment_csproj',
 			help = 'Dump the profile environment xml formarted for use in .csproj files')
 		parser.add_option ('', '--csproj-insert', default = None,
 			action = 'store', dest = 'csproj_file',
 			help = 'Inserts the profile environment variables into VS/MonoDevelop .csproj files')
+		parser.add_option ('', '--arch', default = 'default',
+			action = 'store', dest = 'arch',
+			help = 'Select the target architecture(s) for the package')
 
 		self.parser = parser
 		self.cmd_options, self.cmd_args = parser.parse_args ()
@@ -79,10 +105,6 @@ class Profile:
 		sys.exit ('Bundle support not implemented for this profile')
 
 	def build (self):
-		packages_to_build = self.cmd_args
-		self.verbose = self.cmd_options.verbose
-		self.run_phases = self.default_run_phases
-
 		if self.cmd_options.dump_environment:
 			self.env.compile ()
 			self.env.dump ()
@@ -103,8 +125,7 @@ class Profile:
 			self.env.write_csproj (self.cmd_options.csproj_file)
 			sys.exit (0)
 
-		if not self.cmd_options.show_source_paths and \
-			not self.cmd_options.do_build and \
+		if not self.cmd_options.do_build and \
 			not self.cmd_options.do_bundle and \
 			not self.cmd_options.do_package:
 			self.parser.print_help ()
@@ -123,45 +144,62 @@ class Profile:
 				if phase not in self.default_run_phases:
 					sys.exit ('Invalid run phase \'%s\'' % phase)
 
-		log (0, 'Loaded profile \'%s\' (%s)' % (self.name, self.host))
-		for phase in self.run_phases:
-			log (1, 'Phase \'%s\' will run' % phase)
-
+		log (0, 'Loaded profile \'%s\' (arch: %s)' % (self.name, self.arch))
 		log (0, 'Setting environment variables')
+
+		full_rebuild = False
+		tracked_env = []
+		tracked_env.extend (dump (self, 'profile'))
+		tracked_env.extend (dump (self.cmd_options, 'options'))
+		tracked_env.extend (self.env.serialize ())
+
+		env_diff = update (tracked_env, os.path.join (self.root, 'global.env'))
+
+		if env_diff != None:
+			full_rebuild = True
+			warn ('Environment/configuration changed. Full rebuild triggered')
+			warn ('Changes:')
+			for line in env_diff:
+				print '\t' + line,
+
 		self.env.compile ()
 		self.env.export ()
-		for k in self.env.get_names ():
-			log (1, '%s = %s' % (k, os.getenv (k)))
 
-		source_cache = os.getenv('BOCKBUILD_SOURCE_CACHE')
-                source_cache = source_cache or os.path.realpath (os.path.join (self.build_root, "..", "..", "..", "cache"))
-		log (1, 'Source cache: %s' % source_cache)
+		self.envfile = os.path.join (self.root, self.__class__.__name__) + '_env.sh'
+		self.env.dump (self.envfile)
+		os.chmod (self.envfile, 0755)
+		print 'Environment file: ./%s' % os.path.basename (self.envfile)
 
 		Package.profile = self
+		self.toolchain_packages = []
+		self.release_packages = []
 
-		if self.cmd_options.do_build or self.cmd_options.show_source_paths:
-			pwd = os.getcwd ()
-			for path in self.packages:
-				os.chdir (pwd)
-				path = os.path.join (os.path.dirname (sys.argv[0]), path)
-				exec compile (open (path).read (), path, 'exec')
-				if Package.last_instance == None:
-					sys.exit ('%s does not provide a valid package.' % path)
-				Package.last_instance._path = path
-				if self.cmd_options.do_build:
-					Package.last_instance.start_build ()
-				else:
-					expand_macros (Package.last_instance, Package.last_instance)
-					if Package.last_instance.sources:
-						for source in Package.last_instance.sources:
-							print '%s\t%s\t%s\t%s' % (Package.last_instance.name,
-								Package.last_instance.version, os.path.dirname (source),
-								os.path.basename (source))
+		for path in self.packages:
+			Package.last_instance = None
+			exec compile (open (path).read (), path, 'exec')
+			if Package.last_instance == None:
+				sys.exit ('%s does not provide a valid package.' % path)
 
-				Package.last_instance = None
+			new_package = Package.last_instance
+			new_package._path = path
+			if new_package.build_dependency:
+				self.toolchain_packages.append (new_package)
+			else:
+				self.release_packages.append (new_package)
 
-		if self.cmd_options.show_source_paths:
-			sys.exit (0)
+		if self.cmd_options.do_build:
+			self.ensure_dir (self.source_cache, False)
+			self.ensure_dir (self.build_root, full_rebuild)
+			self.ensure_dir (self.stage_root, True)
+			self.ensure_dir (self.toolchain_root, True)
+
+			print '\n** Building toolchain\n'
+			for pkg in self.toolchain_packages:
+				pkg.start_build (self.toolchain_root, self.toolchain_root, 'darwin-64') #start_build (workspace, install_root, stage_root)
+
+			print '\n** Building release\n'
+			for pkg in self.release_packages:
+				pkg.start_build (self.prefix, self.stage_root, self.arch )
 
 		if self.cmd_options.do_bundle:
 			if not self.cmd_options.output_dir == None:
@@ -173,3 +211,19 @@ class Profile:
 
 		if self.cmd_options.do_package:
 			self.package ()
+
+	def ensure_dir (self, d, purge):
+		if os.path.exists(d):
+			if purge:
+				log(0, "Purging " + d)
+				shutil.rmtree(d, ignore_errors=False)
+			else: return
+		os.makedirs (d, 0755)
+
+class Bockbuild:
+	def main ():
+		profile.prep_options ()
+		profile.build ()
+		profile.package ()
+
+

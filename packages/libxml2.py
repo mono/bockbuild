@@ -12,8 +12,8 @@ class LibXmlPackage (Package):
 	def prep (self):
 		Package.prep (self)
 		if Package.profile.name == 'darwin':
-			for p in range (1, len (self.sources)):
-				self.sh ('patch -p1 < "%{sources[' + str (p) + ']}"')
+			for p in range (1, len (self.local_sources)):
+				self.sh ('patch -p1 < "%{local_sources[' + str (p) + ']}"')
 
 LibXmlPackage ()
 
