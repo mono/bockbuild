@@ -32,13 +32,15 @@ class Environment:
 	def compile (self):
 		expand_macros (self, self._profile)
 
-	def dump (self):
-		print '#------------------------------#'
-		print '# GENERATED FILE - DO NOT EDIT #'
-		print '#------------------------------#'
-		print
+	def dump (self, filename):
+
+		envscript = '#!/bin/sh\n'
+
 		for k in self.get_names ():
-			print 'export %s="%s"' % (k, self.__dict__[k])
+			envscript = envscript + 'export %s="%s"\n' % (k, self.__dict__[k])
+
+		with open(filename, 'w') as f:
+  		  f.write(envscript)
 
 	def serialize (self):
 		for k in self.get_names ():

@@ -387,11 +387,11 @@ class Package:
 		except Exception as e:
 			if os.path.exists (workspace_dir):
 				problem_dir = os.path.basename (workspace_dir) + '.problem'
-				shutil.rmtree (problem_dir, ignore_errors = True)
+				shutil.rmtree (os.path.join (self.profile.root,  problem_dir), ignore_errors = True)
 				shutil.move (workspace_dir,
 					os.path.join (self.profile.root,  problem_dir))
 			warn (str (e))
-			error ('Failed build at ./%s' % problem_dir)
+			error ('Failed build at ./%s \n Run ./%s first to replicate environment for debugging.' % (problem_dir, os.path.basename (self.profile.envfile))
 
 	def make_artifact (self, stage_dir, build_artifact):
 		open (build_artifact, 'w').close ()

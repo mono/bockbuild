@@ -165,6 +165,11 @@ class Profile:
 		self.env.compile ()
 		self.env.export ()
 
+		self.envfile = os.path.join (self.root, self.__class__.__name__) + '_env.sh'
+		self.env.dump (self.envfile)
+		os.chmod (self.envfile, 0755)
+		print 'Environment file: ./%s' % os.path.basename (self.envfile)
+
 		Package.profile = self
 		self.toolchain_packages = []
 		self.release_packages = []
