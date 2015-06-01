@@ -156,7 +156,9 @@ class Package:
 
 			if self.revision != None:
 				target_revision = self.revision
-			elif self.git_branch != None:
+			else:
+				if self.git_branch == None:
+					warn ('Package does not define revision or branch, defaulting to tip of "master"')
 				self.git_branch = self.git_branch or 'master'
 				target_revision = self.backtick ('%' +'{git} rev-parse origin/%s' % self.git_branch)[0]
 
@@ -282,17 +284,23 @@ class Package:
 		src = list(self.local_sources)
 		src.append (self._path)
 		for s in (src):
+			print 'Source:',s,
 			if os.path.getmtime(s) > mtime:
-				print 'Updated source: %s' % s
+				print '(Updated)',
 				newer = False
-			elif os.path.isdir (s):
-				for root, dirs, files in os.walk (s):
-					dirs[:] = [d for d in dirs if not d[0] == '.'] # http://stackoverflow.com/questions/13454164/os-walk-without-hidden-folders
-					for dir in dirs:
-						dir_path = os.path.join (root, dir)
-						if os.path.isdir(dir_path) and os.path.getmtime(dir_path) > mtime:
-							print 'Updated source: %s' % dir_path
-							newer = False
+			print
+ 			
+ 			# FIXME: There seem to be lots of dirs being touched from other processes.
+ 			# Must investigate, but turn off subdir checking for now
+
+			# elif os.path.isdir (s): 
+			# 	for root, dirs, files in os.walk (s):
+			# 		dirs[:] = [d for d in dirs if not d[0] == '.'] # http://stackoverflow.com/questions/13454164/os-walk-without-hidden-folders
+			# 		for dir in dirs:
+			# 			dir_path = os.path.join (root, dir)
+			# 			if os.path.isdir(dir_path) and os.path.getmtime(dir_path) > mtime:
+			# 				print 'Updated source: %s' % dir_path
+			# 				newer = False
 		return newer
 
 	def fetch (self):
@@ -309,7 +317,7 @@ class Package:
 			print 'fetch', self.name
 			clean_func = retry (self.fetch)
 
-			if self.is_successful_build(build_artifact) and not self.needs_lipo:
+			if self.is_successful_build(build_artifact) and not (arch == 'darwin-universal' and self.needs_lipo):
 				print 'install', self.name
 				os.chdir (workspace)
 				self.install ()
@@ -417,12 +425,12 @@ class Package:
 			except Exception as e:
 				output_text = stdout.readlines ()
 				if len(output_text) > 0:
-					warn ('stdout (last 20 lines):')
-					for line in output_text[-20:]:
+					warn ('stdout (last 50 lines):')
+					for line in output_text[-50:]:
 						print line,
 				error_text = stderr.readlines ()
 				if len(error_text) > 0:
-					print '\nstderr:\n'
+					warn ('stderr:')
 					for line in error_text:
 						print line,
 				warn('path: ' + os.getcwd ())
@@ -642,7 +650,6 @@ class Package:
 		'CXXFLAGS="%{gcc_flags} %{local_gcc_flags}" '
 		'CPPFLAGS="%{cpp_flags} %{local_cpp_flags}" '
 		'LDFLAGS="%{ld_flags} %{local_ld_flags}" ')
-		# 'PKG_CONFIG_PATH="%{profile.staged_pkgs}" '
 
 	def configure (self):
 		self.sh ('%{configure} %{configure_flags} %{local_configure_flags}')
