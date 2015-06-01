@@ -10,11 +10,6 @@ class PCLReferenceAssembliesPackage(Package):
                          version='2014-04-14',
                          sources=['http://storage.bos.xamarin.com/bot-provisioning/PortableReferenceAssemblies-2014-04-14.zip'])
 
-    def prep(self):
-        self.extract_archive(self.sources[0],
-                             validate_only=False,
-                             overwrite=True)
-
     def build(self):
         pass
 
@@ -27,7 +22,7 @@ class PCLReferenceAssembliesPackage(Package):
         shutil.rmtree(dest, ignore_errors=True)
 
         # Omit v4.6 until we support it
-        pcldir = os.path.join(self.Package.profile.build_root, self.source_dir_name)
+        pcldir = os.path.join(self.profile.build_root, self.source_dir_name)
 
         self.sh("rsync -abv -q --exclude '%s' %s/* %s" % ("v4.6", pcldir, dest))
 

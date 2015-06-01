@@ -3,8 +3,12 @@ import os
 class MonoMasterPackage(Package):
 
 	def __init__(self):
+		if os.getenv('MONO_VERSION') is None:
+			raise Exception ('You must export MONO_VERSION to use this build profile. e.g. export MONO_VERSION=3.1.0')
+
 		Package.__init__(self, 'mono', os.getenv('MONO_VERSION'),
 			sources = [os.getenv('MONO_REPOSITORY') or 'git://github.com/mono/mono.git'],
+			git_branch = os.getenv ('MONO_BRANCH') or None,
 			revision = os.getenv('MONO_BUILD_REVISION'),
 			configure_flags = [
 				'--enable-nls=no',
@@ -47,5 +51,9 @@ class MonoMasterPackage(Package):
 		if arch == 'darwin-32': #32-bit build pass
 			self.local_gcc_flags =['-m32']
 			self.local_configure_flags = ['--build=i386-apple-darwin11.2.0']
+
+	def install(self):
+	        Package.install (self)
+	        self.stage_file ('%{staged_prefix}/etc/mono/config')
 
 MonoMasterPackage()
