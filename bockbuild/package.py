@@ -400,7 +400,7 @@ class Package:
 				shutil.move (workspace_dir,
 					os.path.join (self.profile.root,  problem_dir))
 			warn (str (e))
-			error ('Failed build at ./%s \n Run ./%s first to replicate environment for debugging.' % (problem_dir, os.path.basename (self.profile.envfile))
+			error ('Failed build at ./%s \n Run ./%s first to replicate environment for debugging.' % (problem_dir, os.path.basename (self.profile.envfile)))
 
 	def make_artifact (self, stage_dir, build_artifact):
 		open (build_artifact, 'w').close ()
