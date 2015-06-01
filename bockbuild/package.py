@@ -462,7 +462,7 @@ class Package:
 	def rm (self, path):
 		log (1, 'deleting %s' % path)
 		path = expand_macros (path, self)
-		if os.path.isfile (path):
+		if os.path.isfile (path) or os.path.islink (path):
 			os.remove (path)
 		elif os.path.isdir (path):
 			shutil.rmtree (path, ignore_errors=False)
@@ -551,7 +551,7 @@ class Package:
 				if os.path.islink (src_dir):
 					continue
 
-				filetype = backtick ('file -b %s' % src_file)[0]
+				filetype = backtick ('file -b "%s"' % src_file)[0]
 				if filetype.startswith('Mach-O'):
 					dest_file = os.path.join (dest_dir, relpath, file + suffix) #FIXME: perhaps add suffix before any .'s
 					dest_orig_file = os.path.join (dest_dir, relpath, file)
@@ -602,7 +602,7 @@ class Package:
 				if os.path.islink (path):
 					continue
 
-				filetype = backtick ('file -b %s' % path)[0]
+				filetype = backtick ('file -b "%s"' % path)[0]
 				if filetype.startswith('Mach-O'):
 					shutil.copy (path, path + '.release')
 					try:
