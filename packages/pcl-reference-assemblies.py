@@ -30,7 +30,7 @@ class PCLReferenceAssembliesPackage(Package):
             self.write_xml(f)
 
     def write_xml(self, directory):
-        print "Writing iOS/Android/Mac listings for " + directory
+        # print "Writing iOS/Android/Mac listings for " + directory
         data = {
             os.path.join(directory, "MonoTouch.xml"):
             """<Framework Identifier="MonoTouch" MinimumVersion="1.0" Profile="*" DisplayName="Xamarin.iOS Classic"/>""",
