@@ -79,6 +79,7 @@ class DarwinProfile (UnixProfile):
 		else:
 			error ('Unknown arch %s' % arch)
 
+		package.local_configure_flags.extend (['--cache-file=%s/%s-%s.cache' % (self.build_root, package.name, arch)])
 
 	def bundle (self):
 		self.make_app_bundle ()
