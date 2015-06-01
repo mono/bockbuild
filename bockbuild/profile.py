@@ -25,11 +25,7 @@ class Profile:
 		self.env.set ('BOCKBUILD_ENV', '1')
 		self.packages = []
 
-		self.git = 'git'
-		for git in ['/usr/local/bin/git', '/usr/local/git/bin/git', '/usr/bin/git']:
-			if os.path.isfile (git):
-				self.git = git
-				break
+		self.find_git ()
 
 		self.bockbuild_revision = backtick (expand_macros ('%{git} rev-parse HEAD', self))[0]
 
@@ -42,6 +38,13 @@ class Profile:
 		self.verbose = self.cmd_options.verbose
 		self.run_phases = self.default_run_phases
 		self.arch = self.cmd_options.arch
+
+	def find_git(self):
+	        self.git = 'git'
+	        for git in ['/usr/local/bin/git', '/usr/local/git/bin/git', '/usr/bin/git']:
+				if os.path.isfile (git):
+					self.git = git
+					break
 
 	def parse_options (self):
 		self.default_run_phases = ['prep', 'build', 'install']
