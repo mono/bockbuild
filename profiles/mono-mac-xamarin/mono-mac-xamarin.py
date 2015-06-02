@@ -110,7 +110,7 @@ class MonoXamarinPackageProfile(MonoReleaseProfile, MonoReleasePackages):
     # THIS IS THE MAIN METHOD FOR MAKING A PACKAGE
     def package(self):
         self.fix_libMonoPosixHelper()
-        MonoReleaseProfile.package ()
+        MonoReleaseProfile.package (self)
 
 MonoXamarinPackageProfile().build()
 
