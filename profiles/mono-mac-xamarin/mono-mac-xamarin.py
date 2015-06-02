@@ -81,7 +81,7 @@ class MonoXamarinPackageProfile(MonoReleaseProfile, MonoReleasePackages):
         os.remove(temp)
 
         os.chdir(old_cwd)
-        verify_codesign (output)
+        self.verify_codesign (output)
         return output
 
     def verify_codesign(self, pkg):
