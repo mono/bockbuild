@@ -33,12 +33,12 @@ index 2bf9071..0aee503 100644
 +		mkdir -p $(DESTDIR)$(gacdir)/Microsoft\ F#/v4.0/; \
 +		mkdir -p $(DESTDIR)$(gacdir)/Microsoft\ SDKs/F#/3.0/Framework/v4.0/; \
 +		mkdir -p $(DESTDIR)$(gacdir)/Microsoft\ SDKs/F#/3.1/Framework/v4.0/; \
-+		ln -fs $(DESTDIR)$(gacdir)/Microsoft\ F#/v4.5/Microsoft.FSharp.Targets $(DESTDIR)$(gacdir)/Microsoft\ F#/v4.0/; \
-+		ln -fs $(DESTDIR)$(gacdir)/Microsoft\ F#/v4.5/Microsoft.FSharp.Targets $(DESTDIR)$(gacdir)/Microsoft\ SDKs/F#/3.0/Framework/v4.0/; \
-+		ln -fs $(DESTDIR)$(gacdir)/Microsoft\ F#/v4.5/Microsoft.FSharp.Targets $(DESTDIR)$(gacdir)/Microsoft\ SDKs/F#/3.1/Framework/v4.0/; \
-+		ln -fs $(DESTDIR)$(gacdir)/Microsoft\ F#/v4.5/Microsoft.Portable.FSharp.Targets $(DESTDIR)$(gacdir)/Microsoft\ F#/v4.0/; \
-+		ln -fs $(DESTDIR)$(gacdir)/Microsoft\ F#/v4.5/Microsoft.Portable.FSharp.Targets $(DESTDIR)$(gacdir)/Microsoft\ SDKs/F#/3.0/Framework/v4.0/; \
-+		ln -fs $(DESTDIR)$(gacdir)/Microsoft\ F#/v4.5/Microsoft.Portable.FSharp.Targets $(DESTDIR)$(gacdir)/Microsoft\ SDKs/F#/3.1/Framework/v4.0/; \
++		ln -fs ../v4.5/Microsoft.FSharp.Targets $(DESTDIR)$(gacdir)/Microsoft\ F#/v4.0/; \
++		ln -fs ../../../../../Microsoft\ F#/v4.5/Microsoft.FSharp.Targets $(DESTDIR)$(gacdir)/Microsoft\ SDKs/F#/3.0/Framework/v4.0/; \
++		ln -fs ../../../../../Microsoft\ F#/v4.5/Microsoft.FSharp.Targets $(DESTDIR)$(gacdir)/Microsoft\ SDKs/F#/3.1/Framework/v4.0/; \
++		ln -fs ../v4.5/Microsoft.Portable.FSharp.Targets $(DESTDIR)$(gacdir)/Microsoft\ F#/v4.0/; \
++		ln -fs ../../../../../Microsoft\ F#/v4.5/Microsoft.Portable.FSharp.Targets $(DESTDIR)$(gacdir)/Microsoft\ SDKs/F#/3.0/Framework/v4.0/; \
++		ln -fs ../../../../../Microsoft\ F#/v4.5/Microsoft.Portable.FSharp.Targets $(DESTDIR)$(gacdir)/Microsoft\ SDKs/F#/3.1/Framework/v4.0/; \
 +	    fi; \
 +	    \
  	    echo $(INSTALL_LIB) $(outdir)$(ASSEMBLY) $(DESTDIR)$((gacdir)/$(TARGET); \
