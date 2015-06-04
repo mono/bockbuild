@@ -300,11 +300,8 @@ class MonoReleaseProfile(DarwinProfile, MonoReleasePackages):
             x = x + 1
         print x
 
-    def restore_textfiles (self):
-        print 'Unstaging textfiles...',
-        x = 0
-        for staged_path in self.staged_textfiles:
-            with open(staged_path) as text:
+    def unstage_textfile (self, staged_path):
+        with open(staged_path) as text:
                 output = open(staged_path + '.unstage', 'w')
                 for line in text:
                     tokens = line.split (" ")
@@ -313,11 +310,26 @@ class MonoReleaseProfile(DarwinProfile, MonoReleasePackages):
                             tokens[idx] = token.replace(self.staged_prefix,self.prefix)
                     output.write (" ".join(tokens))
                 output.close
-            shutil.move (staged_path + '.unstage', staged_path)
-            os.chmod (staged_path, os.stat (staged_path + '.release').st_mode)
-            os.remove (staged_path + '.release')
+        shutil.move (staged_path + '.unstage', staged_path)
+        os.chmod (staged_path, os.stat (staged_path + '.release').st_mode)
+        os.remove (staged_path + '.release')
+
+    def restore_textfiles (self):
+        print 'Unstaging textfiles...',
+        x = 0
+        for staged_path in self.staged_textfiles:
+            self.unstage_textfile (staged_path)
             x = x + 1
-        print x
+
+        # TODO: Deprecate profile.staged_textfiles since it ties bockbuild's Packaging phase
+        # to the Build phase. Then, we can use this for the extra stage files:
+
+        # for package in self.release_packages:
+        #     for extra_file in package.extra_stage_files:
+        #         print extra_file
+        #         self.unstage_textfile (os.path.join (self.staged_prefix, extra_file))
+        #         x = x + 1
+        # print x
 
     def verify(self, f):
         result = " ".join(backtick("otool -L " + f))

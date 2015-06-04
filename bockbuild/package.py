@@ -30,6 +30,10 @@ class Package:
 		self.local_ld_flags = []
 		self.local_configure_flags = []
 
+		# additional files that need staging (besides binaries and scripts)
+		# (use path relative to prefix root e.g. 'etc/something.config') 
+		self.extra_stage_files = [] 
+
 		# fat binary parameters. On a 64-bit Darwin profile (m64 = True) 
 		# each package must decide if it will a) perform a multi-arch (64/32) build 
 		# b) request two builds that are lipoed at the end or c) request a 32-bit
@@ -666,6 +670,9 @@ class Package:
 		self.stage_pkgs (os.path.join (dir, 'lib', 'pkgconfig'))
 		self.stage_binaries  (os.path.join(dir, 'lib'))
 		self.stage_binaries (os.path.join(dir, 'bin'))
+
+		for extra_file in self.extra_stage_files:
+			self.stage_file (os.path.join (self.staged_prefix, extra_file))
 
 
 Package.default_sources = None
