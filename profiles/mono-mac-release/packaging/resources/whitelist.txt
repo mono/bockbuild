@@ -89,6 +89,7 @@ mono-service
 mono-service2
 mono-sgen
 mono-shlib-cop
+mono-symbolicate
 mono-test-install
 mono-xmltool
 mozroots
