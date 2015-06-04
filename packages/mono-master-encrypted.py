@@ -85,6 +85,6 @@ class MonoMasterEncryptedPackage(Package):
 
     def install(self):
         Package.install (self)
-        self.stage_file ('%{staged_prefix}/etc/mono/config')
+        self.extra_stage_files = ['etc/mono/config']
 
 MonoMasterEncryptedPackage()
