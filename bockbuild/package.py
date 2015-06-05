@@ -136,21 +136,29 @@ class Package:
 					self.rm (workspace_dir)
 				print 'Cloning git repo: %s' % source_url
 				self.sh ('%' + '{git} clone --mirror "%s" "%s"' % (source_url, cache_dir))
-			else:
-				log (1, 'Updating cache')
-				self.pushd (cache_dir)
+				
+			log (1, 'Updating cache')
+			self.pushd (cache_dir)
+			if self.git_branch == None:
 				self.sh ('%{git} fetch --all --prune')
-				self.popd ()
+			else:
+				self.sh ('%' + '{git} fetch origin %s' % self.git_branch)
+			self.popd ()
 
 			if not os.path.exists(workspace_dir):
 				log (1, 'Cloning a fresh workspace')
 				self.sh ('%' + '{git} clone --local --shared 	"%s" "%s"' % (cache_dir, workspace_dir))
 				self.cd (workspace_dir)
-			else:
-				log (1, 'Updating workspace')
-				self.cd (workspace_dir)
+
+			log (1, 'Updating workspace')
+			self.cd (workspace_dir)
+
+			if self.git_branch == None:
 				self.sh ('%{git} fetch --all --prune')
-				self.sh ('%{git} reset')
+			else:
+				self.sh ('%' + '{git} fetch origin %s:refs/remotes/origin/%s' % (self.git_branch, self.git_branch))
+
+			self.sh ('%{git} reset')
 
 			current_revision = self.backtick ('%{git} rev-parse HEAD')[0]
 
