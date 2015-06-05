@@ -9,7 +9,8 @@ class Automake (GnuPackage):
 		Package.install (self)
 
 		#second build, to be bundled with the package
-		self.package_prefix = self.profile.staged_prefix
+		self.package_prefix = self.profile.prefix
+		self.makeinstall = 'make install DESTDIR=%{stage_root}'
 		Package.build (self)
 		Package.install (self)
 
