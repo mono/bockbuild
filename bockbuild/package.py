@@ -66,6 +66,7 @@ class Package:
 			self.configure = './configure --prefix="%{package_prefix}"'
 
 		self.make = 'make -j%s' % Package.profile.cpu_count
+		self.makeinstall = None
 		
 		self.git = 'git'
 		self.git_branch = git_branch
@@ -81,12 +82,12 @@ class Package:
 		if self.build_dependency:
 			self.package_prefix = Package.profile.toolchain_root
 			self.staged_prefix = Package.profile.toolchain_root
-			self.makeinstall = 'make install'
-			self.ld_flags = '-L%{staged_prefix}/lib' # XXX
+			self.makeinstall = self.makeinstall or 'make install'
+			#self.ld_flags = '-L%{staged_prefix}/lib' # XXX
 		else:
 			self.package_prefix = Package.profile.prefix
 			self.staged_prefix = Package.profile.staged_prefix
-			self.makeinstall = 'make install DESTDIR=%{stage_root}'
+			self.makeinstall = self.makeinstall or 'make install DESTDIR=%{stage_root}'
 
 	def extract_organization (self, source):
 		if (not "git" in source) or ("http" in source):
