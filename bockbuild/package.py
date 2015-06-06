@@ -720,17 +720,20 @@ GnomeGitPackage.default_sources = [
 
 class GnuPackage (Package): pass
 GnuPackage.default_sources = [
-	'https://ftp.gnu.org/gnu/%{name}/%{name}-%{version}.tar.gz'
+	'https://ftp.gnu.org/gnu/%{name}/%{name}-%{version}.tar.gz',
+    'ftp://ftp.gnu.org/gnu/%{name}/%{name}-%{version}.tar.gz'
 ]
 
 class GnuBz2Package (Package): pass
 GnuBz2Package.default_sources = [
-	'https://ftp.gnu.org/gnu/%{name}/%{name}-%{version}.tar.bz2'
+	'https://ftp.gnu.org/gnu/%{name}/%{name}-%{version}.tar.bz2',
+    'ftp://ftp.gnu.org/gnu/%{name}/%{name}-%{version}.tar.bz2'
 ]
 
 class GnuXzPackage (Package): pass
 GnuXzPackage.default_sources = [
-        'https://ftp.gnu.org/gnu/%{name}/%{name}-%{version}.tar.xz'
+    'https://ftp.gnu.org/gnu/%{name}/%{name}-%{version}.tar.xz',
+    'ftp://ftp.gnu.org/gnu/%{name}/%{name}-%{version}.tar.xz'
 ]
 
 class CairoGraphicsPackage (Package): pass
