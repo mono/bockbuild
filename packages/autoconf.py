@@ -3,9 +3,10 @@ class Autoconf (GnuPackage):
 		GnuPackage.__init__ (self, 'autoconf', '2.69', override_properties = { 'build_dependency' : True })
 
 	def build (self):
-		Package.build (self)
+		pass
 
 	def install (self):
+		Package.build (self)
 		Package.install (self)
 
 		#second build, to be bundled with the package
