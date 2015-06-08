@@ -53,6 +53,7 @@ if [ -d ${FW_CURRENT} ]; then
     # pango setup
     mkdir -p pango
     pango-querymodules >  pango/pango.modules
+    fc-cache
 fi
 
 # Delete older Monos
