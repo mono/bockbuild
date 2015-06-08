@@ -673,7 +673,7 @@ class Package:
 		self.stage_binaries (os.path.join(dir, 'bin'))
 
 		for extra_file in self.extra_stage_files:
-			self.stage_file (os.path.join (self.staged_prefix, extra_file))
+			self.stage_file (os.path.join (dir, extra_file))
 
 
 Package.default_sources = None
