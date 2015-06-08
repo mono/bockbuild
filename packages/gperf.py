@@ -1,1 +1,1 @@
-GnuPackage ('gperf', '3.0.4')
+GnuPackage('gperf', '3.0.4')
