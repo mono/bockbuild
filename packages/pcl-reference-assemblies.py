@@ -4,6 +4,7 @@ import shutil
 
 
 class PCLReferenceAssembliesPackage(Package):
+
     def __init__(self):
         Package.__init__(self,
                          name='PortableReferenceAssemblies',
@@ -15,7 +16,8 @@ class PCLReferenceAssembliesPackage(Package):
 
     # A bunch of shell script written inside python literals ;(
     def install(self):
-        dest = os.path.join(self.staged_prefix, "lib", "mono", "xbuild-frameworks", ".NETPortable")
+        dest = os.path.join(
+            self.staged_prefix, "lib", "mono", "xbuild-frameworks", ".NETPortable")
         if not os.path.exists(dest):
             os.makedirs(dest)
 
@@ -24,7 +26,8 @@ class PCLReferenceAssembliesPackage(Package):
         # Omit v4.6 until we support it
         pcldir = os.path.join(self.profile.build_root, self.source_dir_name)
 
-        self.sh("rsync -abv -q --exclude '%s' %s/* %s" % ("v4.6", pcldir, dest))
+        self.sh("rsync -abv -q --exclude '%s' %s/* %s" %
+                ("v4.6", pcldir, dest))
 
         for f in glob.glob("%s/*/Profile/*/SupportedFrameworks" % dest):
             self.write_xml(f)

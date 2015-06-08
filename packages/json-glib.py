@@ -1,1 +1,1 @@
-GnomeXzPackage ('json-glib', '0.14', '2')
+GnomeXzPackage('json-glib', '0.14', '2')

@@ -1,1 +1,1 @@
-XiphPackage ('speex', 'speex', '1.2rc1')
+XiphPackage('speex', 'speex', '1.2rc1')
