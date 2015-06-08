@@ -69,6 +69,7 @@ mod-mono-server
 mod-mono-server2
 mod-mono-server4
 mono
+mono64
 mono-boehm
 mono-api-info
 mono-cil-strip
@@ -98,6 +99,7 @@ nant
 nuget
 nunit-console
 nunit-console2
+nunit-console4
 pdb2mdb
 pedump
 permview
