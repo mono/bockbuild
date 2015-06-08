@@ -11,6 +11,7 @@ class Autoconf (GnuPackage):
 
 		#second build, to be bundled with the package
 		self.package_prefix = self.profile.prefix
+		self.stage_root = self.profile.stage_root
 		self.makeinstall = 'make install DESTDIR=%{stage_root}'
 		Package.build (self)
 		Package.install (self)
