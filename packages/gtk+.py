@@ -162,7 +162,10 @@ class GtkPackage (GnomeGitPackage):
 				# from Xamarin.Mac and GTK is eating them. If a better solution is found
 				# we should remove this.
 				# https://bugzilla.xamarin.com/show_bug.cgi?id=29301
-				'patches/gtk/gtk-yield-mouse-events-to-cocoa.patch'
+				'patches/gtk/gtk-yield-mouse-events-to-cocoa.patch',
+
+				# https://bugzilla.xamarin.com/show_bug.cgi?id=29301#c3
+				'patches/gtk/gtknsview-fix-invalid-casts.patch'
 			])
 
 		self.make = "GDK_PIXBUF_MODULEDIR=%{staged_prefix}/lib/gdk-pixbuf-2.0/2.10.0/loaders GDK_PIXBUF_MODULE_FILE=%{staged_prefix}/lib/gdk-pixbuf-2.0/2.10.0/loaders.cache " + self.make
