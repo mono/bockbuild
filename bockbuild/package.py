@@ -147,6 +147,7 @@ class Package:
 			if self.git_branch == None:
 				self.sh ('%{git} fetch --all --prune')
 			elif "/pr/" in self.git_branch:
+				self.sh ('%{git} fetch --all --prune')
 				self.sh ('%{git} fetch origin +refs/pull/*:refs/remotes/origin/pr/*')
 			else:
 				self.sh ('%' + '{git} fetch origin %s' % self.git_branch)
@@ -163,6 +164,7 @@ class Package:
 			if self.git_branch == None:
 				self.sh ('%{git} fetch --all --prune')
 			elif "/pr/" in self.git_branch:
+				self.sh ('%{git} fetch --all --prune')
 				self.sh ('%{git} fetch origin +refs/pull/*:refs/remotes/origin/pr/*')
 			else:
 				self.sh ('%' + '{git} fetch origin %s' % self.git_branch)
