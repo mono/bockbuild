@@ -146,7 +146,7 @@ class Package:
 			self.pushd (cache_dir)
 			if self.git_branch == None:
 				self.sh ('%{git} fetch --all --prune')
-			elif "/pr/" in self.git_branch:
+			elif "pr/" in self.git_branch:
 				self.sh ('%{git} fetch --all --prune')
 				self.sh ('%{git} fetch origin +refs/pull/*:refs/remotes/origin/pr/*')
 			else:
@@ -163,7 +163,7 @@ class Package:
 
 			if self.git_branch == None:
 				self.sh ('%{git} fetch --all --prune')
-			elif "/pr/" in self.git_branch:
+			elif "pr/" in self.git_branch:
 				self.sh ('%{git} fetch --all --prune')
 				self.sh ('%{git} fetch origin +refs/pull/*:refs/remotes/origin/pr/*')
 			else:
