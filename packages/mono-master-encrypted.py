@@ -53,7 +53,7 @@ class MonoMasterEncryptedPackage(Package):
         self.sh('%{git} fetch --all --prune')
         if "pr/" not in os.getenv('MONO_BRANCH'):
             self.sh('%' + '{git} checkout origin/%s' % os.getenv('MONO_BRANCH'))
-        else
+        else:
             self.sh('%{git} checkout origin/master')
 
     def prep(self):
