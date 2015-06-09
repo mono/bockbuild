@@ -146,6 +146,8 @@ class Package:
 			self.pushd (cache_dir)
 			if self.git_branch == None:
 				self.sh ('%{git} fetch --all --prune')
+			elif "/pr/" in self.git_branch:
+				self.sh ('%{git} fetch origin +refs/pull/*:refs/remotes/origin/pr/*')
 			else:
 				self.sh ('%' + '{git} fetch origin %s' % self.git_branch)
 			self.popd ()
@@ -160,8 +162,10 @@ class Package:
 
 			if self.git_branch == None:
 				self.sh ('%{git} fetch --all --prune')
+			elif "/pr/" in self.git_branch:
+				self.sh ('%{git} fetch origin +refs/pull/*:refs/remotes/origin/pr/*')
 			else:
-				self.sh ('%' + '{git} fetch origin %s:refs/remotes/origin/%s' % (self.git_branch, self.git_branch))
+				self.sh ('%' + '{git} fetch origin %s' % self.git_branch)
 
 			self.sh ('%{git} reset')
 
