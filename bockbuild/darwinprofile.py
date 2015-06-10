@@ -170,3 +170,7 @@ class DarwinProfile (UnixProfile):
 
 		run_shell ('gdk-pixbuf-query-loaders 2>/dev/null | ' + \
 			'sed \'s,%s,\\${APP_RESOURCES},g\' 1> "%s"' % (self.prefix, path))
+
+	def osx_file_type_workaround(self, file_name):
+		return backtick('LC_CTYPE=C LANG=C file "%s"' % file_name)
+
