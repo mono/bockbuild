@@ -195,10 +195,12 @@ class Profile:
 
 			print '\n** Building toolchain\n'
 			for pkg in self.toolchain_packages:
+				print
 				pkg.start_build (self.toolchain_root, self.toolchain_root, 'darwin-32') #start_build (workspace, install_root, stage_root)
 
 			print '\n** Building release\n'
 			for pkg in self.release_packages:
+				print
 				pkg.start_build (self.prefix, self.stage_root, self.arch )
 
 		if self.cmd_options.do_bundle:
@@ -210,6 +212,7 @@ class Profile:
 			return
 
 		if self.cmd_options.do_package:
+			print '\n** Packaging\n'
 			self.package ()
 
 	def ensure_dir (self, d, purge):

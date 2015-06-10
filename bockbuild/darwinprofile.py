@@ -20,6 +20,8 @@ class DarwinProfile (UnixProfile):
 
 		sdk_paths = (sdkroot + 'MacOSX10.%s.sdk' % v for v in range (min_version, 20)) #future-proof! :P
 
+		self.mac_sdk_path = None
+
 		for sdk in sdk_paths:
 			if os.path.isdir (sdk):
 				self.mac_sdk_path = sdk

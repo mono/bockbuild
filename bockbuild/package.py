@@ -14,6 +14,7 @@ class Package:
 		Package.last_instance = self
 
 		self._dirstack = []
+		self.verbose = False
 
 		self.name = name
 		self.version = version
@@ -402,10 +403,15 @@ class Package:
 			else:
 				self.staged_prefix = os.path.join (stage_root, install_prefix [1:])
 			self.package_prefix = install_prefix
+
+			if self.profile.verbose:
+				self.verbose = True #log sh() uses while in package logic
 			self.arch_build (arch)
 			self.prep ()
 			self.build ()
 			self.install ()
+
+			self.verbose = False 
 		except Exception as e:
 			if os.path.exists (workspace_dir):
 				problem_dir = os.path.basename (workspace_dir) + '.problem'
@@ -413,7 +419,7 @@ class Package:
 				shutil.move (workspace_dir,
 					os.path.join (self.profile.root,  problem_dir))
 			warn (str (e))
-			error ('Failed build at ./%s \n Run ./%s first to replicate environment for debugging.' % (problem_dir, os.path.basename (self.profile.envfile)))
+			error ('Failed build at ./%s \n Run "source ./%s" first to replicate bockbuild environment.' % (problem_dir, os.path.basename (self.profile.envfile)))
 
 	def make_artifact (self, stage_dir, build_artifact):
 		open (build_artifact, 'w').close ()
@@ -427,8 +433,8 @@ class Package:
 				env_command = expand_macros (self.env() + command, self)
 			except Exception as e:
 				error ('MACRO EXPANSION ERROR: ' + str(e))
-			if self.profile.verbose:
-				print expand_macros (command, self)
+			if self.verbose is True:
+				print '\n\t@\t' + expand_macros (command, self)
 
 			stdout = tempfile.NamedTemporaryFile()
 			stderr = tempfile.NamedTemporaryFile()
