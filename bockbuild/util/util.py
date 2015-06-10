@@ -111,7 +111,7 @@ def replace_in_file(filename, word_dic):
 def run_shell (cmd, print_cmd = False):
 	if print_cmd: print '++',cmd
 	proc = subprocess.Popen (cmd, shell = True)
-	exit_code = os.waitpid (proc.pid, 0)[1]
+	exit_code = proc.wait()
 	if not exit_code == 0:
 		print
 		raise Exception('ERROR: command exited with exit code %s: %s' % (exit_code, cmd))
@@ -119,8 +119,14 @@ def run_shell (cmd, print_cmd = False):
 def backtick (cmd, print_cmd = False):
 	if print_cmd: print '``', cmd
 	lines = []
-	for line in os.popen (cmd).readlines ():
-		lines.append (line.rstrip ('\r\n'))
+	proc = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE)
+	for line in proc.stdout:
+		lines.append(line.rstrip('\r\n'))
+	proc.stdout.close()
+	exit_code = proc.wait()
+	if not exit_code == 0:
+		raise Exception(
+			'ERROR: command exited with exit code %s: %s' % (exit_code, cmd))
 	return lines
 
 def get_host ():
