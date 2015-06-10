@@ -319,71 +319,72 @@ class Package:
 
 	def fetch (self):
 		expand_macros (self.sources, self)
+		self.source_dir_name = expand_macros (self.source_dir_name, self)
 		profile = Package.profile
-		workspace = os.path.join (profile.build_root, self.source_dir_name)
-		return self._fetch_sources (profile.build_root, workspace, profile.resource_root, profile.source_cache)
+		self.workspace = os.path.join (profile.build_root, self.source_dir_name)
 
-	def start_build (self, install_root, stage_root, arch):
-			self.source_dir_name = expand_macros (self.source_dir_name, self)
+		return self._fetch_sources (profile.build_root, self.workspace, profile.resource_root, profile.source_cache)
+
+	def start_build (self, install_root, stage_root, arch):			
 			profile = Package.profile
-			workspace = os.path.join (profile.build_root, self.source_dir_name)
-			build_artifact = os.path.join (profile.build_root, self.name + '.artifact')
+
 			print 'fetch', self.name
 			clean_func = retry (self.fetch)
 
-			if self.is_successful_build(build_artifact) and not (arch == 'darwin-universal' and self.needs_lipo):
-				print 'install', self.name
-				os.chdir (workspace)
-				self.install ()
+			workspace = self.workspace
+
+			lipo_build = (arch == 'darwin-universal' and self.needs_lipo)
+
+			build_artifact = os.path.join (profile.build_root, self.name + '.artifact')
+			if self.is_successful_build(build_artifact):
+				print 'deploy', self.name
+
+				if lipo_build:
+					stagedir = os.path.join (workspace, 'lipo-stage', install_root [1:])
+					run_shell('rsync -a --ignore-existing %s/* %s' % (stagedir, profile.staged_prefix), False)
+
+				else:
+					os.chdir (workspace)
+					self.install ()
 			else:
 				try:
 					retry (clean_func)
 
-					if arch == 'darwin-universal' and self.needs_lipo:
+					if lipo_build == True:
 
-						workspace_x86 = workspace + '-x86'
-						if (os.path.exists (workspace_x86)):
-							shutil.rmtree (workspace_x86)
-						shutil.move (workspace, workspace_x86)
+						workspace_x86 = os.path.join (workspace, 'x86')
+						workspace_x64 = os.path.join (workspace, 'x64')
 
-						workspace_x64 = workspace + '-x64'
-						if (os.path.exists (workspace_x64)):
-							shutil.rmtree (workspace_x64)
-						shutil.copytree (workspace_x86, workspace_x64)
+						shutil.move (workspace, workspace + 'tmp')
+						os.makedirs (workspace)
+						shutil.move (workspace + 'tmp', workspace_x86) # package/x86	
+						shutil.copytree (workspace_x86, workspace_x64) # package/x64
 
-						self.do_build ('darwin-32', install_root, workspace_x86, workspace_x86 + '.install')
-						stagedir_x86 = self.staged_prefix
+						stagedir_lipo = self.do_build ('darwin-32', install_root, workspace_x86, os.path.join (workspace, 'lipo-stage')) #package/lipo-stage
 
-						self.do_build ('darwin-64', install_root, workspace_x64, workspace_x64 + '.install')
-						stagedir_x64 = self.staged_prefix
+						stagedir_x64 = self.do_build ('darwin-64', install_root, workspace_x64)
 
-						stagedir_lipo = os.path.join (profile.build_root, 'stage-lipo')
+						print 'lipo', self.name
 
-						if not os.path.exists(stagedir_lipo):
-							os.makedirs (stagedir_lipo)
+						self.lipo_dirs (stagedir_x64, stagedir_lipo, 'lib')							
+						self.copy_side_by_side (stagedir_x64, stagedir_lipo, 'bin', '64', '32')
+						run_shell('rsync -a --ignore-existing %s/* %s' % (stagedir_lipo, profile.staged_prefix), False)
 
-						try:
-							print 'lipo', self.name
-							self.lipo_dirs (stagedir_x64, stagedir_x86, stagedir_lipo, 'lib')
-							run_shell('rsync -a --ignore-existing %s/* %s' % (stagedir_x86, profile.staged_prefix), False)
-							self.copy_side_by_side (os.path.join (stagedir_x64, 'bin'),
-								 os.path.join (profile.staged_prefix, 'bin'), '64', '32')
-
-						finally:
-							#delete the lipo build dirs
-							shutil.rmtree (stagedir_x86, ignore_errors = True)
-							shutil.rmtree (stagedir_x64, ignore_errors = True)
-							shutil.rmtree (stagedir_lipo, ignore_errors = True)
+						# staging steps needs to be fixed for package staged_prefix'es being different than profile's
+						self.staged_prefix = profile.staged_prefix
 
 					elif self.m32_only:
 						self.do_build ('darwin-32', install_root, workspace, stage_root)
 					else:
 						self.do_build (arch, install_root, workspace, stage_root)
-				except:
+				except Exception as e:
 					if os.path.exists (workspace):
-						self.rm (workspace)
-					#self.dump ()
-					raise
+						problem_dir = os.path.basename (workspace) + '.problem'
+						shutil.rmtree (os.path.join (self.profile.root,  problem_dir), ignore_errors = True)
+						shutil.move (workspace,
+							os.path.join (self.profile.root,  problem_dir))
+						warn (str (e))
+						error ('Failed build at ./%s \n Run "source ./%s" first to replicate bockbuild environment.' % (problem_dir, os.path.basename (self.profile.envfile)))
 
 				self.make_artifact (profile.staged_prefix, build_artifact)
 				
@@ -393,33 +394,31 @@ class Package:
 			# self.deploy ()
 
 
-	def do_build (self, arch, install_prefix, workspace_dir, stage_root):
-		try:
-			print 'build', self.name, arch
-			self.cd (workspace_dir)
-			self.stage_root  = stage_root
-			if install_prefix == stage_root:
-				self.staged_prefix = install_prefix
-			else:
-				self.staged_prefix = os.path.join (stage_root, install_prefix [1:])
-			self.package_prefix = install_prefix
+	def do_build (self, arch, install_prefix, workspace_dir, stage_root = None):
 
-			if self.profile.verbose:
-				self.verbose = True #log sh() uses while in package logic
-			self.arch_build (arch)
-			self.prep ()
-			self.build ()
-			self.install ()
+		print 'build', self.name, arch
 
-			self.verbose = False 
-		except Exception as e:
-			if os.path.exists (workspace_dir):
-				problem_dir = os.path.basename (workspace_dir) + '.problem'
-				shutil.rmtree (os.path.join (self.profile.root,  problem_dir), ignore_errors = True)
-				shutil.move (workspace_dir,
-					os.path.join (self.profile.root,  problem_dir))
-			warn (str (e))
-			error ('Failed build at ./%s \n Run "source ./%s" first to replicate bockbuild environment.' % (problem_dir, os.path.basename (self.profile.envfile)))
+		if stage_root == None:
+			stage_root = workspace_dir + '-stage'
+
+		self.cd (workspace_dir)
+		self.stage_root  = stage_root
+		if install_prefix == stage_root:
+			self.staged_prefix = install_prefix
+		else:
+			self.staged_prefix = os.path.join (stage_root, install_prefix [1:])
+		self.package_prefix = install_prefix
+
+		if self.profile.verbose:
+			self.verbose = True #log sh() uses while in package logic
+		self.arch_build (arch)
+		self.prep ()
+		self.build ()
+		self.install ()
+
+		self.verbose = False 
+		return self.staged_prefix
+			
 
 	def make_artifact (self, stage_dir, build_artifact):
 		open (build_artifact, 'w').close ()
@@ -524,9 +523,10 @@ class Package:
 		Package.configure (self)
 		Package.make (self)
 
-	def lipo_dirs (self, dir_64, dir_32, lipo_dir, bin_subdir, replace_32 = True): 
+	def lipo_dirs (self, dir_64, dir_32, bin_subdir, replace_32 = True): 
 		dir64_bin = os.path.join (dir_64, bin_subdir)
 		dir32_bin = os.path.join (dir_32, bin_subdir)
+		lipo_dir = tempfile.mkdtemp()
 		lipo_bin = os.path.join (lipo_dir, bin_subdir)
 
 		if not os.path.exists (dir64_bin):
@@ -559,7 +559,10 @@ class Package:
 					else:
 						warn ("lipo: 32-bit version of file %s not found"  %file)
 
-	def copy_side_by_side (self, src_dir, dest_dir, suffix, orig_suffix =  None):
+	def copy_side_by_side (self, src_dir, dest_dir, bin_subdir, suffix, orig_suffix =  None):
+		src_dir = os.path.join (src_dir, bin_subdir)
+		dest_dir = os.path.join (dest_dir, bin_subdir)
+
 		if not os.path.exists (src_dir):
 			return # we don't always have bin/lib dirs
 
@@ -612,7 +615,7 @@ class Package:
 	def stage_binaries (self, dir):
 		def abort_staging (path):
 			os.remove (path)
-			shutil.move (path + '.release', path)
+			shutil.copy (path + '.release', path)
 		for root,dirs,filelist in os.walk (dir):
 			for file in filelist:
 				path = os.path.join (root, file)
@@ -622,7 +625,7 @@ class Package:
 					continue
 
 				filetype = backtick ('file -b "%s"' % path)[0]
-				if filetype.startswith('Mach-O'):
+				if filetype.startswith('Mach-O') and not path.endswith ('.a'):
 					shutil.copy (path, path + '.release')
 					try:
 						staged_path = os.path.join (self.profile.staged_prefix, dir, os.path.relpath (path, dir))

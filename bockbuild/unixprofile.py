@@ -5,8 +5,8 @@ class UnixProfile (Profile):
 		Profile.__init__ (self, prefix)
 		self.name = 'unix'
 
-		self.gcc_flags = ['-I%{staged_prefix}/include']
-		self.ld_flags = ['-L%{staged_prefix}/lib']
+		self.gcc_flags = ['-I%s/include' % self.staged_prefix]
+		self.ld_flags = ['-L%s/lib' % self.staged_prefix]
 
 		self.env.set ('PATH', ':',
 			'%{toolchain_root}/bin',
