@@ -27,14 +27,14 @@ class MonoXamarinPackageProfile(MonoReleaseProfile, MonoReleasePackages):
 
             output = backtick("security -v find-identity")
             if self.identity not in " ".join(output):
-                raise Exception("Identity '%s' was not found" % self.identity)
+                error ("Identity '%s' was not found" % self.identity)
 
             password = os.getenv("CODESIGN_KEYCHAIN_PASSWORD")
             if password:
                 print "Unlocking the keychain"
                 backtick("security unlock-keychain -p %s" % password)
             else:
-                raise Exception("CODESIGN_KEYCHAIN_PASSWORD needs to be defined")
+                error ("CODESIGN_KEYCHAIN_PASSWORD needs to be defined")
 
 
     def run_pkgbuild(self, working_dir, package_type):
@@ -98,7 +98,7 @@ class MonoXamarinPackageProfile(MonoReleaseProfile, MonoReleasePackages):
             if "accepted" in " ".join(output):
                 warn ("%s IS SIGNED" % pkg)
             else:
-                raise Exception ("%s IS NOT SIGNED:" % pkg)
+                error ("%s IS NOT SIGNED:" % pkg)
         finally:
             os.chdir(oldcwd)
 
