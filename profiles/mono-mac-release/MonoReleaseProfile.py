@@ -5,6 +5,8 @@ import shutil
 import string
 import sys
 import tempfile
+import shutil
+import stat
 
 sys.path.append('../..')
 
@@ -57,6 +59,9 @@ class MonoReleaseProfile(DarwinProfile, MonoReleasePackages):
 
         working = self.setup_working_dir()
         uninstall_script = os.path.join(working, "uninstallMono.sh")
+
+        # make the preinstall script
+        self.make_preinstall(working);
 
         # make the MDK
         self.apply_blacklist(working, 'mdk_blacklist.sh')
@@ -167,6 +172,19 @@ class MonoReleaseProfile(DarwinProfile, MonoReleasePackages):
         blacklist = os.path.join(self.packaging_dir, blacklist_name)
         root = os.path.join(working_dir, "PKGROOT", self.prefix[1:])
         run_shell('%s "%s" > /dev/null' % (blacklist, root), print_cmd = False)
+
+    def make_preinstall(self, working_dir):
+        print 'Interpolating scripts...',
+        template_file = working_dir + "/preinstall.template"
+
+        resources_dir = os.path.join(working_dir, "resources")
+        preinstall_file = resources_dir + "/preinstall"
+
+        shutil.move(template_file, preinstall_file)
+        replace_in_file(preinstall_file, {"RELEASE_VERSION": self.RELEASE_VERSION})
+        perms = os.stat(preinstall_file)
+        os.chmod(preinstall_file, perms.st_mode | stat.S_IEXEC | stat.S_IWGRP | stat.S_IXOTH)
+
 
     def run_pkgbuild(self, working_dir, package_type):
         print 'Running pkgbuild & productbuild...',

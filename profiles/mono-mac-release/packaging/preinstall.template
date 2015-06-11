@@ -1,0 +1,7 @@
+#!/bin/sh -x
+
+PREVIOUS_INSTALL=/Library/Frameworks/Mono.framework/Versions/RELEASE_VERSION
+
+if [ -d $PREVIOUS_INSTALL ]; then
+  rm -rf $PREVIOUS_INSTALL
+fi
