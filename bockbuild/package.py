@@ -52,7 +52,7 @@ class Package:
 			and not self.__class__.default_sources == None:
 			self.sources = list (self.__class__.default_sources)
 
-		if self.organization == None:
+		if self.organization == None and self.sources != None and len(self.sources) > 0:
 			self.organization = self.extract_organization (self.sources[0])
 
 		self.source_dir_name = source_dir_name
