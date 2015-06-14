@@ -46,7 +46,7 @@ class DarwinProfile (UnixProfile):
 			self.env.set ('MACOSX_DEPLOYMENT_TARGET', self.target_osx)
 		
 		if self.cmd_options.debug is True:
-			self.gcc_flags.extend ('-O0', '-ggdb3')
+			self.gcc_flags.extend ([ '-O0', '-ggdb3' ])
 
 		if os.getenv('BOCKBUILD_USE_CCACHE') is None:
 			self.env.set ('CC',  'xcrun gcc')
