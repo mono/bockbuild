@@ -6,7 +6,6 @@ class PangoPackage (GnomeXzPackage):
 			version_minor = '0',
 			configure_flags = [
 				'--without-x',
-				'--enable-debug'
 			]
 		)
 
