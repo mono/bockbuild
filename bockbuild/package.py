@@ -9,6 +9,23 @@ import stat
 from urllib import FancyURLopener
 from util.util import *
 
+class Patch ():
+	def __init__ (self, rel_path, options = '-p0', patch_cmd = 'patch'):
+		self.rel_path = rel_path
+		self.options = options
+		self.patch_cmd = patch_cmd
+
+	def run (self, pkg):
+		if pkg == None:
+			raise Exception ("Patch was invoked without package")
+		cmd = self.patch_cmd + " " + self.options + " < " + self.patch_file
+		print cmd
+		pkg.sh (cmd)
+		print "Ran", cmd
+
+	def __str__ (self):
+		return self.rel_path
+
 class Package:
 	def __init__ (self, name, version, organization = None, configure_flags = None, sources = None, revision = None, git_branch = 'master', source_dir_name = None, override_properties = None, configure = None):
 		Package.last_instance = self
@@ -47,6 +64,8 @@ class Package:
 		if configure_flags:
 			self.configure_flags.extend (configure_flags)
 
+		# Note: There can be no reference cycles in sources or we will have a
+		# stackoverflow
 		self.sources = sources
 		if self.sources == None \
 			and not self.__class__.default_sources == None:
@@ -202,13 +221,17 @@ class Package:
 			return os.path.join (source_cache_dir, name)
 
 		local_sources = []
+		patches = []
 		clean_func = None # what to run if the workspace needs to be redone
 		cache = None
 
 		self.cd (build_root)
 
 		try:
-			for source in self.sources:
+			for source_spec in self.sources:
+				source = str (source_spec)
+				source_path = None
+
 				#if source.startswith ('http://'):
 				#	raise Exception ('HTTP downloads are no longer allowed: %s', source)
 
@@ -245,13 +268,13 @@ class Package:
 
 					checkout_archive (archive, cache, workspace)
 
-					local_sources.append (workspace)
+					source_path = workspace
 					clean_func = clean_archive
 
 				elif source.startswith (('git://','file://', 'ssh://')) or source.endswith ('.git'):
 					cache = get_git_cache_path ()
 					clean_func = checkout (self, source, cache, workspace)
-					local_sources.append (workspace)
+					source_path = workspace
 				elif os.path.isfile (os.path.join (resource_dir, source)):
 					#local_source_file = os.path.basename (local_source)
 					#cache = get_local_filename (local_source)
@@ -263,11 +286,18 @@ class Package:
 					#	shutil.copy2 (local_source, cache)
 					#	local_sources.append (cache)
 					#else:
-					local_sources.append (os.path.join (resource_dir, source))
+					source_path = os.path.join (resource_dir, source)
 				else:
 					raise Exception ('could not resolve source: %s' % source)
 
+				if isinstance(source_spec, Patch):
+					source_spec.patch_file = source_path
+					patches.append (source_spec)
+
+				local_sources.append (source_path)
+
 			self.local_sources = local_sources
+			self.patches = patches
 			if len(self.sources) != len(self.local_sources):
 				error ('Source number mismatch after processing: %s before, %s after ' % (self.sources, self.local_sources))
 
@@ -380,7 +410,7 @@ class Package:
 				except Exception as e:
 					if os.path.exists (workspace):
 						problem_dir = os.path.basename (workspace) + '.problem'
-						shutil.rmtree (os.path.join (self.profile.root,  problem_dir), ignore_errors = True)
+						#shutil.rmtree (os.path.join (self.profile.root,  problem_dir), ignore_errors = True)
 						shutil.move (workspace,
 							os.path.join (self.profile.root,  problem_dir))
 						warn (str (e))
