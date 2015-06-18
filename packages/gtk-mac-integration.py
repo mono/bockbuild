@@ -8,16 +8,17 @@ class Gtkmacintegration (GnomeXzPackage):
 			'--prefix="%{prefix}"'
 		])
 
-		self.sources.extend([
-			# fix Alt/Mod1 key behaviour on OS X - required
-			# for key accelerators using the alt/option key on OSX 
-			'http://git.gnome.org/browse/gtk-mac-integration/patch/?id=19cf4ee74821aa5d6d70d0a069178fa5a684ff7f'
-		])
+		if Package.profile.name == 'darwin':
+			self.sources.extend([
+				# fix Alt/Mod1 key behaviour on OS X - required
+				# for key accelerators using the alt/option key on OSX 
+				Patch('http://git.gnome.org/browse/gtk-mac-integration/patch/?id=19cf4ee74821aa5d6d70d0a069178fa5a684ff7f', '-p1'),
+			])
 
 	def prep (self):
 		Package.prep (self)
 		if Package.profile.name == 'darwin':
-			for p in range (1, len (self.local_sources)):
-				self.sh ('patch -p1 < "%{local_sources[' + str (p) + ']}"')
+			for p in self.patches:
+				p.run(self)
 
 Gtkmacintegration()

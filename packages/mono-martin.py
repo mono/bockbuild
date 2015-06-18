@@ -22,7 +22,7 @@ class MonoMasterPackage(Package):
 
 			self.sources.extend ([
 					# Fixes up pkg-config usage on the Mac
-					'patches/mcs-pkgconfig.patch'
+					Patch('patches/mcs-pkgconfig.patch', '-p1')
 					])
 
 		self.configure = 'CFLAGS=-O2 ./autogen.sh'
@@ -30,7 +30,7 @@ class MonoMasterPackage(Package):
 	def prep (self):
 		Package.prep (self)
 		if Package.profile.name == 'darwin':
-			for p in range (1, len (self.local_sources)):
-				self.sh ('patch -p1 < "%{local_sources[' + str (p) + ']}"')
+			for p in self.patches:
+				p.run(self)
 
 MonoMasterPackage()

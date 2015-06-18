@@ -27,7 +27,7 @@ class MonoMasterPackage(Package):
 
 			self.sources.extend ([
 					# Fixes up pkg-config usage on the Mac
-					'patches/mcs-pkgconfig.patch'
+					Patch('patches/mcs-pkgconfig.patch', '-p1'),
 					])
 		else:
 			self.configure_flags.extend([
@@ -40,8 +40,8 @@ class MonoMasterPackage(Package):
 
 	def prep (self):
 		Package.prep (self)
-		for p in range (1, len (self.local_sources)):
-			self.sh ('patch -p1 < "%{local_sources[' + str (p) + ']}"')
+		for p in self.patches:
+			p.run(self)
 
 	def arch_build (self, arch):	
 		if arch == 'darwin-64': #64-bit build pass

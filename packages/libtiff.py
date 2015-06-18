@@ -11,13 +11,13 @@ class LibTiffPackage (Package):
 			self.sources.extend ([
 				# Fix Snow Leopard build
 				# http://jira.freeswitch.org/secure/attachment/17487/tiff-4.0.2-macosx-2.patch
-				'patches/tiff-4.0.2-macosx-2.patch'
+				Patch('patches/tiff-4.0.2-macosx-2.patch', '-p1'),
 			])
 
 	def prep (self):
 		Package.prep (self)
 		if Package.profile.name == 'darwin':
-			for p in range (1, len (self.local_sources)):
-				self.sh ('patch -p1 < "%{local_sources[' + str (p) + ']}"')
+			for p in self.patches:
+				p.run (self)
 
 LibTiffPackage ()

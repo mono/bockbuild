@@ -7,13 +7,14 @@ class Fsharp31Package(GitHubTarballPackage):
 			'1f79c0455fb8b5ec816985f922413894ce19359a',
 			configure = './configure --prefix="%{package_prefix}"')
 		self.sources.extend ([
-			'patches/fsharp-fix-net45-profile.patch'])
+			Patch ('patches/fsharp-fix-net45-profile.patch', options = '-p1')
+		])
 
 	def prep(self):
 		Package.prep (self)
 
-		for p in range (1, len (self.sources)):
-				self.sh ('patch -p1 < "%{local_sources[' + str (p) + ']}"')
+		for p in self.patches:
+			p.run (self)
 
 
 	def build(self):

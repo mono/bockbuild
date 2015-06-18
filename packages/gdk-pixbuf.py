@@ -4,14 +4,14 @@ class GdkPixbufPackage (GnomeXzPackage):
 
 		if Package.profile.name == 'darwin':
 			self.sources.extend ([
-				'patches/gdk-pixbuf/0001-pixbuf-load-2x-variants-as-pixbuf-gobject-data.patch',
-				'patches/gdk-pixbuf/0001-pixbuf-Add-getter-setter-for-the-2x-variants.patch',
+				Patch('patches/gdk-pixbuf/0001-pixbuf-load-2x-variants-as-pixbuf-gobject-data.patch', options = '-p1 --ignore-whitespace'),
+				Patch('patches/gdk-pixbuf/0001-pixbuf-Add-getter-setter-for-the-2x-variants.patch', options = '-p1 --ignore-whitespace'),
 			])
 
 	def prep (self):
 		Package.prep (self)
 		if Package.profile.name == 'darwin':
-			for p in range (1, len (self.local_sources)):
-				self.sh ('patch -p1 --ignore-whitespace < "%{local_sources[' + str (p) + ']}"')
+			for p in self.patches:
+				p.run (self)
 
 GdkPixbufPackage ()

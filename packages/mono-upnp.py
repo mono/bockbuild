@@ -10,7 +10,7 @@ class MonoUpnpPackage (GitHubTarballPackage):
 
 		self.sources.extend ([
 			# allow building without NUnit installed
-			'patches/mono-upnp_add_disable_tests_flag.patch'
+			Patch('patches/mono-upnp_add_disable_tests_flag.patch', '-p1')
 		])
 
 	def prep (self):

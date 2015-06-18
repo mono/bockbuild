@@ -21,7 +21,7 @@ class WebkitPackage (Package):
 			self.sources.extend ([
 				# disable xrender when building with quartz, see
 				# https://trac.macports.org/attachment/ticket/34086/xrender-check.patch
-				'https://trac.macports.org/raw-attachment/ticket/34086/xrender-check.patch'
+				Patch('https://trac.macports.org/raw-attachment/ticket/34086/xrender-check.patch', options = '-p0')
 			])
 
 	def prep (self):

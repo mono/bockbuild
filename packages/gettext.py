@@ -18,13 +18,13 @@ class GettextPackage (GnuPackage):
 			self.sources.extend ([
 				# Don't build samples
 				# https://trac.macports.org/export/79183/trunk/dports/devel/gettext/files/patch-gettext-tools-Makefile.in
-				'patches/gettext-no-samples.patch',
+				Patch('patches/gettext-no-samples.patch', options = '-p1'),
 			])
 
 	def prep (self):
 		Package.prep (self)
 		if Package.profile.name == 'darwin':
-			for p in range (1, len (self.local_sources)):
-				self.sh ('patch -p1 < "%{local_sources[' + str (p) + ']}"')
+			for p in self.patches:
+				p.run (self)
 
 GettextPackage ()

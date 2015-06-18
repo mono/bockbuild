@@ -4,7 +4,7 @@ class MonoPackage (Package):
 			sources = [
 				'http://download.mono-project.com/sources/%{name}/%{name}-%{version}.tar.bz2',
 				'patches/mono-gtk-sharp-profiler.patch',
-				'patches/xbuild-bug4365.patch'
+				Patch('patches/xbuild-bug4365.patch', options = '-p1')
 			],
 			configure_flags = [
 				'--with-jit=yes',

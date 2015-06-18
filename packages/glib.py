@@ -1,3 +1,4 @@
+
 class GlibPackage (GnomeXzPackage):
 	def __init__ (self):
 		GnomeXzPackage.__init__ (self,
@@ -11,32 +12,41 @@ class GlibPackage (GnomeXzPackage):
 			#link to specific revisions for glib 2.30.x
 			self.sources.extend ([
 				# https://trac.macports.org/export/91680/trunk/dports/devel/glib2/files/config.h.ed
+				# This string-only description is not a bug, this patch is applied during the build step.
+				# So we don't track it as one of our patches.
 				'patches/glib/config.h.ed',
+
 				# https://trac.macports.org/export/98985/trunk/dports/devel/glib2/files/patch-configure.diff
-				'patches/glib/patch-configure.diff',
+				Patch('patches/glib/patch-configure.diff', options = '-p0'),
 				# https://trac.macports.org/export/42728/trunk/dports/devel/glib2/files/patch-gi18n.h.diff
-				'patches/glib/patch-gi18n.h.diff',
+				Patch('patches/glib/patch-gi18n.h.diff', options = '-p0'),
 				# https://trac.macports.org/export/92608/trunk/dports/devel/glib2/files/patch-gio_gdbusprivate.c.diff
-				'patches/glib/patch-gio_gdbusprivate.c.diff',
+				Patch('patches/glib/patch-gio_gdbusprivate.c.diff', options = '-p0'),
 				# https://trac.macports.org/export/49466/trunk/dports/devel/glib2/files/patch-gio_xdgmime_xdgmime.c.diff
-				'patches/glib/patch-gio_xdgmime_xdgmime.c.diff',
+				Patch('patches/glib/patch-gio_xdgmime_xdgmime.c.diff', options = '-p0'),
 				# https://trac.macports.org/export/91680/trunk/dports/devel/glib2/files/patch-glib-2.0.pc.in.diff
-				'patches/glib/patch-glib-2.0.pc.in.diff',
+				Patch('patches/glib/patch-glib-2.0.pc.in.diff', options = '-p0'),
 				# https://trac.macports.org/export/64476/trunk/dports/devel/glib2/files/patch-glib_gunicollate.c.diff
-				'patches/glib/patch-glib_gunicollate.c.diff',
+				Patch('patches/glib/patch-glib_gunicollate.c.diff', options = '-p0'),
 
 				# Bug 6156 - [gtk] Quitting the application with unsaved file and answering Cancel results in crash
 				# https://bugzilla.xamarin.com/attachment.cgi?id=2214
-				'patches/glib-recursive-poll.patch',
+				Patch('patches/glib-recursive-poll.patch', options = '-p1 --ignore-whitespace'),
 			])
 
 	def prep (self):
 		Package.prep (self)
 		if self.darwin:
-			for p in range (2, 8):
-				self.sh ('patch -p0 < %{local_sources[' + str (p) + ']}')
-			for p in range (8, len (self.local_sources)):
-				self.sh ('patch --ignore-whitespace -p1 < %{local_sources[' + str (p) + ']}')
+			#for p in range (2, 8):
+				#print (self.local_sources[p])
+				##self.sh ('patch -p0 < %{local_sources[' + str (p) + ']}')
+			#for p in range (8, len (self.local_sources)):
+				#print (self.local_sources[p])
+				## This is bockbuild templating language
+				## Add new fetch -> patch -> prep step
+				##self.sh ('patch --ignore-whitespace -p1 < %{local_sources[' + str (p) + ']}')
+			for patch in self.patches:
+				patch.run (self)
 
 	def arch_build (self, arch):
 		if arch == 'darwin-universal': #multi-arch  build pass

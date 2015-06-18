@@ -23,7 +23,7 @@ class MonoTwoTenPackage(Package):
 
 			self.sources.extend ([
 					# Fixes up pkg-config usage on the Mac
-					'patches/mcs-pkgconfig.patch'
+					Patch('patches/mcs-pkgconfig.patch', '-p1')
 					])
 
 		self.configure = './autogen.sh'

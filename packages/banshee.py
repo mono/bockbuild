@@ -11,7 +11,7 @@ class BansheePackage (Package):
 		self.sources.extend([
 
 			# switch over from ige_* to gtk_* binding
-			'patches/banshee-gtk-mac-integration.patch'
+			Patch('patches/banshee-gtk-mac-integration.patch', '-p1')
 		])
 
 	def prep (self):
