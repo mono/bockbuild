@@ -174,12 +174,6 @@ class GtkPackage (GnomeGitPackage):
 
 		self.make = "GDK_PIXBUF_MODULEDIR=%{staged_prefix}/lib/gdk-pixbuf-2.0/2.10.0/loaders GDK_PIXBUF_MODULE_FILE=%{staged_prefix}/lib/gdk-pixbuf-2.0/2.10.0/loaders.cache " + self.make
 
-	def prep (self):
-		Package.prep (self)
-		if Package.profile.name == 'darwin':
-			for p in range (2, len (self.local_sources)):
-				self.sh ('patch -p1 --ignore-whitespace < "%{local_sources[' + str (p) + ']}"')
-
 	def install(self):
 		Package.install(self)
 		if Package.profile.name == 'darwin':

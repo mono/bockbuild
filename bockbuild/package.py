@@ -423,6 +423,9 @@ class Package:
 
 			# self.deploy ()
 
+	def patch (self):
+		for patch in self.patches:
+			patch.run (self)
 
 	def do_build (self, arch, install_prefix, workspace_dir, stage_root = None):
 
@@ -443,6 +446,7 @@ class Package:
 			self.verbose = True #log sh() uses while in package logic
 		self.arch_build (arch)
 		self.prep ()
+		self.patch ()
 		self.build ()
 		self.install ()
 

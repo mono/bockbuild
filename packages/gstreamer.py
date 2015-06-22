@@ -14,10 +14,4 @@ class GstreamerBasePackage (GstreamerPackage):
                         Patch('http://cgit.freedesktop.org/gstreamer/gstreamer/patch/?id=159cf687a1b63f334ecec5e0b1ea4cd1bc8e7537', options = '-p1 -R')
                 ])
 
-        def prep (self):
-                Package.prep (self)
-                self.sh ('patch -p1 -R < "%{sources[1]}"')
-                self.sh ('patch -p1 -R < "%{sources[2]}"')
-                self.sh ('patch -p1 -R < "%{sources[3]}"')
-
 GstreamerBasePackage ()

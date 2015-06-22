@@ -9,11 +9,5 @@ class LibXmlPackage (Package):
 			]
 		)
 
-	def prep (self):
-		Package.prep (self)
-		if Package.profile.name == 'darwin':
-			for p in self.patches:
-				p.run(self)
-
 LibXmlPackage ()
 

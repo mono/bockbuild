@@ -28,11 +28,4 @@ class MonoTwoTenPackage(Package):
 
 		self.configure = './autogen.sh'
 
-	def prep (self):
-		Package.prep (self)
-		if Package.profile.name == 'darwin':
-			for p in range (1, len (self.sources)):
-				self.sh ('patch -p1 < "%{sources[' + str (p) + ']}"')
-
-
 MonoTwoTenPackage()

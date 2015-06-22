@@ -15,10 +15,4 @@ class Gtkmacintegration (GnomeXzPackage):
 				Patch('http://git.gnome.org/browse/gtk-mac-integration/patch/?id=19cf4ee74821aa5d6d70d0a069178fa5a684ff7f', '-p1'),
 			])
 
-	def prep (self):
-		Package.prep (self)
-		if Package.profile.name == 'darwin':
-			for p in self.patches:
-				p.run(self)
-
 Gtkmacintegration()

@@ -8,10 +8,4 @@ class GdkPixbufPackage (GnomeXzPackage):
 				Patch('patches/gdk-pixbuf/0001-pixbuf-Add-getter-setter-for-the-2x-variants.patch', options = '-p1 --ignore-whitespace'),
 			])
 
-	def prep (self):
-		Package.prep (self)
-		if Package.profile.name == 'darwin':
-			for p in self.patches:
-				p.run (self)
-
 GdkPixbufPackage ()

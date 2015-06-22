@@ -34,20 +34,6 @@ class GlibPackage (GnomeXzPackage):
 				Patch('patches/glib-recursive-poll.patch', options = '-p1 --ignore-whitespace'),
 			])
 
-	def prep (self):
-		Package.prep (self)
-		if self.darwin:
-			#for p in range (2, 8):
-				#print (self.local_sources[p])
-				##self.sh ('patch -p0 < %{local_sources[' + str (p) + ']}')
-			#for p in range (8, len (self.local_sources)):
-				#print (self.local_sources[p])
-				## This is bockbuild templating language
-				## Add new fetch -> patch -> prep step
-				##self.sh ('patch --ignore-whitespace -p1 < %{local_sources[' + str (p) + ']}')
-			for patch in self.patches:
-				patch.run (self)
-
 	def arch_build (self, arch):
 		if arch == 'darwin-universal': #multi-arch  build pass
 			self.local_ld_flags = ['-arch i386' , '-arch x86_64']

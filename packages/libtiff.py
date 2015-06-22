@@ -14,10 +14,4 @@ class LibTiffPackage (Package):
 				Patch('patches/tiff-4.0.2-macosx-2.patch', '-p1'),
 			])
 
-	def prep (self):
-		Package.prep (self)
-		if Package.profile.name == 'darwin':
-			for p in self.patches:
-				p.run (self)
-
 LibTiffPackage ()

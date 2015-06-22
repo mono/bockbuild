@@ -9,7 +9,4 @@ class MurrinePackage (GnomeXzPackage):
 		# FIXME: this may need porting
 		# self.sources.append ('patches/murrine-osx.patch')
 
-	def prep (self):
-		Package.prep (self)
-
 MurrinePackage ()

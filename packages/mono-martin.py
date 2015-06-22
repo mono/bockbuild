@@ -27,10 +27,4 @@ class MonoMasterPackage(Package):
 
 		self.configure = 'CFLAGS=-O2 ./autogen.sh'
 
-	def prep (self):
-		Package.prep (self)
-		if Package.profile.name == 'darwin':
-			for p in self.patches:
-				p.run(self)
-
 MonoMasterPackage()

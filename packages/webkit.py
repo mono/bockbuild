@@ -24,10 +24,5 @@ class WebkitPackage (Package):
 				Patch('https://trac.macports.org/raw-attachment/ticket/34086/xrender-check.patch', options = '-p0')
 			])
 
-	def prep (self):
-		Package.prep (self)
-		if Package.profile.name == 'darwin':
-			for p in range (1, len (self.sources)):
-				self.sh ('patch -p0 < "%{local_sources[' + str (p) + ']}"')
 
 WebkitPackage()

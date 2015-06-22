@@ -38,11 +38,6 @@ class MonoMasterPackage(Package):
 
 		self.configure = './autogen.sh --prefix="%{package_prefix}"'
 
-	def prep (self):
-		Package.prep (self)
-		for p in self.patches:
-			p.run(self)
-
 	def arch_build (self, arch):	
 		if arch == 'darwin-64': #64-bit build pass
 			self.local_gcc_flags = ['-m64']

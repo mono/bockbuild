@@ -1,9 +1,6 @@
 class CairoPackage (CairoGraphicsXzPackage):
 	def __init__ (self):
 		CairoGraphicsXzPackage.__init__ (self, 'cairo', '1.12.14')
-	def prep (self):
-		Package.prep (self)
-
 		if Package.profile.name == 'darwin':
 			self.sources.extend ([
 				Patch('patches/cairo-quartz-crash.patch', options = '-p1'),

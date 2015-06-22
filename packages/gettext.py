@@ -21,10 +21,4 @@ class GettextPackage (GnuPackage):
 				Patch('patches/gettext-no-samples.patch', options = '-p1'),
 			])
 
-	def prep (self):
-		Package.prep (self)
-		if Package.profile.name == 'darwin':
-			for p in self.patches:
-				p.run (self)
-
 GettextPackage ()

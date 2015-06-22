@@ -10,9 +10,4 @@ class LiboggPackage (XiphPackage):
 		# reduce optimization from -O4 to -O3 to allow compilation on Xcode 4.2.1
                 self.sources.append (Patch('patches/libogg-opt.patch', '-p1'))
 
-        def prep (self):
-                Package.prep (self)
-                for patch in self.patches:
-                        patch.run(self)
-
 LiboggPackage ()

@@ -14,8 +14,4 @@ class BansheePackage (Package):
 			Patch('patches/banshee-gtk-mac-integration.patch', '-p1')
 		])
 
-	def prep (self):
-		Package.prep (self)
-		self.sh ('patch -p1 < %{sources[1]}')
-
 BansheePackage ()

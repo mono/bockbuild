@@ -13,9 +13,4 @@ class MonoUpnpPackage (GitHubTarballPackage):
 			Patch('patches/mono-upnp_add_disable_tests_flag.patch', '-p1')
 		])
 
-	def prep (self):
-		GitHubTarballPackage.prep (self)
-		for p in range (1, len (self.sources)):
-			self.sh ('patch -p1 < "%{sources[' + str (p) + ']}"')
-
 MonoUpnpPackage ()

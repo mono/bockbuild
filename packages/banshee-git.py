@@ -11,8 +11,5 @@ class BansheePackage (Package):
 		self.sources.extend([
 		])
 
-	def prep (self):
-		Package.prep (self)
-		#self.sh ('patch -p1 < %{sources[1]}')
 
 BansheePackage ()

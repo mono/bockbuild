@@ -11,9 +11,4 @@ class LibvorbisPackage (XiphPackage):
                         Patch('patches/libvorbis-opt.patch', '-p1')
                 ])
 
-        def prep (self):
-                Package.prep (self)
-                for patch in self.patches:
-                        patch.run(self)
-
 LibvorbisPackage ()

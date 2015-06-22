@@ -11,8 +11,6 @@ class PangoPackage (GnomeXzPackage):
 
 		default_patch_options = '-p1'
 
-	def prep (self):
-		GnomePackage.prep (self)
 		if Package.profile.name == 'darwin':
 			self.sources.extend ([
 				# 1

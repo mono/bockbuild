@@ -10,13 +10,6 @@ class Fsharp31Package(GitHubTarballPackage):
 			Patch ('patches/fsharp-fix-net45-profile.patch', options = '-p1')
 		])
 
-	def prep(self):
-		Package.prep (self)
-
-		for p in self.patches:
-			p.run (self)
-
-
 	def build(self):
 		self.sh ('autoreconf')
 		Package.configure (self)
