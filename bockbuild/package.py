@@ -660,7 +660,7 @@ class Package:
 								abort_staging (path)
 								continue
 					self.profile.staged_binaries.append (path)
-				elif filetype == 'POSIX shell script text executable':
+				elif filetype.endswith ('text executable'):
 					self.stage_file (path)
 
 	def stage_la_files (self, lib_dir):
