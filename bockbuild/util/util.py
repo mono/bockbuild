@@ -47,6 +47,28 @@ def update (new_text, file):
 	else:
 		return None
 
+def find_git(self):
+        self.git = 'git'
+        for git in ['/usr/local/bin/git', '/usr/local/git/bin/git', '/usr/bin/git']:
+			if os.path.isfile (git):
+				self.git = git
+				break
+
+def assert_git_dir(self):
+	if (os.system(expand_macros ('%{git} rev-parse HEAD > /dev/null', self))) != 0:
+		raise Exception('assert_git_dir')
+
+def git_get_revision(self):
+	assert_git_dir(self)
+	return backtick (expand_macros ('%{git} rev-parse HEAD', self))[0]
+
+def git_get_branch(self):
+	assert_git_dir(self)
+	revision = git_get_revision (self)
+	branch = backtick (expand_macros ('%{git} symbolic-ref --short HEAD', self))[0]
+	if branch == revision: return None #detached HEAD
+	else: return branch
+
 def dump (self, name):
 	for k in self.__dict__.keys ():
 		if isinstance (self.__dict__[k], (str, list, tuple, dict, bool, int)) and not k.startswith ('_'):
