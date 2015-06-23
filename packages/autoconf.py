@@ -1,6 +1,7 @@
 class Autoconf (GnuPackage):
 	def __init__ (self):
 		GnuPackage.__init__ (self, 'autoconf', '2.69', override_properties = { 'build_dependency' : True })
+		self.extra_stage_files = ['share/autoconf/autom4te.cfg']
 
 	def build (self):
 		pass
@@ -15,6 +16,8 @@ class Autoconf (GnuPackage):
 		self.makeinstall = 'make install DESTDIR=%{stage_root}'
 		Package.build (self)
 		Package.install (self)
+
+		self.stage (self.profile.staged_prefix)
 
 Autoconf()
 

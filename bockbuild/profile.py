@@ -94,6 +94,9 @@ class Profile:
 		parser.add_option ('', '--arch', default = 'default',
 			action = 'store', dest = 'arch',
 			help = 'Select the target architecture(s) for the package')
+		parser.add_option ('', '--shell', default = False,
+			action = 'store_true', dest = 'shell',
+			help = 'Get an shell with the package environment')
 
 		self.parser = parser
 		self.cmd_options, self.cmd_args = parser.parse_args ()
@@ -113,23 +116,17 @@ class Profile:
 		if self.cmd_options.dump_environment_csproj:
 			# specify to use our GAC, else MonoDevelop would
 			# use its own 
-			self.env.set ('MONO_GAC_PREFIX', self.prefix)
+			self.env.set ('MONO_GAC_PREFIX', self.staged_prefix)
 
 			self.env.compile ()
 			self.env.dump_csproj ()
 			sys.exit (0)
 
 		if self.cmd_options.csproj_file is not None:
-			self.env.set ('MONO_GAC_PREFIX', self.prefix)
+			self.env.set ('MONO_GAC_PREFIX', self.staged_prefix)
 			self.env.compile ()
 			self.env.write_csproj (self.cmd_options.csproj_file)
 			sys.exit (0)
-
-		if not self.cmd_options.do_build and \
-			not self.cmd_options.do_bundle and \
-			not self.cmd_options.do_package:
-			self.parser.print_help ()
-			sys.exit (1)
 
 		if not self.cmd_options.include_run_phases == []:
 			self.run_phases = self.cmd_options.include_run_phases
@@ -210,6 +207,9 @@ class Profile:
 				self.bundle_skeleton_dir = os.path.join (os.getcwd (), 'skeleton')
 			self.bundle ()
 			return
+
+		if self.cmd_options.shell:
+			self.shell ()
 
 		if self.cmd_options.do_package:
 			print '\n** Packaging\n'

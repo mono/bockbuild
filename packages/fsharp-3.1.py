@@ -9,6 +9,8 @@ class Fsharp31Package(GitHubTarballPackage):
 		self.sources.extend ([
 			'patches/fsharp-fix-net45-profile.patch'])
 
+		self.extra_stage_files = ['lib/mono/xbuild/Microsoft/VisualStudio/v/FSharp/Microsoft.FSharp.Targets']
+
 	def prep(self):
 		Package.prep (self)
 

@@ -1,6 +1,8 @@
 class Automake (GnuPackage):
 	def __init__ (self):
 		GnuPackage.__init__ (self, 'automake', '1.13', override_properties = { 'build_dependency' : True })
+		self.verbose = True
+		self.extra_stage_files = ['share/automake-%{version}/Automake/Config.pm']
 
 	def build (self):
 		pass
@@ -15,5 +17,7 @@ class Automake (GnuPackage):
 		self.makeinstall = 'make install DESTDIR=%{stage_root}'
 		Package.build (self)
 		Package.install (self)
+
+		self.stage (self.profile.staged_prefix)
 
 Automake()
