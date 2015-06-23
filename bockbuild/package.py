@@ -497,11 +497,11 @@ class Package:
 
 
 	def link (self, source, link):
-		if os.path.exists (link):
-			 self.rm(link)
 		log (1, 'linking %s -> %s' % (link, source))
 		source = expand_macros (source, self)
 		link = expand_macros (link, self)
+		if os.path.exists (link):
+			 self.rm(link)
 		os.symlink (source, link)
 
 	def extract_archive (self, archive, validate_only, overwrite=False):
