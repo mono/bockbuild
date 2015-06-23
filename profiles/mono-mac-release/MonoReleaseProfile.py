@@ -44,6 +44,12 @@ class MonoReleaseProfile(DarwinProfile, MonoReleasePackages):
         if not os.path.exists(registry_dir):
             os.makedirs(registry_dir)
 
+        system_mono_dir = '/Library/Frameworks/Mono.framework/Versions/Current'
+        self.system_mono = os.path.join (system_mono_dir, 'bin', 'mono')
+        self.system_mcs = os.path.join (system_mono_dir, 'bin', 'mcs')
+
+        self.system_mono_version = backtick ('%s --version' % self.system_mono)
+
     def build(self):
         self.staged_binaries = []
         self.staged_textfiles = []

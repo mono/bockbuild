@@ -38,6 +38,10 @@ class MonoMasterPackage(Package):
 
 		self.configure = './autogen.sh --prefix="%{package_prefix}"'
 
+	def build (self):
+		self.make = '%s EXTERNAL_MCS=%s EXTERNAL_RUNTIME=%s' % (self.make, self.profile.system_mcs, self.profile.system_mono)
+		Package.build (self)
+
 	def prep (self):
 		Package.prep (self)
 		for p in range (1, len (self.local_sources)):
