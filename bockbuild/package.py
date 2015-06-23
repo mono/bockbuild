@@ -125,6 +125,11 @@ class Package:
 		return str
 
 	def _fetch_sources (self, build_root, workspace, resource_dir, source_cache_dir):
+		clean_func = None # what to run if the workspace needs to be redone
+
+		def clean_nop ():
+			pass
+
 		def checkout (self, source_url, cache_dir, workspace_dir):
 			def clean_git_workspace ():
 				print 'Cleaning git workspace:', self.name
@@ -155,6 +160,9 @@ class Package:
 				log (1, 'Cloning a fresh workspace')
 				self.sh ('%' + '{git} clone --local --shared 	"%s" "%s"' % (cache_dir, workspace_dir))
 				self.cd (workspace_dir)
+				clean_func = clean_nop
+			else:
+				clean_func = clean_git_workspace
 
 			log (1, 'Updating workspace')
 			self.cd (workspace_dir)
@@ -187,8 +195,7 @@ class Package:
 				raise Exception ('Workspace error: Revision is %s, package specifies %s' % (current_revision, self.revision))
 
 			self.revision = current_revision
-
-			return clean_git_workspace
+			return clean_func
 
 
 		def get_download_dest(url):
@@ -202,7 +209,6 @@ class Package:
 			return os.path.join (source_cache_dir, name)
 
 		local_sources = []
-		clean_func = None # what to run if the workspace needs to be redone
 		cache = None
 
 		self.cd (build_root)
@@ -227,9 +233,13 @@ class Package:
 						if not os.path.exists (workspace):
 							self.extract_archive (cache, False)
 							os.utime (workspace, None)
+							clean_func = clean_nop
+						else:
+							clean_func = clean_archive
 						if not os.path.exists (workspace):
-							raise Exception ('Archive %s was extracted but not found at workspace path %s' % (cache, workspace))
+							raise Exception ('Archive %s was extracted but not found at workspace path %s' % (cache, workspace))							
 						self.popd ()
+						return clean_func
 
 					def clean_archive ():
 						print 'Re-extracting archive: ' + self.name + ' ('+ archive + ')'
@@ -243,10 +253,8 @@ class Package:
 								self.rm (workspace)
 							raise e
 
-					checkout_archive (archive, cache, workspace)
-
+					clean_func = checkout_archive (archive, cache, workspace)
 					local_sources.append (workspace)
-					clean_func = clean_archive
 
 				elif source.startswith (('git://','file://', 'ssh://')) or source.endswith ('.git'):
 					cache = get_git_cache_path ()
