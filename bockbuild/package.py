@@ -228,7 +228,7 @@ class Package:
 							# since this is a fresh cache, the workspace copy is invalid if it exists
 							if os.path.exists (workspace):
 								self.rm (workspace)
-							print 'Downloading: %s' % archive
+							progress ('Downloading: %s' % archive)
 							filename, message = FancyURLopener ().retrieve (archive, cache)
 						if not os.path.exists (workspace):
 							self.extract_archive (cache, False)
@@ -288,7 +288,7 @@ class Package:
 				warn ('Version in configure.ac is %s, package declares %s' % (found_version, package_version))
 			self.version = package_version
 
-			print self.get_package_string ()
+			info (self.get_package_string ())
 
 			return clean_func
 		except Exception as e:
@@ -306,11 +306,11 @@ class Package:
 		src = list(self.local_sources)
 		src.append (self._path)
 		for s in (src):
-			print 'Source:',s,
+			src_txt = 'Source: %s' % s
 			if os.path.getmtime(s) > mtime:
-				print '(Updated)',
+				src_txt = src_txt +  ' (Changed)'
 				newer = False
-			print
+			info (src_txt)
  			
  			# FIXME: There seem to be lots of dirs being touched from other processes.
  			# Must investigate, but turn off subdir checking for now
@@ -336,7 +336,6 @@ class Package:
 	def start_build (self, install_root, stage_root, arch):			
 			profile = Package.profile
 
-			print 'fetch', self.name
 			clean_func = retry (self.fetch)
 
 			workspace = self.workspace
@@ -345,7 +344,7 @@ class Package:
 
 			build_artifact = os.path.join (profile.build_root, self.name + '.artifact')
 			if self.is_successful_build(build_artifact):
-				print 'deploy', self.name
+				progress ('Installing %s' % self.name)
 
 				if lipo_build:
 					stagedir = os.path.join (workspace, 'lipo-stage', install_root [1:])
@@ -404,7 +403,7 @@ class Package:
 
 	def do_build (self, arch, install_prefix, workspace_dir, stage_root = None):
 
-		print 'build', self.name, arch
+		progress ('Building (arch: %s)' % (arch))
 
 		if stage_root == None:
 			stage_root = workspace_dir + '-stage'
@@ -441,7 +440,7 @@ class Package:
 			except Exception as e:
 				error ('MACRO EXPANSION ERROR: ' + str(e))
 			if self.verbose is True:
-				print '\n\t@\t' + expand_macros (command, self)
+				print bcolors.BOLD + '\n\t@\t' + expand_macros (command, self) + bcolors.ENDC
 
 			stdout = tempfile.NamedTemporaryFile()
 			stderr = tempfile.NamedTemporaryFile()

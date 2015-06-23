@@ -8,15 +8,35 @@ import inspect
 import time
 import difflib
 
+# from https://svn.blender.org/svnroot/bf-blender/trunk/blender/build_files/scons/tools/bcolors.py
+class bcolors:
+    HEADER = '\033[95m'
+    OKBLUE = '\033[94m'
+    OKGREEN = '\033[92m'
+    WARNING = '\033[93m'
+    FAIL = '\033[91m'
+    ENDC = '\033[0m'
+    BOLD = '\033[1m'
+    UNDERLINE = '\033[4m'
+
 def log (phase, message):
 	#DISABLED until we can properly refactor/redirect logging
 	return
 
+def title (message):
+	print '\n** %s%s%s\n' % (bcolors.HEADER, message , bcolors.ENDC)
+
+def info (message):
+	print '%s%s%s' % (bcolors.OKGREEN, message , bcolors.ENDC)
+
+def progress (message):
+	print '%s%s%s' % (bcolors.OKBLUE, message , bcolors.ENDC)
+
 def warn (message):
-	print '(bockbuild warning) %s' % message
+	print '%s(bockbuild warning) %s%s' % (bcolors.WARNING, message , bcolors.ENDC)
 
 def error (message):
-	print '(bockbuild error) %s' % message
+	print '%s(bockbuild error) %s%s' % (bcolors.FAIL, message , bcolors.ENDC)
 	sys.exit (255)
 
 def retry (func, tries = 3, delay = 5):
@@ -36,13 +56,12 @@ def retry (func, tries = 3, delay = 5):
 def update (new_text, file):
 	if not os.path.exists (file):
 		open (file, 'w+').close ()
+		return ['Record file ''%s'' not found (this is probably the first run)\n' % os.path.basename (file)]
 	orig_text = open (file).readlines ()
 	difflines = [line for line in difflib.context_diff(orig_text, new_text, n=0)]
 	if len (difflines) > 0:
 		output = open (file, 'w')
 		output.writelines (new_text)
-		#for line in new_text:
-		#	output.write (line + '\n')
 		return difflines
 	else:
 		return None

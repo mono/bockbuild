@@ -356,7 +356,6 @@ class MonoReleaseProfile(DarwinProfile, MonoReleasePackages):
                     self.verify(f)
 
     def shell(self):
-        profname = "mono-mac-release-env"
         envscript = '''#!/bin/sh
         PROFNAME="%s"
         INSTALLDIR="%s"
@@ -367,12 +366,11 @@ class MonoReleaseProfile(DarwinProfile, MonoReleasePackages):
         export MONO_ADDINS_REGISTRY="$INSTALLDIR/addinreg"
         export MONO_INSTALL_PREFIX="$INSTALLDIR"
 
-        export PS1="[$PROFNAME] \w @ "
-        echo WELCOME TO ZOMBOCOM
+        export PS1="\[\e[1;3m\][$PROFNAME] \w @ "
         bash -i
-        ''' % (profname, self.staged_prefix)
+        ''' % (self.profile_name, self.staged_prefix)
 
-        path = os.path.join(self.root, profname)
+        path = os.path.join(self.root, self.profile_name + '.sh')
 
         with open(path, 'w') as f:
             f.write(envscript)

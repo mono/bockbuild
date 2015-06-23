@@ -24,13 +24,14 @@ class Profile:
 		self.env.set ('BUILD_PREFIX', self.prefix)
 		self.env.set ('BOCKBUILD_ENV', '1')
 		self.packages = []
+		self.profile_name = self.__class__.__name__
 
 		find_git (self)
 
 		self.bockbuild_revision = git_get_revision(self)
 
-		print 'bockbuild rev.', self.bockbuild_revision
-		print '---'
+
+		title ('bockbuild rev. %s %s' % (self.bockbuild_revision, "" or "(branch: %s)" % git_get_branch(self)))
 
 		self.parse_options ()
 
@@ -147,18 +148,17 @@ class Profile:
 
 		if env_diff != None:
 			full_rebuild = True
-			warn ('Environment/configuration changed. Full rebuild triggered')
-			warn ('Changes:')
+			warn ('Build environment changed:')
 			for line in env_diff:
 				print '\t' + line,
 
 		self.env.compile ()
 		self.env.export ()
 
-		self.envfile = os.path.join (self.root, self.__class__.__name__) + '_env.sh'
+		self.envfile = os.path.join (self.root, self.profile_name) + '_env.sh'
 		self.env.dump (self.envfile)
 		os.chmod (self.envfile, 0755)
-		print 'Environment file: ./%s' % os.path.basename (self.envfile)
+		info ('Environment file: ./%s' % os.path.basename (self.envfile))
 
 		Package.profile = self
 		self.toolchain_packages = []
@@ -183,12 +183,12 @@ class Profile:
 			self.ensure_dir (self.stage_root, True)
 			self.ensure_dir (self.toolchain_root, True)
 
-			print '\n** Building toolchain\n'
+			title ('Building toolchain')
 			for pkg in self.toolchain_packages:
 				print
 				pkg.start_build (self.toolchain_root, self.toolchain_root, 'darwin-32') #start_build (workspace, install_root, stage_root)
 
-			print '\n** Building release\n'
+			title ('Building release')
 			for pkg in self.release_packages:
 				print
 				pkg.start_build (self.prefix, self.stage_root, self.arch )
@@ -205,7 +205,7 @@ class Profile:
 			self.shell ()
 
 		if self.cmd_options.do_package:
-			print '\n** Packaging\n'
+			title ('Packaging')
 			self.package ()
 
 	def ensure_dir (self, d, purge):
