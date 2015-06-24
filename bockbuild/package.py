@@ -292,9 +292,9 @@ class Package:
 
 			return clean_func
 		except Exception as e:
-			if os.path.exists (cache):
+			if cache != None and os.path.exists (cache):
 				self.rm (cache)
-			if os.path.exists (workspace):
+			if workspace != None and os.path.exists (workspace):
 				self.rm (workspace)
 			raise
 
