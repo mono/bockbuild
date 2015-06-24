@@ -127,6 +127,9 @@ class Package:
 	def _fetch_sources (self, build_root, workspace, resource_dir, source_cache_dir):
 		clean_func = None # what to run if the workspace needs to be redone
 
+		if self.sources == None:
+			return None
+
 		def clean_nop ():
 			pass
 
