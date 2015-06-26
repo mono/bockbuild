@@ -141,7 +141,6 @@ class Profile:
 		full_rebuild = False
 		tracked_env = []
 		tracked_env.extend (dump (self, 'profile'))
-		tracked_env.extend (dump (self.cmd_options, 'options'))
 		tracked_env.extend (self.env.serialize ())
 
 		env_diff = update (tracked_env, os.path.join (self.root, 'global.env'))
