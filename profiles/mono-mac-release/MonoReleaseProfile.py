@@ -50,6 +50,13 @@ class MonoReleaseProfile(DarwinProfile, MonoReleasePackages):
 
         self.system_mono_version = backtick ('%s --version' % self.system_mono)
 
+        # config overrides for some programs to be functional while staged
+
+        self.env.set ('GDK_PIXBUF_MODULE_FILE', '%{staged_prefix}/lib/gdk-pixbuf-2.0/2.10.0/loaders.cache')
+        self.env.set ('GDK_PIXBUF_MODULEDIR', '%{staged_prefix}/lib/gdk-pixbuf-2.0/2.10.0/loaders')
+        self.env.set ('PANGO_SYSCONFDIR', '%{staged_prefix}/etc')
+        self.env.set ('PANGO_LIBDIR', '%{staged_prefix}/lib')
+        
     def build(self):
         self.staged_binaries = []
         self.staged_textfiles = []

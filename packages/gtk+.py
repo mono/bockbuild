@@ -170,13 +170,16 @@ class GtkPackage (GnomeGitPackage):
 				'patches/gtk/quartz-call-undo-redo-on-cmdz.patch'
 			])
 
-		self.make = "GDK_PIXBUF_MODULEDIR=%{staged_prefix}/lib/gdk-pixbuf-2.0/2.10.0/loaders GDK_PIXBUF_MODULE_FILE=%{staged_prefix}/lib/gdk-pixbuf-2.0/2.10.0/loaders.cache " + self.make
-
 	def prep (self):
 		Package.prep (self)
 		if Package.profile.name == 'darwin':
 			for p in range (2, len (self.local_sources)):
 				self.sh ('patch -p1 --ignore-whitespace < "%{local_sources[' + str (p) + ']}"')
+
+		self.sh ('gdk-pixbuf-query-loaders --update-cache')
+		self.sh ('pango-querymodules --update-cache')
+
+		self.extra_stage_files = ['lib/gdk-pixbuf-2.0/2.10.0/loaders.cache']
 
 	def install(self):
 		Package.install(self)
