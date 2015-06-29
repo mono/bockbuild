@@ -140,7 +140,7 @@ class Package:
 
 			# Explicitly reset the working dir to a known directory which has not been deleted
 			# 'git clone' does not work if you are in a directory which has been deleted
-			os.chdir (build_root)
+			self.cd (build_root)
 			if not os.path.exists (cache_dir):
 				# since this is a fresh cache, the workspace copy is invalid if it exists
 				if os.path.exists (workspace_dir):
@@ -351,7 +351,7 @@ class Package:
 					run_shell('rsync -a --ignore-existing %s/* %s' % (stagedir, profile.staged_prefix), False)
 
 				else:
-					os.chdir (workspace)
+					self.cd (workspace)
 					self.install ()
 			else:
 				try:
