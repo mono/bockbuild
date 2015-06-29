@@ -308,7 +308,7 @@ class Package:
 			if os.path.getmtime(s) > mtime:
 				src_txt = src_txt +  ' (Changed)'
 				newer = False
-			info (src_txt)
+			print src_txt
  			
  			# FIXME: There seem to be lots of dirs being touched from other processes.
  			# Must investigate, but turn off subdir checking for now
