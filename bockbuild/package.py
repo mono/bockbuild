@@ -140,13 +140,14 @@ class Package:
 
 			# Explicitly reset the working dir to a known directory which has not been deleted
 			# 'git clone' does not work if you are in a directory which has been deleted
-			self.cd (build_root)
+			self.pushd (build_root)
 			if not os.path.exists (cache_dir):
 				# since this is a fresh cache, the workspace copy is invalid if it exists
 				if os.path.exists (workspace_dir):
 					self.rm (workspace_dir)
 				print 'Cloning git repo: %s' % source_url
 				self.sh ('%' + '{git} clone --mirror "%s" "%s"' % (source_url, cache_dir))
+			self.popd ()
 				
 			log (1, 'Updating cache')
 			self.pushd (cache_dir)
@@ -164,7 +165,7 @@ class Package:
 				clean_func = clean_git_workspace
 
 			log (1, 'Updating workspace')
-			self.cd (workspace_dir)
+			self.pushd (workspace_dir)
 
 			if self.git_branch == None:
 				self.sh ('%{git} fetch --all --prune')
@@ -194,6 +195,7 @@ class Package:
 				raise Exception ('Workspace error: Revision is %s, package specifies %s' % (current_revision, self.revision))
 
 			self.revision = current_revision
+			self.popd ()
 			return clean_func
 
 
@@ -210,7 +212,7 @@ class Package:
 		local_sources = []
 		cache = None
 
-		self.cd (build_root)
+		self.pushd (build_root)
 
 		try:
 			for source in self.sources:
@@ -288,14 +290,15 @@ class Package:
 			self.version = package_version
 
 			info (self.get_package_string ())
-
-			return clean_func
 		except Exception as e:
 			if os.path.exists (cache):
 				self.rm (cache)
 			if os.path.exists (workspace):
 				self.rm (workspace)
 			raise
+
+		self.popd ()
+		return clean_func
 
 	def is_successful_build(self, success_file):
 		if not os.path.exists (success_file):
@@ -350,8 +353,9 @@ class Package:
 					run_shell('rsync -a --ignore-existing %s/* %s' % (stagedir, profile.staged_prefix), False)
 
 				else:
-					self.cd (workspace)
+					self.pushd (workspace)
 					self.install ()
+					self.popd ()
 			else:
 				try:
 					retry (clean_func)
@@ -407,7 +411,7 @@ class Package:
 		if stage_root == None:
 			stage_root = workspace_dir + '-stage'
 
-		self.cd (workspace_dir)
+		self.pushd (workspace_dir)
 		self.stage_root  = stage_root
 		if install_prefix == stage_root:
 			self.staged_prefix = install_prefix
@@ -423,6 +427,7 @@ class Package:
 		self.install ()
 
 		self.verbose = False 
+		self.popd ()
 		return self.staged_prefix
 			
 
