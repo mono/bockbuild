@@ -288,8 +288,6 @@ class Package:
 				warn ('Version in configure.ac is %s, package declares %s' % (found_version, package_version))
 			self.version = package_version
 
-			info (self.get_package_string ())
-
 			return clean_func
 		except Exception as e:
 			if os.path.exists (cache):
@@ -334,6 +332,9 @@ class Package:
 		return self._fetch_sources (profile.build_root, self.workspace, profile.resource_root, profile.source_cache)
 
 	def start_build (self, install_root, stage_root, arch):			
+
+			info (self.get_package_string ())
+
 			profile = Package.profile
 
 			clean_func = retry (self.fetch)
