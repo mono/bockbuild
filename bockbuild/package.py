@@ -159,7 +159,6 @@ class Package:
 			if not os.path.exists(workspace_dir):
 				log (1, 'Cloning a fresh workspace')
 				self.sh ('%' + '{git} clone --local --shared 	"%s" "%s"' % (cache_dir, workspace_dir))
-				self.cd (workspace_dir)
 				clean_func = clean_nop
 			else:
 				clean_func = clean_git_workspace
