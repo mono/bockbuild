@@ -18,16 +18,18 @@ class DarwinProfile (UnixProfile):
 		if (not os.path.isdir (sdkroot)):
 			sdkroot = '/Developer/SDKs/'
 
-		sdk_paths = (sdkroot + 'MacOSX10.%s.sdk' % v for v in range (min_version, 20)) #future-proof! :P
-
 		self.mac_sdk_path = None
+		self.target_osx = '10.%s' % min_version
 
-		for sdk in sdk_paths:
-			if os.path.isdir (sdk):
+		for v in range (min_version, 20):
+			sdk = sdkroot + 'MacOSX10.%s.sdk' % v
+			if (os.path.isdir (sdk)):
 				self.mac_sdk_path = sdk
+				self.target_osx = '10.%s' % v
 				break
 
-		if self.mac_sdk_path is None: error ('Mac OS X SDK (>=10.%s) not found under %s' % (min_version, sdkroot))
+		if self.mac_sdk_path is None:
+			error ('Mac OS X SDK (>=%s) not found under %s' % (self.target_osx, sdkroot))
 
 		self.gcc_flags.extend ([
 				'-D_XOPEN_SOURCE',
@@ -38,8 +40,6 @@ class DarwinProfile (UnixProfile):
 		self.ld_flags.extend ([
 				'-headerpad_max_install_names' #needed to ensure install_name_tool can succeed staging binaries
 			])
-
-		self.target_osx = '10.%s' % min_version
 
 		if min_version:
 			self.gcc_flags.extend (['-mmacosx-version-min=%s' % self.target_osx])
