@@ -9,6 +9,16 @@ import stat
 from urllib import FancyURLopener
 from util.util import *
 
+class Patches ():
+	def __init__ (self, patches, shared_options):
+		self.contents = []
+		for path in patches:
+			self.contents.append (Patch (path, options = shared_options))
+
+	def run (self, pkg):
+		for patch in self.contents:
+			patch.run (pkg)
+
 class Patch ():
 	def __init__ (self, rel_path, options = '-p0', patch_cmd = 'patch'):
 		self.rel_path = rel_path
