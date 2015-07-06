@@ -69,16 +69,14 @@ public static class Entry
         
         long total_size = 0;
         Console.WriteLine ("Locating items...");
-        foreach (var path in paths) {
-            foreach (var item in solitary.Walk (path)) {
-                foreach (var collect_item in item.Load ()) {
-                    solitary.Items.Add (collect_item);
-                    total_size += collect_item.File.Length;
-                    Console.WriteLine (" + {0} ({1} - {2} KB)",
-                        collect_item.File.Name,
-                        collect_item.GetType ().Name,
-                        collect_item.File.Length / 1024);
-                }
+        foreach (var item in solitary.Walk (paths)) {
+            foreach (var collect_item in item.Load ()) {
+                solitary.Items.Add (collect_item);
+                total_size += collect_item.File.Length;
+                Console.WriteLine (" + {0} ({1} - {2} KB)",
+                    collect_item.File.Name,
+                    collect_item.GetType ().Name,
+                    collect_item.File.Length / 1024);
             }
         }
         Console.WriteLine ("Done locating items. Total size is {0} KB.",

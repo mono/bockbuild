@@ -39,10 +39,32 @@ public class AssemblyItem : Item
     {
     }
 
+    private string FindPossibleTempFile ()
+    {
+        if (String.IsNullOrEmpty (Confinement.TempPath)) {
+            throw new InvalidOperationException ("Confinement.TempPath cannot be empty.");
+        }
+        if (!Directory.Exists (Confinement.TempPath)) {
+            throw new InvalidOperationException ("Confinement.TempPath should have been created at this point.");
+        }
+        var tempPathElements = new DirectoryInfo (Confinement.TempPath).GetFileSystemInfos ();
+        var assemblyFileName = System.IO.Path.GetFileName (File.FullName);
+        foreach (var fileSystemInfo in tempPathElements) {
+            if (Directory.Exists (fileSystemInfo.FullName)) {
+                throw new InvalidOperationException ("There cannot be subfolders inside Confinement.TempPath.");
+            }
+            if (System.IO.Path.GetFileName (fileSystemInfo.FullName).Equals (assemblyFileName)) {
+                return fileSystemInfo.FullName;
+            }
+        }
+        // could be a referenced assembly, such as mscorlib
+        return File.FullName;
+    }
+
     private void EnsureSelfLoaded ()
     {
         if (Assembly == null && File != null) {
-            Assembly = Assembly.LoadFrom (File.FullName);
+            Assembly = Assembly.LoadFrom (FindPossibleTempFile ());
         } else if (Assembly != null && File == null) {
             File = new FileInfo (Assembly.Location);
         }

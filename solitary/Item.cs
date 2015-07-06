@@ -148,6 +148,10 @@ public abstract class Item
 
         switch (GetFileType (file)) {
             case FileType.PE32Executable: 
+                var tempFileName = Path.Combine (confinement.TempPath, Path.GetFileName (file.FullName));
+                if (!System.IO.File.Exists (tempFileName)) {
+                    file.CopyTo (tempFileName);
+                }
                 item = new AssemblyItem (confinement);
                 break;
             case FileType.MachO:
