@@ -29,6 +29,10 @@ using System.Collections.Generic;
 
 public class DataItem : Item
 {
+    public DataItem (Solitary confinement) : base (confinement)
+    {
+    }
+
     public override IEnumerable<Item> Load ()
     {
         if (!IsValidConfinementItem (this)) {

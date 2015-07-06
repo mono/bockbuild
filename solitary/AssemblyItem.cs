@@ -35,6 +35,10 @@ public class AssemblyItem : Item
 {
     public Assembly Assembly { get; private set; }
 
+    public AssemblyItem (Solitary confinement) : base (confinement)
+    {
+    }
+
     public override IEnumerable<Item> Load ()
     {
         if (Assembly == null && File != null) {
@@ -64,8 +68,7 @@ public class AssemblyItem : Item
         }
 
         foreach (var rname in Assembly.GetReferencedAssemblies ()) {
-            var ritem = new AssemblyItem () {
-                Confinement = Confinement,
+            var ritem = new AssemblyItem (Confinement) {
                 Assembly = Assembly.Load (rname.FullName)
             };
             foreach (var item in ritem.Load ()) {

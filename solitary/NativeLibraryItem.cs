@@ -30,6 +30,10 @@ using System.Collections.Generic;
 
 public class NativeLibraryItem : Item
 {
+    public NativeLibraryItem (Solitary confinement) : base (confinement)
+    {
+    }
+
     public override IEnumerable<Item> Load ()
     {
         if (!IsValidConfinementItem (this)) {
