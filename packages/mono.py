@@ -1,6 +1,6 @@
 class MonoPackage (Package):
 	def __init__ (self):
-		Package.__init__ (self, 'mono', '4.0.0',
+		Package.__init__ (self, 'mono', '4.0.1',
 			sources = [
 				'http://download.mono-project.com/sources/%{name}/%{name}-%{version}.tar.bz2',
 			],
@@ -16,7 +16,7 @@ class MonoPackage (Package):
 		if Package.profile.name == 'darwin' and not Package.profile.m64:
 			self.configure_flags.extend ([
 				# fix build on lion, it uses 64-bit host even with -m32
-				#'--build=i386-apple-darwin11.2.0',
+				'--build=i386-apple-darwin11.2.0',
 			])
 
 		# Mono (in libgc) likes to fail to build randomly
