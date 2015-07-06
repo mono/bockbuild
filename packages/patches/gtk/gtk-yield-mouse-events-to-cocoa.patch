@@ -51,6 +51,9 @@ index ee7dc96..88a1a3e 100644
 +  if ((event_type == NSLeftMouseDown ||
 +       event_type == NSRightMouseDown ||
 +       event_type == NSOtherMouseDown ||
++       //event_type == NSLeftMouseUp ||
++       //event_type == NSRightMouseUp ||
++       //event_type == NSOtherMouseUp ||
 +       event_type == NSMouseMoved ||
 +       event_type == NSMouseEntered ||
 +       event_type == NSMouseExited ||
