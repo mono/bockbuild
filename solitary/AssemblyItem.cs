@@ -39,13 +39,18 @@ public class AssemblyItem : Item
     {
     }
 
-    public override IEnumerable<Item> Load ()
+    private void EnsureSelfLoaded ()
     {
         if (Assembly == null && File != null) {
             Assembly = Assembly.LoadFrom (File.FullName);
         } else if (Assembly != null && File == null) {
             File = new FileInfo (Assembly.Location);
         }
+    }
+
+    public override IEnumerable<Item> Load ()
+    {
+        EnsureSelfLoaded ();
 
         if (!IsValidConfinementItem (this)) {
             yield break;
