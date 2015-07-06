@@ -30,7 +30,7 @@ using System.Collections.Generic;
 
 public class NativeLibraryItem : Item
 {
-    public NativeLibraryItem (Solitary confinement) : base (confinement)
+    public NativeLibraryItem (Solitary confinement, FileInfo file) : base (confinement, file)
     {
     }
 

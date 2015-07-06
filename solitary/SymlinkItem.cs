@@ -34,7 +34,7 @@ public class SymlinkItem : Item
 {
     private UnixSymbolicLinkInfo link;
 
-    public SymlinkItem (Solitary confinement) : base (confinement)
+    public SymlinkItem (Solitary confinement, FileInfo file) : base (confinement, file)
     {
     }
     

@@ -48,7 +48,7 @@ public abstract class Item
     private FileInfo file;
     public FileInfo File {
         get { return file; }
-        protected set {
+        private set {
             if (value == null) {
                 file = null;
                 return;
@@ -61,9 +61,17 @@ public abstract class Item
         }
     }
 
-    protected Item (Solitary confinement)
+    protected Item (Solitary confinement, FileInfo file)
     {
+        if (confinement == null) {
+            throw new ArgumentNullException ("confinement");
+        }
+        if (file == null) {
+            throw new ArgumentNullException ("file");
+        }
+
         Confinement = confinement;
+        File = file;
     }
 
     public bool IsValidConfinementItem (Item item)
@@ -141,9 +149,7 @@ public abstract class Item
         }
 
         if (SymlinkItem.IsSymlink (file.FullName)) {
-            return new SymlinkItem (confinement) {
-                File = file
-            };
+            return new SymlinkItem (confinement, file);
         }
 
         switch (GetFileType (file)) {
@@ -152,18 +158,17 @@ public abstract class Item
                 if (!System.IO.File.Exists (tempFileName)) {
                     file.CopyTo (tempFileName);
                 }
-                item = new AssemblyItem (confinement);
+                item = new AssemblyItem (confinement, file);
                 break;
             case FileType.MachO:
             case FileType.ELF:
-                item = new NativeLibraryItem (confinement);
+                item = new NativeLibraryItem (confinement, file);
                 break;
             default:
-                item = new DataItem (confinement);
+                item = new DataItem (confinement, file);
                 break;
         }
 
-        item.File = file;
         return item;
     }
 

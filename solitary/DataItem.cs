@@ -26,10 +26,11 @@
 
 using System;
 using System.Collections.Generic;
+using System.IO;
 
 public class DataItem : Item
 {
-    public DataItem (Solitary confinement) : base (confinement)
+    public DataItem (Solitary confinement, FileInfo file) : base (confinement, file)
     {
     }
 

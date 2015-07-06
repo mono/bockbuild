@@ -35,8 +35,23 @@ public class AssemblyItem : Item
 {
     public Assembly Assembly { get; private set; }
 
-    public AssemblyItem (Solitary confinement) : base (confinement)
+    public AssemblyItem (Solitary confinement, FileInfo file) : base (confinement, file)
     {
+        var tempFile = FindPossibleTempFile ();
+        if (tempFile == null) {
+            // could be a referenced assembly, such as mscorlib
+            tempFile = file.FullName;
+        }
+        Assembly = Assembly.LoadFrom (tempFile);
+    }
+
+    public AssemblyItem (Solitary confinement, Assembly assembly) : base (confinement, new FileInfo (assembly.Location))
+    {
+        if (assembly == null) {
+            throw new ArgumentNullException ("assembly");
+        }
+
+        Assembly = assembly;
     }
 
     private string FindPossibleTempFile ()
@@ -57,23 +72,11 @@ public class AssemblyItem : Item
                 return fileSystemInfo.FullName;
             }
         }
-        // could be a referenced assembly, such as mscorlib
-        return File.FullName;
-    }
-
-    private void EnsureSelfLoaded ()
-    {
-        if (Assembly == null && File != null) {
-            Assembly = Assembly.LoadFrom (FindPossibleTempFile ());
-        } else if (Assembly != null && File == null) {
-            File = new FileInfo (Assembly.Location);
-        }
+        return null;
     }
 
     public override IEnumerable<Item> Load ()
     {
-        EnsureSelfLoaded ();
-
         if (!IsValidConfinementItem (this)) {
             yield break;
         }
@@ -95,9 +98,8 @@ public class AssemblyItem : Item
         }
 
         foreach (var rname in Assembly.GetReferencedAssemblies ()) {
-            var ritem = new AssemblyItem (Confinement) {
-                Assembly = Assembly.Load (rname.FullName)
-            };
+            var loadedReference = Assembly.Load (rname.FullName);
+            var ritem = new AssemblyItem (Confinement, loadedReference);
             foreach (var item in ritem.Load ()) {
                 yield return item;
             }
