@@ -68,7 +68,6 @@ class MonoReleasePackages:
 				'libgdiplus.py',
 				'xsp.py',
 				'gtk-sharp-2.12-release-net4.5.py',
-				'ironlangs.py',
 				'fsharp-3.1.py',
 				'mono-basic.py',
 				'nuget.py'
