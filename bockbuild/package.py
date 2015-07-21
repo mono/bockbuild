@@ -441,7 +441,7 @@ class Package:
 			except Exception as e:
 				error ('MACRO EXPANSION ERROR: ' + str(e))
 			if self.verbose is True:
-				logprint ('\n\t@\t' + expand_macros (command, self))
+				logprint ('\n\t@\t' + expand_macros (command, self), bcolors.BOLD)
 
 			stdout = tempfile.NamedTemporaryFile()
 			stderr = tempfile.NamedTemporaryFile()

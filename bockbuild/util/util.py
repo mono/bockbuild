@@ -29,7 +29,7 @@ def logprint (message, color, summary = False):
 	else:
 		if summary:
 			if os.getenv ('BUILD_REVISION') is not None:  #MonkeyWrench 
-				print '@MonkeyWrench: AddSummary:%s' % message
+				print '@MonkeyWrench: AddSummary:%s\\n' % message
 		else:
 			print message
 
