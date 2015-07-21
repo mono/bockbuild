@@ -440,7 +440,10 @@ class Package:
 			except Exception as e:
 				error ('MACRO EXPANSION ERROR: ' + str(e))
 			if self.verbose is True:
-				print bcolors.BOLD + '\n\t@\t' + expand_macros (command, self) + bcolors.ENDC
+				if sys.stdout.isatty():
+					print bcolors.BOLD + '\n\t@\t' + expand_macros (command, self) + bcolors.ENDC
+				else:
+					print '\n\t@\t' + expand_macros (command, self)
 
 			stdout = tempfile.NamedTemporaryFile()
 			stderr = tempfile.NamedTemporaryFile()

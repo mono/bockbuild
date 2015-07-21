@@ -8,6 +8,8 @@ import inspect
 import time
 import difflib
 
+is_console = sys.stdout.isatty()
+
 # from https://svn.blender.org/svnroot/bf-blender/trunk/blender/build_files/scons/tools/bcolors.py
 class bcolors:
     HEADER = '\033[95m'
@@ -24,19 +26,34 @@ def log (phase, message):
 	return
 
 def title (message):
-	print '\n** %s%s%s\n' % (bcolors.HEADER, message , bcolors.ENDC)
+    if is_console:
+        print '\n** %s%s%s\n' % (bcolors.HEADER, message , bcolors.ENDC)
+    else:
+        print message
 
 def info (message):
-	print '%s%s%s' % (bcolors.OKGREEN, message , bcolors.ENDC)
+    if is_console:
+        print '%s%s%s' % (bcolors.OKGREEN, message , bcolors.ENDC)
+    else:
+        print message
 
 def progress (message):
-	print '%s%s%s' % (bcolors.OKBLUE, message , bcolors.ENDC)
+    if is_console:
+        print '%s%s%s' % (bcolors.OKBLUE, message , bcolors.ENDC)
+    else:
+        print message
 
 def warn (message):
-	print '%s(bockbuild warning) %s%s' % (bcolors.WARNING, message , bcolors.ENDC)
+    if is_console:
+        print '%s(bockbuild warning) %s%s' % (bcolors.WARNING, message , bcolors.ENDC)
+    else:
+        print '(bockbuild warning) %s' % message
 
 def error (message):
-	print '%s(bockbuild error) %s%s' % (bcolors.FAIL, message , bcolors.ENDC)
+    if is_console:
+        print '%s(bockbuild error) %s%s' % (bcolors.FAIL, message , bcolors.ENDC)
+    else:
+        print '(bockbuild error) %s' % message
 	sys.exit (255)
 
 def retry (func, tries = 3, delay = 5):
