@@ -8,8 +8,6 @@ import inspect
 import time
 import difflib
 
-is_console = sys.stdout.isatty()
-
 # from https://svn.blender.org/svnroot/bf-blender/trunk/blender/build_files/scons/tools/bcolors.py
 class bcolors:
     HEADER = '\033[95m'
@@ -25,35 +23,30 @@ def log (phase, message):
 	#DISABLED until we can properly refactor/redirect logging
 	return
 
-def title (message):
-    if is_console:
-        print '\n** %s%s%s\n' % (bcolors.HEADER, message , bcolors.ENDC)
-    else:
-        print message
+def logprint (message, color, summary = False):
+	if sys.stdout.isatty():
+		print '%s%s%s' % (color, message , bcolors.ENDC)
+	else:
+		if summary:
+			if os.getenv ('BUILD_REVISION') is not None:  #MonkeyWrench 
+				print '@MonkeyWrench: AddSummary:%s' % message
+		else:
+			print message
 
-def info (message):
-    if is_console:
-        print '%s%s%s' % (bcolors.OKGREEN, message , bcolors.ENDC)
-    else:
-        print message
+def title (message):
+	logprint ('\n** %s **\n' % message, bcolors.HEADER, summary = True)
+
+def info (message, summary = True):
+	logprint (message ,bcolors.OKGREEN, summary)
 
 def progress (message):
-    if is_console:
-        print '%s%s%s' % (bcolors.OKBLUE, message , bcolors.ENDC)
-    else:
-        print message
+	logprint (message, bcolors.OKBLUE)
 
 def warn (message):
-    if is_console:
-        print '%s(bockbuild warning) %s%s' % (bcolors.WARNING, message , bcolors.ENDC)
-    else:
-        print '(bockbuild warning) %s' % message
+	logprint ('(bockbuild warning) %s' % message, bcolors.WARNING)
 
 def error (message):
-    if is_console:
-        print '%s(bockbuild error) %s%s' % (bcolors.FAIL, message , bcolors.ENDC)
-    else:
-        print '(bockbuild error) %s' % message
+	logprint ('(bockbuild error) %s' % message , bcolors.FAIL)
 	sys.exit (255)
 
 def retry (func, tries = 3, delay = 5):

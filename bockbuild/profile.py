@@ -167,7 +167,7 @@ class Profile:
 			Package.last_instance = None
 			exec compile (open (path).read (), path, 'exec')
 			if Package.last_instance == None:
-				sys.exit ('%s does not provide a valid package.' % path)
+				error ('%s does not provide a valid package.' % path)
 
 			new_package = Package.last_instance
 			new_package._path = path

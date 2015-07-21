@@ -121,7 +121,8 @@ class Package:
 		if self.version:
 			str+= ' v.' + self.version
 		if self.revision:
-			str+= ' (rev. ' + self.revision + ')'
+			revstr = self.revision if not self.git_branch else '%s/%s' % (self.revision, self.git_branch)
+			str+= ' (rev. %s )' % revstr
 		return str
 
 	def _fetch_sources (self, build_root, workspace, resource_dir, source_cache_dir):
@@ -310,7 +311,7 @@ class Package:
 			if os.path.getmtime(s) > mtime:
 				src_txt = src_txt +  ' (Changed)'
 				newer = False
-			info (src_txt)
+			info (src_txt, summary = False)
  			
  			# FIXME: There seem to be lots of dirs being touched from other processes.
  			# Must investigate, but turn off subdir checking for now
@@ -390,7 +391,7 @@ class Package:
 						shutil.rmtree (os.path.join (self.profile.root,  problem_dir), ignore_errors = True)
 						shutil.move (workspace,
 							os.path.join (self.profile.root,  problem_dir))
-						warn (str (e))
+						info (str (e))
 						error ('Failed build at ./%s \n Run "source ./%s" first to replicate bockbuild environment.' % (problem_dir, os.path.basename (self.profile.envfile)))
 
 				self.make_artifact (profile.staged_prefix, build_artifact)
@@ -440,10 +441,7 @@ class Package:
 			except Exception as e:
 				error ('MACRO EXPANSION ERROR: ' + str(e))
 			if self.verbose is True:
-				if sys.stdout.isatty():
-					print bcolors.BOLD + '\n\t@\t' + expand_macros (command, self) + bcolors.ENDC
-				else:
-					print '\n\t@\t' + expand_macros (command, self)
+				logprint ('\n\t@\t' + expand_macros (command, self))
 
 			stdout = tempfile.NamedTemporaryFile()
 			stderr = tempfile.NamedTemporaryFile()
@@ -453,8 +451,8 @@ class Package:
 			except Exception as e:
 				output_text = stdout.readlines ()
 				if len(output_text) > 0:
-					warn ('stdout (last 50 lines):')
-					for line in output_text[-50:]:
+					warn ('stdout:')
+					for line in output_text:
 						print line,
 				error_text = stderr.readlines ()
 				if len(error_text) > 0:
@@ -463,7 +461,7 @@ class Package:
 						print line,
 				warn('path: ' + os.getcwd ())
 				warn('full command: ' + env_command)
-				raise Exception ('command failed: %s' % command)
+				raise Exception ('command failed: %s' % expand_macros (command, self))
 			finally:
 				stdout.close ()
 				stderr.close ()
