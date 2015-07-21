@@ -39,6 +39,7 @@ class Profile:
 		self.verbose = self.cmd_options.verbose
 		self.run_phases = self.default_run_phases
 		self.arch = self.cmd_options.arch
+		self.unsafe = self.cmd_options.unsafe
 
 	def parse_options (self):
 		self.default_run_phases = ['prep', 'build', 'install']
@@ -91,6 +92,9 @@ class Profile:
 		parser.add_option ('', '--shell', default = False,
 			action = 'store_true', dest = 'shell',
 			help = 'Get an shell with the package environment')
+		parser.add_option ('', '--unsafe', default = False,
+			action = 'store_true', dest = 'unsafe',
+			help = 'Prevents full rebuilds when a build environment change is detected. Useful for debugging.')
 
 		self.parser = parser
 		self.cmd_options, self.cmd_args = parser.parse_args ()
@@ -143,7 +147,10 @@ class Profile:
 		tracked_env.extend (dump (self, 'profile'))
 		tracked_env.extend (self.env.serialize ())
 
-		env_diff = update (tracked_env, os.path.join (self.root, 'global.env'))
+		if self.unsafe:
+			warn ('Running with --unsafe, build environment not checked for changes')
+
+		env_diff = None if self.unsafe else update (tracked_env, os.path.join (self.root, 'global.env'))
 
 		if env_diff != None:
 			full_rebuild = True
