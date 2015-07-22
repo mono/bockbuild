@@ -23,18 +23,25 @@ def log (phase, message):
 	#DISABLED until we can properly refactor/redirect logging
 	return
 
+#TODO: move these functions to either Profile or their own class
+first_summary = True
+
 def logprint (message, color, summary = False):
 	if sys.stdout.isatty():
 		print '%s%s%s' % (color, message , bcolors.ENDC)
 	else:
 		if summary:
 			if os.getenv ('BUILD_REVISION') is not None:  #MonkeyWrench 
-				print '@MonkeyWrench: AddSummary:%s\\n' % message
+				if first_summary:
+					print '@MonkeyWrench: SetSummary:%s\n' % message
+					first_summary = False
+				else:
+					print '@MonkeyWrench: AddSummary:%s\n' % message
 		else:
 			print message
 
-def title (message):
-	logprint ('\n** %s **\n' % message, bcolors.HEADER, summary = True)
+def title (message, summary = True):
+	logprint ('\n** %s **\n' % message, bcolors.HEADER, summary)
 
 def info (message, summary = True):
 	logprint (message ,bcolors.OKGREEN, summary)
