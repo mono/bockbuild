@@ -24,21 +24,21 @@ def log (phase, message):
 	return
 
 #TODO: move these functions to either Profile or their own class
-first_summary = True
+
+def loginit (message):
+	if os.getenv ('BUILD_REVISION') is not None:  #MonkeyWrench
+		print '@MonkeyWrench: SetSummary:<h3>%s</h3>' % message
+	else:
+		logprint (message, bcolors.BOLD)
 
 def logprint (message, color, summary = False):
-	if sys.stdout.isatty():
+	if summary:
+		if os.getenv ('BUILD_REVISION') is not None:  #MonkeyWrench
+				print '@MonkeyWrench: AddSummary:<p>%s</p>' % message
+	elif sys.stdout.isatty():
 		print '%s%s%s' % (color, message , bcolors.ENDC)
 	else:
-		if summary:
-			if os.getenv ('BUILD_REVISION') is not None:  #MonkeyWrench 
-				if first_summary:
-					print '@MonkeyWrench: SetSummary:%s\n' % message
-					first_summary = False
-				else:
-					print '@MonkeyWrench: AddSummary:%s\n' % message
-		else:
-			print message
+		print message
 
 def title (message, summary = True):
 	logprint ('\n** %s **\n' % message, bcolors.HEADER, summary)

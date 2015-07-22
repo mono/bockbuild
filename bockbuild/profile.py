@@ -30,8 +30,7 @@ class Profile:
 
 		self.bockbuild_revision = git_get_revision(self)
 
-
-		title ('bockbuild rev. %s %s' % (self.bockbuild_revision, "" or "(branch: %s)" % git_get_branch(self)))
+		loginit ('bockbuild rev. %s %s' % (self.bockbuild_revision, "" or "(branch: %s)" % git_get_branch(self)))
 
 		self.parse_options ()
 
@@ -164,7 +163,6 @@ class Profile:
 		self.envfile = os.path.join (self.root, self.profile_name) + '_env.sh'
 		self.env.dump (self.envfile)
 		os.chmod (self.envfile, 0755)
-		info ('Environment file: ./%s' % os.path.basename (self.envfile))
 
 		Package.profile = self
 		self.toolchain_packages = []
