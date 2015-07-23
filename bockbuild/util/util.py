@@ -35,7 +35,8 @@ def logprint (message, color, summary = False):
 	if summary:
 		if os.getenv ('BUILD_REVISION') is not None:  #MonkeyWrench
 				print '@MonkeyWrench: AddSummary:<p>%s</p>' % message
-	elif sys.stdout.isatty():
+				return
+	if sys.stdout.isatty():
 		print '%s%s%s' % (color, message , bcolors.ENDC)
 	else:
 		print message
