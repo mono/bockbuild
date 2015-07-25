@@ -6,6 +6,7 @@ import tempfile
 import filecmp
 import datetime
 import stat
+import time
 from urllib import FancyURLopener
 from util.util import *
 
@@ -406,6 +407,8 @@ class Package:
 
 		progress ('Building (arch: %s)' % (arch))
 
+		now = time.time ()
+
 		if stage_root == None:
 			stage_root = workspace_dir + '-stage'
 
@@ -423,6 +426,8 @@ class Package:
 		self.prep ()
 		self.build ()
 		self.install ()
+
+		progress ('Build took %s secs' % (int(time.time () - now)))
 
 		self.verbose = False 
 		return self.staged_prefix
