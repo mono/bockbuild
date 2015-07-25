@@ -350,7 +350,7 @@ class MonoReleaseProfile(DarwinProfile, MonoReleasePackages):
         result = " ".join(backtick("otool -L " + f))
         regex = os.path.join(self.MONO_ROOT, "Versions", r"(\d+\.\d+\.\d+)")
         regex_res = re.search(regex, result)
-        if regex_regs == None:
+        if regex_res == None:
             raise Exception("No match for %s %s %s" % (f, result, regex))
         match = regex_res.group(1)
         if self.RELEASE_VERSION not in match:
