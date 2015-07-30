@@ -157,12 +157,6 @@ class GtkPackage (GnomeGitPackage):
 				# For the test framework to be able to traverse down the NSView hierarchy
 				'patches/gtk/gtknsview-getter.patch',
 
-				# This is hacky, but the designer needs a way to handle drag events
-				# from Xamarin.Mac and GTK is eating them. If a better solution is found
-				# we should remove this.
-				# https://bugzilla.xamarin.com/show_bug.cgi?id=29301
-				'patches/gtk/gtk-yield-mouse-events-to-cocoa.patch',
-
 				# https://bugzilla.xamarin.com/show_bug.cgi?id=29301#c3
 				'patches/gtk/gtknsview-fix-invalid-casts.patch',
 
