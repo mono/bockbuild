@@ -37,4 +37,7 @@ class PangoPackage (GnomeXzPackage):
 			for p in range (1, len (self.local_sources)):
 				self.sh ('patch -p1 < "%{local_sources[' + str (p) + ']}"')
 
+	def deploy (self):
+		self.sh ('pango-querymodules --update-cache')
+
 PangoPackage ()

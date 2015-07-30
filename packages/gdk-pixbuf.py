@@ -14,4 +14,12 @@ class GdkPixbufPackage (GnomeXzPackage):
 			for p in range (1, len (self.local_sources)):
 				self.sh ('patch -p1 --ignore-whitespace < "%{local_sources[' + str (p) + ']}"')
 
+	def deploy (self):
+		self.loaders_cache = 'lib/gdk-pixbuf-2.0/2.10.0/loaders.cache'
+		self.sh ('gdk-pixbuf-query-loaders --update-cache ')
+
+		#mark the file for destaging
+		self.sh ('cp %{staged_profile}/%{loaders_cache} %{staged_profile}/%{loaders_cache}.release')
+		self.extra_stage_files = [self.loaders_cache]
+
 GdkPixbufPackage ()
