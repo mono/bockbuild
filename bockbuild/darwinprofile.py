@@ -3,6 +3,8 @@ import shutil
 from plistlib import Plist
 from util.util import *
 from unixprofile import UnixProfile
+from profile import Profile
+import stat
 
 class DarwinProfile (UnixProfile):
 	def __init__ (self, prefix = None, m64 = False, min_version = 6):
@@ -55,9 +57,6 @@ class DarwinProfile (UnixProfile):
 			self.env.set ('CC',  'ccache xcrun gcc')
 			self.env.set ('CXX', 'ccache xcrun g++')
 
-		self.staged_binaries = []
-		self.staged_textfiles = []
-
 		if self.arch == 'default':
 			self.arch = 'darwin-32'
 
@@ -82,6 +81,147 @@ class DarwinProfile (UnixProfile):
 			error ('Unknown arch %s' % arch)
 
 		package.local_configure_flags.extend (['--cache-file=%s/%s-%s.cache' % (self.build_root, package.name, arch)])
+
+	def process_package (self, package):
+		failure_count = 0
+		def staging_harness (path, func, failure_count = failure_count):
+			def relocate_to_profile (token):
+				if token.find (package.staged_prefix) == -1 and token.find (package.staged_profile) == -1:
+					newtoken = token.replace(package.package_prefix, package.staged_profile)
+				else:
+					newtoken = token.replace(package.staged_prefix, package.staged_profile)
+
+				if newtoken != token:
+					package.trace ('%s:\n\t%s\t->\t%s' % (os.path.basename(path), token, newtoken))
+				return newtoken
+
+			if (path.endswith ('.release')):
+				error ('Staging backup exists in dir we''re trying to stage: %s' % path)
+
+			backup = path + '.release'
+			shutil.copy2 (path, backup)
+			try:
+				func (path, relocate_to_profile)
+				if os.path.exists (path + '.stage'):
+					package.rm (path)
+					shutil.copy2 (path + '.stage', path)
+					shutil.copystat (backup, path)
+			except CommandException as e:
+				package.rm_if_exists (path)
+				shutil.copy2 (backup, path)
+				package.rm (backup)
+				warn ('Staging failed for %s' % os.path.basename (path))
+				error (str (e))
+				failure_count = failure_count + 1
+				if failure_count > 10:
+					error ('Possible staging issue, >10 staging failures')
+
+		extra_files = [os.path.join (package.staged_prefix, expand_macros (file, package))
+			for file in package.extra_stage_files]
+
+		Profile.postprocess (self, [self.stage_textfiles(staging_harness, extra_files),
+				self.stage_binaries(staging_harness),
+				self.validate_rpaths(package)], package.staged_prefix)
+
+	def process_release (self):
+		unprotect_dir (self.staged_prefix, recursive = True)
+
+		def destaging_harness (backup, func):
+			path = backup[0:-len ('.release')]
+			trace (path)
+
+			def relocate_for_release (token):
+				newtoken = token.replace(self.staged_prefix, self.prefix)
+
+				if newtoken != token:
+					trace ('%s:\n\t%s\t->\t%s' % (os.path.basename(path), token, newtoken))
+
+				return newtoken
+
+			try:
+				func (path, relocate_for_release)
+				if os.path.exists (path + '.stage'):
+					os.remove (path)
+					shutil.move (path + '.stage', path)
+					shutil.copystat (backup, path)
+				os.remove (backup)
+
+			except Exception as e:
+				warn ('Critical: Destaging failed for ''%s''' % path)
+				raise
+
+		Profile.postprocess (self, [self.stage_textfiles(destaging_harness),
+			self.stage_binaries(destaging_harness)], self.staged_prefix, lambda l: l.endswith ('.release') )
+
+	class validate_text_staging (Profile.FileProcessor):
+		problem_files = []
+		def __init__ (self, package):
+			self.package = package
+			Profile.FileProcessor.__init__ (self)
+		def match (self, path, filetype):
+			return 'text' in filetype
+		def process (self, path):
+			with open(path) as text:
+				stage_name = os.path.basename (self.package.stage_root)
+				for line in text:
+					if stage_name in line:
+						warn ('String ''%s'' was found in %s' % (stage_name, self.relpath (path)))
+						self.problem_files.append (self.relpath(path))
+		def end (self):
+			if len(self.problem_files) > 0:
+				error ('Problematic staging files:\n' + '\n'.join (self.problem_files) )
+
+	class validate_rpaths (Profile.FileProcessor):
+		def __init__ (self, package):
+			self.package = package
+			Profile.FileProcessor.__init__ (self)
+		def match (self, path, filetype):
+			return 'Mach-O' in filetype and not path.endswith ('.a')
+		def process (self, path):
+			libs = backtick ('otool -L %s' % path)
+			for line in libs:
+				#parse 'otool -L'
+				if not line.startswith ('\t'):
+					continue
+				rpath = line.strip ().split(' ')[0]
+				if rpath.startswith (self.package.profile.MONO_ROOT):
+					error ('%s is linking to external distribution %s' % (path, rpath))
+
+	class stage_textfiles (Profile.FileProcessor):
+		def match (self, path, filetype):
+			return path.endswith ('.pc') or path.endswith ('.la') or filetype.endswith ('text executable')
+
+		def process (self, path, fixup_func):
+			with open(path) as text:
+				output = open(path + '.stage', 'w')
+				for line in text:
+					tokens = line.split (" ")
+					for idx,token in enumerate(tokens):
+						remap = fixup_func (token)
+						tokens[idx] = remap
+
+					output.write (" ".join(tokens))
+				output.close
+
+	class stage_binaries (Profile.FileProcessor):
+		def match (self, path, filetype):
+			return filetype.startswith('Mach-O') and not path.endswith ('.a')
+
+		def process (self, path, fixup_func):
+			staged_path = fixup_func (path)
+
+			run_shell ('install_name_tool -id %s %s' % (staged_path, path), False)
+
+			libs = backtick ('otool -L %s' % path)
+			for line in libs:
+				#parse 'otool -L'
+				if not line.startswith ('\t'):
+					continue
+				rpath = line.strip ().split(' ')[0]
+
+				remap = fixup_func (rpath)
+				if remap != rpath:
+					run_shell ('install_name_tool -change %s %s %s' % (rpath, remap, path), False)
 
 	def bundle (self):
 		self.make_app_bundle ()

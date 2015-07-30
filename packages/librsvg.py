@@ -3,10 +3,19 @@ class LibrsvgPackage(GnomeXzPackage):
 		GnomeXzPackage.__init__(self, 'librsvg', version_major = '2.37', version_minor = '0',
         configure_flags = [ '--disable-Bsymbolic', '--disable-introspection' ])
 
+		make = 'make DESTDIR=%{stage_root}'
+
 	def install (self):
+		#handle some mislocation
+		misdir = '%s%s' % (self.stage_root, self.staged_profile)
+		unprotect_dir (self.stage_root)
+
 		Package.install (self)
-		# scoop up some mislocated files 
-		run_shell('rsync -a --ignore-existing %s/%s/* %s' % (self.profile.stage_root, self.profile.staged_prefix, self.profile.staged_prefix), True)
-		run_shell('rm -rf %s/%s/*' % (self.profile.stage_root, self.profile.staged_prefix), True)
+		# scoop up
+		if not os.path.exists (misdir):
+			error ('Could not find mislocated libsrvg files')
+
+		self.sh('rsync -a --ignore-existing %s/* %s' % (misdir, self.profile.staged_prefix))
+		self.sh('rm -rf %s/*' % misdir)
 
 LibrsvgPackage()

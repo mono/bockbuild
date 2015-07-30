@@ -19,30 +19,15 @@ from glob import glob
 class MonoReleaseProfile(DarwinProfile, MonoReleasePackages):
     def __init__(self):
         self.MONO_ROOT = "/Library/Frameworks/Mono.framework"
-        self.RELEASE_VERSION = os.getenv('MONO_VERSION')
         self.BUILD_NUMBER = "0"
         self.MRE_GUID = "432959f9-ce1b-47a7-94d3-eb99cb2e1aa8"
         self.MDK_GUID = "964ebddd-1ffe-47e7-8128-5ce17ffffb05"
 
-        if self.RELEASE_VERSION is None:
-            raise Exception("You must export MONO_VERSION to use this build profile. e.g. export MONO_VERSION=1.0.0")
-
-        versions_root = os.path.join(self.MONO_ROOT, "Versions")
-        release_root = os.path.join(versions_root, self.RELEASE_VERSION)
-
-        DarwinProfile.__init__(self, prefix = release_root, min_version = 7)
+        DarwinProfile.__init__(self, min_version = 7)
         MonoReleasePackages.__init__(self)
 
         self.self_dir = os.path.realpath(os.path.dirname(sys.argv[0]))
         self.packaging_dir = os.path.join(self.self_dir, "packaging")
-
-        aclocal_dir = os.path.join(self.staged_prefix, "share", "aclocal")
-        if not os.path.exists(aclocal_dir):
-            os.makedirs(aclocal_dir)
-
-        registry_dir = os.path.join(self.staged_prefix, "etc", "mono", "registry", "LocalMachine")
-        if not os.path.exists(registry_dir):
-            os.makedirs(registry_dir)
 
         system_mono_dir = '/Library/Frameworks/Mono.framework/Versions/Current'
         self.system_mono = os.path.join (system_mono_dir, 'bin', 'mono')
@@ -56,16 +41,18 @@ class MonoReleaseProfile(DarwinProfile, MonoReleasePackages):
         self.env.set ('GDK_PIXBUF_MODULEDIR', '%{staged_prefix}/lib/gdk-pixbuf-2.0/2.10.0/loaders')
         self.env.set ('PANGO_SYSCONFDIR', '%{staged_prefix}/etc')
         self.env.set ('PANGO_LIBDIR', '%{staged_prefix}/lib')
-        
-    def build(self):
-        self.staged_binaries = []
-        self.staged_textfiles = []
-        DarwinProfile.build(self)
+        # self.env.set ('MONO_GAC_PREFIX', '%{staged_prefix}')
+        # self.env.set ('MONO_PATH', '%{staged_prefix}/lib/mono/4.0')
+
+    def setup (self):
+        self.mono_package = self.release_packages['mono']
+        self.RELEASE_VERSION = self.mono_package.version
+        self.prefix = os.path.join(self.MONO_ROOT, "Versions", self.RELEASE_VERSION)
+        self.calculate_updateid ()
+        trace (self.package_info('MDK/MRE'))
 
     # THIS IS THE MAIN METHOD FOR MAKING A PACKAGE
     def package(self):
-        self.restore_binaries ()
-        self.restore_textfiles ()
         self.fix_gtksharp_configs()
         self.generate_dsym()
         self.verify_binaries()
@@ -77,33 +64,32 @@ class MonoReleaseProfile(DarwinProfile, MonoReleasePackages):
         self.apply_blacklist(working, 'mdk_blacklist.sh')
         self.make_updateinfo(working, self.MDK_GUID)
         mdk_pkg = self.run_pkgbuild(working, "MDK")
-        print "Saving: " + mdk_pkg
+        title (mdk_pkg)
         # self.make_dmg(mdk_dmg, title, mdk_pkg, uninstall_script)
 
         # make the MRE
         self.apply_blacklist(working, 'mre_blacklist.sh')
         self.make_updateinfo(working, self.MRE_GUID)
         mre_pkg = self.run_pkgbuild(working, "MRE")
-        print "Saving: " + mre_pkg
+        title (mre_pkg)
         # self.make_dmg(mre_dmg, title, mre_pkg, uninstall_script)
         shutil.rmtree(working)
 
     def calculate_updateid(self):
         # Create the updateid
         if os.getenv('BOCKBUILD_ADD_BUILD_NUMBER'):
-            self.find_git()
-            print "cur path is %s and git is %s" % (os.getcwd(), self.git)
-            blame_rev_str = 'cd %s/mono; %s blame configure.ac HEAD | grep AC_INIT | sed \'s/ .*//\' ' % (self.build_root, self.git)
-            print blame_rev_str
+            pwd = os.getcwd ()
+            trace ("cur path is %s and git is %s" % (pwd, self.git))
+            blame_rev_str = 'cd %s; %s blame configure.ac HEAD | grep AC_INIT | sed \'s/ .*//\' ' % (self.mono_package.workspace, self.git)
             blame_rev = backtick(blame_rev_str)
-            print "Last commit to the version string %s" % (blame_rev)
+            trace ("Last commit to the version string %s" % (blame_rev))
             blame_rev = " ".join(blame_rev)
-            version_number_str = 'cd %s/mono; %s log %s..HEAD --oneline | wc -l | sed \'s/ //g\'' % (self.build_root, self.git, blame_rev)
-            print version_number_str
+            version_number_str = 'cd %s; %s log %s..HEAD --oneline | wc -l | sed \'s/ //g\'' % (self.mono_package.workspace, self.git, blame_rev)
             build_number = backtick(version_number_str)
-            print "Calculating commit distance, %s" % (build_number)
+            trace ("Calculating commit distance, %s" % (build_number))
             self.BUILD_NUMBER = " ".join(build_number)
             self.FULL_VERSION = self.RELEASE_VERSION + "." + self.BUILD_NUMBER
+            os.chdir (pwd)
         else:
             self.BUILD_NUMBER="0"
             self.FULL_VERSION = self.RELEASE_VERSION
@@ -147,13 +133,11 @@ class MonoReleaseProfile(DarwinProfile, MonoReleasePackages):
 
         print "Setting up temporary package directory:", tmpdir
 
-        self.calculate_updateid()
-
         # setup metadata
         run_shell('rsync -aPq %s/* %s' % (self.packaging_dir, tmpdir), False)
 
-        packages_list = string.join([pkg.get_package_string () for pkg in self.release_packages], "\\\n")
-        deps_list = 'bockbuild (rev. %s)\\\n' % self.bockbuild_revision + string.join([pkg.get_package_string () for pkg in self.toolchain_packages], "\\\n")
+        packages_list = string.join([pkg.get_package_string () for pkg in self.release_packages.values ()], "\\\n")
+        deps_list = 'bockbuild (rev. %s)\\\n' % self.bockbuild_revision + string.join([pkg.get_package_string () for pkg in self.toolchain_packages.values ()], "\\\n")
 
         parameter_map = {
             '@@MONO_VERSION@@': self.RELEASE_VERSION,
@@ -173,7 +157,7 @@ class MonoReleaseProfile(DarwinProfile, MonoReleasePackages):
         make_package_symlinks(monoroot)
 
         # copy to package root
-        run_shell('rsync -aPq "%s" "%s"' % (self.staged_prefix, versions), False)
+        run_shell('rsync -aPq "%s"/* "%s/%s"' % (self.staged_prefix, versions, self.RELEASE_VERSION), False)
 
         return tmpdir
 
@@ -233,7 +217,10 @@ class MonoReleaseProfile(DarwinProfile, MonoReleasePackages):
         elif self.arch == "darwin-universal":
             arch_str = "universal"
 
-        info = (pkg_type, self.FULL_VERSION, arch_str)
+        if self.cmd_options.release_build:
+            info = (pkg_type, self.FULL_VERSION, arch_str)
+        else:
+            info = (pkg_type, '%s-%s' % (self.mono_package.git_branch, self.FULL_VERSION) , arch_str)
 
         filename = "MonoFramework-%s-%s.macos10.xamarin.%s.pkg" % info
         return {
@@ -299,59 +286,17 @@ class MonoReleaseProfile(DarwinProfile, MonoReleasePackages):
             self.fix_dllmap(c, lambda line: "dllmap" in line)
         print count
 
-    def restore_binaries (self):
-        print 'Unstaging binaries...',
-        x = 0
-        for staged_path in self.staged_binaries:
-            final_path = staged_path.replace (self.staged_prefix, self.prefix)
-            run_shell ('install_name_tool -id %s %s' % (final_path, staged_path ))
-            libs = backtick ('otool -L %s' % staged_path)
-            for line in libs:
-                rpath = line.split(' ')[0]
-                if rpath.find (self.staged_prefix) != -1:
-                        remap = rpath.replace (self.staged_prefix,self.prefix)
-                        run_shell ('install_name_tool -change %s %s %s' % (rpath, remap, staged_path))
-            os.remove (staged_path + '.release')
-            x = x + 1
-        print x
-
-    def unstage_textfile (self, staged_path):
-        with open(staged_path) as text:
-                output = open(staged_path + '.unstage', 'w')
-                for line in text:
-                    tokens = line.split (" ")
-                    for idx,token in enumerate(tokens):
-                        if  token.find (self.staged_prefix) != -1:
-                            tokens[idx] = token.replace(self.staged_prefix,self.prefix)
-                    output.write (" ".join(tokens))
-                output.close
-        shutil.move (staged_path + '.unstage', staged_path)
-        os.chmod (staged_path, os.stat (staged_path + '.release').st_mode)
-        os.remove (staged_path + '.release')
-
-    def restore_textfiles (self):
-        print 'Unstaging textfiles...',
-        x = 0
-        for staged_path in self.staged_textfiles:
-            self.unstage_textfile (staged_path)
-            x = x + 1
-
-        # TODO: Deprecate profile.staged_textfiles since it ties bockbuild's Packaging phase
-        # to the Build phase. Then, we can use this for the extra stage files:
-
-        # for package in self.release_packages:
-        #     for extra_file in package.extra_stage_files:
-        #         print extra_file
-        #         self.unstage_textfile (os.path.join (self.staged_prefix, extra_file))
-        #         x = x + 1
-        # print x
-
     def verify(self, f):
         result = " ".join(backtick("otool -L " + f))
         regex = os.path.join(self.MONO_ROOT, "Versions", r"(\d+\.\d+\.\d+)")
-        match = re.search(regex, result).group(1)
-        if self.RELEASE_VERSION not in match:
-            raise Exception("%s references Mono %s\n%s" % (f, match, result))
+
+        match = re.search(regex, result)
+        if match is None:
+            return
+        token = match.group(1)
+        trace (token)
+        if self.RELEASE_VERSION not in token:
+            raise Exception("%s references Mono %s\n%s" % (f, token, text))
 
     def verify_binaries(self):
         bindir = os.path.join(self.staged_prefix, "bin")
@@ -387,7 +332,10 @@ class MonoReleaseProfile(DarwinProfile, MonoReleasePackages):
         subprocess.call(['bash', '-c', path] )
 
 def main():
-    MonoReleaseProfile().build()
+    try:
+        MonoReleaseProfile().build()
+    except e as Exception:
+        error (str(e))
 
 if __name__ == "__main__":
     main()
