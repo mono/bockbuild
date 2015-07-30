@@ -102,14 +102,8 @@ class MonoXamarinPackageProfile(MonoReleaseProfile, MonoReleasePackages):
         finally:
             os.chdir(oldcwd)
 
-    def fix_libMonoPosixHelper(self):
-        config = os.path.join(self.staged_prefix, "etc", "mono", "config")
-        self.fix_dllmap(
-            config, lambda line: "libMonoPosixHelper.dylib" in line)
-
     # THIS IS THE MAIN METHOD FOR MAKING A PACKAGE
     def package(self):
-        self.fix_libMonoPosixHelper()
         MonoReleaseProfile.package (self)
 
 MonoXamarinPackageProfile().build()
