@@ -12,17 +12,31 @@ sys.path.append('../..')
 
 from bockbuild.darwinprofile import DarwinProfile
 from bockbuild.util.util import *
-from packages import MonoReleasePackages
 from glob import glob
 
 sys.path.append('../mono-mac-release')
 
 from MonoReleaseProfile import MonoReleaseProfile
 
-class MonoXamarinPackageProfile(MonoReleaseProfile, MonoReleasePackages):
+class MonoXamarinPackageProfile(MonoReleaseProfile):
     def __init__(self):
         MonoReleaseProfile.__init__ (self)
-        if self.cmd_options.do_package:
+
+        # add the private stuff
+        found = False
+        for idx, package in enumerate(self.packages):  
+            if 'mono-master' in package:
+                package = package.replace ('mono-master', 'mono-master-encrypted')
+                self.packages[idx] = package
+                found = True
+        if not found:
+            error ('Did not find mono package to remap')
+
+        self.packages.append (os.path.realpath (os.path.join(self.resource_root, 'ms-test-suite.py')))
+
+        print self.packages
+
+        if self.cmd_options.release_build:
             self.identity = "Developer ID Installer: Xamarin Inc"
 
             output = backtick("security -v find-identity")
@@ -71,17 +85,18 @@ class MonoXamarinPackageProfile(MonoReleaseProfile, MonoReleasePackages):
         print productbuild_cmd
         backtick(productbuild_cmd)
 
-        productsign = "/usr/bin/productsign"
-        productsign_cmd = ' '.join([productsign,
-                                    "-s '%s'" % self.identity,
-                                    "'%s'" % temp,
-                                    "'%s'" % output])
-        print productsign_cmd
-        backtick(productsign_cmd)
-        os.remove(temp)
+        if self.cmd_options.release_build:  
+            productsign = "/usr/bin/productsign"
+            productsign_cmd = ' '.join([productsign,
+                                        "-s '%s'" % self.identity,
+                                        "'%s'" % temp,
+                                        "'%s'" % output])
+            print productsign_cmd
+            backtick(productsign_cmd)
+            os.remove(temp)
+            self.verify_codesign (output)
 
         os.chdir(old_cwd)
-        self.verify_codesign (output)
         return output
 
     def verify_codesign(self, pkg):

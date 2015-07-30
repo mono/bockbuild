@@ -65,12 +65,14 @@ class MonoReleasePackages:
 		self.packages.extend([
 				'mono-llvm.py',
 				'mono-master.py',
+				'pcl-reference-assemblies.py',
 				'libgdiplus.py',
 				'xsp.py',
 				'gtk-sharp-2.12-release-net4.5.py',
 				'ironlangs.py',
 				'fsharp-3.1.py',
-				'mono-basic.py'
+				'mono-basic.py',
+				'nuget.py'
 				])
 
 		self.packages = [os.path.realpath (os.path.join(self.resource_root, p)) for p in self.packages]
