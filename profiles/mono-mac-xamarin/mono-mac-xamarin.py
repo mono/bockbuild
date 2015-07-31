@@ -25,7 +25,7 @@ class MonoXamarinPackageProfile(MonoReleaseProfile):
         # add the private stuff
         found = False
         for idx, package in enumerate(self.packages):  
-            if 'mono-master' in package:
+            if 'mono-master.py' in package:
                 package = package.replace ('mono-master', 'mono-master-encrypted')
                 self.packages[idx] = package
                 found = True
@@ -33,8 +33,6 @@ class MonoXamarinPackageProfile(MonoReleaseProfile):
             error ('Did not find mono package to remap')
 
         self.packages.append (os.path.realpath (os.path.join(self.resource_root, 'ms-test-suite.py')))
-
-        print self.packages
 
         if self.cmd_options.release_build:
             self.identity = "Developer ID Installer: Xamarin Inc"
