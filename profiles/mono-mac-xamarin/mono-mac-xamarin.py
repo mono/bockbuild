@@ -26,8 +26,9 @@ class MonoXamarinPackageProfile(MonoReleaseProfile):
         found = False
         for idx, package in enumerate(self.packages):  
             if 'mono-master.py' in package:
-                package = package.replace ('mono-master', 'mono-master-encrypted')
-                self.packages[idx] = package
+                self.packages[idx] = package.replace ('mono-master', 'mono-master-encrypted')
+                found = True
+            if 'mono-master-encrypted.py' in package:
                 found = True
         if not found:
             error ('Did not find mono package to remap')
