@@ -410,7 +410,7 @@ class Package:
 			files.append (relpath + '\n')
 
 		files.sort ()
-		if update (files, artifact + '.files') != None:
+		if update (files, artifact + '.files'):
 			warn ('Package filelist changed')
 
 		merge_trees (artifact_stage, dest, False)

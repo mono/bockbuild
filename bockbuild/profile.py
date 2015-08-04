@@ -143,12 +143,17 @@ class Profile:
 		log (0, 'Loaded profile \'%s\' (arch: %s)' % (self.name, self.arch))
 		log (0, 'Setting environment variables')
 
-		self.full_rebuild = False
-
 		Profile.setup (self)
 		self.setup ()
 
-		self.track_env ()
+		self.full_rebuild = self.track_env ()
+
+		if self.full_rebuild:
+			warn ('Build environment changed')
+			for d in os.listdir (self.build_root):
+				if d.endswith ('.cache') or d.endswith ('.artifact'):
+					self.rm (os.path.join(self.build_root, d))
+
 
 		if self.cmd_options.shell:
 			title ('Shell')
@@ -202,11 +207,7 @@ class Profile:
 		if self.unsafe:
 			warn ('Running with --unsafe, build environment not checked for changes')
 
-		env_diff = None if self.unsafe else update (tracked_env, os.path.join (self.root, 'global.env'), show_diff = True)
-
-		if env_diff != None:
-			self.full_rebuild = True
-			warn ('Build environment changed')
+		changed = False if self.unsafe else update (tracked_env, os.path.join (self.root, 'global.env'), show_diff = True)
 
 		self.env.compile ()
 		self.env.export ()
@@ -215,10 +216,12 @@ class Profile:
 		self.env.dump (self.envfile)
 		os.chmod (self.envfile, 0755)
 
+		return changed
+
 	def setup (self):
 		progress ('Setting up packages')
 		ensure_dir (self.source_cache, False)
-		ensure_dir (self.build_root, self.full_rebuild)
+		ensure_dir (self.build_root, False)
 
 		self.toolchain_packages = collections.OrderedDict()
 		self.release_packages = collections.OrderedDict()
