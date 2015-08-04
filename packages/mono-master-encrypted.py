@@ -97,4 +97,8 @@ class MonoMasterEncryptedPackage(Package):
         Package.install (self)
         self.extra_stage_files = ['etc/mono/config']
 
+        registry_dir = os.path.join(self.staged_prefix, "etc", "mono", "registry", "LocalMachine")
+        if not os.path.exists(registry_dir):
+            os.makedirs(registry_dir)
+
 MonoMasterEncryptedPackage()

@@ -38,9 +38,7 @@ class MonoReleaseProfile(DarwinProfile, MonoReleasePackages):
         if not os.path.exists(aclocal_dir):
             os.makedirs(aclocal_dir)
 
-        registry_dir = os.path.join(self.staged_prefix, "etc", "mono", "registry", "LocalMachine")
-        if not os.path.exists(registry_dir):
-            os.makedirs(registry_dir)
+
 
     def build(self):
         self.staged_binaries = []
