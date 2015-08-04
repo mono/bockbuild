@@ -41,7 +41,6 @@ class MonoReleaseProfile(DarwinProfile, MonoReleasePackages):
         self.env.set ('GDK_PIXBUF_MODULEDIR', '%{staged_prefix}/lib/gdk-pixbuf-2.0/2.10.0/loaders')
         self.env.set ('PANGO_SYSCONFDIR', '%{staged_prefix}/etc')
         self.env.set ('PANGO_LIBDIR', '%{staged_prefix}/lib')
-        # self.env.set ('MONO_GAC_PREFIX', '%{staged_prefix}')
         # self.env.set ('MONO_PATH', '%{staged_prefix}/lib/mono/4.0')
 
     def setup (self):
@@ -311,16 +310,17 @@ class MonoReleaseProfile(DarwinProfile, MonoReleasePackages):
         envscript = '''#!/bin/sh
         PROFNAME="%s"
         INSTALLDIR="%s"
+        ROOT="%s"
         export DYLD_FALLBACK_LIBRARY_PATH="$INSTALLDIR/lib:/lib:/usr/lib"
         export ACLOCAL_PATH="$INSTALLDIR/share/aclocal"
         export CONFIG_SITE="$INSTALLDIR/$PROFNAME-config.site"
         export MONO_GAC_PREFIX="$INSTALLDIR"
-        export MONO_ADDINS_REGISTRY="$INSTALLDIR/addinreg"
+        export MONO_ADDINS_REGISTRY="$ROOT/addinreg"
         export MONO_INSTALL_PREFIX="$INSTALLDIR"
 
         export PS1="\[\e[1;3m\][$PROFNAME] \w @ "
         bash -i
-        ''' % (self.profile_name, self.staged_prefix)
+        ''' % (self.profile_name, self.staged_prefix, self.root)
 
         path = os.path.join(self.root, self.profile_name + '.sh')
 
