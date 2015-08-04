@@ -61,9 +61,9 @@ class MonoDevelopMacDevPackages:
 			'gtk-sharp.py',
 			'mono-addins.py',
 			'xsp.py',
-			'fsharp-3.1.py',
+			'fsharp.py',
 			'pcl-reference-assemblies.py',
+			'nuget.py'
 		])
 
-		self.packages = [os.path.join ('..', '..', 'packages', p)
-			for p in self.packages]
+		self.packages = [os.path.realpath (os.path.join(self.resource_root, p)) for p in self.packages]
