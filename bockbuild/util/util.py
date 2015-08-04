@@ -24,7 +24,7 @@ class bcolors:
     UNDERLINE = '\033[4m'
 
 class config:
-	trace = True
+	trace = False
 	filter = None # function name/package name filter for trace() and test()
 	test = False
 	iterative = False # FIXME: this needs a bit more work
@@ -135,9 +135,9 @@ def retry (func, tries = 3, delay = 5):
 
 def ensure_dir (d, purge = False):
 	if os.path.exists(d):
-		unprotect_dir (d, recursive = True)
 		if purge == True:
 			trace ('Nuking %s' % d)
+			unprotect_dir (d, recursive = True)
 			shutil.rmtree(d, ignore_errors=False)
 		else: return
 	os.makedirs (d)
@@ -157,16 +157,16 @@ def update (new_text, file, show_diff = True):
 	output.writelines (new_text)
 
 	if orig_text == None:
-		return None
+		return False
 
 	difflines = [line for line in difflib.context_diff(orig_text, new_text, n=0)]
 	if len (difflines) > 0:
 		if show_diff == True:
 			brieflines = [line.rstrip('\r\n') for line in difflines if line.startswith(('+ ','- ','! '))]
 			info ('\n'.join (brieflines))
-		return difflines
+		return True # changes
 	else:
-		return None
+		return False
 
 def get_filetype (path):
 	return backtick ('file -b "%s"' % path)[0]
