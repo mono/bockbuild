@@ -9,7 +9,7 @@ To build the distribution with the very latest Mono:
     $ MONO_VERSION=4.9.9 ./mono-mac-release.py --build --arch darwin-32
 `MONO_VERSION` can be any number formatted as X.X.X.
 
-`--arch` can also be `darwin-64` or `darwin-unversal` (32/64 lipoed build).
+`--arch` can also be `darwin-64` or `darwin-universal` (32/64 lipoed build).
 
 To build the distribution with a Mono from a branch:
 
