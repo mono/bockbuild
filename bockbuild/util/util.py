@@ -24,12 +24,12 @@ class bcolors:
     UNDERLINE = '\033[4m'
 
 class config:
-	trace = True
+	trace = False
 	filter = None # function name/package name filter for trace() and test()
 	test = False
 	iterative = False # FIXME: this needs a bit more work
 	quiet = None
-	never_rebuild = True
+	never_rebuild = False
 
 class CommandException (Exception):
 	def __init__ (self, message):
