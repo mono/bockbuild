@@ -336,6 +336,7 @@ def main():
         MonoReleaseProfile().build()
     except e as Exception:
         error (str(e))
+        raise
 
 if __name__ == "__main__":
     main()

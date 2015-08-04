@@ -152,7 +152,7 @@ class Profile:
 			warn ('Build environment changed')
 			for d in os.listdir (self.build_root):
 				if d.endswith ('.cache') or d.endswith ('.artifact'):
-					self.rm (os.path.join(self.build_root, d))
+					os.remove (os.path.join(self.build_root, d))
 
 
 		if self.cmd_options.shell:
