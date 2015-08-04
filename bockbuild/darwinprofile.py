@@ -184,8 +184,8 @@ class DarwinProfile (UnixProfile):
 				if not line.startswith ('\t'):
 					continue
 				rpath = line.strip ().split(' ')[0]
-				if rpath.startswith (self.package.profile.MONO_ROOT):
-					error ('%s is linking to external distribution %s' % (path, rpath))
+				# if rpath.startswith (self.package.profile.MONO_ROOT): 
+				# 	error ('%s is linking to external distribution %s' % (path, rpath))
 
 	class stage_textfiles (Profile.FileProcessor):
 		def match (self, path, filetype):

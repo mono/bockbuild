@@ -24,7 +24,7 @@ class bcolors:
     UNDERLINE = '\033[4m'
 
 class config:
-	trace = False
+	trace = True
 	filter = None # function name/package name filter for trace() and test()
 	test = False
 	iterative = False # FIXME: this needs a bit more work

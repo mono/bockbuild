@@ -154,7 +154,7 @@ class Package:
 				print 'Cloning git repo: %s' % source_url
 				self.sh ('%' + '{git} clone --mirror "%s" "%s"' % (source_url, cache_dir))
 				
-			log (1, 'Updating cache')
+			trace ( 'Updating cache')
 			self.pushd (cache_dir)
 			if self.git_branch == None:
 				self.sh ('%{git} fetch --all --prune')
@@ -163,14 +163,14 @@ class Package:
 			self.popd ()
 
 			if not os.path.exists(workspace_dir):
-				log (1, 'Cloning a fresh workspace')
+				trace ( 'Cloning a fresh workspace')
 				self.sh ('%' + '{git} clone --local --shared 	"%s" "%s"' % (cache_dir, workspace_dir))
 				self.cd (workspace_dir)
 				clean_func = clean_nop
 			else:
 				clean_func = clean_git_workspace
 
-			log (1, 'Updating workspace')
+			trace ( 'Updating workspace')
 			self.cd (workspace_dir)
 
 			if self.git_branch == None:
@@ -191,6 +191,7 @@ class Package:
 				target_revision = self.backtick ('%' +'{git} rev-parse origin/%s' % self.git_branch)[0]
 
 			if (current_revision != target_revision):
+				trace ('%s -> %s' % (current_revision, target_revision))
 				self.sh ('%{git} reset --hard')
 				self.sh ('%{git} clean -xffd')
 				self.sh ('%' + '{git} checkout %s' % target_revision)
