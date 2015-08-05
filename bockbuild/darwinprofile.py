@@ -82,6 +82,29 @@ class DarwinProfile (UnixProfile):
 
 		package.local_configure_flags.extend (['--cache-file=%s/%s-%s.cache' % (self.build_root, package.name, arch)])
 
+	# staging helper functions
+
+	def match_stageable_text (self, path, filetype):
+		if os.path.islink (path) or os.path.isdir (path):
+			return False
+		return path.endswith ('.pc') or filetype == 'libtool library file' or filetype.endswith ('text executable')
+
+	def match_text (self, path, filetype):
+		if os.path.islink (path) or os.path.isdir (path):
+			return False
+		return self.match_stageable_text (path, filetype) or 'text' in filetype
+
+	def match_stageable_binary (self, path, filetype):
+		if os.path.islink (path) or os.path.isdir (path):
+			return False
+		return 'Mach-O' in filetype and not path.endswith ('.a') and not 'dSYM' in path
+
+	def match_symlinks (self, path, filetype):
+		return os.path.islink (path)
+
+	def match_real_files (self, path, filetype):
+		return (not os.path.islink (path) and not os.path.isdir (path))
+
 	def process_package (self, package):
 		failure_count = 0
 		def staging_harness (path, func, failure_count = failure_count):
@@ -101,10 +124,11 @@ class DarwinProfile (UnixProfile):
 			backup = path + '.release'
 			shutil.copy2 (path, backup)
 			try:
+				trace ('Staging %s' % path)
 				func (path, relocate_to_profile)
 				if os.path.exists (path + '.stage'):
-					package.rm (path)
-					shutil.copy2 (path + '.stage', path)
+					os.remove (path)
+					shutil.move (path + '.stage', path)
 					shutil.copystat (backup, path)
 			except CommandException as e:
 				package.rm_if_exists (path)
@@ -119,12 +143,15 @@ class DarwinProfile (UnixProfile):
 		extra_files = [os.path.join (package.staged_prefix, expand_macros (file, package))
 			for file in package.extra_stage_files]
 
-		Profile.postprocess (self, [self.stage_textfiles(staging_harness, extra_files),
-				self.stage_binaries(staging_harness),
-				self.validate_rpaths(package)], package.staged_prefix)
+		text_stager = self.stage_textfiles (harness = staging_harness, match = self.match_stageable_text, extra_files = extra_files)
+		binary_stager = self.stage_binaries (harness = staging_harness, match = self.match_stageable_binary)
+		binary_validate = self.validate_rpaths (match = self.match_stageable_binary)
 
-	def process_release (self):
-		unprotect_dir (self.staged_prefix, recursive = True)
+		Profile.postprocess (self, [text_stager, binary_stager, binary_validate], package.staged_prefix)
+
+
+	def process_release (self, directory):
+		unprotect_dir (directory, recursive = True)
 
 		def destaging_harness (backup, func):
 			path = backup[0:-len ('.release')]
@@ -139,6 +166,7 @@ class DarwinProfile (UnixProfile):
 				return newtoken
 
 			try:
+				trace ('Destaging %s' % path)
 				func (path, relocate_for_release)
 				if os.path.exists (path + '.stage'):
 					os.remove (path)
@@ -150,16 +178,18 @@ class DarwinProfile (UnixProfile):
 				warn ('Critical: Destaging failed for ''%s''' % path)
 				raise
 
-		Profile.postprocess (self, [self.stage_textfiles(destaging_harness),
-			self.stage_binaries(destaging_harness)], self.staged_prefix, lambda l: l.endswith ('.release') )
+		procs = [ self.stage_textfiles (harness = destaging_harness, match = self.match_text),
+				self.stage_binaries (harness = destaging_harness, match = self.match_stageable_binary),
+				self.validate_symlinks (match = self.match_symlinks) ]
+
+		Profile.postprocess (self, procs , directory, lambda l: l.endswith ('.release'))
 
 	class validate_text_staging (Profile.FileProcessor):
 		problem_files = []
 		def __init__ (self, package):
 			self.package = package
 			Profile.FileProcessor.__init__ (self)
-		def match (self, path, filetype):
-			return 'text' in filetype
+
 		def process (self, path):
 			with open(path) as text:
 				stage_name = os.path.basename (self.package.stage_root)
@@ -171,12 +201,19 @@ class DarwinProfile (UnixProfile):
 			if len(self.problem_files) > 0:
 				error ('Problematic staging files:\n' + '\n'.join (self.problem_files) )
 
+	class validate_symlinks (Profile.FileProcessor):
+		def process (self, path):
+			if path.endswith ('.release'):
+				#get rid of these symlinks
+				os.remove (path)
+				return
+
+			target = os.path.realpath(path)
+			if not os.path.exists (target):
+				error ('Broken symlink %s -> %s' % (self.relpath (path), target))
+
+
 	class validate_rpaths (Profile.FileProcessor):
-		def __init__ (self, package):
-			self.package = package
-			Profile.FileProcessor.__init__ (self)
-		def match (self, path, filetype):
-			return 'Mach-O' in filetype and not path.endswith ('.a')
 		def process (self, path):
 			libs = backtick ('otool -L %s' % path)
 			for line in libs:
@@ -184,13 +221,13 @@ class DarwinProfile (UnixProfile):
 				if not line.startswith ('\t'):
 					continue
 				rpath = line.strip ().split(' ')[0]
+
+				if not os.path.exists (rpath):
+					error ('%s contains reference to non-existing file %s' % (self.relpath (path), rpath))
 				# if rpath.startswith (self.package.profile.MONO_ROOT): 
 				# 	error ('%s is linking to external distribution %s' % (path, rpath))
 
 	class stage_textfiles (Profile.FileProcessor):
-		def match (self, path, filetype):
-			return path.endswith ('.pc') or path.endswith ('.la') or filetype.endswith ('text executable')
-
 		def process (self, path, fixup_func):
 			with open(path) as text:
 				output = open(path + '.stage', 'w')
@@ -204,9 +241,6 @@ class DarwinProfile (UnixProfile):
 				output.close
 
 	class stage_binaries (Profile.FileProcessor):
-		def match (self, path, filetype):
-			return filetype.startswith('Mach-O') and not path.endswith ('.a')
-
 		def process (self, path, fixup_func):
 			staged_path = fixup_func (path)
 
