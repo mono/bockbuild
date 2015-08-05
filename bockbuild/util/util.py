@@ -46,12 +46,17 @@ def log (phase, message):
 #TODO: move these functions to either Profile or their own class
 
 def get_caller (skip = 0):
+	if len (inspect.stack()) < 3 + skip:
+		return 'top'
 	stack = inspect.stack()[2 + skip]
 	caller = stack[3]
 	frame = stack[0]
 
 	if 'self' in frame.f_locals:
-		return '%s->%s' % (frame.f_locals['self'].name, caller)
+		try:
+			return '%s->%s' % (frame.f_locals['self'].name, caller)
+		except Exception as e:
+			return '%s->%s' % (frame.f_locals['self'].__class__.__name__, caller)
 	else:
 		return caller
 
@@ -94,7 +99,6 @@ def warn (message):
 def error (message):
 	config.trace = False
 	logprint ('(bockbuild error) %s: %s' % (get_caller (), message) , bcolors.FAIL, summary = True)
-	print '%s:%s' % (inspect.stack() [1][1] , inspect.stack() [1][2])
 	sys.exit (255)
 
 def trace (message, skip = 0):

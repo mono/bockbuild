@@ -136,7 +136,7 @@ class MonoReleaseProfile(DarwinProfile, MonoReleasePackages):
         run_shell('rsync -aPq %s/* %s' % (self.packaging_dir, tmpdir), False)
 
         packages_list = string.join([pkg.get_package_string () for pkg in self.release_packages.values ()], "\\\n")
-        deps_list = 'bockbuild (rev. %s)\\\n' % self.bockbuild_revision + string.join([pkg.get_package_string () for pkg in self.toolchain_packages.values ()], "\\\n")
+        deps_list = 'bockbuild (rev. %s)\\\n' % self.env.bockbuild_revision + string.join([pkg.get_package_string () for pkg in self.toolchain_packages.values ()], "\\\n")
 
         parameter_map = {
             '@@MONO_VERSION@@': self.RELEASE_VERSION,
@@ -156,7 +156,7 @@ class MonoReleaseProfile(DarwinProfile, MonoReleasePackages):
         make_package_symlinks(monoroot)
 
         # copy to package root
-        run_shell('rsync -aPq "%s"/* "%s/%s"' % (self.staged_prefix, versions, self.RELEASE_VERSION), False)
+        run_shell('rsync -aPq "%s"/* "%s/%s"' % (self.package_root, versions, self.RELEASE_VERSION), False)
 
         return tmpdir
 
@@ -230,13 +230,13 @@ class MonoReleaseProfile(DarwinProfile, MonoReleasePackages):
     def generate_dsym(self):
         print 'Generating dsyms...',
         x = 0
-        for path, dirs, files in os.walk(self.staged_prefix):
+        for path, dirs, files in os.walk(self.package_root):
             for name in files:
                 f = os.path.join(path, name)
-                file_type = backtick('file "%s"' % f)
-                if "dSYM" in f:
-                    continue
-                if "Mach-O" in "".join(file_type):
+
+
+                file_type = get_filetype (f)
+                if self.match_stageable_binary (f, file_type):
                     try:
                         run_shell('dsymutil "%s" >/dev/null' % f)
                         x = x + 1
@@ -278,7 +278,7 @@ class MonoReleaseProfile(DarwinProfile, MonoReleasePackages):
             'gtk-sharp',
             'pango-sharp'
         ]
-        gac = os.path.join(self.staged_prefix, "lib", "mono", "gac")
+        gac = os.path.join(self.package_root, "lib", "mono", "gac")
         confs = [glob(os.path.join(gac, x, "*", "*.dll.config")) for x in libs]
         for c in itertools.chain(*confs):
             count = count + 1
@@ -298,7 +298,7 @@ class MonoReleaseProfile(DarwinProfile, MonoReleasePackages):
             raise Exception("%s references Mono %s\n%s" % (f, token, text))
 
     def verify_binaries(self):
-        bindir = os.path.join(self.staged_prefix, "bin")
+        bindir = os.path.join(self.package_root, "bin")
         for path, dirs, files in os.walk(bindir):
             for name in files:
                 f = os.path.join(path, name)

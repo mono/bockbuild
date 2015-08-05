@@ -15,6 +15,7 @@ class Profile:
 		self.build_root = os.path.join (self.root, 'build-root')
 		self.staged_prefix = os.path.join (self.root, 'stage-root')
 		self.toolchain_root = os.path.join (self.root, 'toolchain-root')
+		self.package_root = os.path.join (self.root, 'package-root')
 		self.prefix = prefix if prefix else os.path.join (self.root, 'install-root')
                 self.source_cache = os.getenv('BOCKBUILD_SOURCE_CACHE') or os.path.realpath (os.path.join (self.root, 'cache'))
                 self.cpu_count = get_cpu_count ()
@@ -25,14 +26,14 @@ class Profile:
 		self.env.set ('BUILD_PREFIX', '%{prefix}')
 		self.env.set ('BUILD_ARCH', '%{arch}')
 		self.env.set ('BOCKBUILD_ENV', '1')
+
 		self.packages = []
 		self.profile_name = self.__class__.__name__
 
 		find_git (self)
+		self.env.set ('bockbuild_revision', git_get_revision(self) )
 
-		self.bockbuild_revision = git_get_revision(self)
-
-		loginit ('bockbuild rev. %s %s' % (self.bockbuild_revision, "" or "(branch: %s)" % git_get_branch(self)))
+		loginit ('bockbuild rev. %s %s' % (self.env.bockbuild_revision, "" or "(branch: %s)" % git_get_branch(self)))
 		info ('cmd: %s' % ' '.join(sys.argv))
 
 		self.parse_options ()
@@ -187,7 +188,12 @@ class Profile:
 
 		if self.cmd_options.do_package:
 			title ('Packaging')
-			self.process_release ()
+			protect_dir (self.staged_prefix)
+			ensure_dir (self.package_root, True)
+
+			run_shell('rsync -aPq %s/* %s' % (self.staged_prefix, self.package_root), False)
+
+			self.process_release (self.package_root)
 			self.package ()
 
 	def load_package (self, path):
@@ -211,8 +217,6 @@ class Profile:
 		tracked_env.extend (self.env.serialize ())
 
 		changed = False if self.unsafe else update (tracked_env, os.path.join (self.root, 'global.env'), show_diff = True)
-
-
 
 		self.envfile = os.path.join (self.root, self.profile_name) + '_env.sh'
 		self.env.dump (self.envfile)
@@ -263,16 +267,14 @@ class Profile:
 		package.build_artifact = os.path.join (self.build_root, package.name + '.artifact')
 
 	class FileProcessor (object):
-		def __init__ (self, harness = None, extra_files = None):
+		def __init__ (self, harness = None, match = None, process = None,  extra_files = None):
 			self.harness = harness
+			self.match = match
 			self.files = list (extra_files) if extra_files else list ()
 			self.root = None
 
 		def relpath (self, path):
 			return os.path.relpath (path, self.root)
-
-		def process (self, path):
-			return
 
 		def run (self):
 			for path in self.files:
@@ -283,24 +285,31 @@ class Profile:
 
 	def postprocess (self, processors, directory, filefilter = None):
 		def simple_harness (path, func):
-			hash = hashlib.sha1(open(path).read()).hexdigest()
+			if not os.path.lexists (path):
+				return # file removed by previous processor function
+			# TODO: Fix so that it works on symlinks
+			# hash = hashlib.sha1(open(path).read()).hexdigest()
 			func (path)
-			if not os.path.exists (path):
-				warn ('Removed file: %s' % path)
-			if hash != hashlib.sha1(open(path).read()).hexdigest():
-				warn ('Changed file: %s' % path)
+			if not os.path.lexists (path):
+				trace ('Removed file: %s' % path)
+			#if hash != hashlib.sha1(open(path).read()).hexdigest():
+			#	warn ('Changed file: %s' % path)
 
-		for path in filter (filefilter, iterate_dir (directory)):
+		for proc in processors:
+			proc.root = directory
+			if proc.harness == None:
+				proc.harness = simple_harness
+			if proc.match == None:
+					error ('proc %s has no match function' % proc.__class__.__name__)
+
+		for path in filter (filefilter, iterate_dir (directory, with_dirs = True, with_links = True)):
 			filetype = get_filetype (path)
 			for proc in processors:
-				proc.root = directory
 				if proc.match (path, filetype) == True:
 					trace ('%s  matched %s / %s' % (proc.__class__.__name__, os.path.basename(path), filetype) )
 					proc.files.append (path)
 
 		for proc in processors:
-			if proc.harness == None:
-				proc.harness = simple_harness
 			trace ('%s: %s items' % (proc.__class__.__name__ , len (proc.files)))
 			proc.run ()
 
