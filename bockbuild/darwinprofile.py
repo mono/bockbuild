@@ -145,14 +145,18 @@ class DarwinProfile (UnixProfile):
 
 		text_stager = self.stage_textfiles (harness = staging_harness, match = self.match_stageable_text, extra_files = extra_files)
 		binary_stager = self.stage_binaries (harness = staging_harness, match = self.match_stageable_binary)
-		binary_validate = self.validate_rpaths (match = self.match_stageable_binary)
 
-		Profile.postprocess (self, [text_stager, binary_stager, binary_validate], package.staged_prefix)
+		Profile.postprocess (self, [text_stager, binary_stager], package.staged_prefix)
 
 
 	def process_release (self, directory):
-		unprotect_dir (directory, recursive = True)
+		# validate staged install
+		# TODO: move to end of '--build' instead of at the beginning of '--package'
+		unprotect_dir (self.staged_prefix, recursive = True)
+		Profile.postprocess (self, [self.validate_rpaths (match = self.match_stageable_binary),
+					self.validate_symlinks (match = self.match_symlinks)], self.staged_prefix)
 
+		unprotect_dir (directory, recursive = True)
 		def destaging_harness (backup, func):
 			path = backup[0:-len ('.release')]
 			trace (path)
@@ -179,8 +183,7 @@ class DarwinProfile (UnixProfile):
 				raise
 
 		procs = [ self.stage_textfiles (harness = destaging_harness, match = self.match_text),
-				self.stage_binaries (harness = destaging_harness, match = self.match_stageable_binary),
-				self.validate_symlinks (match = self.match_symlinks) ]
+			self.stage_binaries (harness = destaging_harness, match = self.match_stageable_binary)]
 
 		Profile.postprocess (self, procs , directory, lambda l: l.endswith ('.release'))
 
@@ -202,6 +205,7 @@ class DarwinProfile (UnixProfile):
 				error ('Problematic staging files:\n' + '\n'.join (self.problem_files) )
 
 	class validate_symlinks (Profile.FileProcessor):
+		problem_links = []
 		def process (self, path):
 			if path.endswith ('.release'):
 				#get rid of these symlinks
@@ -209,12 +213,19 @@ class DarwinProfile (UnixProfile):
 				return
 
 			target = os.path.realpath(path)
-			if not os.path.exists (target):
-				error ('Broken symlink %s -> %s' % (self.relpath (path), target))
+			if not os.path.exists (target) or not target.startswith (self.root):
+				self.problem_links.append ('%s -> %s' % (self.relpath(path), target))
+
+		def end (self):
+			if len(self.problem_links) > 0:
+				warn ('Broken symlinks:\n' + '\n'.join (self.problem_links) ) #TODO: Turn into error when we handle them
+
 
 
 	class validate_rpaths (Profile.FileProcessor):
 		def process (self, path):
+			if path.endswith ('.release'):
+				return
 			libs = backtick ('otool -L %s' % path)
 			for line in libs:
 				#parse 'otool -L'
