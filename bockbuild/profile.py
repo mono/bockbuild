@@ -22,7 +22,8 @@ class Profile:
 		self.uname = backtick ('uname -a')
 
 		self.env = Environment (self)
-		self.env.set ('BUILD_PREFIX', self.prefix)
+		self.env.set ('BUILD_PREFIX', '%{prefix}')
+		self.env.set ('BUILD_ARCH', '%{arch}')
 		self.env.set ('BOCKBUILD_ENV', '1')
 		self.packages = []
 		self.profile_name = self.__class__.__name__
@@ -201,16 +202,17 @@ class Profile:
 
 	def track_env (self):
 		tracked_env = []
-		tracked_env.extend (dump (self, 'profile'))
-		tracked_env.extend (self.env.serialize ())
 
 		if self.unsafe:
 			warn ('Running with --unsafe, build environment not checked for changes')
 
-		changed = False if self.unsafe else update (tracked_env, os.path.join (self.root, 'global.env'), show_diff = True)
-
 		self.env.compile ()
 		self.env.export ()
+		tracked_env.extend (self.env.serialize ())
+
+		changed = False if self.unsafe else update (tracked_env, os.path.join (self.root, 'global.env'), show_diff = True)
+
+
 
 		self.envfile = os.path.join (self.root, self.profile_name) + '_env.sh'
 		self.env.dump (self.envfile)

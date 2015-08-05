@@ -30,10 +30,10 @@ class MonoReleaseProfile(DarwinProfile, MonoReleasePackages):
         self.packaging_dir = os.path.join(self.self_dir, "packaging")
 
         system_mono_dir = '/Library/Frameworks/Mono.framework/Versions/Current'
-        self.system_mono = os.path.join (system_mono_dir, 'bin', 'mono')
-        self.system_mcs = os.path.join (system_mono_dir, 'bin', 'mcs')
+        self.env.set ('system_mono', os.path.join (system_mono_dir, 'bin', 'mono'))
+        self.env.set ('system_mcs', os.path.join (system_mono_dir, 'bin', 'mcs'))
 
-        self.system_mono_version = backtick ('%s --version' % self.system_mono)
+        self.env.set ('system_mono_version', backtick ('%s --version' % self.env.system_mono)[0])
 
         # config overrides for some programs to be functional while staged
 

@@ -40,7 +40,7 @@ class MonoMasterPackage(Package):
 		self.extra_stage_files = ['etc/mono/config']
 
 	def build (self):
-		self.make = '%s EXTERNAL_MCS=%s EXTERNAL_RUNTIME=%s' % (self.make, self.profile.system_mcs, self.profile.system_mono)
+		self.make = '%s EXTERNAL_MCS=%s EXTERNAL_RUNTIME=%s' % (self.make, self.profile.env.system_mcs, self.profile.env.system_mono)
 		Package.build (self)
 
 	def prep (self):
