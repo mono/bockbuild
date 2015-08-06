@@ -227,9 +227,6 @@ class Package:
 					def checkout_archive (archive, cache, workspace):
 						self.pushd (build_root)
 						if not os.path.exists (cache):
-							# since this is a fresh cache, the workspace copy is invalid if it exists
-							if os.path.exists (workspace):
-								self.rm (workspace)
 							progress ('Downloading: %s' % archive)
 							filename, message = FancyURLopener ().retrieve (archive, cache)
 						if not os.path.exists (workspace):
