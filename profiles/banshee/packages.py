@@ -133,5 +133,4 @@ class BansheePackages:
 		if self.cmd_options.release_build:
 			self.packages.append ('banshee-git.py')
 
-		self.packages = [os.path.join ('..', '..', 'packages', p)
-			for p in self.packages]
+		self.packages = [os.path.realpath (os.path.join(self.resource_root, p)) for p in self.packages]
