@@ -6,14 +6,13 @@ To build the distribution with the very latest Mono:
 
     $ git clone git@github.com:mono/bockbuild bockbuild
     $ cd bockbuild/profiles/mono-mac-release
-    $ MONO_VERSION=4.9.9 ./mono-mac-release.py --build --arch darwin-32
-`MONO_VERSION` can be any number formatted as X.X.X.
+    $ ./mono-mac-release.py --build --arch darwin-32
 
 `--arch` can also be `darwin-64` or `darwin-universal` (32/64 lipoed build).
 
 To build the distribution with a Mono from a branch:
 
-    $ MONO_VERSION=4.9.9 MONO_BRANCH=mono-4.0.0-branch ./mono-mac-release.py --build --arch darwin-32
+    $ MONO_BRANCH=mono-4.0.0-branch ./mono-mac-release.py --build --arch darwin-32
     
 To build the distribution with your local copy of Mono:
 
@@ -21,11 +20,11 @@ To build the distribution with your local copy of Mono:
 
 To get a shell that uses your custom-built distribution (e.g. to build & run Monodevelop against it):
 
-    $ MONO_VERSION=4.9.9 MONO_BRANCH=mono-4.0.0-branch ./mono-mac-release.py --shell
+    $ MONO_BRANCH=mono-4.0.0-branch ./mono-mac-release.py --shell
     
 Finally, to create a package of the distribution:
 
-    $ MONO_VERSION=4.9.9 MONO_BRANCH=mono-4.0.0-branch ./mono-mac-release.py --build --package
+    $ MONO_BRANCH=mono-4.0.0-branch ./mono-mac-release.py --build --package
 
 
 Bockbuild
