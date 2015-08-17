@@ -119,7 +119,7 @@ def trace (message, skip = 0):
 def test (func):
 	if config.test == False:
 		return
-	caller = get_caller(skip)
+	caller = get_caller ()
 
 	if config.filter != None and config.filter not in caller:
 		return

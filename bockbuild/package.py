@@ -552,11 +552,15 @@ class Package:
 		self.cd (dir)
 
 	def popd (self, failure = False):
+		caller = get_caller ()
 		def consistent_use ():
-			if cwd['caller'] != get_caller ():
-				error ('popd: Unmatched pushd/popd callers: (%s/%s)' % (cwd['caller'], get_caller ()))
+			if cwd['caller'] != caller:
+				warn ('popd: Unmatched pushd/popd callers: (%s/%s)' % (cwd['caller'], caller))
+				return False
 			if cwd['dir'] != os.getcwd () and not failure:
-				error ('popd: Inconsistent current dir state (expected ''%s'', was in ''%s''' % (cwd['dir'], os.getcwd ()))
+				warn ('popd: Inconsistent current dir state (expected ''%s'', was in ''%s''' % (cwd['dir'], os.getcwd ()))
+				return False
+
 		trace (self._dirstack)
 		cwd = self._dirstack.pop ()
 		test (consistent_use)
