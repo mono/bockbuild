@@ -334,7 +334,7 @@ class MonoReleaseProfile(DarwinProfile, MonoReleasePackages):
 def main():
     try:
         MonoReleaseProfile().build()
-    except e as Exception:
+    except Exception as e:
         error (str(e))
         raise
 
