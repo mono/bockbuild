@@ -46,19 +46,23 @@ def log (phase, message):
 #TODO: move these functions to either Profile or their own class
 
 def get_caller (skip = 0):
-	if len (inspect.stack()) < 3 + skip:
-		return 'top'
-	stack = inspect.stack()[2 + skip]
-	caller = stack[3]
-	frame = stack[0]
+	try:
+		stack = inspect.stack ()
+		if len (inspect.stack()) < 3 + skip:
+			return 'top'
+		record = stack [2 + skip]
+		caller = record[3]
+		frame = record[0]
 
-	if 'self' in frame.f_locals:
-		try:
-			return '%s->%s' % (frame.f_locals['self'].name, caller)
-		except Exception as e:
-			return '%s->%s' % (frame.f_locals['self'].__class__.__name__, caller)
-	else:
-		return caller
+		if 'self' in frame.f_locals:
+			try:
+				return '%s->%s' % (frame.f_locals['self'].name, caller)
+			except Exception as e:
+				return '%s->%s' % (frame.f_locals['self'].__class__.__name__, caller)
+		else:
+			return caller
+	except Exception as e:
+		return '~error getting caller~'
 
 def assert_exists (path):
 	if not os.path.exists (path):
