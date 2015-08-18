@@ -130,8 +130,10 @@ def test (func):
 def retry (func, tries = 3, delay = 5):
 	result = None
 	exc = None
+	cwd = None
 	for x in range(tries):
 		try:
+			cwd = os.getcwd ()
 			result = func ()
 			return result
 		except CommandException as e:
@@ -140,6 +142,10 @@ def retry (func, tries = 3, delay = 5):
 			warn (str(e))
 			warn ("Retrying ''%s'' in %s secs" % (func.__name__, delay))
 			time.sleep (delay)
+		finally:
+			if cwd != os.getcwd ():
+				error ('%s returned on different directory: Was %s, is %s' % (func.__name__, cwd, os.getcwd ()))
+
 
 def ensure_dir (d, purge = False):
 	if os.path.exists(d):
