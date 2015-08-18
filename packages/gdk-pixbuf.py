@@ -8,6 +8,8 @@ class GdkPixbufPackage (GnomeXzPackage):
 				'patches/gdk-pixbuf/0001-pixbuf-Add-getter-setter-for-the-2x-variants.patch',
 			])
 
+		self.configure_flags.extend (['--enable-gtk-doc-html=no'])
+
 	def prep (self):
 		Package.prep (self)
 		if Package.profile.name == 'darwin':
