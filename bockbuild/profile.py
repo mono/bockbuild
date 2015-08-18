@@ -212,7 +212,7 @@ class Profile:
 			error ('%s does not provide a valid package.' % path)
 
 		new_package = Package.last_instance
-		new_package._path = path
+		new_package._path = fullpath
 		return new_package
 
 	def track_env (self):
