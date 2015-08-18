@@ -27,7 +27,6 @@ class Profile:
 		self.env.set ('BUILD_ARCH', '%{arch}')
 		self.env.set ('BOCKBUILD_ENV', '1')
 
-		self.packages = []
 		self.profile_name = self.__class__.__name__
 
 		find_git (self)
@@ -38,11 +37,13 @@ class Profile:
 
 		self.parse_options ()
 
-		packages_to_build = self.cmd_args
+		self.packages_to_build = self.cmd_args or self.packages
 		self.verbose = self.cmd_options.verbose
 		self.run_phases = self.default_run_phases
 		self.arch = self.cmd_options.arch
 		self.unsafe = self.cmd_options.unsafe
+
+		Package.profile = self
 
 	def parse_options (self):
 		self.default_run_phases = ['prep', 'build', 'install']
@@ -197,8 +198,16 @@ class Profile:
 			self.package ()
 
 	def load_package (self, path):
+		if not os.path.isabs (path):
+			fullpath = os.path.join (self.resource_root, path + '.py')
+		else:
+			fullpath = path
+
+		if not os.path.exists (fullpath):
+			error ("Resource '%s' not found" % path)
+
 		Package.last_instance = None
-		exec compile (open (path).read (), path, 'exec')
+		exec compile (open (fullpath).read (), fullpath, 'exec')
 		if Package.last_instance == None:
 			error ('%s does not provide a valid package.' % path)
 
@@ -231,9 +240,8 @@ class Profile:
 
 		self.toolchain_packages = collections.OrderedDict()
 		self.release_packages = collections.OrderedDict()
-		Package.profile = self
 
-		for path in self.packages:
+		for path in self.packages_to_build:
 			package = self.load_package (path)
 
 			Profile.setup_package (self, package)

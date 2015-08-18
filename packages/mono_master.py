@@ -1,6 +1,8 @@
 import os
 import re
 
+from bockbuild.package import Package
+
 class MonoMasterPackage(Package):
 
 	def __init__(self):

@@ -12,19 +12,81 @@ sys.path.append('../..')
 
 from bockbuild.darwinprofile import DarwinProfile
 from bockbuild.util.util import *
-from packages import MonoReleasePackages
 from glob import glob
 
 
-class MonoReleaseProfile(DarwinProfile, MonoReleasePackages):
+class MonoReleaseProfile(DarwinProfile):
+    
+    # Toolchain
+    # package order is very important.
+    # autoconf and automake don't depend on CC
+    # ccache uses a different CC since it's not installed yet
+    # every thing after ccache needs a working ccache
+
+    packages = [
+        'autoconf',
+        'automake',
+        'ccache',
+        'libtool',
+        'xz',
+        'tar',
+        'gettext',
+        'pkg-config',
+
+    # needed to autogen gtk+
+        'gtk-osx-docbook',
+        'gtk-doc',
+
+    # Base Libraries
+        'libpng',
+        'libjpeg',
+        'libtiff',
+        'libgif',
+        'libxml2',
+        'freetype',
+        'fontconfig',
+        'pixman',
+        'cairo',
+        'libffi',
+        'glib',
+        'pango',
+        'atk',
+        'intltool',
+        'gdk-pixbuf',
+        'gtk+',
+        'libglade',
+        'sqlite',
+        'expat',
+        'ige-mac-integration',
+
+    # Theme
+        'libcroco',
+        'librsvg',
+        'hicolor-icon-theme',
+        'gtk-engines',
+        'murrine',
+        'xamarin-gtk-theme',
+        'gtk-quartz-engine',
+
+    # Mono
+        'mono-llvm',
+        'mono_master',
+        'libgdiplus',
+        'xsp',
+        'gtk-sharp',
+        'ironlangs',
+        'fsharp',
+        'mono-basic',
+        'nuget'
+        ]
+
     def __init__(self):
+        DarwinProfile.__init__(self, min_version = 7)
         self.MONO_ROOT = "/Library/Frameworks/Mono.framework"
         self.BUILD_NUMBER = "0"
         self.MRE_GUID = "432959f9-ce1b-47a7-94d3-eb99cb2e1aa8"
         self.MDK_GUID = "964ebddd-1ffe-47e7-8128-5ce17ffffb05"
 
-        DarwinProfile.__init__(self, min_version = 7)
-        MonoReleasePackages.__init__(self)
 
         self.self_dir = os.path.realpath(os.path.dirname(sys.argv[0]))
         self.packaging_dir = os.path.join(self.self_dir, "packaging")
@@ -197,6 +259,8 @@ class MonoReleaseProfile(DarwinProfile, MonoReleasePackages):
                                      output])
 
         run_shell(productbuild_cmd)
+
+        assert_exists (output)
         os.chdir(old_cwd)
         print output
         return output
