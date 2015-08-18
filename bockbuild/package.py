@@ -290,7 +290,7 @@ class Package:
 			found_version = self.try_get_version (workspace) or package_version
 			if package_version == None:
 				package_version = found_version
-				info ('%s: Using found version %s' % (self.name, found_version))
+				trace ('%s: Using found version %s' % (self.name, found_version))
 			elif found_version[0] != package_version[0]:
 				warn ('Version in configure.ac is %s, package declares %s' % (found_version, package_version))
 			self.version = package_version
