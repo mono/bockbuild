@@ -1,8 +1,5 @@
-import os
-
-import sys, inspect
-
 from mono_master import MonoMasterPackage
+from bockbuild.util.util import *
 
 class MonoMasterEncryptedPackage (MonoMasterPackage):
     
@@ -21,8 +18,10 @@ class MonoMasterEncryptedPackage (MonoMasterPackage):
 
         if not os.path.exists(dirname):
             self.sh('%' + '{git} clone --local --shared "%s" "%s"' % (ext, dirname))
+
+        self.pushd(dirname)
         try:
-            self.pushd(dirname)
+
             self.sh('%{git} clean -xfd')
             self.sh('%{git} fetch --all --prune')
             if "pr/" not in os.getenv('MONO_BRANCH'):
