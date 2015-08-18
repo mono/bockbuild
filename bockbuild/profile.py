@@ -4,47 +4,46 @@ from util.util import *
 from util.csproj import *
 from environment import Environment
 from package import *
+import collections
+import hashlib
 
 class Profile:
 	def __init__ (self, prefix = False):
-		self.name = 'default'
+		self.name = 'bockbuild'
 		self.root = os.getcwd ()
 		self.resource_root = os.path.realpath (os.path.join('..', '..', 'packages'))
 		self.build_root = os.path.join (self.root, 'build-root')
-		self.stage_root = os.path.join (self.root, 'stage-root')		
+		self.staged_prefix = os.path.join (self.root, 'stage-root')
 		self.toolchain_root = os.path.join (self.root, 'toolchain-root')
+		self.package_root = os.path.join (self.root, 'package-root')
 		self.prefix = prefix if prefix else os.path.join (self.root, 'install-root')
-		self.staged_prefix = os.path.join (self.stage_root, self.prefix [1:])
                 self.source_cache = os.getenv('BOCKBUILD_SOURCE_CACHE') or os.path.realpath (os.path.join (self.root, 'cache'))
                 self.cpu_count = get_cpu_count ()
 		self.host = get_host ()
 		self.uname = backtick ('uname -a')
 
 		self.env = Environment (self)
-		self.env.set ('BUILD_PREFIX', self.prefix)
+		self.env.set ('BUILD_PREFIX', '%{prefix}')
+		self.env.set ('BUILD_ARCH', '%{arch}')
 		self.env.set ('BOCKBUILD_ENV', '1')
-		self.packages = []
 
-		self.find_git ()
+		self.profile_name = self.__class__.__name__
 
-		self.bockbuild_revision = backtick (expand_macros ('%{git} rev-parse HEAD', self))[0]
+		find_git (self)
+		self.env.set ('bockbuild_revision', git_get_revision(self) )
 
-		print 'bockbuild rev.', self.bockbuild_revision
-		print '---'
+		loginit ('bockbuild rev. %s %s' % (self.env.bockbuild_revision, "" or "(branch: %s)" % git_get_branch(self)))
+		info ('cmd: %s' % ' '.join(sys.argv))
 
 		self.parse_options ()
 
-		packages_to_build = self.cmd_args
+		self.packages_to_build = self.cmd_args or self.packages
 		self.verbose = self.cmd_options.verbose
 		self.run_phases = self.default_run_phases
 		self.arch = self.cmd_options.arch
+		self.unsafe = self.cmd_options.unsafe
 
-	def find_git(self):
-	        self.git = 'git'
-	        for git in ['/usr/local/bin/git', '/usr/local/git/bin/git', '/usr/bin/git']:
-				if os.path.isfile (git):
-					self.git = git
-					break
+		Package.profile = self
 
 	def parse_options (self):
 		self.default_run_phases = ['prep', 'build', 'install']
@@ -94,6 +93,12 @@ class Profile:
 		parser.add_option ('', '--arch', default = 'default',
 			action = 'store', dest = 'arch',
 			help = 'Select the target architecture(s) for the package')
+		parser.add_option ('', '--shell', default = False,
+			action = 'store_true', dest = 'shell',
+			help = 'Get an shell with the package environment')
+		parser.add_option ('', '--unsafe', default = False,
+			action = 'store_true', dest = 'unsafe',
+			help = 'Prevents full rebuilds when a build environment change is detected. Useful for debugging.')
 
 		self.parser = parser
 		self.cmd_options, self.cmd_args = parser.parse_args ()
@@ -113,23 +118,17 @@ class Profile:
 		if self.cmd_options.dump_environment_csproj:
 			# specify to use our GAC, else MonoDevelop would
 			# use its own 
-			self.env.set ('MONO_GAC_PREFIX', self.prefix)
+			self.env.set ('MONO_GAC_PREFIX', self.staged_prefix)
 
 			self.env.compile ()
 			self.env.dump_csproj ()
 			sys.exit (0)
 
 		if self.cmd_options.csproj_file is not None:
-			self.env.set ('MONO_GAC_PREFIX', self.prefix)
+			self.env.set ('MONO_GAC_PREFIX', self.staged_prefix)
 			self.env.compile ()
 			self.env.write_csproj (self.cmd_options.csproj_file)
 			sys.exit (0)
-
-		if not self.cmd_options.do_build and \
-			not self.cmd_options.do_bundle and \
-			not self.cmd_options.do_package:
-			self.parser.print_help ()
-			sys.exit (1)
 
 		if not self.cmd_options.include_run_phases == []:
 			self.run_phases = self.cmd_options.include_run_phases
@@ -147,59 +146,38 @@ class Profile:
 		log (0, 'Loaded profile \'%s\' (arch: %s)' % (self.name, self.arch))
 		log (0, 'Setting environment variables')
 
-		full_rebuild = False
-		tracked_env = []
-		tracked_env.extend (dump (self, 'profile'))
-		tracked_env.extend (dump (self.cmd_options, 'options'))
-		tracked_env.extend (self.env.serialize ())
+		Profile.setup (self)
+		self.setup ()
 
-		env_diff = update (tracked_env, os.path.join (self.root, 'global.env'))
+		self.full_rebuild = self.track_env ()
 
-		if env_diff != None:
-			full_rebuild = True
-			warn ('Environment/configuration changed. Full rebuild triggered')
-			warn ('Changes:')
-			for line in env_diff:
-				print '\t' + line,
+		if self.full_rebuild:
+			warn ('Build environment changed')
+			for d in os.listdir (self.build_root):
+				if d.endswith ('.cache') or d.endswith ('.artifact'):
+					os.remove (os.path.join(self.build_root, d))
 
-		self.env.compile ()
-		self.env.export ()
 
-		self.envfile = os.path.join (self.root, self.__class__.__name__) + '_env.sh'
-		self.env.dump (self.envfile)
-		os.chmod (self.envfile, 0755)
-		print 'Environment file: ./%s' % os.path.basename (self.envfile)
-
-		Package.profile = self
-		self.toolchain_packages = []
-		self.release_packages = []
-
-		for path in self.packages:
-			Package.last_instance = None
-			exec compile (open (path).read (), path, 'exec')
-			if Package.last_instance == None:
-				sys.exit ('%s does not provide a valid package.' % path)
-
-			new_package = Package.last_instance
-			new_package._path = path
-			if new_package.build_dependency:
-				self.toolchain_packages.append (new_package)
-			else:
-				self.release_packages.append (new_package)
+		if self.cmd_options.shell:
+			title ('Shell')
+			self.shell ()
 
 		if self.cmd_options.do_build:
-			self.ensure_dir (self.source_cache, False)
-			self.ensure_dir (self.build_root, full_rebuild)
-			self.ensure_dir (self.stage_root, True)
-			self.ensure_dir (self.toolchain_root, True)
 
-			print '\n** Building toolchain\n'
-			for pkg in self.toolchain_packages:
-				pkg.start_build (self.toolchain_root, self.toolchain_root, 'darwin-32') #start_build (workspace, install_root, stage_root)
+			ensure_dir (self.staged_prefix, True)
+			ensure_dir (self.toolchain_root, True)
 
-			print '\n** Building release\n'
-			for pkg in self.release_packages:
-				pkg.start_build (self.prefix, self.stage_root, self.arch )
+			title ('Building toolchain')
+			for package in self.toolchain_packages.values ():
+				package.staged_profile = self.toolchain_root
+				package.package_prefix = self.toolchain_root
+				package.start_build ('darwin-32')
+
+			title ('Building release')
+			for package in self.release_packages.values ():
+				package.staged_profile = self.staged_prefix
+				package.package_prefix = self.prefix
+				package.start_build (self.arch)
 
 		if self.cmd_options.do_bundle:
 			if not self.cmd_options.output_dir == None:
@@ -210,15 +188,145 @@ class Profile:
 			return
 
 		if self.cmd_options.do_package:
+			title ('Packaging')
+			protect_dir (self.staged_prefix)
+			ensure_dir (self.package_root, True)
+
+			run_shell('rsync -aPq %s/* %s' % (self.staged_prefix, self.package_root), False)
+
+			self.process_release (self.package_root)
 			self.package ()
 
-	def ensure_dir (self, d, purge):
-		if os.path.exists(d):
-			if purge:
-				log(0, "Purging " + d)
-				shutil.rmtree(d, ignore_errors=False)
-			else: return
-		os.makedirs (d, 0755)
+	def load_package (self, path):
+		if not os.path.isabs (path):
+			fullpath = os.path.join (self.resource_root, path + '.py')
+		else:
+			fullpath = path
+
+		if not os.path.exists (fullpath):
+			error ("Resource '%s' not found" % path)
+
+		Package.last_instance = None
+		exec compile (open (fullpath).read (), fullpath, 'exec')
+		if Package.last_instance == None:
+			error ('%s does not provide a valid package.' % path)
+
+		new_package = Package.last_instance
+		new_package._path = path
+		return new_package
+
+	def track_env (self):
+		tracked_env = []
+
+		if self.unsafe:
+			warn ('Running with --unsafe, build environment not checked for changes')
+
+		self.env.compile ()
+		self.env.export ()
+		tracked_env.extend (self.env.serialize ())
+
+		changed = False if self.unsafe else update (tracked_env, os.path.join (self.root, 'global.env'), show_diff = True)
+
+		self.envfile = os.path.join (self.root, self.profile_name) + '_env.sh'
+		self.env.dump (self.envfile)
+		os.chmod (self.envfile, 0755)
+
+		return changed
+
+	def setup (self):
+		progress ('Setting up packages')
+		ensure_dir (self.source_cache, False)
+		ensure_dir (self.build_root, False)
+
+		self.toolchain_packages = collections.OrderedDict()
+		self.release_packages = collections.OrderedDict()
+
+		for path in self.packages_to_build:
+			package = self.load_package (path)
+
+			Profile.setup_package (self, package)
+			Profile.fetch_package (self, package)
+
+			if package.build_dependency:
+				self.toolchain_packages[package.name] = package
+			else:
+				self.release_packages[package.name] = package
+
+	def fetch_package (self, package):
+		clean_func = None
+		def fetch ():
+			return package._fetch_sources (self.build_root,
+				package.workspace, self.resource_root, self.source_cache)
+
+		clean_func = retry(fetch)
+		package.clean = clean_func
+
+	def setup_package (self, package):
+		if package.build_dependency == True:
+			package.staged_profile = self.toolchain_root
+			package.package_prefix = self.toolchain_root
+		else:
+			package.staged_profile = self.staged_prefix
+			package.package_prefix = self.prefix
+
+		expand_macros (package.sources, package)
+		package.source_dir_name = expand_macros (package.source_dir_name, package)
+		package.workspace = os.path.join (self.build_root, package.source_dir_name)
+		package.build_artifact = os.path.join (self.build_root, package.name + '.artifact')
+
+	class FileProcessor (object):
+		def __init__ (self, harness = None, match = None, process = None,  extra_files = None):
+			self.harness = harness
+			self.match = match
+			self.files = list (extra_files) if extra_files else list ()
+			self.root = None
+
+		def relpath (self, path):
+			return os.path.relpath (path, self.root)
+
+		def run (self):
+			for path in self.files:
+				self.harness (path, self.process)
+		def end (self):
+			return
+
+
+	def postprocess (self, processors, directory, filefilter = None):
+		def simple_harness (path, func):
+			if not os.path.lexists (path):
+				return # file removed by previous processor function
+			# TODO: Fix so that it works on symlinks
+			# hash = hashlib.sha1(open(path).read()).hexdigest()
+			func (path)
+			if not os.path.lexists (path):
+				trace ('Removed file: %s' % path)
+			#if hash != hashlib.sha1(open(path).read()).hexdigest():
+			#	warn ('Changed file: %s' % path)
+
+		for proc in processors:
+			proc.root = directory
+			if proc.harness == None:
+				proc.harness = simple_harness
+			if proc.match == None:
+					error ('proc %s has no match function' % proc.__class__.__name__)
+
+		for path in filter (filefilter, iterate_dir (directory, with_dirs = True, with_links = True)):
+			filetype = get_filetype (path)
+			for proc in processors:
+				if proc.match (path, filetype) == True:
+					trace ('%s  matched %s / %s' % (proc.__class__.__name__, os.path.basename(path), filetype) )
+					proc.files.append (path)
+
+		for proc in processors:
+			trace ('%s: %s items' % (proc.__class__.__name__ , len (proc.files)))
+			proc.run ()
+
+
+		for proc in processors:
+			proc.end ()
+			proc.harness = None
+			proc.files = []
+
 
 class Bockbuild:
 	def main ():

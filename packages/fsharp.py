@@ -1,15 +1,16 @@
-
 class FsharpPackage(GitHubTarballPackage):
 	def __init__(self):
 		GitHubTarballPackage.__init__(self,
 			'fsharp', 'fsharp',
-			'2.11',
-			'6d4f78d60b8ca8158a10e348ffc0a050095a18f6',
-			configure = '')
+			'4.0.0.1',
+			'c3aaf7d5f1f8905bbb3522b327703a43a0842cdf',
+			configure = './configure --prefix="%{package_prefix}"')
+
+		self.extra_stage_files = ['lib/mono/xbuild/Microsoft/VisualStudio/v/FSharp/Microsoft.FSharp.Targets']
 
 	def build(self):
 		self.sh ('autoreconf')
-		self.sh ('./configure --prefix="%{prefix}"')
-		self.sh ('make')
+		Package.configure (self)
+		Package.make (self)
 
 FsharpPackage()

@@ -3,7 +3,6 @@ class GtkPackage (GnomeGitPackage):
 		GnomeGitPackage.__init__ (self, 'gtk+', '2.24', '280fc402be5fb46b66bcd32056963bb1afb8b54b',
 			configure_flags = [
 				'--with-gdktarget=%{gdk_target}',
-				'--enable-debug',
 #				'--disable-cups',
 			]
 		)
@@ -158,14 +157,12 @@ class GtkPackage (GnomeGitPackage):
 				# For the test framework to be able to traverse down the NSView hierarchy
 				'patches/gtk/gtknsview-getter.patch',
 
-				# This is hacky, but the designer needs a way to handle drag events
-				# from Xamarin.Mac and GTK is eating them. If a better solution is found
-				# we should remove this.
-				# https://bugzilla.xamarin.com/show_bug.cgi?id=29301
-				'patches/gtk/gtk-yield-mouse-events-to-cocoa.patch'
-			])
+				# https://bugzilla.xamarin.com/show_bug.cgi?id=29301#c3
+				'patches/gtk/gtknsview-fix-invalid-casts.patch',
 
-		self.make = "GDK_PIXBUF_MODULEDIR=%{staged_prefix}/lib/gdk-pixbuf-2.0/2.10.0/loaders GDK_PIXBUF_MODULE_FILE=%{staged_prefix}/lib/gdk-pixbuf-2.0/2.10.0/loaders.cache " + self.make
+				# https://bugzilla.xamarin.com/show_bug.cgi?id=29001
+				'patches/gtk/quartz-call-undo-redo-on-cmdz.patch'
+			])
 
 	def prep (self):
 		Package.prep (self)

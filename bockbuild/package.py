@@ -6,14 +6,15 @@ import tempfile
 import filecmp
 import datetime
 import stat
+import time
 from urllib import FancyURLopener
 from util.util import *
 
 class Package:
-	def __init__ (self, name, version, organization = None, configure_flags = None, sources = None, revision = None, git_branch = 'master', source_dir_name = None, override_properties = None, configure = None):
+	def __init__ (self, name, version = None, organization = None, configure_flags = None, sources = None, revision = None, git_branch = 'master', source_dir_name = None, override_properties = None, configure = None):
 		Package.last_instance = self
 
-		self._dirstack = []
+		self.verbose = False
 
 		self.name = name
 		self.version = version
@@ -30,9 +31,13 @@ class Package:
 		self.local_ld_flags = []
 		self.local_configure_flags = []
 
+		self.build_env = ''
+
+		self._dirstack = []
+
 		# additional files that need staging (besides binaries and scripts)
-		# (use path relative to prefix root e.g. 'etc/something.config') 
-		self.extra_stage_files = [] 
+		# (use path relative to prefix root e.g. 'etc/something.config')
+		self.extra_stage_files = []
 
 		# fat binary parameters. On a 64-bit Darwin profile (m64 = True) 
 		# each package must decide if it will a) perform a multi-arch (64/32) build 
@@ -51,7 +56,7 @@ class Package:
 			and not self.__class__.default_sources == None:
 			self.sources = list (self.__class__.default_sources)
 
-		if self.organization == None:
+		if self.organization == None and self.sources != None and len(self.sources) > 0:
 			self.organization = self.extract_organization (self.sources[0])
 
 		self.source_dir_name = source_dir_name
@@ -59,7 +64,7 @@ class Package:
 			self.source_dir_name = "%s-%s" % (name, version)
 
 		self.revision = revision
-		self.stage_root = Package.profile.stage_root
+
 		if configure:
 			self.configure = configure
 		else:
@@ -79,15 +84,7 @@ class Package:
 			for k, v in override_properties.iteritems ():
 				self.__dict__[k] = v
 
-		if self.build_dependency:
-			self.package_prefix = Package.profile.toolchain_root
-			self.staged_prefix = Package.profile.toolchain_root
-			self.makeinstall = self.makeinstall or 'make install'
-			#self.ld_flags = '-L%{staged_prefix}/lib' # XXX
-		else:
-			self.package_prefix = Package.profile.prefix
-			self.staged_prefix = Package.profile.staged_prefix
-			self.makeinstall = self.makeinstall or 'make install DESTDIR=%{stage_root}'
+		self.makeinstall = self.makeinstall or 'make install DESTDIR=%{stage_root}'
 
 	def extract_organization (self, source):
 		if (not "git" in source) or ("http" in source):
@@ -115,26 +112,41 @@ class Package:
 					if match:
 						return match.group(1)
 
+	def trace (self, message):
+		trace (message, skip = 1)
+
 	def get_package_string (self):
 		str = self.name
 		if self.version:
 			str+= ' v.' + self.version
 		if self.revision:
-			str+= ' (rev. ' + self.revision + ')'
+			revstr = self.revision if not self.git_branch else '%s/%s' % (self.revision, self.git_branch)
+			str+= ' (rev. %s )' % revstr
 		return str
 
 	def _fetch_sources (self, build_root, workspace, resource_dir, source_cache_dir):
+		clean_func = None # what to run if the workspace needs to be redone
+
+		if self.sources == None:
+			return None
+
+		def clean_nop ():
+			pass
+
 		def checkout (self, source_url, cache_dir, workspace_dir):
 			def clean_git_workspace ():
 				print 'Cleaning git workspace:', self.name
 				self.pushd (workspace_dir)
 				self.sh ('%{git} reset --hard')
-				self.sh ('%{git} clean -xffd')
+				if config.iterative == False:
+					self.sh ('%{git} clean -xffd')
+				else:
+					warn ('iterative')
 				self.popd ()
 
 			# Explicitly reset the working dir to a known directory which has not been deleted
 			# 'git clone' does not work if you are in a directory which has been deleted
-			os.chdir (build_root)
+			self.cd (build_root)
 			if not os.path.exists (cache_dir):
 				# since this is a fresh cache, the workspace copy is invalid if it exists
 				if os.path.exists (workspace_dir):
@@ -142,32 +154,29 @@ class Package:
 				print 'Cloning git repo: %s' % source_url
 				self.sh ('%' + '{git} clone --mirror "%s" "%s"' % (source_url, cache_dir))
 				
-			log (1, 'Updating cache')
+			trace ( 'Updating cache')
 			self.pushd (cache_dir)
 			if self.git_branch == None:
 				self.sh ('%{git} fetch --all --prune')
-			elif "pr/" in self.git_branch:
-				self.sh ('%{git} fetch --all --prune')
-				self.sh ('%{git} fetch origin +refs/pull/*:refs/remotes/origin/pr/*')
 			else:
 				self.sh ('%' + '{git} fetch origin %s' % self.git_branch)
 			self.popd ()
 
 			if not os.path.exists(workspace_dir):
-				log (1, 'Cloning a fresh workspace')
+				trace ( 'Cloning a fresh workspace')
 				self.sh ('%' + '{git} clone --local --shared 	"%s" "%s"' % (cache_dir, workspace_dir))
 				self.cd (workspace_dir)
+				clean_func = clean_nop
+			else:
+				clean_func = clean_git_workspace
 
-			log (1, 'Updating workspace')
+			trace ( 'Updating workspace')
 			self.cd (workspace_dir)
 
 			if self.git_branch == None:
 				self.sh ('%{git} fetch --all --prune')
-			elif "pr/" in self.git_branch:
-				self.sh ('%{git} fetch --all --prune')
-				self.sh ('%{git} fetch origin +refs/pull/*:refs/remotes/origin/pr/*')
 			else:
-				self.sh ('%' + '{git} fetch origin %s' % self.git_branch)
+				self.sh ('%' + '{git} fetch origin %s:refs/remotes/origin/%s' % (self.git_branch, self.git_branch))
 
 			self.sh ('%{git} reset')
 
@@ -182,6 +191,7 @@ class Package:
 				target_revision = self.backtick ('%' +'{git} rev-parse origin/%s' % self.git_branch)[0]
 
 			if (current_revision != target_revision):
+				trace ('%s -> %s' % (current_revision, target_revision))
 				self.sh ('%{git} reset --hard')
 				self.sh ('%{git} clean -xffd')
 				self.sh ('%' + '{git} checkout %s' % target_revision)
@@ -192,8 +202,7 @@ class Package:
 				raise Exception ('Workspace error: Revision is %s, package specifies %s' % (current_revision, self.revision))
 
 			self.revision = current_revision
-
-			return clean_git_workspace
+			return clean_func
 
 
 		def get_download_dest(url):
@@ -207,10 +216,9 @@ class Package:
 			return os.path.join (source_cache_dir, name)
 
 		local_sources = []
-		clean_func = None # what to run if the workspace needs to be redone
 		cache = None
 
-		self.cd (build_root)
+		self.pushd (build_root)
 
 		try:
 			for source in self.sources:
@@ -224,17 +232,18 @@ class Package:
 					def checkout_archive (archive, cache, workspace):
 						self.pushd (build_root)
 						if not os.path.exists (cache):
-							# since this is a fresh cache, the workspace copy is invalid if it exists
-							if os.path.exists (workspace):
-								self.rm (workspace)
-							print 'Downloading: %s' % archive
+							progress ('Downloading: %s' % archive)
 							filename, message = FancyURLopener ().retrieve (archive, cache)
 						if not os.path.exists (workspace):
 							self.extract_archive (cache, False)
 							os.utime (workspace, None)
+							clean_func = clean_nop
+						else:
+							clean_func = clean_archive
 						if not os.path.exists (workspace):
-							raise Exception ('Archive %s was extracted but not found at workspace path %s' % (cache, workspace))
+							raise Exception ('Archive %s was extracted but not found at workspace path %s' % (cache, workspace))							
 						self.popd ()
+						return clean_func
 
 					def clean_archive ():
 						print 'Re-extracting archive: ' + self.name + ' ('+ archive + ')'
@@ -248,10 +257,8 @@ class Package:
 								self.rm (workspace)
 							raise e
 
-					checkout_archive (archive, cache, workspace)
-
+					clean_func = checkout_archive (archive, cache, workspace)
 					local_sources.append (workspace)
-					clean_func = clean_archive
 
 				elif source.startswith (('git://','file://', 'ssh://')) or source.endswith ('.git'):
 					cache = get_git_cache_path ()
@@ -281,36 +288,43 @@ class Package:
 
 			package_version = expand_macros (self.version, self)
 			found_version = self.try_get_version (workspace) or package_version
-			if found_version[0] != package_version[0]:
+			if package_version == None:
+				package_version = found_version
+				trace ('%s: Using found version %s' % (self.name, found_version))
+			elif found_version[0] != package_version[0]:
 				warn ('Version in configure.ac is %s, package declares %s' % (found_version, package_version))
 			self.version = package_version
 
-			print self.get_package_string ()
-
 			return clean_func
 		except Exception as e:
-			if os.path.exists (cache):
+			if cache != None and os.path.exists (cache):
 				self.rm (cache)
-			if os.path.exists (workspace):
+			if workspace != None and os.path.exists (workspace):
 				self.rm (workspace)
 			raise
+		finally:
+			self.popd ()
 
 	def is_successful_build(self, success_file):
 		if not os.path.exists (success_file):
 			return False
+
 		mtime = os.path.getmtime(success_file)
-		newer = True
-		src = list(self.local_sources)
-		src.append (self._path)
-		for s in (src):
-			print 'Source:',s,
-			if os.path.getmtime(s) > mtime:
-				print '(Updated)',
-				newer = False
-			print
- 			
- 			# FIXME: There seem to be lots of dirs being touched from other processes.
- 			# Must investigate, but turn off subdir checking for now
+		newer_sources = False
+
+		def is_newer (path, newer_sources = newer_sources):
+			return os.path.getmtime(path) > mtime
+
+		if is_newer (self._path):
+			info ('Updated: package manifest (''%s'')' % os.path.basename (self._path))
+			newer_sources = True
+		for idx, s in enumerate(self.local_sources):
+			if is_newer (s):
+				info ('Updated: %s' % self.sources[idx] , summary = True)
+				newer_sources = True
+
+			# FIXME: There seem to be lots of dirs being touched from other processes.
+			# Must investigate, but turn off subdir checking for now
 
 			# elif os.path.isdir (s): 
 			# 	for root, dirs, files in os.walk (s):
@@ -320,121 +334,182 @@ class Package:
 			# 			if os.path.isdir(dir_path) and os.path.getmtime(dir_path) > mtime:
 			# 				print 'Updated source: %s' % dir_path
 			# 				newer = False
-		return newer
-
-	def fetch (self):
-		expand_macros (self.sources, self)
-		profile = Package.profile
-		workspace = os.path.join (profile.build_root, self.source_dir_name)
-		return self._fetch_sources (profile.build_root, workspace, profile.resource_root, profile.source_cache)
-
-	def start_build (self, install_root, stage_root, arch):
-			self.source_dir_name = expand_macros (self.source_dir_name, self)
-			profile = Package.profile
-			workspace = os.path.join (profile.build_root, self.source_dir_name)
-			build_artifact = os.path.join (profile.build_root, self.name + '.artifact')
-			print 'fetch', self.name
-			clean_func = retry (self.fetch)
-
-			if self.is_successful_build(build_artifact) and not (arch == 'darwin-universal' and self.needs_lipo):
-				print 'install', self.name
-				os.chdir (workspace)
-				self.install ()
-			else:
-				try:
-					retry (clean_func)
-
-					if arch == 'darwin-universal' and self.needs_lipo:
-
-						workspace_x86 = workspace + '-x86'
-						if (os.path.exists (workspace_x86)):
-							shutil.rmtree (workspace_x86)
-						shutil.move (workspace, workspace_x86)
-
-						workspace_x64 = workspace + '-x64'
-						if (os.path.exists (workspace_x64)):
-							shutil.rmtree (workspace_x64)
-						shutil.copytree (workspace_x86, workspace_x64)
-
-						self.do_build ('darwin-32', install_root, workspace_x86, workspace_x86 + '.install')
-						stagedir_x86 = self.staged_prefix
-
-						self.do_build ('darwin-64', install_root, workspace_x64, workspace_x64 + '.install')
-						stagedir_x64 = self.staged_prefix
-
-						stagedir_lipo = os.path.join (profile.build_root, 'stage-lipo')
-
-						if not os.path.exists(stagedir_lipo):
-							os.makedirs (stagedir_lipo)
-
-						try:
-							print 'lipo', self.name
-							self.lipo_dirs (stagedir_x64, stagedir_x86, stagedir_lipo, 'lib')
-							run_shell('rsync -a --ignore-existing %s/* %s' % (stagedir_x86, profile.staged_prefix), False)
-							self.copy_side_by_side (os.path.join (stagedir_x64, 'bin'),
-								 os.path.join (profile.staged_prefix, 'bin'), '64', '32')
-
-						finally:
-							#delete the lipo build dirs
-							shutil.rmtree (stagedir_x86, ignore_errors = True)
-							shutil.rmtree (stagedir_x64, ignore_errors = True)
-							shutil.rmtree (stagedir_lipo, ignore_errors = True)
-
-					elif self.m32_only:
-						self.do_build ('darwin-32', install_root, workspace, stage_root)
-					else:
-						self.do_build (arch, install_root, workspace, stage_root)
-				except:
-					if os.path.exists (workspace):
-						self.rm (workspace)
-					#self.dump ()
-					raise
-
-				self.make_artifact (profile.staged_prefix, build_artifact)
-				
-			if not self.build_dependency:
-				self.stage (profile.staged_prefix)
-
-			# self.deploy ()
+		return not newer_sources
 
 
-	def do_build (self, arch, install_prefix, workspace_dir, stage_root):
+	def start_build (self, arch):
+			info (self.get_package_string ())
+			protect_dir (self.staged_profile, recursive = True)
+
+			workspace = self.workspace
+			build_artifact = self.build_artifact
+
+			needs_build = True
+
+			if self.is_successful_build(build_artifact) or (config.never_rebuild and os.path.isfile (build_artifact)):
+				if self.deploy_package (build_artifact, self.staged_profile):
+					needs_build = False
+				else:
+					warn ('Failed to deploy from artifact %s. Rebuilding' % os.path.basename (build_artifact))
+
+			if needs_build:
+				retry (self.clean)
+
+				if (arch == 'darwin-universal' and self.needs_lipo):
+					workspace_x86 = workspace +'-x86'
+					workspace_x64 =workspace + '-x64'
+
+					self.rm_if_exists (workspace_x86)
+					self.rm_if_exists (workspace_x64)
+
+					self.link (workspace, workspace_x86)
+					shutil.copytree (workspace_x86, workspace_x64)
+
+					package_stage = self.do_build ('darwin-32', workspace_x86)
+
+					stagedir_x64 = self.do_build ('darwin-64', workspace_x64)
+
+					print 'lipo', self.name
+
+					self.lipo_dirs (stagedir_x64, package_stage, 'lib')
+					self.copy_side_by_side (stagedir_x64, package_stage, 'bin', '64', '32')
+
+				elif self.m32_only:
+					package_stage = self.do_build ('darwin-32', workspace)
+				else:
+					package_stage = self.do_build (arch, workspace)
+
+				self.make_artifact (package_stage, build_artifact)
+				self.deploy_package (build_artifact, self.staged_profile)
+
+	def deploy_package (self, artifact, dest):
+		progress ('Deploying (%s -> %s)' % (os.path.basename(artifact), os.path.basename(dest)))
+
+		unprotect_dir (dest, recursive = True)
+		self.pushd (self.profile.build_root)
+
 		try:
-			print 'build', self.name, arch
-			self.cd (workspace_dir)
-			self.stage_root  = stage_root
-			if install_prefix == stage_root:
-				self.staged_prefix = install_prefix
-			else:
-				self.staged_prefix = os.path.join (stage_root, install_prefix [1:])
-			self.package_prefix = install_prefix
-			self.arch_build (arch)
+			artifact_stage = artifact + '.extracted'
+			assert_exists (artifact)
+			self.rm_if_exists (artifact_stage)
+			unzip (artifact, artifact_stage)
+			assert_exists (artifact_stage)
+		except Exception as e:
+			self.rm_if_exists (artifact)
+			self.rm_if_exists (artifact_stage)
+			protect_dir (dest, recursive = True)
+			self.popd ()
+			return False
+
+		#catalogue files
+		files = list()
+
+		for path in iterate_dir (artifact_stage, summary = False):
+			relpath = os.path.relpath (path, artifact_stage)
+			destpath = os.path.join (dest, relpath)
+			if os.path.exists (destpath) and not identical_files (path, destpath):
+				warn ('deploy: Different file exists in package already: ''%s''' % relpath )
+			files.append (relpath + '\n')
+
+		files.sort ()
+		if update (files, artifact + '.files'):
+			warn ('Package filelist changed')
+
+		merge_trees (artifact_stage, dest, False)
+
+		self.deploy ()
+		self.popd ()
+
+		protect_dir (dest, recursive = True)
+
+		os.utime (artifact, None)
+		return True
+
+	def do_build (self, arch, workspace_dir):
+		progress ('Building (arch: %s)' % (arch))
+
+		self.stage_root  = os.path.join (workspace_dir + '.stage')
+		self.rm_if_exists (self.stage_root)
+		self.staged_prefix = os.path.join (self.stage_root, self.package_prefix [1:])
+
+		os.makedirs (self.staged_prefix)
+
+		# protect against relocation bugs often landing files in the wrong path
+		protect_dir (self.stage_root)
+		self.pushd (workspace_dir)
+		if self.profile.verbose:
+			self.verbose = True #log sh() uses while in package logic
+		try:
 			self.prep ()
+			self.arch_build (arch)
+			self.build_env = self.expand_build_env ()
 			self.build ()
 			self.install ()
+
+			if not os.path.exists (self.staged_prefix):
+				error ('Result directory %s not found.' % self.staged_prefix)
+
+			self.profile.process_package (self)
 		except Exception as e:
+			self.popd (failure = True)
+
 			if os.path.exists (workspace_dir):
-				problem_dir = os.path.basename (workspace_dir) + '.problem'
-				shutil.rmtree (os.path.join (self.profile.root,  problem_dir), ignore_errors = True)
-				shutil.move (workspace_dir,
-					os.path.join (self.profile.root,  problem_dir))
-			warn (str (e))
-			error ('Failed build at ./%s \n Run ./%s first to replicate environment for debugging.' % (problem_dir, os.path.basename (self.profile.envfile)))
+				problem_dir = os.path.join (self.profile.root, os.path.basename (workspace_dir) + '.problem')
+
+				#take this chance to clear out older .problems
+				for d in os.listdir (self.profile.root):
+					if d.endswith ('.problem'):
+						self.rm (os.path.join(self.profile.root, d))
+
+				shutil.move (workspace_dir, problem_dir)
+				info ('Build moved to ./%s \n Run "source ./%s" first to replicate bockbuild environment.' % (os.path.basename (problem_dir), os.path.basename (self.profile.envfile)))
+			if e is CommandException:
+				error (str(e))
+			raise
+		finally:
+			unprotect_dir (self.stage_root)
+
+		self.popd()
+		self.verbose = False
+
+		return self.staged_prefix
+
 
 	def make_artifact (self, stage_dir, build_artifact):
-		open (build_artifact, 'w').close ()
-		os.utime (build_artifact, None)
-		
+		self.rm_if_exists (build_artifact)
+		zip (stage_dir, build_artifact)
+		self.rm_if_exists (stage_dir)
+
+	def deploy (self):
 		return
+
+	def process (self, func, directory, error_func, error_message ):
+		popped = False
+		try:
+			self.pushd (directory)
+			func ()
+		except Exception as e:
+			self.popd (failure = True)
+			popped = True
+
+			if e is BockbuildException:
+				error ('%s: %s' % (func.__name__ , e.message))
+			warn (str(e))
+			warn (error_message)
+			error_func ()
+		finally:
+			if not popped:
+				self.popd()
+
 
 	def sh (self, *commands):
 		for command in commands:
 			try:
-				env_command = expand_macros (self.env() + command, self)
+				env_command = '%s %s' % (self.build_env, expand_macros (command, self))
 			except Exception as e:
 				error ('MACRO EXPANSION ERROR: ' + str(e))
-			if self.profile.verbose:
-				print expand_macros (command, self)
+			if self.verbose is True:
+				logprint ('\t@\t' + expand_macros (command, self), bcolors.BOLD)
 
 			stdout = tempfile.NamedTemporaryFile()
 			stderr = tempfile.NamedTemporaryFile()
@@ -444,8 +519,8 @@ class Package:
 			except Exception as e:
 				output_text = stdout.readlines ()
 				if len(output_text) > 0:
-					warn ('stdout (last 50 lines):')
-					for line in output_text[-50:]:
+					warn ('stdout:')
+					for line in output_text:
 						print line,
 				error_text = stderr.readlines ()
 				if len(error_text) > 0:
@@ -453,8 +528,8 @@ class Package:
 					for line in error_text:
 						print line,
 				warn('path: ' + os.getcwd ())
-				warn('full command: ' + env_command)
-				raise Exception ('command failed: %s' % command)
+				warn('build env: ' + self.build_env)
+				raise CommandException ('command failed: %s' % expand_macros (command, self))
 			finally:
 				stdout.close ()
 				stderr.close ()
@@ -465,22 +540,50 @@ class Package:
 
 	def cd (self, dir):
 		dir = expand_macros (dir, self)
-		log (1, 'cd "%s"' % dir)
+		trace ('%s: cd %s' % (get_caller (), dir))
+		if not os.path.exists (os.getcwd ()):
+			warn ('%s: Just cd''ed out of non-existing directory %s' % (get_caller, os.getcwd ()))
 		os.chdir (dir)
 
 	def pushd (self, dir):
-		self._dirstack.append (os.getcwd ())
+		if len(self._dirstack) == 0:
+			self._dirstack.append ( {'dir' : os.getcwd (), 'caller' : 'profile'})
+		self._cwd = { 'dir' : dir, 'caller' : get_caller () }
+		self._dirstack.append (self._cwd)
+		trace (self._dirstack)
 		self.cd (dir)
 
-	def popd (self):
-		self.cd (self._dirstack.pop ())
+	def popd (self, failure = False):
+		caller = get_caller ()
+		def consistent_use ():
+			if cwd['caller'] != caller:
+				warn ('popd: Unmatched pushd/popd callers: (%s/%s)' % (cwd['caller'], caller))
+				return False
+			if cwd['dir'] != os.getcwd () and not failure:
+				warn ('popd: Inconsistent current dir state (expected ''%s'', was in ''%s''' % (cwd['dir'], os.getcwd ()))
+				return False
+
+		trace (self._dirstack)
+		cwd = self._dirstack.pop ()
+		test (consistent_use)
+		top = self._dirstack[-1]
+
+		self._cwd = { 'dir' : top['dir'], 'caller' : top['caller'] }
+		self.cd (top['dir'])
 
 	def prep (self):
 		return
 
-	def rm (self, path):
-		log (1, 'deleting %s' % path)
+	def rm_if_exists (self, path):
 		path = expand_macros (path, self)
+		if os.path.exists (path):
+			self.rm (path)
+
+	def rm (self, path):
+		trace (path)
+		path = expand_macros (path, self)
+
+		unprotect_dir (path, recursive = True)
 		if os.path.isfile (path) or os.path.islink (path):
 			os.remove (path)
 		elif os.path.isdir (path):
@@ -490,43 +593,46 @@ class Package:
 
 
 	def link (self, source, link):
-		if os.path.exists (link):
-			 self.rm(link)
-		log (1, 'linking %s -> %s' % (link, source))
+		trace('%s -> %s' % (link, source))
 		source = expand_macros (source, self)
 		link = expand_macros (link, self)
+		if os.path.exists (link):
+			 self.rm(link)
 		os.symlink (source, link)
 
 	def extract_archive (self, archive, validate_only, overwrite=False):
 		self.pushd (self.profile.build_root)
-		self.tar = os.path.join (Package.profile.toolchain_root, 'bin', 'tar')
-		if not os.path.exists (self.tar):
-			self.tar = 'tar'
-		root, ext = os.path.splitext (archive)
-		command = None
-		if ext == '.zip':
-			flags = ["-qq"]
-			if overwrite:
-				flags.extend(["-o"])
-			if validate_only:
-				flags.extend(["-t"])
-			command = ' '.join(['unzip'] + flags + [archive])
-			if validate_only:
-				command = command + ' > /dev/null'
-		else:
-			command = '%{tar} xf ' + archive
-			if validate_only:
-				command = command + ' -O > /dev/null'
-		self.sh (command)
-		self.popd ()
+		try:
+			self.tar = os.path.join (Package.profile.toolchain_root, 'bin', 'tar')
+			if not os.path.exists (self.tar):
+				self.tar = 'tar'
+			root, ext = os.path.splitext (archive)
+			command = None
+			if ext == '.zip':
+				flags = ["-qq"]
+				if overwrite:
+					flags.extend(["-o"])
+				if validate_only:
+					flags.extend(["-t"])
+				command = ' '.join(['unzip'] + flags + [archive])
+				if validate_only:
+					command = command + ' > /dev/null'
+			else:
+				command = '%{tar} xf ' + archive
+				if validate_only:
+					command = command + ' -O > /dev/null'
+			self.sh (command)
+		finally:
+			self.popd ()
 
 	def build (self):
 		Package.configure (self)
 		Package.make (self)
 
-	def lipo_dirs (self, dir_64, dir_32, lipo_dir, bin_subdir, replace_32 = True): 
+	def lipo_dirs (self, dir_64, dir_32, bin_subdir, replace_32 = True): 
 		dir64_bin = os.path.join (dir_64, bin_subdir)
 		dir32_bin = os.path.join (dir_32, bin_subdir)
+		lipo_dir = tempfile.mkdtemp()
 		lipo_bin = os.path.join (lipo_dir, bin_subdir)
 
 		if not os.path.exists (dir64_bin):
@@ -559,116 +665,56 @@ class Package:
 					else:
 						warn ("lipo: 32-bit version of file %s not found"  %file)
 
-	def copy_side_by_side (self, src_dir, dest_dir, suffix, orig_suffix =  None):
+	def copy_side_by_side (self, src_dir, dest_dir, bin_subdir, suffix, orig_suffix =  None):
+		def add_suffix (filename, sfx):
+			fileparts = filename.split ('.', 1)
+			if len (fileparts) > 1:
+				p = '%s%s.%s' % (fileparts[0], sfx, fileparts[1])
+			else:
+				p = '%s%s' % (filename, sfx)
+
+			trace(p)
+			return p
+
+		src_dir = os.path.join (src_dir, bin_subdir)
+		dest_dir = os.path.join (dest_dir, bin_subdir)
+		trace ('src_dir %s' % src_dir)
+		trace ('dest_dir %s' % dest_dir)
+
 		if not os.path.exists (src_dir):
 			return # we don't always have bin/lib dirs
 
-		for root,dirs,filelist in os.walk(src_dir):
-			relpath = os.path.relpath (root, src_dir)
-			for file in filelist:
-				src_file = os.path.join (src_dir, relpath, file)
-				if os.path.islink (src_dir):
-					continue
+		for path in iterate_dir(src_dir):
+			relpath = os.path.relpath (path, src_dir)
+			reldir, filename = os.path.split (relpath)
+			trace (reldir + '/' + filename)
 
-				filetype = backtick ('file -b "%s"' % src_file)[0]
-				if filetype.startswith('Mach-O'):
-					dest_file = os.path.join (dest_dir, relpath, file + suffix) #FIXME: perhaps add suffix before any .'s
-					dest_orig_file = os.path.join (dest_dir, relpath, file)
-					if orig_suffix != None and os.path.exists (dest_orig_file):
-						shutil.move (dest_orig_file, dest_orig_file + orig_suffix)
-						os.symlink (os.path.basename (dest_orig_file + orig_suffix), dest_orig_file)
+			filetype = backtick ('file -b "%s"' % path)[0]
+			if filetype.startswith('Mach-O'):
+				dest_file = os.path.join (dest_dir, reldir, add_suffix(filename, suffix))
+				trace (dest_file)
+				dest_orig_file = os.path.join (dest_dir, reldir, filename)
 
-					shutil.copy2 (src_file, dest_file)
+				if not os.path.exists (dest_orig_file):
+					error ('lipo: %s exists in %s but not in %s' % (relpath, src_dir, dest_dir))
+				if orig_suffix != None:
+					suffixed = os.path.join (dest_dir, reldir, add_suffix (filename, orig_suffix))
+					trace (suffixed)
+					shutil.move (dest_orig_file, suffixed)
+					os.symlink (os.path.basename (suffixed), dest_orig_file)
 
-	def stage_pkgs (self, pkg_dir):
-		log (1, 'Staging pkg-config packages')
-		for root,dirs,filelist in os.walk (pkg_dir):
-			for file in filelist:
-				if file.endswith ('.pc'):
-					self.stage_file (os.path.join (root, file))
-
-	def stage_file (self, path):
-		path = expand_macros (path, self)
-		if os.path.exists (path + '.release'):
-			return
-		with open(path) as text:
-			output = open(path + '.stage', 'w')
-			for line in text:
-				tokens = line.split (" ")
-				for idx,token in enumerate(tokens):
-					if  token.find (self.staged_prefix) == -1:
-						tokens[idx] = token.replace(self.profile.prefix,self.profile.staged_prefix)
-					else:
-						tokens[idx] = token.replace(self.staged_prefix,self.profile.staged_prefix)
-
-				output.write (" ".join(tokens))
-			output.close
-		shutil.move (path, path + '.release')
-		shutil.move (path + '.stage', path)
-		os.chmod (path, os.stat (path + '.release').st_mode)
-		self.profile.staged_textfiles.append (path)
-
-
-	def stage_binaries (self, dir):
-		def abort_staging (path):
-			os.remove (path)
-			shutil.move (path + '.release', path)
-		for root,dirs,filelist in os.walk (dir):
-			for file in filelist:
-				path = os.path.join (root, file)
-				if path.endswith ('.release') or os.path.exists (path + '.release'):
-					continue
-				if os.path.islink (path):
-					continue
-
-				filetype = backtick ('file -b "%s"' % path)[0]
-				if filetype.startswith('Mach-O'):
-					shutil.copy (path, path + '.release')
-					try:
-						staged_path = os.path.join (self.profile.staged_prefix, dir, os.path.relpath (path, dir))
-						run_shell ('install_name_tool -id %s %s' % (staged_path, path))
-					except:
-						warn ('Staging failed for %s' % os.path.relpath (path,dir))
-						abort_staging (path)
-						continue
-					libs = backtick ('otool -L %s' % path)
-					for line in libs:
-						#parse 'otool -L'
-						if not line.startswith ('\t'):
-							continue
-						rpath = line.strip ().split(' ')[0]
-						if rpath.find (self.profile.prefix) != -1:
-							if rpath.find (self.staged_prefix) == -1:
-								remap = rpath.replace (self.profile.prefix, self.profile.staged_prefix)
-							else:
-								remap = rpath.replace (self.staged_prefix, self.profile.staged_prefix)
-							try:
-								run_shell ('install_name_tool -change %s %s %s' % (rpath, remap, path))
-							except:
-								warn ('Staging failed for %s' % os.path.relpath (path,dir))
-								abort_staging (path)
-								continue
-					self.profile.staged_binaries.append (path)
-				elif filetype == 'POSIX shell script text executable':
-					self.stage_file (path)
-
-	def stage_la_files (self, lib_dir):
-		log (1, 'Staging .la files')
-		for root,dirs,filelist in os.walk (lib_dir):
-			for file in filelist:
-				if file.endswith ('.la'):
-					self.stage_file (os.path.join (root, file))
-
+				shutil.copy2 (path, dest_file)
 
 	def arch_build (self, arch):
 		Package.profile.arch_build (arch, self)
 
-	def env (self):
-		return str('OBJCFLAGS="%{gcc_flags} %{local_gcc_flags}" '
+	def expand_build_env (self):
+		return expand_macros (
+		'OBJCFLAGS="%{gcc_flags} %{local_gcc_flags}" '
 		'CFLAGS="%{gcc_flags} %{local_gcc_flags}" '
 		'CXXFLAGS="%{gcc_flags} %{local_gcc_flags}" '
 		'CPPFLAGS="%{cpp_flags} %{local_cpp_flags}" '
-		'LDFLAGS="%{ld_flags} %{local_ld_flags}" ')
+		'LDFLAGS="%{ld_flags} %{local_ld_flags}" ', self)
 
 	def configure (self):
 		self.sh ('%{configure} %{configure_flags} %{local_configure_flags}')
@@ -678,17 +724,6 @@ class Package:
 
 	def install (self):
 		self.sh ('%{makeinstall}')
-
-	def stage (self, dir, stage_to_dir = dir):
-		self.stage_la_files (os.path.join(dir, 'lib'))
-		self.stage_pkgs (os.path.join (dir, 'share', 'pkgconfig'))
-		self.stage_pkgs (os.path.join (dir, 'lib', 'pkgconfig'))
-		self.stage_binaries  (os.path.join(dir, 'lib'))
-		self.stage_binaries (os.path.join(dir, 'bin'))
-
-		for extra_file in self.extra_stage_files:
-			self.stage_file (os.path.join (dir, extra_file))
-
 
 Package.default_sources = None
 
@@ -734,17 +769,17 @@ GnomeGitPackage.default_sources = [
 
 class GnuPackage (Package): pass
 GnuPackage.default_sources = [
-	'https://ftp.gnu.org/gnu/%{name}/%{name}-%{version}.tar.gz'
+    'ftp://ftp.gnu.org/gnu/%{name}/%{name}-%{version}.tar.gz'
 ]
 
 class GnuBz2Package (Package): pass
 GnuBz2Package.default_sources = [
-	'https://ftp.gnu.org/gnu/%{name}/%{name}-%{version}.tar.bz2'
+    'ftp://ftp.gnu.org/gnu/%{name}/%{name}-%{version}.tar.bz2'
 ]
 
 class GnuXzPackage (Package): pass
 GnuXzPackage.default_sources = [
-        'https://ftp.gnu.org/gnu/%{name}/%{name}-%{version}.tar.xz'
+    'ftp://ftp.gnu.org/gnu/%{name}/%{name}-%{version}.tar.xz'
 ]
 
 class CairoGraphicsPackage (Package): pass

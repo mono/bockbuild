@@ -35,6 +35,7 @@ class IronLanguagesPackage(GitHubTarballPackage):
 		self.ironpython = os.path.join (os.getcwd(), 'ironpython', 'bin') + os.sep
 
 		self.sh ("mkdir -p %{staged_prefix}/lib/ironruby/")
+		self.sh ("mkdir -p %{staged_prefix}/bin/")
 		self.sh ("cp -R %{ironruby} %{staged_prefix}/lib/ironruby/")
 		self.install_wrapper_scripts (self.ironruby, 'ironruby')
 

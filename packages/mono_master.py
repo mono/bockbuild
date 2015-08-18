@@ -1,12 +1,12 @@
 import os
+import re
+
+from bockbuild.package import Package
 
 class MonoMasterPackage(Package):
 
 	def __init__(self):
-		if os.getenv('MONO_VERSION') is None:
-			raise Exception ('You must export MONO_VERSION to use this build profile. e.g. export MONO_VERSION=3.1.0')
-
-		Package.__init__(self, 'mono', os.getenv('MONO_VERSION'),
+		Package.__init__(self, 'mono', None,
 			sources = [os.getenv('MONO_REPOSITORY') or 'git://github.com/mono/mono.git'],
 			git_branch = os.getenv ('MONO_BRANCH') or None,
 			revision = os.getenv('MONO_BUILD_REVISION'),
@@ -15,6 +15,7 @@ class MonoMasterPackage(Package):
 				'--with-ikvm=yes'
 			]
 		)
+		self.source_dir_name = 'mono'
 		#This package would like to be lipoed.
 		self.needs_lipo = True
 		
@@ -38,22 +39,44 @@ class MonoMasterPackage(Package):
 
 		self.configure = './autogen.sh --prefix="%{package_prefix}"'
 
+		self.extra_stage_files = ['etc/mono/config']
+
+	def build (self):
+		self.make = '%s EXTERNAL_MCS=%s EXTERNAL_RUNTIME=%s' % (self.make, self.profile.env.system_mcs, self.profile.env.system_mono)
+		Package.build (self)
+
 	def prep (self):
 		Package.prep (self)
 		for p in range (1, len (self.local_sources)):
 			self.sh ('patch -p1 < "%{local_sources[' + str (p) + ']}"')
 
-	def arch_build (self, arch):	
+	def arch_build (self, arch):
 		if arch == 'darwin-64': #64-bit build pass
 			self.local_gcc_flags = ['-m64']
 			self.local_configure_flags = ['--build=x86_64-apple-darwin11.2.0']
-		
+
 		if arch == 'darwin-32': #32-bit build pass
 			self.local_gcc_flags =['-m32']
 			self.local_configure_flags = ['--build=i386-apple-darwin11.2.0']
 
+		self.local_configure_flags.extend (['--cache-file=%s/%s-%s.cache' % (self.profile.build_root, self.name, arch)])
+
 	def install(self):
-	        Package.install (self)
-	        self.extra_stage_files = ['etc/mono/config']
+		Package.install (self)
+
+		registry_dir = os.path.join(self.staged_prefix, "etc", "mono", "registry", "LocalMachine")
+		ensure_dir (registry_dir)
+
+	def deploy(self):
+		text = " ".join(open('%s/bin/mcs' % self.staged_profile).readlines ())
+		regex = os.path.join(self.profile.MONO_ROOT, "Versions", r"(\d+\.\d+\.\d+)")
+		match = re.search(regex, text)
+		if match is None:
+			return
+		token = match.group(1)
+
+		trace (token)
+		if self.package_prefix not in match:
+		    error ("%s references Mono %s\n%s" % ('mcs', match, text))
 
 MonoMasterPackage()

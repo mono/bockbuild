@@ -7,45 +7,295 @@ import fileinput
 import inspect
 import time
 import difflib
+import shutil
+import tarfile
+import hashlib
+import stat
+
+# from https://svn.blender.org/svnroot/bf-blender/trunk/blender/build_files/scons/tools/bcolors.py
+class bcolors:
+    HEADER = '\033[95m'
+    OKBLUE = '\033[94m'
+    OKGREEN = '\033[92m'
+    WARNING = '\033[93m'
+    FAIL = '\033[91m'
+    ENDC = '\033[0m'
+    BOLD = '\033[1m'
+    UNDERLINE = '\033[4m'
+
+class config:
+	trace = False
+	filter = None # function name/package name filter for trace() and test()
+	test = False
+	iterative = False # FIXME: this needs a bit more work
+	quiet = None
+	never_rebuild = False
+
+class CommandException (Exception):
+	def __init__ (self, message):
+		Exception.__init__ (self, message)
+
+class BockbuildException (Exception):
+	def __init__ (self, message):
+		Exception.__init__ (self, message)
 
 def log (phase, message):
 	#DISABLED until we can properly refactor/redirect logging
 	return
 
+#TODO: move these functions to either Profile or their own class
+
+def get_caller (skip = 0):
+	try:
+		stack = inspect.stack ()
+		if len (inspect.stack()) < 3 + skip:
+			return 'top'
+		record = stack [2 + skip]
+		caller = record[3]
+		frame = record[0]
+
+		if 'self' in frame.f_locals:
+			try:
+				return '%s->%s' % (frame.f_locals['self'].name, caller)
+			except Exception as e:
+				return '%s->%s' % (frame.f_locals['self'].__class__.__name__, caller)
+		else:
+			return caller
+	except Exception as e:
+		return '~error getting caller~'
+
+def assert_exists (path):
+	if not os.path.exists (path):
+		error ('assert_exists failed: ' + os.path.basename (path))
+
+def loginit (message):
+	if os.getenv ('BUILD_REVISION') is not None:  #MonkeyWrench
+		print '@MonkeyWrench: SetSummary:<h3>%s</h3>' % message
+	else:
+		logprint (message, bcolors.BOLD)
+
+def logprint (message, color, summary = False, trace = False):
+	if config.quiet == True and trace == False:
+		return
+	if summary:
+		if os.getenv ('BUILD_REVISION') is not None:  #MonkeyWrench
+				print '@MonkeyWrench: AddSummary:<p>%s</p>' % message
+				return
+
+	message = '%s%s%s' % ('\n', message, '\n')
+	if sys.stdout.isatty():
+		print '%s%s%s' % (color, message , bcolors.ENDC)
+	else:
+		print message
+
+def title (message, summary = True):
+	logprint ('** %s **' % message, bcolors.HEADER, summary)
+
+def info (message, summary = True):
+	logprint (message ,bcolors.OKGREEN, summary)
+
+def progress (message):
+	logprint ('%s: %s' % (get_caller (), message), bcolors.OKBLUE)
+
 def warn (message):
-	print '(bockbuild warning) %s' % message
+	logprint ('(bockbuild warning) %s: %s' % (get_caller (), message), bcolors.UNDERLINE)
 
 def error (message):
-	print '(bockbuild error) %s' % message
+	config.trace = False
+	logprint ('(bockbuild error) %s: %s' % (get_caller (), message) , bcolors.FAIL, summary = True)
 	sys.exit (255)
+
+def trace (message, skip = 0):
+	if config.trace == False:
+		return
+
+	caller = get_caller(skip)
+
+	if config.filter != None and config.filter not in caller:
+		return
+
+	logprint ('%s: %s' % (caller, message), bcolors.FAIL, summary = True, trace = True)
+
+def test (func):
+	if config.test == False:
+		return
+	caller = get_caller ()
+
+	if config.filter != None and config.filter not in caller:
+		return
+
+	if func() == False:
+		error ('Test ''%s'' failed.' % func.__name__)
 
 def retry (func, tries = 3, delay = 5):
 	result = None
 	exc = None
+	cwd = None
 	for x in range(tries):
 		try:
+			cwd = os.getcwd ()
 			result = func ()
 			return result
-		except Exception as e:
+		except CommandException as e:
 			if x == tries - 1:
 				raise
 			warn (str(e))
 			warn ("Retrying ''%s'' in %s secs" % (func.__name__, delay))
 			time.sleep (delay)
+		finally:
+			if cwd != os.getcwd ():
+				error ('%s returned on different directory: Was %s, is %s' % (func.__name__, cwd, os.getcwd ()))
 
-def update (new_text, file):
-	if not os.path.exists (file):
-		open (file, 'w+').close ()
-	orig_text = open (file).readlines ()
+
+def ensure_dir (d, purge = False):
+	if os.path.exists(d):
+		if purge == True:
+			trace ('Nuking %s' % d)
+			unprotect_dir (d, recursive = True)
+			shutil.rmtree(d, ignore_errors=False)
+		else: return
+	os.makedirs (d)
+
+def identical_files (first, second): # quick and dirty assuming they have the same name/paths
+	hash1 = hashlib.sha1(open(first).read()).hexdigest()
+	hash2 = hashlib.sha1(open(second).read()).hexdigest()
+
+	return hash1 == hash2
+
+def update (new_text, file, show_diff = True):
+	orig_text = None
+	if os.path.exists (file):
+		orig_text = open (file).readlines ()
+
+	output = open (file, 'w')
+	output.writelines (new_text)
+
+	if orig_text == None:
+		return False
+
 	difflines = [line for line in difflib.context_diff(orig_text, new_text, n=0)]
 	if len (difflines) > 0:
-		output = open (file, 'w')
-		output.writelines (new_text)
-		#for line in new_text:
-		#	output.write (line + '\n')
-		return difflines
+		if show_diff == True:
+			brieflines = [line.rstrip('\r\n') for line in difflines if line.startswith(('+ ','- ','! '))]
+			info ('\n'.join (brieflines))
+		return True # changes
 	else:
-		return None
+		return False
+
+def get_filetype (path):
+	return backtick ('file -b "%s"' % path)[0]
+
+
+def find_git(self):
+        self.git = 'git'
+        for git in ['/usr/local/bin/git', '/usr/local/git/bin/git', '/usr/bin/git']:
+			if os.path.isfile (git):
+				self.git = git
+				break
+
+def assert_git_dir(self):
+	if (os.system(expand_macros ('%{git} rev-parse HEAD > /dev/null', self))) != 0:
+		raise Exception('assert_git_dir')
+
+def git_get_revision(self):
+	assert_git_dir(self)
+	return backtick (expand_macros ('%{git} rev-parse HEAD', self))[0]
+
+def git_get_branch(self):
+	assert_git_dir(self)
+	revision = git_get_revision (self)
+	branch = backtick (expand_macros ('%{git} symbolic-ref --short HEAD', self))[0]
+	if branch == revision: return None #detached HEAD
+	else: return branch
+
+def git_is_dirty(self):
+	assert_git_dir(self)
+	str = backtick (expand_macros ('%{git} symbolic-ref --short HEAD', self))[0]
+	return str.contains ('dirty')
+
+def git_patch (self, dir, patch):
+	assert_git_dir(self)
+	run_shell (expand_macros ('%' + '{git} diff > %s', self))
+
+def protect_dir (dir, recursive = False):
+	if not recursive:
+		os.chmod (dir, stat.S_IRUSR | stat.S_IXUSR)
+	else:
+		for root,subdirs,filelist in os.walk (dir):
+			protect_dir (root, recursive = False)
+
+def unprotect_dir (dir, recursive = False):
+	if not recursive:
+		os.chmod (dir, stat.S_IRUSR | stat.S_IXUSR | stat.S_IWUSR)
+	elif os.path.isdir (dir):
+		for root,subdirs,filelist in os.walk (dir):
+			unprotect_dir (root, recursive = False)
+
+
+def merge_trees(src, dst, delete_src = True):
+	if not os.path.isdir(src) or not os.path.isdir(dst):
+		raise Exception ('"%s" or "%s" are not both directories ' % (src, dst))
+	run_shell('rsync -a --ignore-existing %s/* %s' % (src, dst), False)
+	if delete_src:
+		shutil.rmtree (src, ignore_errors = True)
+
+def iterate_dir (dir, with_links = False, with_dirs = False, summary = False):
+	x = 0
+	links = 0
+	dirs = 0
+
+	for root,subdirs,filelist in os.walk (dir):
+		dirs = dirs + 1
+		if with_dirs:
+			yield root
+		for file in filelist:
+			path = os.path.join (root, file)
+			if os.path.islink (path):
+				links = links + 1
+				if with_links:
+					yield path
+				continue
+			x = x + 1
+			yield path
+
+	if summary:
+		info ("%s: %s files, %s dirs, %s symlinks" % (os.path.relpath(dir, os.getcwd()), x, dirs, links))
+
+def zip (src, archive):
+	x = 0
+	# thanks to http://stackoverflow.com/a/17080988
+
+	pwd = os.getcwd()
+
+	try:
+		os.chdir (src)
+		with tarfile.open(archive, "w:gz") as zip:
+			for path in iterate_dir (src, with_links = True, with_dirs = True, summary = False):
+				relpath = os.path.relpath (path, src)
+				zip.add(relpath, recursive = False)
+				x = x + 1
+	finally:
+		os.chdir (pwd)
+
+def unzip (archive, dst):
+	if os.path.exists (dst):
+		raise Exception ('unzip: Destination should not exist: %s' % dst)
+
+	pwd = os.getcwd()
+	relroot = os.path.abspath(os.path.join(dst, os.pardir))
+
+	try:
+		os.chdir(relroot)
+		with tarfile.open(archive) as zip:
+			zip.extractall (dst)
+	except:
+		if os.path.exists (archive):
+			os.remove (archive)
+		if os.path.exists (dst):
+			shutil.rmtree (dst, ignore_errors = True)
+		raise
+	finally:
+		os.chdir(pwd)
 
 def dump (self, name):
 	for k in self.__dict__.keys ():
@@ -110,14 +360,15 @@ def replace_in_file(filename, word_dic):
 
 def run_shell (cmd, print_cmd = False):
 	if print_cmd: print '++',cmd
+	if not print_cmd: trace (cmd)
 	proc = subprocess.Popen (cmd, shell = True)
 	exit_code = os.waitpid (proc.pid, 0)[1]
 	if not exit_code == 0:
-		print
-		raise Exception('ERROR: command exited with exit code %s: %s' % (exit_code, cmd))
+		raise CommandException('ERROR: command exited with exit code %s: %s' % (exit_code, cmd))
 
 def backtick (cmd, print_cmd = False):
 	if print_cmd: print '``', cmd
+	if not print_cmd: trace (cmd)
 	lines = []
 	for line in os.popen (cmd).readlines ():
 		lines.append (line.rstrip ('\r\n'))

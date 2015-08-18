@@ -6,7 +6,7 @@ class PangoPackage (GnomeXzPackage):
 			version_minor = '0',
 			configure_flags = [
 				'--without-x',
-				'--enable-debug'
+				'--enable-gtk-doc-html=no'
 			]
 		)
 
@@ -37,5 +37,8 @@ class PangoPackage (GnomeXzPackage):
 		if Package.profile.name == 'darwin':
 			for p in range (1, len (self.local_sources)):
 				self.sh ('patch -p1 < "%{local_sources[' + str (p) + ']}"')
+
+	def deploy (self):
+		self.sh ('pango-querymodules --update-cache')
 
 PangoPackage ()

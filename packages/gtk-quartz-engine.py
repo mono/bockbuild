@@ -1,6 +1,6 @@
 class GtkQuartzEnginePackage (Package):
 	def __init__ (self):
-		Package.__init__ (self, 'gtk-quartz-engine', 'master',
+		Package.__init__ (self, 'gtk-quartz-engine',
 			sources = [ 'git://github.com/mono/gtk-quartz-engine.git' ],
 			override_properties = {
 				'configure': './autogen.sh --prefix=%{package_prefix}',
