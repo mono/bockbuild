@@ -152,9 +152,9 @@ class DarwinProfile (UnixProfile):
 	def process_release (self, directory):
 		# validate staged install
 		# TODO: move to end of '--build' instead of at the beginning of '--package'
-		unprotect_dir (self.staged_prefix, recursive = True)
-		Profile.postprocess (self, [self.validate_rpaths (match = self.match_stageable_binary),
-					self.validate_symlinks (match = self.match_symlinks)], self.staged_prefix)
+		# unprotect_dir (self.staged_prefix, recursive = True)
+		# Profile.postprocess (self, [self.validate_rpaths (match = self.match_stageable_binary),
+		#			self.validate_symlinks (match = self.match_symlinks)], self.staged_prefix)
 
 		unprotect_dir (directory, recursive = True)
 		def destaging_harness (backup, func):
