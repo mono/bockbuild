@@ -218,7 +218,7 @@ class Package:
 		local_sources = []
 		cache = None
 
-		self.cd (build_root)
+		self.pushd (build_root)
 
 		try:
 			for source in self.sources:
@@ -302,6 +302,8 @@ class Package:
 			if workspace != None and os.path.exists (workspace):
 				self.rm (workspace)
 			raise
+		finally:
+			self.popd ()
 
 	def is_successful_build(self, success_file):
 		if not os.path.exists (success_file):
