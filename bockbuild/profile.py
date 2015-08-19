@@ -225,6 +225,7 @@ class Profile:
 
 		for source in self.packages_to_build:
 			package = self.load_package (source)
+			trace (package)
 
 			Profile.setup_package (self, package)
 			Profile.fetch_package (self, package)
@@ -247,10 +248,11 @@ class Profile:
 			error ("Resource '%s' not found" % source)
 
 		Package.last_instance = None
-		execfile (fullpath)
+
+		execfile (fullpath, globals())
 
 		if Package.last_instance == None:
-			error ('%s does not provide a valid package.' % path)
+			error ('%s does not provide a valid package.' % source)
 
 		new_package = Package.last_instance
 		new_package._path = fullpath

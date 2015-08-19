@@ -1,4 +1,4 @@
-#!/usr/bin/python -B -u
+#!/usr/bin/python -u -OO
 
 import itertools
 import os
@@ -23,15 +23,11 @@ class MonoXamarinPackageProfile(MonoReleaseProfile):
         MonoReleaseProfile.__init__ (self)
 
         # add the private stuff
-
-        from mono_master import MonoMasterPackage
-        from mono_crypto import MonoMasterEncryptedPackage
-        mono_crypto = MonoMasterEncryptedPackage()
  
         found = False
         for idx, package in enumerate(self.packages_to_build):
             if package == 'mono_master':
-                self.packages_to_build[idx] = mono_crypto
+                self.packages_to_build[idx] = 'mono_crypto'
                 found = True
                 break
 
@@ -96,4 +92,9 @@ class MonoXamarinPackageProfile(MonoReleaseProfile):
         finally:
             os.chdir(oldcwd)
 
-MonoXamarinPackageProfile().build()
+if __name__ == "__main__":
+    try:
+        MonoXamarinPackageProfile().build()
+    except Exception as e:
+        exc_type, exc_value, exc_traceback = sys.exc_info()
+        error ('%s\n%s' % (str(e), "\n".join (repr(t) for t in traceback.extract_tb(exc_traceback)[-5:])))
