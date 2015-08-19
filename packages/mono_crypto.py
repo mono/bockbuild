@@ -1,11 +1,12 @@
-from packages.mono_master import MonoMasterPackage
+import os
+
 import sys, inspect
-from bockbuild.util.util import *
 
-class MonoMasterEncryptedPackage(MonoMasterPackage):
+from mono_master import MonoMasterPackage
 
+class MonoMasterEncryptedPackage (MonoMasterPackage):
+    
     def __init__(self):
-        from packages.mono_master import MonoMasterPackage
         MonoMasterPackage.__init__ (self)
 
         self.configure_flags.extend(['--enable-extension-module=crypto --enable-native-types'])
@@ -34,4 +35,3 @@ class MonoMasterEncryptedPackage(MonoMasterPackage):
         finally:
             self.popd ()
 
-MonoMasterEncryptedPackage ()

@@ -8,34 +8,37 @@ import string
 import sys
 import tempfile
 
-sys.path.append('../..')
-
-from bockbuild.darwinprofile import DarwinProfile
-from bockbuild.util.util import *
 from glob import glob
 
-sys.path.append('../mono-mac-release')
-
+if __name__ == "__main__":
+        sys.path.append('../..')
+        sys.path.append('../../packages')
+        sys.path.append('../mono-mac-release')
+        
 from MonoReleaseProfile import MonoReleaseProfile
+from bockbuild.util.util import *
 
 class MonoXamarinPackageProfile(MonoReleaseProfile):
     def __init__(self):
         MonoReleaseProfile.__init__ (self)
 
-        from packages.mono_master import MonoMasterPackage
-
         # add the private stuff
+
+        from mono_master import MonoMasterPackage
+        from mono_crypto import MonoMasterEncryptedPackage
+        mono_crypto = MonoMasterEncryptedPackage()
+ 
         found = False
-        for idx, package in enumerate(self.packages):
+        for idx, package in enumerate(self.packages_to_build):
             if package == 'mono_master':
-                self.packages[idx] = 'mono_crypto'
+                self.packages_to_build[idx] = mono_crypto
                 found = True
                 break
 
         if not found:
             error ('Did not find "mono_master" package to remap')
 
-        self.packages.append ('ms-test-suite')
+        self.packages_to_build.append ('ms-test-suite')
 
         if self.unsafe:
             warn ('--unsafe option used, will not attempt to sign package!')

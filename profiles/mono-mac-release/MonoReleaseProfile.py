@@ -8,7 +8,8 @@ import tempfile
 import subprocess
 import stat
 
-sys.path.append('../..')
+if __name__ == "__main__":
+        sys.path.append('../..')
 
 from bockbuild.darwinprofile import DarwinProfile
 from bockbuild.util.util import *
@@ -394,13 +395,3 @@ class MonoReleaseProfile(DarwinProfile):
         os.chmod (path, os.stat(path).st_mode | stat.S_IEXEC)
 
         subprocess.call(['bash', '-c', path] )
-
-def main():
-    try:
-        MonoReleaseProfile().build()
-    except Exception as e:
-        error (str(e))
-        raise
-
-if __name__ == "__main__":
-    main()

@@ -3,7 +3,7 @@ from optparse import OptionParser
 from util.util import *
 from util.csproj import *
 from environment import Environment
-from package import *
+from bockbuild.package import *
 import collections
 import hashlib
 
@@ -197,24 +197,6 @@ class Profile:
 			self.process_release (self.package_root)
 			self.package ()
 
-	def load_package (self, path):
-		if not os.path.isabs (path):
-			fullpath = os.path.join (self.resource_root, path + '.py')
-		else:
-			fullpath = path
-
-		if not os.path.exists (fullpath):
-			error ("Resource '%s' not found" % path)
-
-		Package.last_instance = None
-		exec compile (open (fullpath).read (), fullpath, 'exec')
-		if Package.last_instance == None:
-			error ('%s does not provide a valid package.' % path)
-
-		new_package = Package.last_instance
-		new_package._path = fullpath
-		return new_package
-
 	def track_env (self):
 		tracked_env = []
 
@@ -241,8 +223,8 @@ class Profile:
 		self.toolchain_packages = collections.OrderedDict()
 		self.release_packages = collections.OrderedDict()
 
-		for path in self.packages_to_build:
-			package = self.load_package (path)
+		for source in self.packages_to_build:
+			package = self.load_package (source)
 
 			Profile.setup_package (self, package)
 			Profile.fetch_package (self, package)
@@ -251,6 +233,28 @@ class Profile:
 				self.toolchain_packages[package.name] = package
 			else:
 				self.release_packages[package.name] = package
+
+	def load_package (self, source):
+		if isinstance (source, Package): # package can already be loaded in the source list
+			return source
+
+		if not os.path.isabs (source):
+			fullpath = os.path.join (self.resource_root, source + '.py')
+		else:
+			fullpath = source
+
+		if not os.path.exists (fullpath):
+			error ("Resource '%s' not found" % source)
+
+		Package.last_instance = None
+		execfile (fullpath)
+
+		if Package.last_instance == None:
+			error ('%s does not provide a valid package.' % path)
+
+		new_package = Package.last_instance
+		new_package._path = fullpath
+		return new_package
 
 	def fetch_package (self, package):
 		clean_func = None
