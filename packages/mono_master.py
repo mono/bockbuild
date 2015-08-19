@@ -2,6 +2,7 @@ import os
 import re
 
 from bockbuild.package import Package
+from bockbuild.util.util import *
 
 class MonoMasterPackage(Package):
 
