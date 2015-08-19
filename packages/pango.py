@@ -29,7 +29,10 @@ class PangoPackage (GnomeXzPackage):
                         'patches/pango-fix-ct_font_descriptor_get_weight-crasher.patch',
 
                         # https://bugzilla.gnome.org/show_bug.cgi?id=734372
-                        'patches/pango-coretext-condensed-trait.patch'
+                        'patches/pango-coretext-condensed-trait.patch',
+
+			# https://bugzilla.xamarin.com/show_bug.cgi?id=32938
+			'patches/pango-coretext-fix-yosemite-crasher.patch'
 		])
 
 	def prep (self):
