@@ -31,11 +31,11 @@ class config:
 	quiet = None
 	never_rebuild = False
 
-class CommandException (Exception):
+class CommandException (Exception): # shell command failure
 	def __init__ (self, message):
 		Exception.__init__ (self, message)
 
-class BockbuildException (Exception):
+class BockbuildException (Exception): # internal/unexpected issue, treat as unrecoverable
 	def __init__ (self, message):
 		Exception.__init__ (self, message)
 
@@ -145,7 +145,8 @@ def retry (func, tries = 3, delay = 5):
 			time.sleep (delay)
 		finally:
 			if cwd != os.getcwd ():
-				error ('%s returned on different directory: Was %s, is %s' % (func.__name__, cwd, os.getcwd ()))
+				warn ('%s returned on different directory: Was %s, is %s' % (func.__name__, cwd, os.getcwd ()))
+		os.chdir (cwd)
 	return result
 
 
@@ -154,7 +155,7 @@ def ensure_dir (d, purge = False):
 		if purge == True:
 			trace ('Nuking %s' % d)
 			unprotect_dir (d, recursive = True)
-			shutil.rmtree(d, ignore_errors=False)
+			delete (d)
 		else: return
 	os.makedirs (d)
 
@@ -213,7 +214,7 @@ def git_get_branch(self):
 def git_is_dirty(self):
 	assert_git_dir(self)
 	str = backtick (expand_macros ('%{git} symbolic-ref --short HEAD', self))[0]
-	return str.contains ('dirty')
+	return 'dirty' in str
 
 def git_patch (self, dir, patch):
 	assert_git_dir(self)
@@ -233,13 +234,32 @@ def unprotect_dir (dir, recursive = False):
 		for root,subdirs,filelist in os.walk (dir):
 			unprotect_dir (root, recursive = False)
 
+def delete (path):
+	if not os.path.isabs (path):
+		raise BockbuildException ('Relative paths are not allowed.')
+
+	if not os.path.exists (path):
+		raise CommandException ('Invalid path to rm: %s' % path)
+
+	def rmtree ():
+		try:
+			unprotect_dir (path, recursive = True)
+			if os.path.isfile (path) or os.path.islink (path):
+				os.remove (path)
+			elif os.path.isdir (path):
+				shutil.rmtree (path, ignore_errors=False)
+		except OSError as e:
+			if os.path.exists (path):
+				raise # It's still there, so we try again
+
+	retry (rmtree, tries = 5, delay = 1)
 
 def merge_trees(src, dst, delete_src = True):
 	if not os.path.isdir(src) or not os.path.isdir(dst):
 		raise Exception ('"%s" or "%s" are not both directories ' % (src, dst))
 	run_shell('rsync -a --ignore-existing %s/* %s' % (src, dst), False)
 	if delete_src:
-		shutil.rmtree (src, ignore_errors = True)
+		delete (src)
 
 def iterate_dir (dir, with_links = False, with_dirs = False, summary = False):
 	x = 0
@@ -292,9 +312,9 @@ def unzip (archive, dst):
 			zip.extractall (dst)
 	except:
 		if os.path.exists (archive):
-			os.remove (archive)
+			delete (archive)
 		if os.path.exists (dst):
-			shutil.rmtree (dst, ignore_errors = True)
+			delete (dst)
 		raise
 	finally:
 		os.chdir(pwd)

@@ -581,16 +581,7 @@ class Package:
 
 	def rm (self, path):
 		trace (path)
-		path = expand_macros (path, self)
-
-		unprotect_dir (path, recursive = True)
-		if os.path.isfile (path) or os.path.islink (path):
-			os.remove (path)
-		elif os.path.isdir (path):
-			shutil.rmtree (path, ignore_errors=False)
-		else:
-			raise Exception ('Invalid path to rm: %s' % path)
-
+		delete (expand_macros (path, self))
 
 	def link (self, source, link):
 		trace('%s -> %s' % (link, source))
