@@ -7,6 +7,7 @@ import shutil
 import string
 import sys
 import tempfile
+import traceback
 
 from glob import glob
 

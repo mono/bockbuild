@@ -1,4 +1,5 @@
 from mono_master import MonoMasterPackage
+from bockbuild.util.util import *
 
 class MonoMasterEncryptedPackage (MonoMasterPackage):
     
