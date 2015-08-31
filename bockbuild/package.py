@@ -387,9 +387,9 @@ class Package:
 
 		unprotect_dir (dest, recursive = True)
 		self.pushd (self.profile.build_root)
+		artifact_stage = artifact + '.extracted'
 
 		try:
-			artifact_stage = artifact + '.extracted'
 			assert_exists (artifact)
 			self.rm_if_exists (artifact_stage)
 			unzip (artifact, artifact_stage)
@@ -400,6 +400,8 @@ class Package:
 			protect_dir (dest, recursive = True)
 			self.popd ()
 			return False
+
+		ensure_dir (artifact_stage)
 
 		#catalogue files
 		files = list()
