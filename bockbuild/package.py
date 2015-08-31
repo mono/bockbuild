@@ -417,7 +417,8 @@ class Package:
 		if update (files, artifact + '.files'):
 			warn ('Package filelist changed')
 
-		merge_trees (artifact_stage, dest, False)
+		if len (files) != 0:
+			merge_trees (artifact_stage, dest, False)
 
 		self.deploy ()
 		self.popd ()
