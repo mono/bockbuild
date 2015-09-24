@@ -30,10 +30,12 @@ class MonoMasterEncryptedPackage (MonoMasterPackage):
                 self.sh('%{git} checkout origin/master')
             self.sh ('%{git} reset --hard')
         except Exception as e:
+            self.popd ()
             self.rm_if_exists (dirname)
             raise
         finally:
             info ('Mono crypto extensions (rev. %s)' % git_get_revision (self))
-            self.popd ()
+
+        self.popd ()
 
 MonoMasterEncryptedPackage()
