@@ -4,7 +4,6 @@ from bockbuild.util.util import *
 class MonoMasterEncryptedPackage (MonoMasterPackage):
     
     def __init__(self):
-        info ('Mono includes crypto extensions')
         MonoMasterPackage.__init__ (self)
 
         self.configure_flags.extend(['--enable-extension-module=crypto --enable-native-types'])
@@ -21,6 +20,7 @@ class MonoMasterEncryptedPackage (MonoMasterPackage):
             self.sh('%' + '{git} clone --local --shared "%s" "%s"' % (ext, dirname))
 
         self.pushd(dirname)
+
         try:
             self.sh('%{git} clean -xffd')
             self.sh('%{git} fetch --all --prune')
@@ -32,6 +32,7 @@ class MonoMasterEncryptedPackage (MonoMasterPackage):
             self.rm_if_exists (dirname)
             raise
         finally:
+            info ('Mono crypto extensions (rev. %s)' % git_get_revision (self))
             self.popd ()
 
 MonoMasterEncryptedPackage()
