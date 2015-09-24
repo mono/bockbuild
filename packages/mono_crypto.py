@@ -28,6 +28,7 @@ class MonoMasterEncryptedPackage (MonoMasterPackage):
                 self.sh('%' + '{git} checkout origin/%s' % self.git_branch)
             else:
                 self.sh('%{git} checkout origin/master')
+            self.sh ('%{git} reset --hard')
         except Exception as e:
             self.rm_if_exists (dirname)
             raise
