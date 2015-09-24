@@ -229,7 +229,7 @@ def protect_dir (dir, recursive = False):
 
 def unprotect_dir (dir, recursive = False):
 	if not recursive:
-		os.chmod (dir, stat.S_IRUSR | stat.S_IXUSR | stat.S_IWUSR)
+		os.chmod (dir, stat.S_IRUSR | stat.S_IXUSR | stat.S_IWUSR | stat.S_IXGRP | stat.S_IRGRP | stat.S_IXOTH | stat.S_IROTH)
 	elif os.path.isdir (dir):
 		for root,subdirs,filelist in os.walk (dir):
 			unprotect_dir (root, recursive = False)
