@@ -37,15 +37,15 @@ class MonoXamarinPackageProfile(MonoReleaseProfile):
 
         self.packages_to_build.append ('ms-test-suite')
 
-        if self.unsafe:
-            warn ('--unsafe option used, will not attempt to sign package!')
+        if not self.cmd_options.release_build:
+            info ("'--release' option not set, will not attempt to sign package!")
             return 
 
         self.identity = "Developer ID Installer: Xamarin Inc"
 
         output = backtick("security -v find-identity")
         if self.identity not in " ".join(output):
-            error ("Identity '%s' was not found. You can create an unsigned package by adding '--unsafe' to your command line." % self.identity)
+            error ("Identity '%s' was not found. You can create an unsigned package by removing '--release' to your command line." % self.identity)
 
         password = os.getenv("CODESIGN_KEYCHAIN_PASSWORD")
         if password:
@@ -61,7 +61,7 @@ class MonoXamarinPackageProfile(MonoReleaseProfile):
         output_unsigned = output + '.UNSIGNED'
         shutil.move (output, output_unsigned)
 
-        if self.unsafe:
+        if not self.cmd_options.release_build:
             return output_unsigned
 
         productsign = "/usr/bin/productsign"
