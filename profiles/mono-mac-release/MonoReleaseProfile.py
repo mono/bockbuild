@@ -92,6 +92,10 @@ class MonoReleaseProfile(DarwinProfile):
         if free_space < 10:
             error ('Low disk space (less than 10GB), aborting')
 
+        # check for XQuartz installation (needed for libgdiplus)
+        if not os.path.exists ('/opt/X11/include/X11/Xlib.h'):
+            error ('XQuartz is required to be installed (download from http://xquartz.macosforge.org/) ')
+
         self.MONO_ROOT = "/Library/Frameworks/Mono.framework"
         self.BUILD_NUMBER = "0"
         self.MRE_GUID = "432959f9-ce1b-47a7-94d3-eb99cb2e1aa8"
