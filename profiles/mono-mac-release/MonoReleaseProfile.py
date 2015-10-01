@@ -84,6 +84,14 @@ class MonoReleaseProfile(DarwinProfile):
 
     def __init__(self):
         DarwinProfile.__init__(self, min_version = 7)
+
+        # quick disk space check (http://stackoverflow.com/questions/787776/)
+        s = os.statvfs(self.root)
+        free_space =  (s.f_bavail * s.f_frsize) / (1024 * 1024 * 1024) # in GB
+
+        if free_space < 10:
+            error ('Low disk space (less than 10GB), aborting')
+
         self.MONO_ROOT = "/Library/Frameworks/Mono.framework"
         self.BUILD_NUMBER = "0"
         self.MRE_GUID = "432959f9-ce1b-47a7-94d3-eb99cb2e1aa8"
