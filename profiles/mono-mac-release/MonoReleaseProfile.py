@@ -317,6 +317,7 @@ class MonoReleaseProfile(DarwinProfile):
                 if self.match_stageable_binary (f, file_type):
                     try:
                         run_shell('dsymutil "%s" >/dev/null' % f)
+                        run_shell('strip -u -r "%s" > /dev/null' % f)
                         x = x + 1
                     except Exception as e:
                         warn (e)
