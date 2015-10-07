@@ -11,6 +11,10 @@ if [ -f "$FW/External/xbuild-frameworks/.NETPortable/$LICENSE" ]; then
     rm -rf $FW/External/xbuild-frameworks/.NETPortable
 fi
 
+# Ensure /usr/local/bin & /usr/local/share exist
+mkdir -p /usr/local/bin
+mkdir -p /usr/local/share
+
 # Remove /usr/local/bin/pkg-config if it's a symlink to the Mono-installed one
 PKG_CONFIG_LINK="/usr/local/bin/pkg-config"
 if [ -L $PKG_CONFIG_LINK ]; then
@@ -39,8 +43,8 @@ if [ -d ${FW_CURRENT} ]; then
     cd ${FW_CURRENT}/share/man
     for i in ${WHITELIST}; do
         for j in $(ls man*/${i}.*); do
-            if test ! -e "/usr/share/man/${j}"; then
-                ln -sf "${FW_CURRENT}/share/man/${j}" "/usr/share/man/${j}"
+            if test ! -e "/usr/local/share/man/${j}"; then
+                ln -sf "${FW_CURRENT}/share/man/${j}" "/usr/local/share/man/${j}"
             fi
         done
     done
