@@ -22,7 +22,7 @@ class MonoMasterPackage(Package):
 		if Package.profile.name == 'darwin':
 			self.configure_flags.extend([
 				'--with-libgdiplus=%s/lib/libgdiplus.dylib' % Package.profile.staged_prefix,
-				'--enable-loadedllvm',
+				'--enable-llvm',
 				'CXXFLAGS=-stdlib=libc++'
 				])
 
