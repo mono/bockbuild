@@ -32,7 +32,7 @@ class Profile:
 		find_git (self)
 		self.env.set ('bockbuild_revision', git_get_revision(self) )
 
-		loginit ('bockbuild rev. %s %s' % (self.env.bockbuild_revision, "" or "(branch: %s)" % git_get_branch(self)))
+		loginit ('bockbuild (%s)' % (git_shortid (self)))
 		info ('cmd: %s' % ' '.join(sys.argv))
 
 		self.parse_options ()

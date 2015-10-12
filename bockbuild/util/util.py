@@ -207,18 +207,28 @@ def git_get_revision(self):
 def git_get_branch(self):
 	assert_git_dir(self)
 	revision = git_get_revision (self)
-	branch = backtick (expand_macros ('%{git} symbolic-ref --short HEAD', self))[0]
-	if branch == revision: return None #detached HEAD
-	else: return branch
+	output = backtick (expand_macros ('%{git} symbolic-ref -q --short HEAD', self))
+	if len(output) == 0:
+		return None #detached HEAD
+	else: return output[0]
 
 def git_is_dirty(self):
 	assert_git_dir(self)
-	str = backtick (expand_macros ('%{git} symbolic-ref --short HEAD', self))[0]
+	str = backtick (expand_macros ('%{git} symbolic-ref --short HEAD --dirty', self))[0]
 	return 'dirty' in str
 
 def git_patch (self, dir, patch):
 	assert_git_dir(self)
 	run_shell (expand_macros ('%' + '{git} diff > %s', self))
+
+def git_shortid (self):
+	assert_git_dir(self)
+	branch = git_get_branch (self)
+	short_rev = backtick (expand_macros ('git describe --abbrev --always --dirty', self))[0]
+	if branch == None:
+		return  short_rev
+	else:
+		return '%s-%s' % (branch, short_rev)
 
 def protect_dir (dir, recursive = False):
 	if not recursive:

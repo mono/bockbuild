@@ -116,15 +116,17 @@ class Package:
 		trace (message, skip = 1)
 
 	def get_package_string (self):
+		self.pushd (self.workspace)
 		str = self.name
 		if self.version:
 			str+= ' v.' + self.version
 		if self.revision:
-			revstr = self.revision if not self.git_branch else '%s/%s' % (self.revision, self.git_branch)
-			str+= ' (rev. %s )' % revstr
+			str += ' (%s)' % git_shortid (self)
+		self.popd ()
 		return str
 
 	def _fetch_sources (self, build_root, workspace, resource_dir, source_cache_dir):
+		trace ('Fetching %s' % workspace)
 		clean_func = None # what to run if the workspace needs to be redone
 
 		if self.sources == None:
@@ -144,9 +146,6 @@ class Package:
 					warn ('iterative')
 				self.popd ()
 
-			# Explicitly reset the working dir to a known directory which has not been deleted
-			# 'git clone' does not work if you are in a directory which has been deleted
-			self.cd (build_root)
 			if not os.path.exists (cache_dir):
 				# since this is a fresh cache, the workspace copy is invalid if it exists
 				if os.path.exists (workspace_dir):
@@ -165,13 +164,9 @@ class Package:
 			if not os.path.exists(workspace_dir):
 				trace ( 'Cloning a fresh workspace')
 				self.sh ('%' + '{git} clone --local --shared 	"%s" "%s"' % (cache_dir, workspace_dir))
-				self.cd (workspace_dir)
-				clean_func = clean_nop
-			else:
-				clean_func = clean_git_workspace
 
 			trace ( 'Updating workspace')
-			self.cd (workspace_dir)
+			self.pushd (workspace_dir)
 
 			if self.git_branch == None:
 				self.sh ('%{git} fetch --all --prune')
@@ -180,7 +175,7 @@ class Package:
 
 			self.sh ('%{git} reset')
 
-			current_revision = self.backtick ('%{git} rev-parse HEAD')[0]
+			current_revision = git_get_revision (self)
 
 			if self.revision != None:
 				target_revision = self.revision
@@ -188,21 +183,25 @@ class Package:
 				if self.git_branch == None:
 					warn ('Package does not define revision or branch, defaulting to tip of "master"')
 				self.git_branch = self.git_branch or 'master'
-				target_revision = self.backtick ('%' +'{git} rev-parse origin/%s' % self.git_branch)[0]
+
+			if self.git_branch != None:
+				self.sh ('%' + '{git} checkout %s' % self.git_branch)
+				if self.revision == None:
+					current_revision = git_get_revision (self)
+					target_revision = current_revision
 
 			if (current_revision != target_revision):
 				trace ('%s -> %s' % (current_revision, target_revision))
-				self.sh ('%{git} reset --hard')
-				self.sh ('%{git} clean -xffd')
-				self.sh ('%' + '{git} checkout %s' % target_revision)
+				self.sh ('%' + '{git} reset --hard %s' % target_revision)
 
-			current_revision = self.backtick ('%{git} rev-parse HEAD')[0]
+			current_revision = git_get_revision (self)
 
 			if (self.revision != None and self.revision != current_revision):
 				raise Exception ('Workspace error: Revision is %s, package specifies %s' % (current_revision, self.revision))
 
 			self.revision = current_revision
-			return clean_func
+			self.popd ()
+			return clean_git_workspace
 
 
 		def get_download_dest(url):
@@ -218,10 +217,9 @@ class Package:
 		local_sources = []
 		cache = None
 
-		self.pushd (build_root)
-
 		try:
 			for source in self.sources:
+				self.cd (build_root)
 				#if source.startswith ('http://'):
 				#	raise Exception ('HTTP downloads are no longer allowed: %s', source)
 
@@ -303,7 +301,7 @@ class Package:
 				self.rm (workspace)
 			raise
 		finally:
-			self.popd ()
+			self.cd (build_root)
 
 	def is_successful_build(self, success_file):
 		if not os.path.exists (success_file):
@@ -353,7 +351,6 @@ class Package:
 					warn ('Failed to deploy from artifact %s. Rebuilding' % os.path.basename (build_artifact))
 
 			if needs_build:
-				retry (self.clean)
 
 				if (arch == 'darwin-universal' and self.needs_lipo):
 					workspace_x86 = workspace +'-x86'
@@ -448,13 +445,16 @@ class Package:
 			self.build_env = self.expand_build_env ()
 			self.build ()
 			self.install ()
+			retry (self.clean)
 
 			if not os.path.exists (self.staged_prefix):
 				error ('Result directory %s not found.' % self.staged_prefix)
 
 			self.profile.process_package (self)
+			self.popd()
 		except Exception as e:
 			self.popd (failure = True)
+			self.rm_if_exists (self.stage_root)
 
 			if os.path.exists (workspace_dir):
 				problem_dir = os.path.join (self.profile.root, os.path.basename (workspace_dir) + '.problem')
@@ -472,7 +472,6 @@ class Package:
 		finally:
 			unprotect_dir (self.stage_root)
 
-		self.popd()
 		self.verbose = False
 
 		return self.staged_prefix
@@ -543,9 +542,12 @@ class Package:
 
 	def cd (self, dir):
 		dir = expand_macros (dir, self)
-		trace ('%s: cd %s' % (get_caller (), dir))
-		if not os.path.exists (os.getcwd ()):
-			warn ('%s: Just cd''ed out of non-existing directory %s' % (get_caller, os.getcwd ()))
+		try:
+			cwd = os.getcwd ()
+		except Exception as e:
+			trace ('In invalid directory')
+
+		trace (dir)
 		os.chdir (dir)
 
 	def pushd (self, dir):
