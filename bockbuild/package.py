@@ -132,9 +132,6 @@ class Package:
 		if self.sources == None:
 			return None
 
-		def clean_nop ():
-			pass
-
 		def checkout (self, source_url, cache_dir, workspace_dir):
 			def clean_git_workspace ():
 				print 'Cleaning git workspace:', self.name
@@ -235,9 +232,7 @@ class Package:
 						if not os.path.exists (workspace):
 							self.extract_archive (cache, False)
 							os.utime (workspace, None)
-							clean_func = clean_nop
-						else:
-							clean_func = clean_archive
+						clean_func = clean_archive
 						if not os.path.exists (workspace):
 							raise Exception ('Archive %s was extracted but not found at workspace path %s' % (cache, workspace))							
 						self.popd ()
@@ -420,6 +415,8 @@ class Package:
 		self.deploy ()
 		self.popd ()
 
+		self.rm_if_exists (artifact_stage)
+
 		protect_dir (dest, recursive = True)
 
 		os.utime (artifact, None)
@@ -470,7 +467,8 @@ class Package:
 				error (str(e))
 			raise
 		finally:
-			unprotect_dir (self.stage_root)
+			if os.path.exists (self.stage_root):
+				unprotect_dir (self.stage_root)
 
 		self.verbose = False
 

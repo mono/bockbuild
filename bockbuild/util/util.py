@@ -117,7 +117,7 @@ def progress (message):
 	logprint ('%s: %s' % (get_caller (), message), bcolors.OKBLUE)
 
 def warn (message):
-	logprint ('(bockbuild warning) %s: %s' % (get_caller (), message), bcolors.UNDERLINE)
+	logprint ('(bockbuild warning) %s: %s' % (get_caller (), message), bcolors.FAIL)
 
 def error (message, more_output = False):
 	def expand (message):
@@ -167,9 +167,9 @@ def retry (func, tries = 3, delay = 5):
 			break
 		except CommandException as e:
 			if x == tries - 1:
-				raise
-			warn (str(e))
-			warn ("Retrying ''%s'' in %s secs" % (func.__name__, delay))
+				error (str(e))
+			info (str(e))
+			info ("Retrying ''%s'' in %s secs" % (func.__name__, delay))
 			time.sleep (delay)
 		finally:
 			os.chdir (cwd)
