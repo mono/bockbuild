@@ -45,24 +45,43 @@ def log (phase, message):
 
 #TODO: move these functions to either Profile or their own class
 
-def get_caller (skip = 0):
+def get_caller (skip = 0, get_dump = False):
+	#this whole thing fails if we're not in a valid directory
 	try:
-		stack = inspect.stack ()
-		if len (inspect.stack()) < 3 + skip:
-			return 'top'
-		record = stack [2 + skip]
+		cwd = os.getcwd ()
+	except OSError as e:
+		return '~could not get caller (current directory not valid)~'
+
+	stack = inspect.stack (3)
+	if len (inspect.stack()) < 3 + skip:
+		return 'top'
+	output = None
+	last_caller = None
+	for record in stack [2 + skip:]:
 		caller = record[3]
 		frame = record[0]
 
-		if 'self' in frame.f_locals:
-			try:
-				return '%s->%s' % (frame.f_locals['self'].name, caller)
-			except Exception as e:
-				return '%s->%s' % (frame.f_locals['self'].__class__.__name__, caller)
-		else:
-			return caller
-	except Exception as e:
-		return '~error getting caller~'
+		try:
+			if 'self' in frame.f_locals:
+				try:
+					output = '%s->%s' % (frame.f_locals['self'].name, caller)
+				except Exception as e:
+					pass
+				finally:
+					if output == None:
+						output = '%s->%s' % (frame.f_locals['self'].__class__.__name__, caller)
+			else:
+				last_caller = caller
+			if get_dump:
+				output = output + "\n" + "\t".join(dump (frame.f_locals['self'], 'self'))
+
+		except Exception as e:
+			pass
+		if output != None:
+			return output
+
+	if output == None:
+		return last_caller
 
 def assert_exists (path):
 	if not os.path.exists (path):
@@ -100,10 +119,19 @@ def progress (message):
 def warn (message):
 	logprint ('(bockbuild warning) %s: %s' % (get_caller (), message), bcolors.UNDERLINE)
 
-def error (message):
+def error (message, more_output = False):
+	def expand (message):
+			for k in message.keys ():
+				if isinstance (message [k], (str, list, tuple, dict, bool, int)) and not k.startswith ('_'):
+					yield '%s: %s\n' % (k, message [k])
+
+	if isinstance (message, dict):
+		message = "\n".join (expand (message))
 	config.trace = False
-	logprint ('(bockbuild error) %s: %s' % (get_caller (), message) , bcolors.FAIL, summary = True)
-	sys.exit (255)
+	header = '(bockbuild error)' if not more_output else ''
+	logprint ('%s %s: %s' % (header, get_caller (), message) , bcolors.FAIL, summary = True)
+	if not more_output:
+		sys.exit (255)
 
 def trace (message, skip = 0):
 	if config.trace == False:
@@ -130,11 +158,11 @@ def test (func):
 def retry (func, tries = 3, delay = 5):
 	result = None
 	exc = None
-	cwd = None
+	cwd = os.getcwd ()
 	result = None
 	for x in range(tries):
 		try:
-			cwd = os.getcwd ()
+			os.chdir (cwd)
 			result = func ()
 			break
 		except CommandException as e:
@@ -144,9 +172,7 @@ def retry (func, tries = 3, delay = 5):
 			warn ("Retrying ''%s'' in %s secs" % (func.__name__, delay))
 			time.sleep (delay)
 		finally:
-			if cwd != os.getcwd ():
-				warn ('%s returned on different directory: Was %s, is %s' % (func.__name__, cwd, os.getcwd ()))
-		os.chdir (cwd)
+			os.chdir (cwd)
 	return result
 
 
@@ -262,7 +288,8 @@ def delete (path):
 			if os.path.exists (path):
 				raise # It's still there, so we try again
 
-	retry (rmtree, tries = 5, delay = 1)
+	#retry (rmtree, tries = 5, delay = 1)
+	rmtree ()
 
 def merge_trees(src, dst, delete_src = True):
 	if not os.path.isdir(src) or not os.path.isdir(dst):

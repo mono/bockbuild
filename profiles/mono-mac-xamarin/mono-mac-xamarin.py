@@ -98,4 +98,5 @@ if __name__ == "__main__":
         MonoXamarinPackageProfile().build()
     except Exception as e:
         exc_type, exc_value, exc_traceback = sys.exc_info()
-        error ('%s\n%s' % (str(e), "\n".join (repr(t) for t in traceback.extract_tb(exc_traceback)[-5:])))
+        error ('%s (%s)' % (e ,exc_type.__name__), more_output = True)
+        error ('\n'.join (('%s:%s @%s\n\t...%s\n' % p for p in traceback.extract_tb(exc_traceback)[-3:])), more_output = True)
