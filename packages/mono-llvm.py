@@ -22,6 +22,6 @@ class MonoLlvmPackage (GitHubPackage):
 
 		#LLVM says that libstdc++4.6 is broken and we should use libstdc++4.7. This switches it to the right libstdc++.
 		if Package.profile.name == 'darwin':
-			self.local_configure_flags.extend (['CXXFLAGS=-stdlib=libc++'])
+			self.local_configure_flags.extend (['--enable-libcpp=yes'])
 		
 MonoLlvmPackage ()
