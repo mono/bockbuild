@@ -24,10 +24,11 @@ class MonoMasterEncryptedPackage (MonoMasterPackage):
         try:
             self.sh('%{git} clean -xffd')
             self.sh('%{git} fetch --all --prune')
-            if "pr/" not in self.git_branch:
-                self.sh('%' + '{git} checkout origin/%s' % self.git_branch)
-            else:
+            if 'pull/' in self.git_branch: # pull request
                 self.sh('%{git} checkout origin/master')
+            else:
+                self.sh('%' + '{git} checkout origin/%s' % self.git_branch)
+
             self.sh ('%{git} reset --hard')
         except Exception as e:
             self.popd ()
