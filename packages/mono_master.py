@@ -19,6 +19,9 @@ class MonoMasterPackage(Package):
 		self.source_dir_name = 'mono'
 		#This package would like to be lipoed.
 		self.needs_lipo = True
+
+		#Don't clean the workspace, so we can run 'make check' afterwards
+		self.dont_clean = True
 		
 		if Package.profile.name == 'darwin':
 			self.configure_flags.extend([

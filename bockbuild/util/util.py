@@ -30,6 +30,7 @@ class config:
 	iterative = False # FIXME: this needs a bit more work
 	quiet = None
 	never_rebuild = False
+	verbose = False
 
 class CommandException (Exception): # shell command failure
 	def __init__ (self, message):
@@ -114,6 +115,9 @@ def info (message, summary = True):
 	logprint (message ,bcolors.OKGREEN, summary)
 
 def progress (message):
+	logprint ('%s: %s' % (get_caller (), message), bcolors.OKBLUE)
+
+def verbose (message):
 	logprint ('%s: %s' % (get_caller (), message), bcolors.OKBLUE)
 
 def warn (message):

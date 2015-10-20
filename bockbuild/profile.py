@@ -39,9 +39,11 @@ class Profile:
 
 		self.packages_to_build = self.cmd_args or self.packages
 		self.verbose = self.cmd_options.verbose
+		config.verbose = self.cmd_options.verbose
 		self.run_phases = self.default_run_phases
 		self.arch = self.cmd_options.arch
 		self.unsafe = self.cmd_options.unsafe
+		config.trace = self.cmd_options.trace
 
 		Package.profile = self
 
@@ -99,6 +101,9 @@ class Profile:
 		parser.add_option ('', '--unsafe', default = False,
 			action = 'store_true', dest = 'unsafe',
 			help = 'Prevents full rebuilds when a build environment change is detected. Useful for debugging.')
+		parser.add_option ('', '--trace', default = False,
+			action = 'store_true', dest = 'trace',
+			help = 'Enable tracing (for diagnosing bockbuild problems')
 
 		self.parser = parser
 		self.cmd_options, self.cmd_args = parser.parse_args ()
@@ -142,9 +147,6 @@ class Profile:
 			for phase in phase_set:
 				if phase not in self.default_run_phases:
 					sys.exit ('Invalid run phase \'%s\'' % phase)
-
-		log (0, 'Loaded profile \'%s\' (arch: %s)' % (self.name, self.arch))
-		log (0, 'Setting environment variables')
 
 		Profile.setup (self)
 		self.setup ()

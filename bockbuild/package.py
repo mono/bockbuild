@@ -47,6 +47,8 @@ class Package:
 		self.needs_lipo = False
 		self.m32_only = False
 		self.build_dependency = False
+		self.dont_clean = False
+		self.needs_build = False
 
 		if configure_flags:
 			self.configure_flags.extend (configure_flags)
@@ -132,9 +134,13 @@ class Package:
 		if self.sources == None:
 			return None
 
+		if self.dont_clean == True: # previous workspace was left dirty, delete
+			trace ('Deleting dirty workspace %s' % workspace)
+			self.rm_if_exists (workspace)
+
 		def checkout (self, source_url, cache_dir, workspace_dir):
 			def clean_git_workspace ():
-				print 'Cleaning git workspace:', self.name
+				trace ('Cleaning git workspace: ' + self.name)
 				self.pushd (workspace_dir)
 				self.sh ('%{git} reset --hard')
 				if config.iterative == False:
@@ -147,10 +153,10 @@ class Package:
 				# since this is a fresh cache, the workspace copy is invalid if it exists
 				if os.path.exists (workspace_dir):
 					self.rm (workspace_dir)
-				print 'Cloning git repo: %s' % source_url
+				progress ('Cloning git repo: %s' % source_url)
 				self.sh ('%' + '{git} clone --mirror "%s" "%s"' % (source_url, cache_dir))
 				
-			trace ( 'Updating cache')
+			trace ( 'Updating cache: ' + cache_dir)
 			self.pushd (cache_dir)
 			if self.git_branch == None:
 				self.sh ('%{git} fetch --all --prune')
@@ -189,12 +195,13 @@ class Package:
 
 			if (current_revision != target_revision):
 				trace ('%s -> %s' % (current_revision, target_revision))
+				self.request_build ('Revision changed')
 				self.sh ('%' + '{git} reset --hard %s' % target_revision)
 
 			current_revision = git_get_revision (self)
 
 			if (self.revision != None and self.revision != current_revision):
-				raise Exception ('Workspace error: Revision is %s, package specifies %s' % (current_revision, self.revision))
+				error ('Workspace error: Revision is %s, package specifies %s' % (current_revision, self.revision))
 
 			self.revision = current_revision
 			self.popd ()
@@ -213,10 +220,33 @@ class Package:
 
 		local_sources = []
 		cache = None
+		artifact_stamp = None
+
+		if not os.path.isfile (self.build_artifact):
+			self.request_build('build needed')
+		else:
+			artifact_stamp = os.path.getmtime(self.build_artifact)
+
+		def is_updated (path):
+			trace (path)
+			if artifact_stamp is None:
+				return
+			if os.path.isfile (path) and os.path.getmtime(path) > artifact_stamp:
+				self.request_build ('Updated: %s' % path)
+			elif os.path.isdir (path):
+				for root, dirs, files in os.walk (path):
+					dirs[:] = [d for d in dirs if not d[0] == '.'] # http://stackoverflow.com/questions/13454164/os-walk-without-hidden-folders
+					for dir in dirs:
+						dir_path = os.path.join (root, dir)
+						if os.path.isdir(dir_path) and os.path.getmtime(dir_path) > artifact_stamp:
+							self.request_build ('Updated: %s' % path)
+
+		is_updated (self._path)
 
 		try:
 			for source in self.sources:
 				self.cd (build_root)
+				resolved_source = None
 				#if source.startswith ('http://'):
 				#	raise Exception ('HTTP downloads are no longer allowed: %s', source)
 
@@ -234,12 +264,12 @@ class Package:
 							os.utime (workspace, None)
 						clean_func = clean_archive
 						if not os.path.exists (workspace):
-							raise Exception ('Archive %s was extracted but not found at workspace path %s' % (cache, workspace))							
+							error ('Archive %s was extracted but not found at workspace path %s' % (cache, workspace))
 						self.popd ()
 						return clean_func
 
 					def clean_archive ():
-						print 'Re-extracting archive: ' + self.name + ' ('+ archive + ')'
+						trace ('Re-extracting archive: ' + self.name + ' ('+ archive + ')')
 						try:
 							self.rm (workspace)
 							checkout_archive (archive, cache, workspace)
@@ -251,26 +281,25 @@ class Package:
 							raise e
 
 					clean_func = checkout_archive (archive, cache, workspace)
-					local_sources.append (workspace)
+					resolved_source = workspace
 
 				elif source.startswith (('git://','file://', 'ssh://')) or source.endswith ('.git'):
 					cache = get_git_cache_path ()
 					clean_func = checkout (self, source, cache, workspace)
-					local_sources.append (workspace)
+					resolved_source =  workspace
+				elif os.path.isabs (source) and os.path.isdir (source):
+					trace ('copying local dir source %s ' % source)
+					shutil.copy2 (source, workspace)
+					resolved_source = workspace
 				elif os.path.isfile (os.path.join (resource_dir, source)):
-					#local_source_file = os.path.basename (local_source)
-					#cache = get_local_filename (local_source)
-					#print 'local_source', local_source
-					#print 'cache', cache
+					resolved_source = os.path.join (resource_dir, source)
 
-					#if not filecmp.cmp(local_source, cache):
-					#	log (1, 'copying local source: %s -> %s' % (local_source_file, cache))
-					#	shutil.copy2 (local_source, cache)
-					#	local_sources.append (cache)
-					#else:
-					local_sources.append (os.path.join (resource_dir, source))
-				else:
-					raise Exception ('could not resolve source: %s' % source)
+				if resolved_source is None:
+					error ('could not resolve source: %s' % source)
+				trace ('%s resolved to %s' % (source, resolved_source))
+
+				local_sources.append (resolved_source)
+
 
 			self.local_sources = local_sources
 			if len(self.sources) != len(self.local_sources):
@@ -298,37 +327,13 @@ class Package:
 		finally:
 			self.cd (build_root)
 
-	def is_successful_build(self, success_file):
-		if not os.path.exists (success_file):
-			return False
+	def request_build (self, reason):
+		verbose (reason)
+		self.needs_build = True
 
-		mtime = os.path.getmtime(success_file)
-		newer_sources = False
-
-		def is_newer (path, newer_sources = newer_sources):
-			return os.path.getmtime(path) > mtime
-
-		if is_newer (self._path):
-			info ('Updated: package manifest (''%s'')' % os.path.basename (self._path))
-			newer_sources = True
-		for idx, s in enumerate(self.local_sources):
-			if is_newer (s):
-				info ('Updated: %s' % self.sources[idx] , summary = True)
-				newer_sources = True
-
-			# FIXME: There seem to be lots of dirs being touched from other processes.
-			# Must investigate, but turn off subdir checking for now
-
-			# elif os.path.isdir (s): 
-			# 	for root, dirs, files in os.walk (s):
-			# 		dirs[:] = [d for d in dirs if not d[0] == '.'] # http://stackoverflow.com/questions/13454164/os-walk-without-hidden-folders
-			# 		for dir in dirs:
-			# 			dir_path = os.path.join (root, dir)
-			# 			if os.path.isdir(dir_path) and os.path.getmtime(dir_path) > mtime:
-			# 				print 'Updated source: %s' % dir_path
-			# 				newer = False
-		return not newer_sources
-
+	def override_build (self, reason):
+		verbose (reason)
+		self.needs_build = False
 
 	def start_build (self, arch):
 			info (self.get_package_string ())
@@ -337,15 +342,13 @@ class Package:
 			workspace = self.workspace
 			build_artifact = self.build_artifact
 
-			needs_build = True
-
-			if self.is_successful_build(build_artifact) or (config.never_rebuild and os.path.isfile (build_artifact)):
+			if config.never_rebuild and os.path.isfile (build_artifact):
 				if self.deploy_package (build_artifact, self.staged_profile):
-					needs_build = False
+					self.override_build ('never_rebuild option enabled, using artifact')
 				else:
 					warn ('Failed to deploy from artifact %s. Rebuilding' % os.path.basename (build_artifact))
 
-			if needs_build:
+			if self.needs_build:
 
 				if (arch == 'darwin-universal' and self.needs_lipo):
 					workspace_x86 = workspace +'-x86'
@@ -372,7 +375,7 @@ class Package:
 					package_stage = self.do_build (arch, workspace)
 
 				self.make_artifact (package_stage, build_artifact)
-				self.deploy_package (build_artifact, self.staged_profile)
+			self.deploy_package (build_artifact, self.staged_profile)
 
 	def deploy_package (self, artifact, dest):
 		progress ('Deploying (%s -> %s)' % (os.path.basename(artifact), os.path.basename(dest)))
@@ -442,7 +445,8 @@ class Package:
 			self.build_env = self.expand_build_env ()
 			self.build ()
 			self.install ()
-			retry (self.clean)
+			if not self.dont_clean:
+				retry (self.clean)
 
 			if not os.path.exists (self.staged_prefix):
 				error ('Result directory %s not found.' % self.staged_prefix)
