@@ -21,6 +21,7 @@ class Profile:
                 self.cpu_count = get_cpu_count ()
 		self.host = get_host ()
 		self.uname = backtick ('uname -a')
+		self.build_list = []
 
 		self.env = Environment (self)
 		self.env.set ('BUILD_PREFIX', '%{prefix}')
@@ -238,6 +239,8 @@ class Profile:
 			else:
 				self.release_packages[package.name] = package
 
+		info ('Packages that need building: %s' % ' '.join([x.name for x in self.build_list]))
+
 	def load_package (self, source):
 		if isinstance (source, Package): # package can already be loaded in the source list
 			return source
@@ -269,6 +272,8 @@ class Profile:
 
 		clean_func = retry(fetch)
 		package.clean = clean_func
+		if package.needs_build:
+			self.build_list.append (package)
 
 	def setup_package (self, package):
 		if package.build_dependency == True:
