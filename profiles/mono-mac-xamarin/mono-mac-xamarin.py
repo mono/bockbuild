@@ -29,6 +29,7 @@ class MonoXamarinPackageProfile(MonoReleaseProfile):
         for idx, package in enumerate(self.packages_to_build):
             if package == 'mono_master':
                 self.packages_to_build[idx] = 'mono_crypto'
+                self.packages_to_build.insert (idx + 1, 'mono-extensions')
                 found = True
                 break
 
