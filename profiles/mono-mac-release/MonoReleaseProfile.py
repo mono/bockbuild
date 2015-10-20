@@ -119,12 +119,17 @@ class MonoReleaseProfile(DarwinProfile):
         self.env.set ('PANGO_LIBDIR', '%{staged_prefix}/lib')
         # self.env.set ('MONO_PATH', '%{staged_prefix}/lib/mono/4.0')
 
+        self.gcc_flags.extend (['-O2'])
+
     def setup (self):
         self.mono_package = self.release_packages['mono']
         self.RELEASE_VERSION = self.mono_package.version
         self.prefix = os.path.join(self.MONO_ROOT, "Versions", self.RELEASE_VERSION)
         self.calculate_updateid ()
         trace (self.package_info('MDK/MRE'))
+
+        for p in ['gtk+', 'cairo', 'pango', 'mono', 'llvm', 'libgdiplus']:
+            self.release_packages[p].gcc_flags.extend (['-g'])
 
     # THIS IS THE MAIN METHOD FOR MAKING A PACKAGE
     def package(self):

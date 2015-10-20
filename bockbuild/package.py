@@ -20,8 +20,7 @@ class Package:
 		self.version = version
 		self.organization = organization
 
-		self.configure_flags = ['--enable-debug']
-
+		self.configure_flags = []
 		self.gcc_flags = list(Package.profile.gcc_flags)
 		self.cpp_flags = list(Package.profile.gcc_flags)
 		self.ld_flags = list(Package.profile.ld_flags)
