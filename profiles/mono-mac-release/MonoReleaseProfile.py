@@ -216,8 +216,8 @@ class MonoReleaseProfile(DarwinProfile):
         # setup metadata
         run_shell('rsync -aPq %s/* %s' % (self.packaging_dir, tmpdir), False)
 
-        packages_list = string.join([pkg.get_package_string () for pkg in self.release_packages.values ()], "\\\n")
-        deps_list = 'bockbuild (rev. %s)\\\n' % self.env.bockbuild_revision + string.join([pkg.get_package_string () for pkg in self.toolchain_packages.values ()], "\\\n")
+        packages_list = string.join([pkg.desc for pkg in self.release_packages.values ()], "\\\n")
+        deps_list = 'bockbuild (rev. %s)\\\n' % self.env.bockbuild_revision + string.join([pkg.desc for pkg in self.toolchain_packages.values ()], "\\\n")
 
         parameter_map = {
             '@@MONO_VERSION@@': self.RELEASE_VERSION,

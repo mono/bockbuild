@@ -35,6 +35,7 @@ class config:
 class CommandException (Exception): # shell command failure
 	def __init__ (self, message):
 		Exception.__init__ (self, message)
+		verbose ('%s: %s' % (os.getcwd (), message))
 
 class BockbuildException (Exception): # internal/unexpected issue, treat as unrecoverable
 	def __init__ (self, message):
@@ -118,6 +119,8 @@ def progress (message):
 	logprint ('%s: %s' % (get_caller (), message), bcolors.OKBLUE)
 
 def verbose (message):
+	if not config.verbose and not config.trace:
+		return
 	logprint ('%s: %s' % (get_caller (), message), bcolors.OKBLUE)
 
 def warn (message):
@@ -194,6 +197,9 @@ def identical_files (first, second): # quick and dirty assuming they have the sa
 	hash2 = hashlib.sha1(open(second).read()).hexdigest()
 
 	return hash1 == hash2
+
+def md5 (path):
+	return hashlib.md5 (open (path).read ()).hexdigest ()
 
 def update (new_text, file, show_diff = True):
 	orig_text = None
@@ -427,7 +433,7 @@ def run_shell (cmd, print_cmd = False):
 	proc = subprocess.Popen (cmd, shell = True)
 	exit_code = os.waitpid (proc.pid, 0)[1]
 	if not exit_code == 0:
-		raise CommandException('ERROR: command exited with exit code %s: %s' % (exit_code, cmd))
+		raise CommandException('"%s" failed, error code %s' % (cmd, exit_code))
 
 def backtick (cmd, print_cmd = False):
 	if print_cmd: print '``', cmd

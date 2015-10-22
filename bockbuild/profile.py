@@ -115,6 +115,19 @@ class Profile:
 	def bundle (self, output_dir):
 		sys.exit ('Bundle support not implemented for this profile')
 
+	def build_distribution (self, packages, dest, stage):
+		#TODO: move fetching here so that toolchain can be fetched/built first
+		#TODO: full relocation means that we shouldn't need dest at this stage
+		ensure_dir (stage, purge = True)
+
+		for package in packages.values ():
+			if self.full_rebuild:
+				package.request_build ('Full rebuild')
+			package.staged_profile = stage
+			package.package_prefix = dest
+			package.start_build (self.arch)
+
+
 	def build (self):
 		if self.cmd_options.dump_environment:
 			self.env.compile ()
@@ -157,9 +170,8 @@ class Profile:
 		if self.full_rebuild:
 			warn ('Build environment changed')
 			for d in os.listdir (self.build_root):
-				if d.endswith ('.cache') or d.endswith ('.artifact'):
+				if d.endswith ('.cache'):
 					os.remove (os.path.join(self.build_root, d))
-
 
 		if self.cmd_options.shell:
 			title ('Shell')
@@ -167,20 +179,11 @@ class Profile:
 
 		if self.cmd_options.do_build:
 
-			ensure_dir (self.staged_prefix, True)
-			ensure_dir (self.toolchain_root, True)
-
 			title ('Building toolchain')
-			for package in self.toolchain_packages.values ():
-				package.staged_profile = self.toolchain_root
-				package.package_prefix = self.toolchain_root
-				package.start_build ('darwin-32')
+			self.build_distribution (self.toolchain_packages, self.toolchain_root, self.toolchain_root)
 
 			title ('Building release')
-			for package in self.release_packages.values ():
-				package.staged_profile = self.staged_prefix
-				package.package_prefix = self.prefix
-				package.start_build (self.arch)
+			self.build_distribution (self.release_packages, self.prefix, self.staged_prefix)
 
 		if self.cmd_options.do_bundle:
 			if not self.cmd_options.output_dir == None:
@@ -239,7 +242,7 @@ class Profile:
 			else:
 				self.release_packages[package.name] = package
 
-		info ('Packages that need building: %s' % ' '.join([x.name for x in self.build_list]))
+		info ('Updated packages: %s' % ' '.join([x.name for x in self.build_list]))
 
 	def load_package (self, source):
 		if isinstance (source, Package): # package can already be loaded in the source list
@@ -332,7 +335,7 @@ class Profile:
 					proc.files.append (path)
 
 		for proc in processors:
-			trace ('%s: %s items' % (proc.__class__.__name__ , len (proc.files)))
+			verbose ('%s: %s items' % (proc.__class__.__name__ , len (proc.files)))
 			proc.run ()
 
 

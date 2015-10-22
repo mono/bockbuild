@@ -11,7 +11,7 @@ from urllib import FancyURLopener
 from util.util import *
 
 class Package:
-	def __init__ (self, name, version = None, organization = None, configure_flags = None, sources = None, revision = None, git_branch = 'master', source_dir_name = None, override_properties = None, configure = None):
+	def __init__ (self, name, version = None, organization = None, configure_flags = None, sources = None, revision = None, git_branch = None, source_dir_name = None, override_properties = None, configure = None):
 		Package.last_instance = self
 
 		self.verbose = False
@@ -31,6 +31,8 @@ class Package:
 		self.local_configure_flags = []
 
 		self.build_env = ''
+		self.desc = None
+		self.buildstring = None
 
 		self._dirstack = []
 
@@ -116,15 +118,16 @@ class Package:
 	def trace (self, message):
 		trace (message, skip = 1)
 
-	def get_package_string (self):
-		self.pushd (self.workspace)
-		str = self.name
-		if self.version:
-			str+= ' v.' + self.version
-		if self.revision:
-			str += ' (%s)' % git_shortid (self)
-		self.popd ()
-		return str
+	def resolve_version (self):
+		package_version = expand_macros (self.version, self)
+		found_version = self.try_get_version (self.workspace) or package_version
+		if package_version == None:
+			package_version = found_version
+			trace ('%s: Using found version %s' % (self.name, found_version))
+		elif found_version[0] != package_version[0]: # major version differs
+			warn ('Version in configure.ac is %s, package declares %s' % (found_version, package_version))
+		self.version = package_version
+
 
 	def _fetch_sources (self, build_root, workspace, resource_dir, source_cache_dir):
 		trace ('Fetching %s' % workspace)
@@ -133,79 +136,117 @@ class Package:
 		if self.sources == None:
 			return None
 
-		if self.dont_clean == True: # previous workspace was left dirty, delete
-			trace ('Deleting dirty workspace %s' % workspace)
-			self.rm_if_exists (workspace)
-
 		def checkout (self, source_url, cache_dir, workspace_dir):
 			def clean_git_workspace ():
 				trace ('Cleaning git workspace: ' + self.name)
 				self.pushd (workspace_dir)
-				self.sh ('%{git} reset --hard')
-				if config.iterative == False:
-					self.sh ('%{git} clean -xffd')
-				else:
-					warn ('iterative')
-				self.popd ()
+				try:
+					self.sh ('%{git} reset --hard')
+					if config.iterative == False:
+						self.sh ('%{git} clean -xffd')
+					else:
+						warn ('iterative')
+				finally:
+					self.popd ()
 
-			if not os.path.exists (cache_dir):
+			def create_cache ():
+				self.cd (build_root)
 				# since this is a fresh cache, the workspace copy is invalid if it exists
 				if os.path.exists (workspace_dir):
 					self.rm (workspace_dir)
 				progress ('Cloning git repo: %s' % source_url)
 				self.sh ('%' + '{git} clone --mirror "%s" "%s"' % (source_url, cache_dir))
-				
-			trace ( 'Updating cache: ' + cache_dir)
-			self.pushd (cache_dir)
-			if self.git_branch == None:
-				self.sh ('%{git} fetch --all --prune')
-			else:
-				self.sh ('%' + '{git} fetch origin %s' % self.git_branch)
-			self.popd ()
 
-			if not os.path.exists(workspace_dir):
-				trace ( 'Cloning a fresh workspace')
+			def update_cache ():
+				trace ( 'Updating cache: ' + cache_dir)
+				self.cd (cache_dir)
+				try:
+					if self.git_branch == None:
+						self.sh ('%{git} fetch --all --prune')
+					else:
+						self.sh ('%' + '{git} fetch origin %s' % self.git_branch)
+				except Exception as e:
+					self.cd (build_root)
+					raise
+
+			def create_workspace ():
+				self.cd (build_root)
 				self.sh ('%' + '{git} clone --local --shared 	"%s" "%s"' % (cache_dir, workspace_dir))
 
-			trace ( 'Updating workspace')
-			self.pushd (workspace_dir)
+			def update_workspace ():
+				trace ( 'Updating workspace')
+				self.cd (workspace_dir)
 
-			if self.git_branch == None:
-				self.sh ('%{git} fetch --all --prune')
-			else:
-				self.sh ('%' + '{git} fetch origin %s:refs/remotes/origin/%s' % (self.git_branch, self.git_branch))
-
-			self.sh ('%{git} reset')
-
-			current_revision = git_get_revision (self)
-
-			if self.revision != None:
-				target_revision = self.revision
-			else:
 				if self.git_branch == None:
+					self.sh ('%{git} fetch --all --prune')
+				else:
+					self.sh ('%' + '{git} fetch origin %s:refs/remotes/origin/%s' % (self.git_branch, self.git_branch))
+				self.cd (build_root)
+
+			def resolve ():
+				self.cd (workspace_dir)
+				current_revision = git_get_revision (self)
+
+				if current_revision == self.revision:
+					return
+
+				if self.revision  == None and self.git_branch == None:
 					warn ('Package does not define revision or branch, defaulting to tip of "master"')
-				self.git_branch = self.git_branch or 'master'
+					self.git_branch = self.git_branch or 'master'
 
-			if self.git_branch != None:
-				self.sh ('%' + '{git} checkout %s' % self.git_branch)
-				if self.revision == None:
+				if self.revision != None:
+					target_revision = self.revision
+
+				if self.git_branch != None:
+					self.sh ('%' + '{git} checkout %s' % self.git_branch)
+					self.sh ('%' + '{git} merge origin/%s --ff-only ' % self.git_branch)
 					current_revision = git_get_revision (self)
-					target_revision = current_revision
 
-			if (current_revision != target_revision):
-				trace ('%s -> %s' % (current_revision, target_revision))
-				self.request_build ('Revision changed')
-				self.sh ('%' + '{git} reset --hard %s' % target_revision)
+					if self.revision == None: # target the tip of the branch
+						target_revision = git_get_revision (self)
 
-			current_revision = git_get_revision (self)
+				if (current_revision != target_revision):
+					self.request_build ('Revision changed (%s -> %s)' % (current_revision, target_revision))
+					self.sh ('%' + '{git} reset --hard %s' % target_revision)
+				self.sh ('%' + '{git} submodule update --recursive')
 
-			if (self.revision != None and self.revision != current_revision):
-				error ('Workspace error: Revision is %s, package specifies %s' % (current_revision, self.revision))
+				current_revision = git_get_revision (self)
 
-			self.revision = current_revision
-			self.popd ()
+				if (self.revision != None and self.revision != current_revision):
+					error ('Workspace error: Revision is %s, package specifies %s' % (current_revision, self.revision))
+
+				self.revision = current_revision
+
+			def define ():
+				self.resolve_version ()
+
+				str = self.name
+				if self.version:
+					str+= ' v.' + self.version
+
+				str += ' (%s)' % git_shortid (self)
+
+				self.desc = str
+				self.buildstring = ['%s <%s>' % (str, source_url)]
+
+			if os.path.exists (cache_dir):
+				update_cache ()
+			else:
+				create_cache ()
+
+			if os.path.exists (workspace_dir):
+				if self.dont_clean == True: # previous workspace was left dirty, delete
+					clean_git_workspace ()
+				update_workspace ()
+			else:
+				create_workspace ()
+
+			cache = None # at this point, the cache is not the problem; keep _fetch_sources from deleting it
+
+			resolve ()
+			define ()
+			self.cd (build_root)
 			return clean_git_workspace
-
 
 		def get_download_dest(url):
 			return os.path.join (source_cache_dir, os.path.basename (url))
@@ -218,11 +259,10 @@ class Package:
 			return os.path.join (source_cache_dir, name)
 
 		local_sources = []
-		cache = None
 		artifact_stamp = None
 
 		if not os.path.isfile (self.build_artifact):
-			self.request_build('build needed')
+			self.request_build("artifact doesn't exist")
 		else:
 			artifact_stamp = os.path.getmtime(self.build_artifact)
 
@@ -231,7 +271,7 @@ class Package:
 			if artifact_stamp is None:
 				return
 			if os.path.isfile (path) and os.path.getmtime(path) > artifact_stamp:
-				self.request_build ('Updated: %s' % path)
+				self.request_build ('Updated: %s (%s vs %s)' % (path, os.path.getmtime(path), artifact_stamp))
 			elif os.path.isdir (path):
 				for root, dirs, files in os.walk (path):
 					dirs[:] = [d for d in dirs if not d[0] == '.'] # http://stackoverflow.com/questions/13454164/os-walk-without-hidden-folders
@@ -246,6 +286,7 @@ class Package:
 			for source in self.sources:
 				self.cd (build_root)
 				resolved_source = None
+				cache = None
 				#if source.startswith ('http://'):
 				#	raise Exception ('HTTP downloads are no longer allowed: %s', source)
 
@@ -255,29 +296,39 @@ class Package:
 
 					def checkout_archive (archive, cache, workspace):
 						self.pushd (build_root)
-						if not os.path.exists (cache):
-							progress ('Downloading: %s' % archive)
-							filename, message = FancyURLopener ().retrieve (archive, cache)
-						if not os.path.exists (workspace):
-							self.extract_archive (cache, False)
-							os.utime (workspace, None)
-						clean_func = clean_archive
-						if not os.path.exists (workspace):
-							error ('Archive %s was extracted but not found at workspace path %s' % (cache, workspace))
+						try:
+							if not os.path.exists (cache):
+								progress ('Downloading: %s' % archive)
+								filename, message = FancyURLopener ().retrieve (archive, cache)
+							if not os.path.exists (workspace):
+								self.extract_archive (cache, False)
+								os.utime (workspace, None)
+							clean_func = clean_archive
+							if not os.path.exists (workspace):
+								error ('Archive %s was extracted but not found at workspace path %s' % (cache, workspace))
+						finally:
+							self.popd ()
+
+						self.pushd (workspace)
+						self.resolve_version ()
+						self.desc = '%s v. %s' % (self.name, self.version)
+						self.buildstring = ['%s <%s> md5: %s)' % (self.desc, archive, md5 (cache))]
 						self.popd ()
+
 						return clean_func
 
 					def clean_archive ():
 						trace ('Re-extracting archive: ' + self.name + ' ('+ archive + ')')
+						self.pushd (build_root)
 						try:
 							self.rm (workspace)
 							checkout_archive (archive, cache, workspace)
 						except Exception as e:
-							if os.path.exists (cache):
-								self.rm (cache)
-							if os.path.exists (workspace):
-								self.rm (workspace)
-							raise e
+							self.rm_if_exists (cache)
+							self.rm_if_exists (workspace)
+							raise
+						finally:
+							self.popd (build_root)
 
 					clean_func = checkout_archive (archive, cache, workspace)
 					resolved_source = workspace
@@ -290,8 +341,11 @@ class Package:
 					trace ('copying local dir source %s ' % source)
 					shutil.copy2 (source, workspace)
 					resolved_source = workspace
+					self.desc = '%s v. %s' % (self.name, self.version)
+					self.buildstring = ['%s:%s' % (self.profile.host, source)]
 				elif os.path.isfile (os.path.join (resource_dir, source)):
 					resolved_source = os.path.join (resource_dir, source)
+					self.buildstring.extend (['%s md5: %s' % (source, md5 (resolved_source))])
 
 				if resolved_source is None:
 					error ('could not resolve source: %s' % source)
@@ -299,6 +353,7 @@ class Package:
 
 				local_sources.append (resolved_source)
 
+			verbose ('\n\t'+ '\n\t'.join ([str for str in self.buildstring]))
 
 			self.local_sources = local_sources
 			if len(self.sources) != len(self.local_sources):
@@ -306,15 +361,6 @@ class Package:
 
 			if clean_func is None:
 				error ('workspace cleaning function (clean_func) must be set')
-
-			package_version = expand_macros (self.version, self)
-			found_version = self.try_get_version (workspace) or package_version
-			if package_version == None:
-				package_version = found_version
-				trace ('%s: Using found version %s' % (self.name, found_version))
-			elif found_version[0] != package_version[0]:
-				warn ('Version in configure.ac is %s, package declares %s' % (found_version, package_version))
-			self.version = package_version
 
 			return clean_func
 		except Exception as e:
@@ -335,7 +381,7 @@ class Package:
 		self.needs_build = False
 
 	def start_build (self, arch):
-			info (self.get_package_string ())
+			info (self.desc)
 			protect_dir (self.staged_profile, recursive = True)
 
 			workspace = self.workspace
@@ -541,40 +587,51 @@ class Package:
 		command = expand_macros (command, self)
 		return backtick (command)
 
+	def cwd (self):
+		try:
+			self._cwd = os.getcwd ()
+		except Exception as e:
+			warn ('In invalid directory')
+			if not self._cwd:
+				error ('No last known directory, cannot recover')
+
+			warn ('Switching to last known directory: %s ' % self._cwd)
+			os.chdir (self._cwd)
+
+		return self._cwd
+
 	def cd (self, dir):
 		dir = expand_macros (dir, self)
-		try:
-			cwd = os.getcwd ()
-		except Exception as e:
-			trace ('In invalid directory')
 
-		trace (dir)
+		if self.cwd () == dir:
+			return
+
 		os.chdir (dir)
+		self.cwd ()
+		trace (dir)
+
 
 	def pushd (self, dir):
 		if len(self._dirstack) == 0:
-			self._dirstack.append ( {'dir' : os.getcwd (), 'caller' : 'profile'})
-		self._cwd = { 'dir' : dir, 'caller' : get_caller () }
-		self._dirstack.append (self._cwd)
-		trace (self._dirstack)
+			self._dirstack.append ( {'dir' : self._cwd, 'caller' : 'profile'})
+
 		self.cd (dir)
+		self._dirstack.append ( {'dir' : self._cwd, 'caller' : get_caller () })
 
 	def popd (self, failure = False):
 		caller = get_caller ()
-		def consistent_use ():
-			if cwd['caller'] != caller:
-				warn ('popd: Unmatched pushd/popd callers: (%s/%s)' % (cwd['caller'], caller))
-				return False
-			if cwd['dir'] != os.getcwd () and not failure:
-				warn ('popd: Inconsistent current dir state (expected ''%s'', was in ''%s''' % (cwd['dir'], os.getcwd ()))
-				return False
 
-		trace (self._dirstack)
 		cwd = self._dirstack.pop ()
-		test (consistent_use)
+
+		if cwd['caller'] != caller:
+				warn ('popd: Unmatched pushd/popd callers: (%s/%s)' % (cwd['caller'], caller))
+				#return False
+
+		if cwd['dir'] !=  self.cwd () and not failure:
+				warn ('popd: Inconsistent current dir state (expected ''%s'', was in ''%s''' % (cwd['dir'], self._cwd))
+
 		top = self._dirstack[-1]
 
-		self._cwd = { 'dir' : top['dir'], 'caller' : top['caller'] }
 		self.cd (top['dir'])
 
 	def prep (self):
