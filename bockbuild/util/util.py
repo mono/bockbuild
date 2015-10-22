@@ -178,8 +178,7 @@ def retry (func, tries = 3, delay = 5):
 			info (str(e))
 			info ("Retrying ''%s'' in %s secs" % (func.__name__, delay))
 			time.sleep (delay)
-		finally:
-			os.chdir (cwd)
+
 	return result
 
 

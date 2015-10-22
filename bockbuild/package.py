@@ -339,10 +339,15 @@ class Package:
 					resolved_source =  workspace
 				elif os.path.isabs (source) and os.path.isdir (source):
 					trace ('copying local dir source %s ' % source)
-					shutil.copy2 (source, workspace)
+					def clean_local_copy ():
+						self.rm_if_exists (workspace)
+					self.rm_if_exists (workspace)
+					shutil.copytree (source, workspace)
 					resolved_source = workspace
-					self.desc = '%s v. %s' % (self.name, self.version)
-					self.buildstring = ['%s:%s' % (self.profile.host, source)]
+					self.resolve_version ()
+					self.desc = '%s %s (local workspace: %s)' % (self.name, self.version, source)
+					self.buildstring = ['local workspace: %s' % (source)]
+					clean_func = clean_local_copy
 				elif os.path.isfile (os.path.join (resource_dir, source)):
 					resolved_source = os.path.join (resource_dir, source)
 					self.buildstring.extend (['%s md5: %s' % (source, md5 (resolved_source))])
