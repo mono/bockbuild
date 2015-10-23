@@ -137,7 +137,6 @@ class MonoReleaseProfile(DarwinProfile):
     # THIS IS THE MAIN METHOD FOR MAKING A PACKAGE
     def package(self):
         self.fix_gtksharp_configs()
-        self.generate_dsym()
         self.verify_binaries()
 
         working = self.setup_working_dir()
@@ -312,24 +311,6 @@ class MonoReleaseProfile(DarwinProfile):
             "type": pkg_type,
             "filename": filename
         }
-
-    def generate_dsym(self):
-        print 'Generating dsyms...',
-        x = 0
-        for path, dirs, files in os.walk(self.package_root):
-            for name in files:
-                f = os.path.join(path, name)
-
-
-                file_type = get_filetype (f)
-                if self.match_stageable_binary (f, file_type):
-                    try:
-                        run_shell('dsymutil "%s" >/dev/null' % f)
-                        run_shell('strip -u -r "%s" > /dev/null' % f)
-                        x = x + 1
-                    except Exception as e:
-                        warn (e)
-        print x
 
     def fix_line(self, line, matcher):
         def insert_install_root(matches):
