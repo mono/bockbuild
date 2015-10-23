@@ -187,11 +187,13 @@ def retry (func, tries = 3, delay = 5):
 
 def ensure_dir (d, purge = False):
 	if os.path.exists(d):
-		if purge == True:
-			trace ('Nuking %s' % d)
-			unprotect_dir (d, recursive = True)
-			delete (d)
-		else: return
+		if not purge:
+			return
+
+		trace ('Nuking %s' % d)
+		unprotect_dir (d, recursive = True)
+		delete (d)
+
 	os.makedirs (d)
 
 def identical_files (first, second): # quick and dirty assuming they have the same name/paths
@@ -203,25 +205,36 @@ def identical_files (first, second): # quick and dirty assuming they have the sa
 def md5 (path):
 	return hashlib.md5 (open (path).read ()).hexdigest ()
 
-def update (new_text, file, show_diff = True):
-	orig_text = None
-	if os.path.exists (file):
-		orig_text = open (file).readlines ()
-
-	output = open (file, 'w')
-	output.writelines (new_text)
-
-	if orig_text == None:
-		return False
-
-	difflines = [line for line in difflib.context_diff(orig_text, new_text, n=0)]
+def compare (new, old):
+	difflines = [line for line in difflib.context_diff(old, new, n=0)]
 	if len (difflines) > 0:
-		if show_diff == True:
-			brieflines = [line.rstrip('\r\n') for line in difflines if line.startswith(('+ ','- ','! '))]
-			info ('\n'.join (brieflines))
-		return True # changes
+		brieflines = [line.rstrip('\r\n') for line in difflines if line.startswith(('+ ','- ','! '))]
+		return '\n'.join (brieflines)
 	else:
-		return False
+		return None
+
+def update (new, file, show_diff = True, on_changed = None):
+	orig = []
+
+	if os.path.exists (file):
+		with open (file) as input:
+			orig = input.readlines ()
+
+	for idx, line in enumerate (new):
+		new[idx] = '%s%s' % (line, '\n')
+
+	def show_diff (changes):
+		info (changes)
+
+	if on_changed == None:
+		on_changed = show_diff
+
+	diff = compare (new, orig)
+	if diff:
+		on_changed (diff)
+
+	with open (file, 'w') as output:
+		output.writelines (new)
 
 def get_filetype (path):
 	# the env variables are to work around a issue with OS X and 'file': https://trac.macports.org/ticket/38771

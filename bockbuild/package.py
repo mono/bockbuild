@@ -129,9 +129,16 @@ class Package:
 		self.version = package_version
 
 
-	def _fetch_sources (self, build_root, workspace, resource_dir, source_cache_dir):
-		trace ('Fetching %s' % workspace)
+	def fetch (self):
 		clean_func = None # what to run if the workspace needs to be redone
+
+		build_root = self.profile.build_root
+		resource_dir = self.profile.resource_root
+		source_cache_dir = self.profile.source_cache
+
+		expand_macros (self.sources, self)
+		self.source_dir_name = expand_macros (self.source_dir_name, self)
+		self.workspace = os.path.join (build_root, self.source_dir_name)
 
 		if self.sources == None:
 			return None
@@ -270,7 +277,7 @@ class Package:
 			def clean_archive ():
 				self.pushd (build_root)
 				try:
-					self.rm (workspace)
+					self.rm (workspace_dir)
 					create_workspace ()
 					self.popd ()
 				except Exception as e:
@@ -359,8 +366,8 @@ class Package:
 
 				elif source.startswith (('git://','file://', 'ssh://')) or source.endswith ('.git'):
 					cache = get_git_cache_path ()
-					clean_func = checkout (self, source, cache, workspace)
-					resolved_source =  workspace
+					clean_func = checkout (self, source, cache, self.workspace)
+					resolved_source =  self.workspace
 
 				elif os.path.isabs (source) and os.path.isdir (source):
 					trace ('copying local dir source %s ' % source)
@@ -383,8 +390,6 @@ class Package:
 
 				local_sources.append (resolved_source)
 
-			verbose ('\n\t'+ '\n\t'.join ([str for str in self.buildstring]))
-
 			self.local_sources = local_sources
 			if len(self.sources) != len(self.local_sources):
 				error ('Source number mismatch after processing: %s before, %s after ' % (self.sources, self.local_sources))
@@ -392,12 +397,12 @@ class Package:
 			if clean_func is None:
 				error ('workspace cleaning function (clean_func) must be set')
 
-			return clean_func
+			self.clean = clean_func
 		except Exception as e:
-			if cache != None and os.path.exists (cache):
-				self.rm (cache)
-			if workspace != None and os.path.exists (workspace):
-				self.rm (workspace)
+			self.cd (build_root)
+			if cache != None:
+				self.rm_if_exists (cache)
+			self.rm_if_exists (self.workspace)
 			raise
 		finally:
 			self.cd (build_root)
@@ -410,8 +415,10 @@ class Package:
 		verbose (reason)
 		self.needs_build = False
 
-	def start_build (self, arch):
+	def start_build (self, arch, dest, stage):
 			info (self.desc)
+			self.package_prefix = dest
+			self.staged_profile = stage
 			protect_dir (self.staged_profile, recursive = True)
 
 			workspace = self.workspace
@@ -481,11 +488,10 @@ class Package:
 			destpath = os.path.join (dest, relpath)
 			if os.path.exists (destpath) and not identical_files (path, destpath):
 				warn ('deploy: Different file exists in package already: ''%s''' % relpath )
-			files.append (relpath + '\n')
+			files.append (relpath)
 
 		files.sort ()
-		if update (files, artifact + '.files'):
-			warn ('Package filelist changed')
+		update (files, artifact + '.files')
 
 		if len (files) != 0:
 			merge_trees (artifact_stage, dest, False)
@@ -530,7 +536,6 @@ class Package:
 				retry (self.clean)
 			self.popd()
 		except Exception as e:
-			self.popd (failure = True)
 			self.rm_if_exists (self.stage_root)
 
 			if os.path.exists (workspace_dir):

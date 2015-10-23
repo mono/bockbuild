@@ -6,6 +6,7 @@ from environment import Environment
 from bockbuild.package import *
 import collections
 import hashlib
+import itertools
 
 class Profile:
 	def __init__ (self, prefix = False):
@@ -15,13 +16,13 @@ class Profile:
 		self.build_root = os.path.join (self.root, 'build-root')
 		self.staged_prefix = os.path.join (self.root, 'stage-root')
 		self.toolchain_root = os.path.join (self.root, 'toolchain-root')
+		self.artifact_root = os.path.join (self.root, 'artifacts')
 		self.package_root = os.path.join (self.root, 'package-root')
 		self.prefix = prefix if prefix else os.path.join (self.root, 'install-root')
                 self.source_cache = os.getenv('BOCKBUILD_SOURCE_CACHE') or os.path.realpath (os.path.join (self.root, 'cache'))
                 self.cpu_count = get_cpu_count ()
 		self.host = get_host ()
 		self.uname = backtick ('uname -a')
-		self.build_list = []
 
 		self.env = Environment (self)
 		self.env.set ('BUILD_PREFIX', '%{prefix}')
@@ -37,7 +38,7 @@ class Profile:
 		info ('cmd: %s' % ' '.join(sys.argv))
 
 		self.parse_options ()
-
+		self.toolchain = []
 		self.packages_to_build = self.cmd_args or self.packages
 		self.verbose = self.cmd_options.verbose
 		config.verbose = self.cmd_options.verbose
@@ -115,18 +116,34 @@ class Profile:
 	def bundle (self, output_dir):
 		sys.exit ('Bundle support not implemented for this profile')
 
-	def build_distribution (self, packages, dest, stage):
-		#TODO: move fetching here so that toolchain can be fetched/built first
+	def build_distribution (self, packages, dest, stage, dist_setup):
 		#TODO: full relocation means that we shouldn't need dest at this stage
 		ensure_dir (stage, purge = True)
+		build_list = []
 
 		for package in packages.values ():
+			package.build_artifact = os.path.join (self.artifact_root, package.name)
+
+			retry (package.fetch)
+
+			package.buildstring.extend (['%s md5: %s' % (os.path.basename (package._path), md5 (package._path))])
+
+			verbose ('\n\t'+ '\n\t'.join ([str for str in package.buildstring]))
+
 			if self.full_rebuild:
 				package.request_build ('Full rebuild')
-			package.staged_profile = stage
-			package.package_prefix = dest
-			package.start_build (self.arch)
 
+			if package.needs_build:
+				build_list.append (package)
+
+			update (package.buildstring, package.build_artifact + '.buildstring', show_diff = True)
+
+		info ('Updated packages: %s' % ' '.join([x.name for x in build_list]))
+
+		dist_setup ()
+
+		for package in packages.values ():
+			package.start_build (self.arch, dest, stage)
 
 	def build (self):
 		if self.cmd_options.dump_environment:
@@ -163,15 +180,6 @@ class Profile:
 					sys.exit ('Invalid run phase \'%s\'' % phase)
 
 		Profile.setup (self)
-		self.setup ()
-
-		self.full_rebuild = self.track_env ()
-
-		if self.full_rebuild:
-			warn ('Build environment changed')
-			for d in os.listdir (self.build_root):
-				if d.endswith ('.cache'):
-					os.remove (os.path.join(self.build_root, d))
 
 		if self.cmd_options.shell:
 			title ('Shell')
@@ -180,10 +188,10 @@ class Profile:
 		if self.cmd_options.do_build:
 
 			title ('Building toolchain')
-			self.build_distribution (self.toolchain_packages, self.toolchain_root, self.toolchain_root)
+			self.build_distribution (self.toolchain_packages, self.toolchain_root, self.toolchain_root, self.setup_toolchain)
 
 			title ('Building release')
-			self.build_distribution (self.release_packages, self.prefix, self.staged_prefix)
+			self.build_distribution (self.release_packages, self.prefix, self.staged_prefix, self.setup_release)
 
 		if self.cmd_options.do_bundle:
 			if not self.cmd_options.output_dir == None:
@@ -224,25 +232,26 @@ class Profile:
 
 	def setup (self):
 		progress ('Setting up packages')
-		ensure_dir (self.source_cache, False)
-		ensure_dir (self.build_root, False)
+		ensure_dir (self.source_cache, purge = False)
+		ensure_dir (self.artifact_root, purge = False)
 
 		self.toolchain_packages = collections.OrderedDict()
 		self.release_packages = collections.OrderedDict()
 
+		for source in self.toolchain:
+			package = self.load_package (source)
+			self.toolchain_packages [package.name] = package
+
 		for source in self.packages_to_build:
 			package = self.load_package (source)
-			trace (package)
+			self.release_packages [package.name] = package
 
-			Profile.setup_package (self, package)
-			Profile.fetch_package (self, package)
+		self.full_rebuild = self.track_env ()
 
-			if package.build_dependency:
-				self.toolchain_packages[package.name] = package
-			else:
-				self.release_packages[package.name] = package
+		if self.full_rebuild:
+			warn ('Build environment changed')
 
-		info ('Updated packages: %s' % ' '.join([x.name for x in self.build_list]))
+		ensure_dir (self.build_root, purge = self.full_rebuild)
 
 	def load_package (self, source):
 		if isinstance (source, Package): # package can already be loaded in the source list
@@ -266,30 +275,6 @@ class Profile:
 		new_package = Package.last_instance
 		new_package._path = fullpath
 		return new_package
-
-	def fetch_package (self, package):
-		clean_func = None
-		def fetch ():
-			return package._fetch_sources (self.build_root,
-				package.workspace, self.resource_root, self.source_cache)
-
-		clean_func = retry(fetch)
-		package.clean = clean_func
-		if package.needs_build:
-			self.build_list.append (package)
-
-	def setup_package (self, package):
-		if package.build_dependency == True:
-			package.staged_profile = self.toolchain_root
-			package.package_prefix = self.toolchain_root
-		else:
-			package.staged_profile = self.staged_prefix
-			package.package_prefix = self.prefix
-
-		expand_macros (package.sources, package)
-		package.source_dir_name = expand_macros (package.source_dir_name, package)
-		package.workspace = os.path.join (self.build_root, package.source_dir_name)
-		package.build_artifact = os.path.join (self.build_root, package.name + '.artifact')
 
 	class FileProcessor (object):
 		def __init__ (self, harness = None, match = None, process = None,  extra_files = None):

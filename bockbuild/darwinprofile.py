@@ -30,9 +30,29 @@ def match_real_files (path, filetype):
 	return (not os.path.islink (path) and not os.path.isdir (path))
 
 class DarwinProfile (UnixProfile):
+
+	# package order is very important.
+	# autoconf and automake don't depend on CC
+	# ccache uses a different CC since it's not installed yet
+	# every thing after ccache needs a working ccache
+	default_toolchain = [
+	        'autoconf',
+	        'automake',
+	        'ccache',
+	        'xz',
+	        'tar',
+	        'gtk-osx-docbook',
+	        'gtk-doc',
+
+	        # needed to autogen gtk+
+	        'gtk-osx-docbook',
+	        'gtk-doc'
+	        ]
+
 	def __init__ (self, prefix = None, m64 = False, min_version = 6):
 		UnixProfile.__init__ (self, prefix)
 		
+		self.toolchain = DarwinProfile.default_toolchain
 		self.name = 'darwin'
 		self.m64 = m64
 
@@ -88,6 +108,9 @@ class DarwinProfile (UnixProfile):
 		# GTK2_RC_FILES must be a ":"-seperated list of files (NOT a single folder)
 		self.gtk2_rc_files = os.path.join (os.getcwd (), 'skeleton.darwin', 'Contents', 'Resources', 'etc', 'gtk-2.0', 'gtkrc')
 		self.env.set ('GTK2_RC_FILES', '%{gtk2_rc_files}')
+
+	def setup_toolchain (self):
+		pass
 
 	
 	def arch_build (self, arch, package):

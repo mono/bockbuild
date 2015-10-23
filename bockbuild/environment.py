@@ -44,7 +44,7 @@ class Environment:
 
 	def serialize (self):
 		for k in self.get_names ():
-			yield 'environment.%s = "%s"\n' % (k, self.__dict__[k])
+			yield '%s = "%s"' % (k, self.__dict__[k])
 
 	def dump_csproj (self):
 		for k in self.get_names ():

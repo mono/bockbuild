@@ -18,25 +18,12 @@ from glob import glob
 
 class MonoReleaseProfile(DarwinProfile):
     
-    # Toolchain
-    # package order is very important.
-    # autoconf and automake don't depend on CC
-    # ccache uses a different CC since it's not installed yet
-    # every thing after ccache needs a working ccache
-
     packages = [
         'autoconf',
         'automake',
-        'ccache',
         'libtool',
-        'xz',
-        'tar',
         'gettext',
         'pkg-config',
-
-    # needed to autogen gtk+
-        'gtk-osx-docbook',
-        'gtk-doc',
 
     # Base Libraries
         'libpng',
@@ -120,7 +107,7 @@ class MonoReleaseProfile(DarwinProfile):
         # self.env.set ('MONO_PATH', '%{staged_prefix}/lib/mono/4.0')
         self.debug_info = ['gtk+', 'cairo', 'pango', 'mono', 'llvm', 'libgdiplus']
 
-    def setup (self):
+    def setup_release (self):
         self.mono_package = self.release_packages['mono']
         self.RELEASE_VERSION = self.mono_package.version
         self.prefix = os.path.join(self.MONO_ROOT, "Versions", self.RELEASE_VERSION)
