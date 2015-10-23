@@ -127,8 +127,12 @@ class MonoReleaseProfile(DarwinProfile):
         self.calculate_updateid ()
         trace (self.package_info('MDK/MRE'))
 
-        for p in ['gtk+', 'cairo', 'pango', 'mono', 'llvm', 'libgdiplus']:
-            self.release_packages[p].gcc_flags.extend (['-g'])
+        self.dont_optimize = ['pixman']
+
+        for p in self.release_packages.values ():
+            if p.name in self.dont_optimize:
+                continue
+            self.gcc_flags.extend (['-O2'])
 
     # THIS IS THE MAIN METHOD FOR MAKING A PACKAGE
     def package(self):
