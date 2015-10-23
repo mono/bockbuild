@@ -24,19 +24,7 @@ class MonoXamarinPackageProfile(MonoReleaseProfile):
         MonoReleaseProfile.__init__ (self)
 
         # add the private stuff
- 
-        found = False
-        for idx, package in enumerate(self.packages_to_build):
-            if package == 'mono_master':
-                self.packages_to_build[idx] = 'mono_crypto'
-                self.packages_to_build.insert (idx + 1, 'mono-extensions')
-                found = True
-                break
-
-        if not found:
-            error ('Did not find "mono_master" package to remap')
-
-        self.packages_to_build.append ('ms-test-suite')
+        self.packages_to_build.extend (['mono-extensions', 'ms-test-suite'])
 
         if not self.cmd_options.release_build:
             info ("'--release' option not set, will not attempt to sign package!")
@@ -55,11 +43,14 @@ class MonoXamarinPackageProfile(MonoReleaseProfile):
         else:
             error ("CODESIGN_KEYCHAIN_PASSWORD needs to be defined.")
 
+    def setup (self):
+        MonoReleaseProfile.setup (self)
+        self.release_packages['mono'].configure_flags.extend(['--enable-extension-module=crypto --enable-native-types --enable-pecrypt'])
 
     def run_pkgbuild(self, working_dir, package_type):
         output = MonoReleaseProfile.run_pkgbuild (self, working_dir, package_type)
 
-        output_unsigned = output + '.UNSIGNED'
+        output_unsigned = os.path.join (os.path.dirname (output), os.path.basename (output).replace ('.pkg', '.UNSIGNED.pkg'))
         shutil.move (output, output_unsigned)
 
         if not self.cmd_options.release_build:
