@@ -248,6 +248,55 @@ class Package:
 			self.cd (build_root)
 			return clean_git_workspace
 
+		def checkout_archive (archive, cache_dest, workspace_dir):
+			def create_cache ():
+				if not os.path.exists (cache_dest):
+					progress ('Downloading: %s' % archive)
+					filename, message = FancyURLopener ().retrieve (archive, cache_dest)
+
+			def update_cache ():
+				pass
+
+			def create_workspace ():
+				self.extract_archive (cache_dest, False)
+				if not os.path.exists (workspace_dir):
+					error ('Archive %s was extracted but not found at workspace path %s' % (cache_dest, workspace_dir))
+
+			def update_workspace ():
+				pass
+
+			def clean_archive ():
+				self.pushd (build_root)
+				try:
+					self.rm (workspace)
+					create_workspace ()
+					self.popd ()
+				except Exception as e:
+					self.rm_if_exists (cache_dest)
+					self.rm_if_exists (workspace_dir)
+					raise
+
+			def define ():
+				self.pushd (workspace_dir)
+				self.resolve_version ()
+				self.desc = '%s v. %s' % (self.name, self.version)
+				self.buildstring = ['%s <%s> md5: %s)' % (self.desc, archive, md5 (cache_dest))]
+				self.popd ()
+
+			if os.path.exists (cache_dest):
+					update_cache ()
+			else:
+					create_cache ()
+
+			if os.path.exists (workspace_dir):
+				update_workspace ()
+			else:
+				create_workspace ()
+
+			define ()
+
+			return clean_archive
+
 		def get_download_dest(url):
 			return os.path.join (source_cache_dir, os.path.basename (url))
 
@@ -257,14 +306,6 @@ class Package:
 			else:
 				name = self.organization + "+" + self.name
 			return os.path.join (source_cache_dir, name)
-
-		local_sources = []
-		artifact_stamp = None
-
-		if not os.path.isfile (self.build_artifact):
-			self.request_build("artifact doesn't exist")
-		else:
-			artifact_stamp = os.path.getmtime(self.build_artifact)
 
 		def is_updated (path):
 			trace (path)
@@ -280,6 +321,14 @@ class Package:
 						if os.path.isdir(dir_path) and os.path.getmtime(dir_path) > artifact_stamp:
 							self.request_build ('Updated: %s' % path)
 
+		local_sources = []
+		artifact_stamp = None
+
+		if not os.path.isfile (self.build_artifact):
+			self.request_build("artifact doesn't exist")
+		else:
+			artifact_stamp = os.path.getmtime(self.build_artifact)
+
 		is_updated (self._path)
 
 		try:
@@ -291,52 +340,15 @@ class Package:
 				#	raise Exception ('HTTP downloads are no longer allowed: %s', source)
 
 				if source.startswith (('http://', 'https://', 'ftp://')):
-					archive = source
-					cache = get_download_dest (archive)
-
-					def checkout_archive (archive, cache, workspace):
-						self.pushd (build_root)
-						try:
-							if not os.path.exists (cache):
-								progress ('Downloading: %s' % archive)
-								filename, message = FancyURLopener ().retrieve (archive, cache)
-							if not os.path.exists (workspace):
-								self.extract_archive (cache, False)
-								os.utime (workspace, None)
-							clean_func = clean_archive
-							if not os.path.exists (workspace):
-								error ('Archive %s was extracted but not found at workspace path %s' % (cache, workspace))
-						finally:
-							self.popd ()
-
-						self.pushd (workspace)
-						self.resolve_version ()
-						self.desc = '%s v. %s' % (self.name, self.version)
-						self.buildstring = ['%s <%s> md5: %s)' % (self.desc, archive, md5 (cache))]
-						self.popd ()
-
-						return clean_func
-
-					def clean_archive ():
-						trace ('Re-extracting archive: ' + self.name + ' ('+ archive + ')')
-						self.pushd (build_root)
-						try:
-							self.rm (workspace)
-							checkout_archive (archive, cache, workspace)
-						except Exception as e:
-							self.rm_if_exists (cache)
-							self.rm_if_exists (workspace)
-							raise
-						finally:
-							self.popd (build_root)
-
-					clean_func = checkout_archive (archive, cache, workspace)
+					cache = get_download_dest (source)
+					clean_func = checkout_archive (source, cache, workspace)
 					resolved_source = workspace
 
 				elif source.startswith (('git://','file://', 'ssh://')) or source.endswith ('.git'):
 					cache = get_git_cache_path ()
 					clean_func = checkout (self, source, cache, workspace)
 					resolved_source =  workspace
+
 				elif os.path.isabs (source) and os.path.isdir (source):
 					trace ('copying local dir source %s ' % source)
 					def clean_local_copy ():
