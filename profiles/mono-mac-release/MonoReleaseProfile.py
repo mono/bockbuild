@@ -118,8 +118,7 @@ class MonoReleaseProfile(DarwinProfile):
         self.env.set ('PANGO_SYSCONFDIR', '%{staged_prefix}/etc')
         self.env.set ('PANGO_LIBDIR', '%{staged_prefix}/lib')
         # self.env.set ('MONO_PATH', '%{staged_prefix}/lib/mono/4.0')
-
-        self.gcc_flags.extend (['-O2'])
+        self.debug_info = ['gtk+', 'cairo', 'pango', 'mono', 'llvm', 'libgdiplus']
 
     def setup (self):
         self.mono_package = self.release_packages['mono']
