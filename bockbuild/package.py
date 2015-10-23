@@ -200,7 +200,6 @@ class Package:
 				if self.git_branch != None:
 					self.sh ('%' + '{git} checkout %s' % self.git_branch)
 					self.sh ('%' + '{git} merge origin/%s --ff-only ' % self.git_branch)
-					current_revision = git_get_revision (self)
 
 					if self.revision == None: # target the tip of the branch
 						target_revision = git_get_revision (self)
