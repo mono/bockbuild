@@ -507,13 +507,14 @@ class Package:
 			self.build_env = self.expand_build_env ()
 			self.build ()
 			self.install ()
-			if not self.dont_clean:
-				retry (self.clean)
 
 			if not os.path.exists (self.staged_prefix):
 				error ('Result directory %s not found.' % self.staged_prefix)
 
 			self.profile.process_package (self)
+
+			if not self.dont_clean:
+				retry (self.clean)
 			self.popd()
 		except Exception as e:
 			self.popd (failure = True)
