@@ -161,9 +161,7 @@ class GtkPackage (GnomeGitPackage):
 				'patches/gtk/gtknsview-fix-invalid-casts.patch',
 
 				# https://bugzilla.xamarin.com/show_bug.cgi?id=29001
-				'patches/gtk/quartz-call-undo-redo-on-cmdz.patch',
-
-				'patches/gtk/dnd-unset-context-on-finalize.patch'
+				'patches/gtk/quartz-call-undo-redo-on-cmdz.patch'
 			])
 
 	def prep (self):
