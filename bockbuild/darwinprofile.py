@@ -235,7 +235,7 @@ class DarwinProfile (UnixProfile):
 			Profile.FileProcessor.__init__ (self, match = match_stageable_binary)
 		def process (self, path):
 			run_shell('dsymutil -t 2 "%s" >/dev/null' % path)
-			run_shell('strip -x "%s" > /dev/null' % path)
+			run_shell('strip -S "%s" > /dev/null' % path)
 
 	class validate_rpaths (Profile.FileProcessor):
 		def process (self, path):
