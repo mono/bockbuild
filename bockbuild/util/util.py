@@ -283,14 +283,22 @@ def unprotect_dir (dir, recursive = False):
 		for root,subdirs,filelist in os.walk (dir):
 			unprotect_dir (root, recursive = False)
 
+# wrap around shutil.rmtree, which is unreliable. Sometimes a few attempts do the trick...
 def delete (path):
 	if not os.path.isabs (path):
-		raise BockbuildException ('Relative paths are not allowed.')
+		raise BockbuildException ('Relative paths are not allowed: %s' % path)
 
 	if not os.path.exists (path):
 		raise CommandException ('Invalid path to rm: %s' % path)
 
-	def rmtree ():
+	if os.getcwd () == path:
+		raise BockbuildException ('Will not delete current directory: %s' % path)
+
+	# get the dir out of the way so that we don't have to deal with inconsistent state if we fail
+	orig_path = path
+	path = path + '.deleting'
+	shutil.move (orig_path, path)
+	for x in range(1,5):
 		try:
 			unprotect_dir (path, recursive = True)
 			if os.path.isfile (path) or os.path.islink (path):
@@ -298,11 +306,16 @@ def delete (path):
 			elif os.path.isdir (path):
 				shutil.rmtree (path, ignore_errors=False)
 		except OSError as e:
-			if os.path.exists (path):
-				raise # It's still there, so we try again
+			pass
+		finally:
+			if not os.path.exists (path):
+				break
+		warn ('retrying delete of %s' % path)
+		protect_dir (path, recursive = True) # try to sabotage whoever else is writing in the directory...
+		time.sleep(1)
 
-	#retry (rmtree, tries = 5, delay = 1)
-	rmtree ()
+	if os.path.exists (path):
+		error ('Deleting failed: %s' % orig_path)
 
 def merge_trees(src, dst, delete_src = True):
 	if not os.path.isdir(src) or not os.path.isdir(dst):
