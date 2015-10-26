@@ -429,18 +429,23 @@ def replace_in_file(filename, word_dic):
 def run_shell (cmd, print_cmd = False):
 	if print_cmd: print '++',cmd
 	if not print_cmd: trace (cmd)
-	proc = subprocess.Popen (cmd, shell = True)
-	exit_code = os.waitpid (proc.pid, 0)[1]
+	proc = subprocess.Popen (cmd, shell = True, bufsize = -1)
+	exit_code = proc.wait ()
 	if not exit_code == 0:
 		raise CommandException('"%s" failed, error code %s' % (cmd, exit_code))
 
 def backtick (cmd, print_cmd = False):
 	if print_cmd: print '``', cmd
 	if not print_cmd: trace (cmd)
-	lines = []
-	for line in os.popen (cmd).readlines ():
-		lines.append (line.rstrip ('\r\n'))
-	return lines
+	proc = subprocess.Popen (cmd, shell = True, bufsize = -1, stdout = subprocess.PIPE, stderr = subprocess.PIPE)
+	stdout, stderr = proc.communicate ()
+
+	exit_code = proc.returncode
+
+	if not exit_code == 0:
+		raise CommandException('"%s" failed, error code %s\nstderr:\n%s' % (cmd, exit_code, stderr))
+
+	return stdout.split ('\n')
 
 def get_host ():
 	search_paths = ['/usr/share', '/usr/local/share']
