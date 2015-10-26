@@ -26,10 +26,14 @@ class MonoXamarinPackageProfile(MonoReleaseProfile):
         # add the private stuff
         self.packages_to_build.extend (['mono-extensions', 'ms-test-suite'])
 
-        if not self.cmd_options.release_build:
+        if self.cmd_options.release_build:
+            self.setup_codesign ()
+        else:
             info ("'--release' option not set, will not attempt to sign package!")
-            return 
 
+        self.cache_host = 'http://storage.bos.xamarin.com/bockbuild_cache/'
+
+    def setup_codesign (self):
         self.identity = "Developer ID Installer: Xamarin Inc"
 
         output = backtick("security -v find-identity")

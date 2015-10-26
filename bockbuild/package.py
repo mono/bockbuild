@@ -7,8 +7,12 @@ import filecmp
 import datetime
 import stat
 import time
-from urllib import FancyURLopener
+import urllib
 from util.util import *
+
+class MyUrlOpener(urllib.FancyURLopener): # FancyURLopener is incorrectly documented; this working handler was copied from https://mail.python.org/pipermail/python-bugs-list/2006-February/032155.html
+	def http_error_default(*args, **kwargs):
+		return urllib.URLopener.http_error_default(*args, **kwargs)
 
 class Package:
 	def __init__ (self, name, version = None, organization = None, configure_flags = None, sources = None, revision = None, git_branch = None, source_dir_name = None, override_properties = None, configure = None):
@@ -250,9 +254,11 @@ class Package:
 
 		def checkout_archive (archive, cache_dest, workspace_dir):
 			def create_cache ():
-				if not os.path.exists (cache_dest):
-					progress ('Downloading: %s' % archive)
-					filename, message = FancyURLopener ().retrieve (archive, cache_dest)
+				progress ('Downloading: %s' % archive)
+				try:
+					filename, message = MyUrlOpener ().retrieve (archive, cache_dest)
+				except IOError as e:
+					raise BockbuildException ('%s error downloading %s' % (e[1], archive))
 
 			def update_cache ():
 				pass
@@ -341,7 +347,17 @@ class Package:
 
 				if source.startswith (('http://', 'https://', 'ftp://')):
 					cache = get_download_dest (source)
+					if self.profile.cache_host != None:
+						cached_source = os.path.join (self.profile.cache_host, os.path.basename (source))
+						try:
+							clean_func = checkout_archive (cached_source, cache, workspace)
+							source = cached_source
+						except Exception as e:
+							verbose ('Cache host error: %s' % e)
+							verbose ('Trying original source')
+							clean_func = checkout_archive (source, cache, workspace)
 					clean_func = checkout_archive (source, cache, workspace)
+
 					resolved_source = workspace
 
 				elif source.startswith (('git://','file://', 'ssh://')) or source.endswith ('.git'):
