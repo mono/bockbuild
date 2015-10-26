@@ -176,12 +176,13 @@ class Package:
 			def update_workspace ():
 				trace ( 'Updating workspace')
 				self.cd (workspace_dir)
-
-				if self.git_branch == None:
-					self.sh ('%{git} fetch --all --prune')
-				else:
-					self.sh ('%' + '{git} fetch origin %s:refs/remotes/origin/%s' % (self.git_branch, self.git_branch))
-				self.cd (build_root)
+				try:
+					if self.git_branch == None:
+						self.sh ('%{git} fetch --all --prune')
+					else:
+						self.sh ('%' + '{git} fetch origin %s:refs/remotes/origin/%s' % (self.git_branch, self.git_branch))
+				finally:
+					self.cd (build_root)
 
 			def resolve ():
 				self.cd (workspace_dir)
@@ -608,12 +609,7 @@ class Package:
 		try:
 			self._cwd = os.getcwd ()
 		except Exception as e:
-			warn ('In invalid directory')
-			if not self._cwd:
-				error ('No last known directory, cannot recover')
-
-			warn ('Switching to last known directory: %s ' % self._cwd)
-			os.chdir (self._cwd)
+			warn ('In invalid directory: %s' % self._cwd)
 
 		return self._cwd
 
