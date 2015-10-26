@@ -167,11 +167,11 @@ class Profile:
 
 		self.full_rebuild = self.track_env ()
 
-		os.chdir (self.root)
-
 		if self.full_rebuild:
-			warn ('Build environment changed. Full rebuild triggered')
-			ensure_dir (self.build_root, purge = True)
+			warn ('Build environment changed')
+			for d in os.listdir (self.build_root):
+				if d.endswith ('.cache'):
+					os.remove (os.path.join(self.build_root, d))
 
 		if self.cmd_options.shell:
 			title ('Shell')

@@ -33,6 +33,9 @@ class MonoXamarinPackageProfile(MonoReleaseProfile):
 
         self.cache_host = 'http://storage.bos.xamarin.com/bockbuild_cache/'
 
+        if os.path.exists (self.build_root): #nuke build_root
+            delete (self.build_root)
+
     def setup_codesign (self):
         self.identity = "Developer ID Installer: Xamarin Inc"
 
