@@ -47,8 +47,8 @@ class MonoXamarinPackageProfile(MonoReleaseProfile):
         else:
             error ("CODESIGN_KEYCHAIN_PASSWORD needs to be defined.")
 
-    def setup_release (self):
-        MonoReleaseProfile.setup_release (self)
+    def setup (self):
+        MonoReleaseProfile.setup (self)
         self.release_packages['mono'].configure_flags.extend(['--enable-extension-module=crypto --enable-native-types --enable-pecrypt'])
         info ('Crypto module enabled')
 
