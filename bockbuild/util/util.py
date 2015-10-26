@@ -221,7 +221,8 @@ def update (new_text, file, show_diff = True):
 		return False
 
 def get_filetype (path):
-	return backtick ('file -b "%s"' % path)[0]
+	# the env variables are to work around a issue with OS X and 'file': https://trac.macports.org/ticket/38771
+	return backtick ('LC_CTYPE=C LANG=C file -b "%s"' % path)[0]
 
 
 def find_git(self):
