@@ -352,11 +352,12 @@ class Package:
 						try:
 							clean_func = checkout_archive (cached_source, cache, workspace)
 							source = cached_source
-						except Exception as e:
-							verbose ('Cache host error: %s' % e)
+						except BockbuildException as e:
+							warn (str(e))
 							verbose ('Trying original source')
 							clean_func = checkout_archive (source, cache, workspace)
-					clean_func = checkout_archive (source, cache, workspace)
+					else:
+						clean_func = checkout_archive (source, cache, workspace)
 
 					resolved_source = workspace
 

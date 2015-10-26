@@ -34,8 +34,8 @@ class config:
 
 class CommandException (Exception): # shell command failure
 	def __init__ (self, message):
-		Exception.__init__ (self, message)
-		verbose ('%s: %s' % (os.getcwd (), message))
+		Exception.__init__ (self, '%s: %s (path: %s)' % (get_caller(), os.getcwd (), message))
+		verbose (message)
 
 class BockbuildException (Exception): # internal/unexpected issue, treat as unrecoverable
 	def __init__ (self, message):
@@ -136,7 +136,10 @@ def error (message, more_output = False):
 		message = "\n".join (expand (message))
 	config.trace = False
 	header = '(bockbuild error)' if not more_output else ''
-	logprint ('%s %s: %s' % (header, get_caller (), message) , bcolors.FAIL, summary = True)
+	if isinstance (message, CommandException):
+		logprint ('%s: %s' % (header, message) , bcolors.FAIL, summary = True)
+	else:
+		logprint ('%s %s: %s' % (header, get_caller (), message) , bcolors.FAIL, summary = True)
 	if not more_output:
 		sys.exit (255)
 
