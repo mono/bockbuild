@@ -80,12 +80,8 @@ class Package:
 		self.make = 'make -j%s' % Package.profile.cpu_count
 		self.makeinstall = None
 		
-		self.git = 'git'
 		self.git_branch = git_branch
-		for git in ['/usr/local/bin/git', '/usr/local/git/bin/git', '/usr/bin/git']:
-			if os.path.isfile (git):
-				self.git = git
-				break
+		self.git = Package.profile.git
 
 		if not override_properties == None:
 			for k, v in override_properties.iteritems ():
@@ -145,9 +141,9 @@ class Package:
 				trace ('Cleaning git workspace: ' + self.name)
 				self.pushd (workspace_dir)
 				try:
-					self.sh ('%{git} reset --hard')
+					self.git ('reset --hard')
 					if config.iterative == False:
-						self.sh ('%{git} clean -xffd')
+						self.git ('clean -xffd')
 					else:
 						warn ('iterative')
 				finally:
@@ -159,32 +155,32 @@ class Package:
 				if os.path.exists (workspace_dir):
 					self.rm (workspace_dir)
 				progress ('Cloning git repo: %s' % source_url)
-				self.sh ('%' + '{git} clone --mirror "%s" "%s"' % (source_url, cache_dir))
+				self.git ('clone --mirror "%s" "%s"' % (source_url, cache_dir))
 
 			def update_cache ():
 				trace ( 'Updating cache: ' + cache_dir)
 				self.cd (cache_dir)
 				try:
 					if self.git_branch == None:
-						self.sh ('%{git} fetch --all --prune')
+						self.git ('fetch --all --prune')
 					else:
-						self.sh ('%' + '{git} fetch origin %s' % self.git_branch)
+						self.git ('fetch origin %s' % self.git_branch)
 				except Exception as e:
 					self.cd (build_root)
 					raise
 
 			def create_workspace ():
 				self.cd (build_root)
-				self.sh ('%' + '{git} clone --local --shared 	"%s" "%s"' % (cache_dir, workspace_dir))
+				self.git ('clone --local --shared 	"%s" "%s"' % (cache_dir, workspace_dir))
 
 			def update_workspace ():
 				trace ( 'Updating workspace')
 				self.cd (workspace_dir)
 				try:
 					if self.git_branch == None:
-						self.sh ('%{git} fetch --all --prune')
+						self.git ('fetch --all --prune')
 					else:
-						self.sh ('%' + '{git} fetch origin %s:refs/remotes/origin/%s' % (self.git_branch, self.git_branch))
+						self.git ('fetch origin %s:refs/remotes/origin/%s' % (self.git_branch, self.git_branch))
 				finally:
 					self.cd (build_root)
 
@@ -203,16 +199,16 @@ class Package:
 					target_revision = self.revision
 
 				if self.git_branch != None:
-					self.sh ('%' + '{git} checkout %s' % self.git_branch)
-					self.sh ('%' + '{git} merge origin/%s --ff-only ' % self.git_branch)
+					self.git ('checkout %s' % self.git_branch)
+					self.git ('merge origin/%s --ff-only' % self.git_branch)
 
 					if self.revision == None: # target the tip of the branch
 						target_revision = git_get_revision (self)
 
 				if (current_revision != target_revision):
 					self.request_build ('Revision changed (%s -> %s)' % (current_revision, target_revision))
-					self.sh ('%' + '{git} reset --hard %s' % target_revision)
-				self.sh ('%' + '{git} submodule update --recursive')
+					self.git ('reset --hard %s' % target_revision)
+				self.git ('submodule update --recursive')
 
 				current_revision = git_get_revision (self)
 
@@ -353,7 +349,7 @@ class Package:
 							clean_func = checkout_archive (cached_source, cache, workspace)
 							source = cached_source
 						except BockbuildException as e:
-							warn (str(e))
+							warn (repr(e))
 							verbose ('Trying original source')
 							clean_func = checkout_archive (source, cache, workspace)
 					else:

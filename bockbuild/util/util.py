@@ -228,42 +228,45 @@ def get_filetype (path):
 	return backtick ('LC_CTYPE=C LANG=C file -b "%s"' % path)[0]
 
 
-def find_git(self):
-        self.git = 'git'
-        for git in ['/usr/local/bin/git', '/usr/local/git/bin/git', '/usr/bin/git']:
-			if os.path.isfile (git):
-				self.git = git
-				break
+def find_git(self, echo = False):
+	git_bin = 'git'
+	for path in ['/usr/local/bin/git', '/usr/local/git/bin/git', '/usr/bin/git']:
+		if os.path.isfile (path):
+			git_bin = path
+
+	def git_func (args):
+		return backtick ('%s %s' % (git_bin, args), echo = echo)
+	self.git = git_func
 
 def assert_git_dir(self):
-	if (os.system(expand_macros ('%{git} rev-parse HEAD > /dev/null', self))) != 0:
-		raise Exception('assert_git_dir')
+	self.git ('rev-parse HEAD')
 
 def git_get_revision(self):
 	assert_git_dir(self)
-	return backtick (expand_macros ('%{git} rev-parse HEAD', self))[0]
+	return self.git ('rev-parse HEAD')[0]
 
 def git_get_branch(self):
 	assert_git_dir(self)
 	revision = git_get_revision (self)
-	output = backtick (expand_macros ('%{git} symbolic-ref -q --short HEAD', self))
-	if len(output) == 0:
+	try:
+		output = self.git ('symbolic-ref -q --short HEAD')
+	except:
 		return None #detached HEAD
 	else: return output[0]
 
 def git_is_dirty(self):
 	assert_git_dir(self)
-	str = backtick (expand_macros ('%{git} symbolic-ref --short HEAD --dirty', self))[0]
+	str = self.git ('symbolic-ref --short HEAD --dirty')[0]
 	return 'dirty' in str
 
 def git_patch (self, dir, patch):
 	assert_git_dir(self)
-	run_shell (expand_macros ('%' + '{git} diff > %s', self))
+	self.git ('diff > %s' % patch)
 
 def git_shortid (self):
 	assert_git_dir(self)
 	branch = git_get_branch (self)
-	short_rev = backtick (expand_macros ('git describe --abbrev --always --dirty', self))[0]
+	short_rev = self.git ('describe --abbrev --always --dirty')[0]
 	if branch == None:
 		return  short_rev
 	else:
@@ -295,6 +298,7 @@ def delete (path):
 		raise BockbuildException ('Will not delete current directory: %s' % path)
 
 	# get the dir out of the way so that we don't have to deal with inconsistent state if we fail
+
 	orig_path = path
 	path = path + '.deleting'
 	shutil.move (orig_path, path)
@@ -451,13 +455,18 @@ def run_shell (cmd, print_cmd = False):
 	if not exit_code == 0:
 		raise CommandException('"%s" failed, error code %s' % (cmd, exit_code))
 
-def backtick (cmd, print_cmd = False):
-	if print_cmd: print '``', cmd
+def backtick (cmd, print_cmd = False, echo = False):
+	if print_cmd or echo: print '``', cmd
 	if not print_cmd: trace (cmd)
 	proc = subprocess.Popen (cmd, shell = True, bufsize = -1, stdout = subprocess.PIPE, stderr = subprocess.PIPE)
 	stdout, stderr = proc.communicate ()
 
 	exit_code = proc.returncode
+
+	if echo:
+		info (stdout)
+		if len(stderr) > 0:
+			warn (stderr)
 
 	if not exit_code == 0:
 		raise CommandException('"%s" failed, error code %s\nstderr:\n%s' % (cmd, exit_code, stderr))
