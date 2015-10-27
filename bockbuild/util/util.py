@@ -301,10 +301,10 @@ def delete (path):
 
 	orig_path = path
 	path = path + '.deleting'
+	unprotect_dir (path, recursive = True)
 	shutil.move (orig_path, path)
 	for x in range(1,5):
 		try:
-			unprotect_dir (path, recursive = True)
 			if os.path.isfile (path) or os.path.islink (path):
 				os.remove (path)
 			elif os.path.isdir (path):
@@ -317,6 +317,7 @@ def delete (path):
 		warn ('retrying delete of %s' % path)
 		protect_dir (path, recursive = True) # try to sabotage whoever else is writing in the directory...
 		time.sleep(1)
+		unprotect_dir (path, recursive = True)
 
 	if os.path.exists (path):
 		error ('Deleting failed: %s' % orig_path)
