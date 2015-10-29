@@ -153,22 +153,16 @@ class MonoReleaseProfile(DarwinProfile):
 
     def calculate_updateid(self):
         # Create the updateid
-        if os.getenv('BOCKBUILD_ADD_BUILD_NUMBER'):
-            pwd = os.getcwd ()
-            trace ("cur path is %s and git is %s" % (pwd, self.git))
-            blame_rev_str = 'cd %s; %s blame configure.ac HEAD | grep AC_INIT | sed \'s/ .*//\' ' % (self.mono_package.workspace, self.git)
-            blame_rev = backtick(blame_rev_str)
-            trace ("Last commit to the version string %s" % (blame_rev))
-            blame_rev = " ".join(blame_rev)
-            version_number_str = 'cd %s; %s log %s..HEAD --oneline | wc -l | sed \'s/ //g\'' % (self.mono_package.workspace, self.git, blame_rev)
-            build_number = backtick(version_number_str)
-            trace ("Calculating commit distance, %s" % (build_number))
-            self.BUILD_NUMBER = " ".join(build_number)
-            self.FULL_VERSION = self.RELEASE_VERSION + "." + self.BUILD_NUMBER
-            os.chdir (pwd)
-        else:
-            self.BUILD_NUMBER="0"
-            self.FULL_VERSION = self.RELEASE_VERSION
+        pwd = os.getcwd ()
+        trace ("cur path is %s and git is %s" % (pwd, self.git_bin))
+        blame_rev_str = 'cd %s; %s blame configure.ac HEAD | grep AC_INIT | sed \'s/ .*//\' ' % (self.mono_package.workspace, self.git_bin)
+        blame_rev = backtick(blame_rev_str)[0]
+        trace ("Last commit to the version string %s" % (blame_rev))
+        version_number_str = 'cd %s; %s log %s..HEAD --oneline | wc -l | sed \'s/ //g\'' % (self.mono_package.workspace, self.git_bin, blame_rev)
+        self.BUILD_NUMBER = backtick(version_number_str)[0]
+        trace ("Calculating commit distance, %s" % (self.BUILD_NUMBER))
+        self.FULL_VERSION = self.RELEASE_VERSION + "." + self.BUILD_NUMBER
+        os.chdir (pwd)
 
         parts = self.RELEASE_VERSION.split(".")
         version_list = (parts + ["0"] * (3 - len(parts)))[:4]
@@ -176,6 +170,7 @@ class MonoReleaseProfile(DarwinProfile):
             version_list[i] = version_list[i].zfill(2)
             self.updateid = "".join(version_list)
             self.updateid += self.BUILD_NUMBER.replace(".", "").zfill(9 - len(self.updateid))
+        trace (self.updateid)
 
 
     # creates and returns the path to a working directory containing:
@@ -298,7 +293,7 @@ class MonoReleaseProfile(DarwinProfile):
         if self.cmd_options.release_build:
             info = (pkg_type, self.FULL_VERSION, arch_str)
         else:
-            info = (pkg_type, '%s-%s' % (self.mono_package.git_branch, self.FULL_VERSION) , arch_str)
+            info = (pkg_type, '%s-%s' % (git_shortid (self, self.mono_package.workspace), self.FULL_VERSION) , arch_str)
 
         filename = "MonoFramework-%s-%s.macos10.xamarin.%s.pkg" % info
         return {

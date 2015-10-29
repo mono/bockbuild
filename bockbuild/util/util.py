@@ -275,6 +275,7 @@ def find_git(self, echo = False):
 		return out.split ('\n')
 
 	self.git = git_func.__get__ (self, self.__class__)
+	self.git_bin = git_bin
 
 def assert_git_dir(self):
 	try:
