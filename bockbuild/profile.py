@@ -152,7 +152,7 @@ class Profile:
 			#make artifact in scratch
 			#delete artifact + buildstring
 			with open (package.buildstring_file, 'w') as output:
-				output.writelines (package.buildstring)
+				output.write ('\n'.join (package.buildstring))
 
 	def build (self):
 
@@ -247,7 +247,7 @@ class Profile:
 		#update env
 		if not self.unsafe:
 			with open (self.env_file, 'w') as output:
-					output.writelines (package.buildstring)
+				output.write ('\n'.join (tracked_env))
 
 
 	def track_env (self):

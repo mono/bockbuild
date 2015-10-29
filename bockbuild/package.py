@@ -458,6 +458,9 @@ class Package:
 		files.sort ()
 		is_changed (files, artifact + '.files')
 
+		with open (artifact + '.files', 'w') as output:
+			output.write ('\n'.join (files))
+
 		if len (files) != 0:
 			merge_trees (artifact_stage, dest, False)
 
