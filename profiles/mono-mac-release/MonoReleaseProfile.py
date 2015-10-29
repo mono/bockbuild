@@ -109,8 +109,15 @@ class MonoReleaseProfile(DarwinProfile):
 
     def setup_release (self):
         self.mono_package = self.release_packages['mono']
+        self.mono_package.fetch ()
+
+        verbose ('Mono version: %s' % self.mono_package.version)
         self.RELEASE_VERSION = self.mono_package.version
         self.prefix = os.path.join(self.MONO_ROOT, "Versions", self.RELEASE_VERSION)
+
+        if os.path.exists (self.prefix):
+            error ('Prefix %s exists, and may interfere with the staged build. Please remove and try again.' % self.prefix)
+
         self.calculate_updateid ()
         trace (self.package_info('MDK/MRE'))
 

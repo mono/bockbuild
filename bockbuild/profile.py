@@ -18,9 +18,10 @@ class Profile:
 		self.toolchain_root = os.path.join (self.root, 'toolchain-root')
 		self.artifact_root = os.path.join (self.root, 'artifacts')
 		self.package_root = os.path.join (self.root, 'package-root')
-		self.prefix = prefix if prefix else os.path.join (self.root, 'install-root')
-                self.source_cache = os.getenv('BOCKBUILD_SOURCE_CACHE') or os.path.realpath (os.path.join (self.root, 'cache'))
-                self.cpu_count = get_cpu_count ()
+		self.scratch = os.path.join (self.root, 'scratch')
+		self.env_file = os.path.join (self.root, 'global.env')
+		self.source_cache = os.getenv('BOCKBUILD_SOURCE_CACHE') or os.path.realpath (os.path.join (self.root, 'cache'))
+		self.cpu_count = get_cpu_count ()
 		self.host = get_host ()
 		self.uname = backtick ('uname -a')
 
@@ -28,13 +29,14 @@ class Profile:
 		self.env.set ('BUILD_PREFIX', '%{prefix}')
 		self.env.set ('BUILD_ARCH', '%{arch}')
 		self.env.set ('BOCKBUILD_ENV', '1')
+		self.full_rebuild = False
 
 		self.profile_name = self.__class__.__name__
 
 		find_git (self)
-		self.env.set ('bockbuild_revision', git_get_revision(self) )
+		self.env.set ('bockbuild_revision', git_get_revision(self, self.root) )
 
-		loginit ('bockbuild (%s)' % (git_shortid (self)))
+		loginit ('bockbuild (%s)' % (git_shortid (self, self.root)))
 		info ('cmd: %s' % ' '.join(sys.argv))
 
 		self.parse_options ()
@@ -48,6 +50,11 @@ class Profile:
 		config.trace = self.cmd_options.trace
 
 		Package.profile = self
+
+		ensure_dir (self.source_cache, purge = False)
+		ensure_dir (self.artifact_root, purge = False)
+		ensure_dir (self.build_root, purge = False)
+		ensure_dir (self.scratch, purge = True)
 
 	def parse_options (self):
 		self.default_run_phases = ['prep', 'build', 'install']
@@ -116,36 +123,39 @@ class Profile:
 	def bundle (self, output_dir):
 		sys.exit ('Bundle support not implemented for this profile')
 
-	def build_distribution (self, packages, dest, stage, dist_setup):
+	def build_distribution (self, packages, dest, stage):
 		#TODO: full relocation means that we shouldn't need dest at this stage
-		ensure_dir (stage, purge = True)
 		build_list = []
 
 		for package in packages.values ():
 			package.build_artifact = os.path.join (self.artifact_root, package.name)
+			package.buildstring_file = package.build_artifact + '.buildstring'
 
 			retry (package.fetch)
-
-			package.buildstring.extend (['%s md5: %s' % (os.path.basename (package._path), md5 (package._path))])
-
-			verbose ('\n\t'+ '\n\t'.join ([str for str in package.buildstring]))
 
 			if self.full_rebuild:
 				package.request_build ('Full rebuild')
 
+			elif not os.path.exists (package.build_artifact):
+				package.request_build ('No artifact')
+
+			elif is_changed (package.buildstring, package.buildstring_file):
+				package.request_build ('Buildstring changed')
+
 			if package.needs_build:
 				build_list.append (package)
 
-			update (package.buildstring, package.build_artifact + '.buildstring', show_diff = True)
-
 		info ('Updated packages: %s' % ' '.join([x.name for x in build_list]))
-
-		dist_setup ()
 
 		for package in packages.values ():
 			package.start_build (self.arch, dest, stage)
+			#make artifact in scratch
+			#delete artifact + buildstring
+			with open (package.buildstring_file, 'w') as output:
+				output.writelines (package.buildstring)
 
 	def build (self):
+
 		if self.cmd_options.dump_environment:
 			self.env.compile ()
 			self.env.dump ()
@@ -179,19 +189,41 @@ class Profile:
 				if phase not in self.default_run_phases:
 					sys.exit ('Invalid run phase \'%s\'' % phase)
 
-		Profile.setup (self)
+		self.toolchain_packages = collections.OrderedDict()
+		for source in self.toolchain:
+			package = self.load_package (source)
+			self.toolchain_packages [package.name] = package
+
+		self.setup_toolchain ()
+
+		self.release_packages = collections.OrderedDict()
+		for source in self.packages_to_build:
+			package = self.load_package (source)
+			self.release_packages [package.name] = package
+
+		self.setup_release ()
+
+		if self.track_env ():
+			if self.unsafe:
+				warn ('Build environment changed')
+			else:
+				info ('Build environment changed, full rebuild triggered')
+				self.full_rebuild = True
+				ensure_dir (self.build_root, purge = True)
 
 		if self.cmd_options.shell:
 			title ('Shell')
 			self.shell ()
 
 		if self.cmd_options.do_build:
+			ensure_dir (self.toolchain_root, purge = True)
+			ensure_dir (self.staged_prefix, purge = True)
 
 			title ('Building toolchain')
-			self.build_distribution (self.toolchain_packages, self.toolchain_root, self.toolchain_root, self.setup_toolchain)
+			self.build_distribution (self.toolchain_packages, self.toolchain_root, self.toolchain_root)
 
 			title ('Building release')
-			self.build_distribution (self.release_packages, self.prefix, self.staged_prefix, self.setup_release)
+			self.build_distribution (self.release_packages, self.prefix, self.staged_prefix)
 
 		if self.cmd_options.do_bundle:
 			if not self.cmd_options.output_dir == None:
@@ -212,46 +244,24 @@ class Profile:
 			self.process_release (self.package_root)
 			self.package ()
 
+		#update env
+		if not self.unsafe:
+			with open (self.env_file, 'w') as output:
+					output.writelines (package.buildstring)
+
+
 	def track_env (self):
 		tracked_env = []
-
-		if self.unsafe:
-			warn ('Running with --unsafe, build environment not checked for changes')
 
 		self.env.compile ()
 		self.env.export ()
 		tracked_env.extend (self.env.serialize ())
 
-		changed = False if self.unsafe else update (tracked_env, os.path.join (self.root, 'global.env'), show_diff = True)
-
 		self.envfile = os.path.join (self.root, self.profile_name) + '_env.sh'
 		self.env.dump (self.envfile)
 		os.chmod (self.envfile, 0755)
 
-		return changed
-
-	def setup (self):
-		progress ('Setting up packages')
-		ensure_dir (self.source_cache, purge = False)
-		ensure_dir (self.artifact_root, purge = False)
-
-		self.toolchain_packages = collections.OrderedDict()
-		self.release_packages = collections.OrderedDict()
-
-		for source in self.toolchain:
-			package = self.load_package (source)
-			self.toolchain_packages [package.name] = package
-
-		for source in self.packages_to_build:
-			package = self.load_package (source)
-			self.release_packages [package.name] = package
-
-		self.full_rebuild = self.track_env ()
-
-		if self.full_rebuild:
-			warn ('Build environment changed')
-
-		ensure_dir (self.build_root, purge = self.full_rebuild)
+		return is_changed (tracked_env, self.env_file)
 
 	def load_package (self, source):
 		if isinstance (source, Package): # package can already be loaded in the source list

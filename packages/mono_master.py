@@ -80,6 +80,7 @@ class MonoMasterPackage(Package):
 		token = match.group(1)
 
 		trace (token)
+		trace (self.package_prefix)
 		if self.package_prefix not in match:
 		    error ("%s references Mono %s\n%s" % ('mcs', match, text))
 

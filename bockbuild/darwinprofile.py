@@ -56,9 +56,6 @@ class DarwinProfile (UnixProfile):
 		self.name = 'darwin'
 		self.m64 = m64
 
-		if os.path.exists (self.prefix):
-			error ('Prefix %s exists, and may interfere with the staged build. Please remove and try again.' % self.prefix)
-
 		sdkroot = '/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/'
 		if (not os.path.isdir (sdkroot)):
 			sdkroot = '/Developer/SDKs/'

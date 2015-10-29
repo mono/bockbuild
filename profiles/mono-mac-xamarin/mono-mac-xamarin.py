@@ -33,9 +33,6 @@ class MonoXamarinPackageProfile(MonoReleaseProfile):
 
         self.cache_host = 'http://storage.bos.xamarin.com/bockbuild_cache/'
 
-        if os.path.exists (self.build_root): #nuke build_root
-            delete (self.build_root)
-
     def setup_codesign (self):
         self.identity = "Developer ID Installer: Xamarin Inc"
 
@@ -99,4 +96,5 @@ if __name__ == "__main__":
     except Exception as e:
         exc_type, exc_value, exc_traceback = sys.exc_info()
         error ('%s (%s)' % (e ,exc_type.__name__), more_output = True)
+        error (dir(e), more_output = True)
         error ('\n'.join (('%s:%s @%s\n\t...%s\n' % p for p in traceback.extract_tb(exc_traceback)[-3:])), more_output = True)
