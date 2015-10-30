@@ -514,7 +514,7 @@ class Package:
 							self.rm (os.path.join(self.profile.root, d))
 
 					shutil.move (workspace_dir, problem_dir)
-					info ('Build moved to ./%s \n Run "source ./%s" first to replicate bockbuild environment.' % (os.path.basename (problem_dir), os.path.basename (self.profile.envfile)))
+					info ('Build moved to ./%s \n Run "source ./%s" first to replicate bockbuild environment.' % (os.path.basename (problem_dir), os.path.basename (self.profile.env_script)))
 					error (str(e))
 			else:
 				self.rm_if_exists (workspace_dir)

@@ -48,6 +48,7 @@ class Profile:
 		self.arch = self.cmd_options.arch
 		self.unsafe = self.cmd_options.unsafe
 		config.trace = self.cmd_options.trace
+		self.tracked_env = []
 
 		Package.profile = self
 
@@ -197,6 +198,11 @@ class Profile:
 			title ('Building release')
 			self.build_distribution (self.release_packages, self.prefix, self.staged_prefix)
 
+			#update env
+			if not self.unsafe:
+				with open (self.env_file, 'w') as output:
+					output.write ('\n'.join (self.tracked_env))
+
 		if self.cmd_options.do_package:
 			title ('Packaging')
 			protect_dir (self.staged_prefix)
@@ -208,23 +214,13 @@ class Profile:
 			self.process_release (self.package_root)
 			self.package ()
 
-		#update env
-		if not self.unsafe:
-			with open (self.env_file, 'w') as output:
-				output.write ('\n'.join (tracked_env))
-
-
 	def track_env (self):
-		tracked_env = []
-
 		self.env.compile ()
 		self.env.export ()
+		self.env_script = os.path.join (self.root, self.profile_name) + '_env.sh'
+		self.env.write_source_script (self.env_script)
+		
 		tracked_env.extend (self.env.serialize ())
-
-		self.envfile = os.path.join (self.root, self.profile_name) + '_env.sh'
-		self.env.dump (self.envfile)
-		os.chmod (self.envfile, 0755)
-
 		return is_changed (tracked_env, self.env_file)
 
 	def load_package (self, source):
