@@ -98,3 +98,5 @@ if __name__ == "__main__":
         error ('%s (%s)' % (e ,exc_type.__name__), more_output = True)
         error (dir(e), more_output = True)
         error ('\n'.join (('%s:%s @%s\n\t...%s\n' % p for p in traceback.extract_tb(exc_traceback)[-3:])), more_output = True)
+    except KeyboardInterrupt:
+        error ('Interrupted.')

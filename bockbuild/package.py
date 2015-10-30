@@ -502,25 +502,23 @@ class Package:
 
 			if not self.dont_clean:
 				retry (self.clean, dir = workspace_dir)
-		except Exception as e:
+		except (Exception, KeyboardInterrupt) as e:
 			self.rm_if_exists (self.stage_root)
-
-			if os.path.exists (workspace_dir):
-				problem_dir = os.path.join (self.profile.root, os.path.basename (workspace_dir) + '.problem')
-
-				#take this chance to clear out older .problems
-				for d in os.listdir (self.profile.root):
-					if d.endswith ('.problem'):
-						self.rm (os.path.join(self.profile.root, d))
-
-				shutil.move (workspace_dir, problem_dir)
-				info ('Build moved to ./%s \n Run "source ./%s" first to replicate bockbuild environment.' % (os.path.basename (problem_dir), os.path.basename (self.profile.envfile)))
 			if e is CommandException:
-				error (str(e))
-			raise
-		finally:
-			if os.path.exists (self.stage_root):
-				unprotect_dir (self.stage_root)
+				if os.path.exists (workspace_dir):
+					problem_dir = os.path.join (self.profile.root, os.path.basename (workspace_dir) + '.problem')
+
+					#take this chance to clear out older .problems
+					for d in os.listdir (self.profile.root):
+						if d.endswith ('.problem'):
+							self.rm (os.path.join(self.profile.root, d))
+
+					shutil.move (workspace_dir, problem_dir)
+					info ('Build moved to ./%s \n Run "source ./%s" first to replicate bockbuild environment.' % (os.path.basename (problem_dir), os.path.basename (self.profile.envfile)))
+					error (str(e))
+			else:
+				self.rm_if_exists (workspace_dir)
+				raise
 
 		self.verbose = False
 
