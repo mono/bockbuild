@@ -565,28 +565,19 @@ class Package:
 		if self.verbose is True:
 			logprint ('\t@\t' + expand_macros (command, self), bcolors.BOLD)
 
-		stdout = tempfile.NamedTemporaryFile()
-		stderr = tempfile.NamedTemporaryFile()
-		full_command = '%s  > %s 2> %s' % (env_command, stdout.name, stderr.name)
+		with open (self.log, 'a') as log:
+			log.write ('%s\n' % env_command)
+
+		full_command = '%s  >>%s 2>&1' % (env_command, self.log)
 		try:
 			run_shell (full_command, cwd = cwd)
 		except Exception as e:
-			output_text = stdout.readlines ()
-			if len(output_text) > 0:
-				warn ('stdout:')
+			with open (self.log, 'r') as log:
+				output_text = log.readlines ()
 				for line in output_text:
 					print line,
-			error_text = stderr.readlines ()
-			if len(error_text) > 0:
-				warn ('stderr:')
-				for line in error_text:
-					print line,
-			warn('path: ' + os.getcwd ())
 			warn('build env: ' + self.build_env)
 			raise CommandException ('command failed: %s' % expand_macros (command, self))
-		finally:
-			stdout.close ()
-			stderr.close ()
 
 	def backtick (self, command):
 		command = expand_macros (command, self)

@@ -19,6 +19,7 @@ class Profile:
 		self.artifact_root = os.path.join (self.root, 'artifacts')
 		self.package_root = os.path.join (self.root, 'package-root')
 		self.scratch = os.path.join (self.root, 'scratch')
+		self.logs = os.path.join (self.root, 'logs')
 		self.env_file = os.path.join (self.root, 'global.env')
 		self.source_cache = os.getenv('BOCKBUILD_SOURCE_CACHE') or os.path.realpath (os.path.join (self.root, 'cache'))
 		self.cpu_count = get_cpu_count ()
@@ -54,6 +55,7 @@ class Profile:
 		ensure_dir (self.artifact_root, purge = False)
 		ensure_dir (self.build_root, purge = False)
 		ensure_dir (self.scratch, purge = True)
+		ensure_dir (self.logs, purge = False)
 
 	def parse_options (self):
 		parser = OptionParser (usage = 'usage: %prog [options] [package_names...]')
@@ -110,6 +112,9 @@ class Profile:
 		for package in packages.values ():
 			package.build_artifact = os.path.join (self.artifact_root, package.name)
 			package.buildstring_file = package.build_artifact + '.buildstring'
+			package.log = os.path.join (self.logs, package.name + '.log')
+			if os.path.exists (package.log):
+				delete (package.log)
 
 			retry (package.fetch)
 
