@@ -44,7 +44,6 @@ class Profile:
 		self.packages_to_build = self.cmd_args or self.packages
 		self.verbose = self.cmd_options.verbose
 		config.verbose = self.cmd_options.verbose
-		self.run_phases = self.default_run_phases
 		self.arch = self.cmd_options.arch
 		self.unsafe = self.cmd_options.unsafe
 		config.trace = self.cmd_options.trace
@@ -57,7 +56,6 @@ class Profile:
 		ensure_dir (self.scratch, purge = True)
 
 	def parse_options (self):
-		self.default_run_phases = ['prep', 'build', 'install']
 		parser = OptionParser (usage = 'usage: %prog [options] [package_names...]')
 		parser.add_option ('-b', '--build',
 			action = 'store_true', dest = 'do_build', default = False,
@@ -65,27 +63,9 @@ class Profile:
 		parser.add_option ('-P', '--package',
 			action = 'store_true', dest = 'do_package', default = False,
 			help = 'package the profile')
-		parser.add_option ('-z', '--bundle',
-			action = 'store_true', dest = 'do_bundle', default = False,
-			help = 'create a distributable bundle from a build')
-		parser.add_option ('-o', '--output-dir',
-			default = None, action = 'store', dest = 'output_dir',
-			help = 'output directory for housing the bundle (--bundle|-z)')
-		parser.add_option ('-k', '--skeleton-dir',
-			default = None, action = 'store',  dest = 'skeleton_dir',
-			help = 'skeleton directory containing misc files to copy into bundle (--bundle|-z)')
 		parser.add_option ('-v', '--verbose',
 			action = 'store_true', dest = 'verbose', default = False,
 			help = 'show all build output (e.g. configure, make)')
-		parser.add_option ('-i', '--include-phase',
-			action = 'append', dest = 'include_run_phases', default = [],
-			help = 'explicitly include a build phase to run %s' % self.default_run_phases)
-		parser.add_option ('-x', '--exclude-phase',
-			action = 'append', dest = 'exclude_run_phases', default = [],
-			help = 'explicitly exclude a build phase from running %s' % self.default_run_phases)
-		parser.add_option ('-s', '--only-sources',
-			action = 'store_true', dest = 'only_sources', default = False,
-			help = 'only fetch sources, do not run any build phases')
 		parser.add_option ('-d', '--debug', default = False,
 			action = 'store_true', dest = 'debug',
 			help = 'Build with debug flags enabled')
@@ -176,19 +156,6 @@ class Profile:
 			self.env.write_csproj (self.cmd_options.csproj_file)
 			sys.exit (0)
 
-		if not self.cmd_options.include_run_phases == []:
-			self.run_phases = self.cmd_options.include_run_phases
-		for exclude_phase in self.cmd_options.exclude_run_phases:
-			self.run_phases.remove (exclude_phase)
-		if self.cmd_options.only_sources:
-			self.run_phases = []
-
-		for phase_set in [self.run_phases,
-			self.cmd_options.include_run_phases, self.cmd_options.exclude_run_phases]:
-			for phase in phase_set:
-				if phase not in self.default_run_phases:
-					sys.exit ('Invalid run phase \'%s\'' % phase)
-
 		self.toolchain_packages = collections.OrderedDict()
 		for source in self.toolchain:
 			package = self.load_package (source)
@@ -224,14 +191,6 @@ class Profile:
 
 			title ('Building release')
 			self.build_distribution (self.release_packages, self.prefix, self.staged_prefix)
-
-		if self.cmd_options.do_bundle:
-			if not self.cmd_options.output_dir == None:
-				self.bundle_output_dir = os.path.join (os.getcwd (), 'bundle')
-			if not self.cmd_options.skeleton_dir == None:
-				self.bundle_skeleton_dir = os.path.join (os.getcwd (), 'skeleton')
-			self.bundle ()
-			return
 
 		if self.cmd_options.do_package:
 			title ('Packaging')
@@ -338,12 +297,4 @@ class Profile:
 			proc.end ()
 			proc.harness = None
 			proc.files = []
-
-
-class Bockbuild:
-	def main ():
-		profile.prep_options ()
-		profile.build ()
-		profile.package ()
-
 
