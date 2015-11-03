@@ -30,12 +30,15 @@ class Profile:
 		self.env.set ('BUILD_PREFIX', '%{prefix}')
 		self.env.set ('BUILD_ARCH', '%{arch}')
 		self.env.set ('BOCKBUILD_ENV', '1')
+
+		self.env.set ('bockbuild_buildver', '1')
+
 		self.full_rebuild = False
 
 		self.profile_name = self.__class__.__name__
 
 		find_git (self)
-		self.env.set ('bockbuild_revision', git_get_revision(self, self.root) )
+		self.bockbuild_rev =  git_get_revision(self, self.root)
 
 		loginit ('bockbuild (%s)' % (git_shortid (self, self.root)))
 		info ('cmd: %s' % ' '.join(sys.argv))
