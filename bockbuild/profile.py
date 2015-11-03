@@ -127,13 +127,13 @@ class Profile:
 				package.request_build ('No artifact')
 
 			elif is_changed (package.buildstring, package.buildstring_file):
-				package.request_build ('Buildstring changed')
+				package.request_build ('Updated')
 
 			if package.needs_build:
 				build_list.append (package)
 
-		info ('%d Updated packages:' % len (build_list))
-		info ([x.name for x in build_list])
+		verbose ('%d Updated packages:' % len (build_list))
+		verbose (['%s (%s)' % (x.name, x.needs_build) for x in build_list])
 
 		for package in packages.values ():
 			package.start_build (self.arch, dest, stage)
@@ -180,7 +180,7 @@ class Profile:
 
 		if self.track_env ():
 			if self.unsafe:
-				warn ('Build environment changed')
+				warn ('Build environment changed, but overriding full rebuild!')
 			else:
 				info ('Build environment changed, full rebuild triggered')
 				self.full_rebuild = True
@@ -201,9 +201,8 @@ class Profile:
 			self.build_distribution (self.release_packages, self.prefix, self.staged_prefix)
 
 			#update env
-			if not self.unsafe:
-				with open (self.env_file, 'w') as output:
-					output.write ('\n'.join (self.tracked_env))
+			with open (self.env_file, 'w') as output:
+				output.write ('\n'.join (self.tracked_env))
 
 		if self.cmd_options.do_package:
 			title ('Packaging')

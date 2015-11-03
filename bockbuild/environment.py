@@ -45,7 +45,9 @@ class Environment:
   		os.chmod (filename, 0755)
 
 	def serialize (self):
-		for k in self.get_names ():
+		names = list (self.get_names())
+		names.sort ()
+		for k in names:
 			yield '%s = "%s"' % (k, self.__dict__[k])
 
 	def dump_csproj (self):

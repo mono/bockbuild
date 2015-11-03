@@ -53,7 +53,7 @@ class Package:
 		self.m32_only = False
 		self.build_dependency = False
 		self.dont_clean = False
-		self.needs_build = False
+		self.needs_build = None
 
 		if configure_flags:
 			self.configure_flags.extend (configure_flags)
@@ -136,6 +136,13 @@ class Package:
 		source_cache_dir = self.profile.source_cache
 		self.source_dir_name = expand_macros (self.source_dir_name, self)
 		self.buildstring = []
+		scratch_workspace = os.path.join (scratch, '%s.workspace' % self.name)
+		final_workspace = os.path.join (build_root, self.source_dir_name)
+
+		self.rm_if_exists (scratch_workspace)
+		if os.path.exists (final_workspace):
+			shutil.move (final_workspace, scratch_workspace)
+
 
 		def checkout (self, source_url, cache_dir, workspace_dir):
 			def clean_git_workspace (dir):
@@ -292,7 +299,6 @@ class Package:
 			return os.path.join (source_cache_dir, name)
 
 		clean_func = None # what to run if the workspace needs to be redone
-		scratch_workspace = os.path.join (self.profile.scratch, '%s.workspace' % self.name)
 
 		if self.sources == None:
 			return None
@@ -363,24 +369,20 @@ class Package:
 			error ('workspace cleaning function (clean_func) must be set')
 
 		self.buildstring.extend (['%s md5: %s' % (os.path.basename (self._path), md5 (self._path))])
-		verbose (self.buildstring)
 		self.local_sources = local_sources
 		self.clean = clean_func
 
 		if not os.path.exists (scratch_workspace):
 			os.mkdir (scratch_workspace)
 
-		self.workspace = os.path.join (build_root, self.source_dir_name)
-		self.rm_if_exists (self.workspace)
+		self.workspace = final_workspace
 		shutil.move (scratch_workspace, self.workspace)
 
 	def request_build (self, reason):
-		verbose (reason)
-		self.needs_build = True
+		self.needs_build = reason
 
 	def override_build (self, reason):
-		verbose (reason)
-		self.needs_build = False
+		self.needs_build = reason
 
 	def start_build (self, arch, dest, stage):
 			info (self.desc)
@@ -398,7 +400,7 @@ class Package:
 					warn ('Failed to deploy from artifact %s. Rebuilding' % os.path.basename (build_artifact))
 
 			if self.needs_build:
-
+				verbose (self.buildstring)
 				if (arch == 'darwin-universal' and self.needs_lipo):
 					workspace_x86 = workspace +'-x86'
 					workspace_x64 =workspace + '-x64'
