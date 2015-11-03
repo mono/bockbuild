@@ -504,7 +504,7 @@ class Package:
 				retry (self.clean, dir = workspace_dir)
 		except (Exception, KeyboardInterrupt) as e:
 			self.rm_if_exists (self.stage_root)
-			if e is CommandException:
+			if isinstance (e,CommandException):
 				if os.path.exists (workspace_dir):
 					problem_dir = os.path.join (self.profile.root, os.path.basename (workspace_dir) + '.problem')
 
@@ -577,7 +577,7 @@ class Package:
 				for line in output_text:
 					print line,
 			warn('build env: ' + self.build_env)
-			raise CommandException ('command failed: %s' % expand_macros (command, self))
+			raise CommandException ('command failed: %s' % expand_macros (command, self), cwd = cwd)
 
 	def backtick (self, command):
 		command = expand_macros (command, self)

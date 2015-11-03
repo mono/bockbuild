@@ -538,7 +538,7 @@ def run (cmd, args, cwd, env = None):
 	exit_code = proc.returncode
 
 	if not exit_code == 0:
-		raise CommandException('"%s" failed, error code %s\nstderr:\n%s' % (cmd, exit_code, stderr))
+		raise CommandException('"%s" failed, error code %s\nstderr:\n%s' % (cmd, exit_code, stderr), cwd = cwd)
 
 	return (exit_code, stdout, stderr)
 
@@ -548,7 +548,7 @@ def run_shell (cmd, print_cmd = False, cwd = None):
 	proc = subprocess.Popen (cmd, shell = True, bufsize = -1, cwd = cwd)
 	exit_code = proc.wait ()
 	if not exit_code == 0:
-		raise CommandException('"%s" failed, error code %s' % (cmd, exit_code))
+		raise CommandException('"%s" failed, error code %s' % (cmd, exit_code), cwd)
 
 def backtick (cmd, print_cmd = False, echo = False):
 	if print_cmd or echo: print '``', cmd
@@ -564,7 +564,7 @@ def backtick (cmd, print_cmd = False, echo = False):
 			warn (stderr)
 
 	if not exit_code == 0:
-		raise CommandException('"%s" failed, error code %s\nstderr:\n%s' % (cmd, exit_code, stderr))
+		raise CommandException('"%s" failed, error code %s\nstderr:\n%s' % (cmd, exit_code, stderr), cwd)
 
 	return stdout.split ('\n')
 
