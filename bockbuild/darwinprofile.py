@@ -38,8 +38,8 @@ class DarwinProfile (UnixProfile):
 	default_toolchain = [
 	        'autoconf',
 	        'automake',
-	        'libtool',
 	        'ccache',
+	        'libtool',
 	        'xz',
 	        'tar',
 	        'gtk-osx-docbook',
