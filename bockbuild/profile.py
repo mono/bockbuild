@@ -222,8 +222,8 @@ class Profile:
 		self.env_script = os.path.join (self.root, self.profile_name) + '_env.sh'
 		self.env.write_source_script (self.env_script)
 		
-		tracked_env.extend (self.env.serialize ())
-		return is_changed (tracked_env, self.env_file)
+		self.tracked_env.extend (self.env.serialize ())
+		return is_changed (self.tracked_env, self.env_file)
 
 	def load_package (self, source):
 		if isinstance (source, Package): # package can already be loaded in the source list
