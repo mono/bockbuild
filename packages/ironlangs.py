@@ -15,8 +15,8 @@ class IronLanguagesPackage(GitHubTarballPackage):
 		self.source_dir_name = '%s-%s-%s' % ( self.organization, 'main', self.revision[:7] )
 
 	def build (self):
-		self.ironruby = os.path.join (os.getcwd(), 'ironruby', 'bin') + os.sep
-		self.ironpython = os.path.join (os.getcwd(), 'ironpython', 'bin') + os.sep
+		self.ironruby = os.path.join (self.workspace, 'ironruby', 'bin') + os.sep
+		self.ironpython = os.path.join (self.workspace, 'ironpython', 'bin') + os.sep
 		self.sh ('xbuild /p:Configuration=Release /p:OutDir="%{ironruby}" Solutions/Ruby.sln')
 		self.sh ('xbuild /p:Configuration=Release /p:OutDir="%{ironpython}" Solutions/IronPython.Mono.sln')
 
@@ -31,9 +31,6 @@ class IronLanguagesPackage(GitHubTarballPackage):
 			os.chmod (wrapper, 0755)
 
 	def install (self):
-		self.ironruby = os.path.join (os.getcwd(), 'ironruby', 'bin') + os.sep
-		self.ironpython = os.path.join (os.getcwd(), 'ironpython', 'bin') + os.sep
-
 		self.sh ("mkdir -p %{staged_prefix}/lib/ironruby/")
 		self.sh ("mkdir -p %{staged_prefix}/bin/")
 		self.sh ("cp -R %{ironruby} %{staged_prefix}/lib/ironruby/")

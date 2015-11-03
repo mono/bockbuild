@@ -22,9 +22,7 @@ class PCLReferenceAssembliesPackage(Package):
         shutil.rmtree(dest, ignore_errors=True)
 
         # Omit v4.6 until we support it
-        pcldir = os.path.join(self.profile.build_root, self.source_dir_name)
-
-        self.sh("rsync -abv -q --exclude '%s' %s/* %s" % ("v4.6", pcldir, dest))
+        self.sh("rsync -abv -q --exclude '%s' %s/* %s" % ("v4.6", self.workspace, dest))
 
         for f in glob.glob("%s/*/Profile/*/SupportedFrameworks" % dest):
             self.write_xml(f)
