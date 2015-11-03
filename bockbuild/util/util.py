@@ -34,15 +34,20 @@ class config:
 	verbose = False
 
 class CommandException (Exception): # shell command failure
-	def __init__ (self, message):
-		Exception.__init__ (self, '%s: %s (path: %s)' % (get_caller(), os.getcwd (), message))
+	def __init__ (self, message, cwd = None):
+		if cwd == None:
+			cwd = os.getcwd ()
+		Exception.__init__ (self, '%s: %s (path: %s)' % (get_caller(), cwd, message))
 		verbose (message)
 
 class BockbuildException (Exception): # internal/unexpected issue, treat as unrecoverable
 	def __init__ (self, message):
 		Exception.__init__ (self, message)
 
-
+class Logger:
+	last_header = None
+	print_color = False
+	monkeywrench = False
 
 def log (phase, message):
 	#DISABLED until we can properly refactor/redirect logging
@@ -95,54 +100,71 @@ def assert_exists (path):
 def loginit (message):
 	if os.getenv ('BUILD_REVISION') is not None:  #MonkeyWrench
 		print '@MonkeyWrench: SetSummary:<h3>%s</h3>' % message
-	else:
+	elif sys.stdout.isatty ():
+		Logger.print_color = True
 		logprint (message, bcolors.BOLD)
 
-def logprint (message, color, summary = False, trace = False):
-	if config.quiet == True and trace == False:
-		return
-	if summary:
-		if os.getenv ('BUILD_REVISION') is not None:  #MonkeyWrench
-				print '@MonkeyWrench: AddSummary:<p>%s</p>' % message
-				return
-
-	message = '%s%s%s' % ('\n', message, '\n')
-	if sys.stdout.isatty():
+def colorprint (message, color):
+	if Logger.print_color:
 		print '%s%s%s' % (color, message , bcolors.ENDC)
 	else:
 		print message
 
-def title (message, summary = True):
-	logprint ('** %s **' % message, bcolors.HEADER, summary)
+def logprint (message, color, summary = False, header = None, trace = False):
+	if isinstance (message, str):
+		lines = message.split('\n')
+	elif isinstance (message, dict):
+		lines = list()
+		for k in message.get_names ():
+			lines.append ('%s : %s' % (k, self.__dict__[k]))
+	else: #assume iterable
+		lines = message
 
-def info (message, summary = True):
-	logprint (message ,bcolors.OKGREEN, summary)
+	if config.quiet == True and trace == False:
+		return
+	if summary:
+		if Logger.monkeywrench:  #MonkeyWrench
+			for line in lines:
+				print '@MonkeyWrench: AddSummary:<p>%s</p>' % line
+			return
+
+	if header != Logger.last_header:
+		Logger.last_header = header
+		print
+		if header != None:
+			colorprint ('%s:' % header, color)
+
+	for line in lines:
+		output = ''
+		if header != None:
+			output = '\t'
+		output = output + '%s' % line.rstrip('\r\n')
+		colorprint (output, color)
+
+def title (message, summary = True):
+	logprint ('\n** %s **\n' % message, bcolors.HEADER, summary)
+
+def info (message, 	summary = True):
+	logprint (message ,bcolors.OKGREEN, summary, header = 'info')
 
 def progress (message):
-	logprint ('%s: %s' % (get_caller (), message), bcolors.OKBLUE)
+	logprint (message, bcolors.OKBLUE, header = get_caller ())
 
 def verbose (message):
 	if not config.verbose and not config.trace:
 		return
-	logprint ('%s: %s' % (get_caller (), message), bcolors.OKBLUE)
+	logprint (message, bcolors.OKBLUE, header = get_caller ())
 
 def warn (message):
-	logprint ('(bockbuild warning) %s: %s' % (get_caller (), message), bcolors.FAIL)
+	if isinstance (message, str):
+		message = '%s %s' % ('(bockbuild warning)', message)
+	logprint (message, bcolors.FAIL, header = get_caller ())
 
 def error (message, more_output = False):
-	def expand (message):
-			for k in message.keys ():
-				if isinstance (message [k], (str, list, tuple, dict, bool, int)) and not k.startswith ('_'):
-					yield '%s: %s\n' % (k, message [k])
-
-	if isinstance (message, dict):
-		message = "\n".join (expand (message))
 	config.trace = False
-	header = '(bockbuild error)' if not more_output else ''
-	if isinstance (message, CommandException):
-		logprint ('%s: %s' % (header, message) , bcolors.FAIL, summary = True)
-	else:
-		logprint ('%s %s: %s' % (header, get_caller (), message) , bcolors.FAIL, summary = True)
+	if isinstance (message, str):
+		message = '%s %s' % ('(bockbuild error)', message)
+	logprint (message , bcolors.FAIL, header =  get_caller (), summary = True)
 	if not more_output:
 		sys.exit (255)
 
@@ -155,7 +177,7 @@ def trace (message, skip = 0):
 	if config.filter != None and config.filter not in caller:
 		return
 
-	logprint ('%s: %s' % (caller, message), bcolors.FAIL, summary = True, trace = True)
+	logprint (message, bcolors.FAIL, summary = True, header = caller, trace = True)
 
 def test (func):
 	if config.test == False:

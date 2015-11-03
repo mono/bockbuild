@@ -110,6 +110,7 @@ class Profile:
 		#TODO: full relocation means that we shouldn't need dest at this stage
 		build_list = []
 
+		progress ('Fetching packages')
 		for package in packages.values ():
 			package.build_artifact = os.path.join (self.artifact_root, package.name)
 			package.buildstring_file = package.build_artifact + '.buildstring'
@@ -131,7 +132,8 @@ class Profile:
 			if package.needs_build:
 				build_list.append (package)
 
-		info ('Updated packages: %s' % ' '.join([x.name for x in build_list]))
+		info ('%d Updated packages:' % len (build_list))
+		info ([x.name for x in build_list])
 
 		for package in packages.values ():
 			package.start_build (self.arch, dest, stage)

@@ -363,7 +363,7 @@ class Package:
 			error ('workspace cleaning function (clean_func) must be set')
 
 		self.buildstring.extend (['%s md5: %s' % (os.path.basename (self._path), md5 (self._path))])
-		verbose ('\n\t'+ '\n\t'.join ([str for str in self.buildstring]))
+		verbose (self.buildstring)
 		self.local_sources = local_sources
 		self.clean = clean_func
 
