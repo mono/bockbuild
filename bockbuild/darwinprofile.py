@@ -38,6 +38,7 @@ class DarwinProfile (UnixProfile):
 	default_toolchain = [
 	        'autoconf',
 	        'automake',
+	        'libtool',
 	        'ccache',
 	        'xz',
 	        'tar',
