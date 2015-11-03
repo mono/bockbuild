@@ -135,7 +135,7 @@ class Profile:
 			if package.needs_build:
 				build_list.append (package)
 
-		verbose ('%d Updated packages:' % len (build_list))
+		verbose ('%d packages need building:' % len (build_list))
 		verbose (['%s (%s)' % (x.name, x.needs_build) for x in build_list])
 
 		for package in packages.values ():

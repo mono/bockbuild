@@ -535,24 +535,6 @@ class Package:
 	def deploy (self):
 		return
 
-	def process (self, func, directory, error_func, error_message ):
-		popped = False
-		try:
-			self.pushd (directory)
-			func ()
-		except Exception as e:
-			self.popd (failure = True)
-			popped = True
-
-			if e is BockbuildException:
-				error ('%s: %s' % (func.__name__ , e.message))
-			warn (str(e))
-			warn (error_message)
-			error_func ()
-		finally:
-			if not popped:
-				self.popd()
-
 	def build_sh (self, command, cwd):
 		if isinstance (command, list):
 			map (lambda cmd: self.build_sh (cmd, cwd), command)
