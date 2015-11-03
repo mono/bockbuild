@@ -21,7 +21,6 @@ class MonoReleaseProfile(DarwinProfile):
     packages = [
         'autoconf',
         'automake',
-        'libtool',
         'gettext',
         'pkg-config',
 
