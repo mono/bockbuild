@@ -100,6 +100,7 @@ def assert_exists (path):
 def loginit (message):
 	if os.getenv ('BUILD_REVISION') is not None:  #MonkeyWrench
 		print '@MonkeyWrench: SetSummary:<h3>%s</h3>' % message
+		Logger.monkeywrench = True
 	elif sys.stdout.isatty ():
 		Logger.print_color = True
 		logprint (message, bcolors.BOLD)
@@ -123,7 +124,7 @@ def logprint (message, color, summary = False, header = None, trace = False):
 	if config.quiet == True and trace == False:
 		return
 	if summary:
-		if Logger.monkeywrench:  #MonkeyWrench
+		if Logger.monkeywrench:
 			for line in lines:
 				print '@MonkeyWrench: AddSummary:<p>%s</p>' % line
 			return
