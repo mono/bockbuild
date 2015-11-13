@@ -365,11 +365,15 @@ def delete (path):
 		raise BockbuildException ('Will not delete current directory: %s' % path)
 
 	# get the dir out of the way so that we don't have to deal with inconsistent state if we fail
-	if os.path.isfile (path) or os.path.islink (path):
+	if os.path.isfile (path):
 		os.remove (path)
 		return
 
 	# directory removal
+	if os.path.islink (path):
+		os.unlink (path)
+		return
+
 	orig_path = path
 	unprotect_dir (path, recursive = True)
 	path = path + '.deleting'

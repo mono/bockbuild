@@ -72,6 +72,10 @@ class MonoMasterPackage(Package):
 		ensure_dir (registry_dir)
 
 	def deploy(self):
+		if self.profile.arch == 'darwin-universal':
+			os.symlink ('mono-sgen64', '%s/bin/mono64' % self.staged_profile)
+			os.symlink ('mono-sgen32', '%s/bin/mono32' % self.staged_profile)
+
 		text = " ".join(open('%s/bin/mcs' % self.staged_profile).readlines ())
 		regex = os.path.join(self.profile.MONO_ROOT, "Versions", r"(\d+\.\d+\.\d+)")
 		match = re.search(regex, text)

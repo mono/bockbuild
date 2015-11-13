@@ -19,8 +19,6 @@ class Package:
 	def __init__ (self, name, version = None, organization = None, configure_flags = None, sources = None, revision = None, git_branch = None, source_dir_name = None, override_properties = None, configure = None):
 		Package.last_instance = self
 
-		self.verbose = False
-
 		self.name = name
 		self.version = version
 		self.organization = organization
@@ -417,6 +415,9 @@ class Package:
 					self.link (workspace_x64, workspace)
 					stagedir_x64 = self.do_build ('darwin-64', os.path.join (self.profile.scratch, self.name + '-x64.install'))
 
+					delete (workspace)
+					shutil.move (workspace_x86, workspace)
+
 					print 'lipo', self.name
 
 					self.lipo_dirs (stagedir_x64, package_stage, 'lib')
@@ -492,8 +493,6 @@ class Package:
 		# protect against relocation bugs often landing files in the wrong path
 		protect_dir (self.stage_root)
 
-		if self.profile.verbose:
-			self.verbose = True #log sh() uses while in package logic
 		try:
 			self.arch_build (arch)
 			self.build_env = self.expand_build_env ()
@@ -527,8 +526,6 @@ class Package:
 				self.rm_if_exists (self.workspace)
 				raise
 
-		self.verbose = False
-
 		return self.staged_prefix
 
 
@@ -551,7 +548,7 @@ class Package:
 			env_command = '%s %s' % (self.build_env, expand_macros (command, self))
 		except Exception as e:
 			error ('MACRO EXPANSION ERROR: ' + str(e))
-		if self.verbose is True:
+		if config.verbose is True:
 			logprint ('\t@\t' + expand_macros (command, self), bcolors.BOLD)
 
 		with open (self.log, 'a') as log:
