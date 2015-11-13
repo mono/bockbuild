@@ -690,7 +690,7 @@ class Package:
 						run_shell(lipo_cmd)
 						if replace_32:
 							#replace all 32-bit binaries with the new fat binaries
-							shutil.copy2 (lipo_file, dir32_file)
+							shutil.move (lipo_file, dir32_file)
 					else:
 						warn ("lipo: 32-bit version of file %s not found"  %file)
 

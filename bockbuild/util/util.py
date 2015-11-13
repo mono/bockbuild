@@ -116,8 +116,8 @@ def logprint (message, color, summary = False, header = None, trace = False):
 		lines = message.split('\n')
 	elif isinstance (message, dict):
 		lines = list()
-		for k in message.get_names ():
-			lines.append ('%s : %s' % (k, self.__dict__[k]))
+		for k in message.keys ():
+			lines.append ('%s : %s' % (k, message [k]))
 	else: #assume iterable
 		lines = message
 
@@ -569,7 +569,7 @@ def backtick (cmd, print_cmd = False, echo = False):
 			warn (stderr)
 
 	if not exit_code == 0:
-		raise CommandException('"%s" failed, error code %s\nstderr:\n%s' % (cmd, exit_code, stderr), cwd)
+		raise CommandException('"%s" failed, error code %s\nstderr:\n%s' % (cmd, exit_code, stderr), os.getcwd ())
 
 	return stdout.split ('\n')
 
