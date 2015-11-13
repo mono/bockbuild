@@ -408,22 +408,25 @@ class Package:
 					self.rm_if_exists (workspace_x86)
 					self.rm_if_exists (workspace_x64)
 
-					self.link (workspace, workspace_x86)
+					shutil.move (workspace, workspace_x86)
 					shutil.copytree (workspace_x86, workspace_x64)
 
-					package_stage = self.do_build ('darwin-32', workspace_x86)
+					self.link (workspace_x86, workspace)
+					package_stage = self.do_build ('darwin-32', os.path.join (self.profile.scratch, self.name + '-x86.install'))
 
-					stagedir_x64 = self.do_build ('darwin-64', workspace_x64)
+					self.link (workspace_x64, workspace)
+					stagedir_x64 = self.do_build ('darwin-64', os.path.join (self.profile.scratch, self.name + '-x64.install'))
 
 					print 'lipo', self.name
 
 					self.lipo_dirs (stagedir_x64, package_stage, 'lib')
 					self.copy_side_by_side (stagedir_x64, package_stage, 'bin', '64', '32')
-
+				elif arch == 'toolchain':
+					package_stage = self.do_build ('darwin-64')
 				elif self.m32_only:
-					package_stage = self.do_build ('darwin-32', workspace)
+					package_stage = self.do_build ('darwin-32')
 				else:
-					package_stage = self.do_build (arch, workspace)
+					package_stage = self.do_build (arch)
 
 				self.make_artifact (package_stage, build_artifact)
 			self.deploy_package (build_artifact, self.staged_profile)
@@ -475,10 +478,12 @@ class Package:
 
 		return True
 
-	def do_build (self, arch, workspace_dir):
-		progress ('Building (arch: %s)' % (arch))
+	def do_build (self, arch, install_dir = None):
+		progress ('Building (arch: %s)' % arch)
+		if install_dir is None:
+			install_dir = os.path.join (self.profile.scratch, self.name + '.install')
 
-		self.stage_root  = os.path.join (workspace_dir + '.stage')
+		self.stage_root  = install_dir
 		self.rm_if_exists (self.stage_root)
 		self.staged_prefix = os.path.join (self.stage_root, self.package_prefix [1:])
 
@@ -492,7 +497,7 @@ class Package:
 		try:
 			self.arch_build (arch)
 			self.build_env = self.expand_build_env ()
-			self.sh = functools.partial (self.build_sh, cwd = workspace_dir)
+			self.sh = functools.partial (self.build_sh, cwd = self.workspace)
 			self.prep ()
 			self.build ()
 			self.install ()
@@ -503,23 +508,23 @@ class Package:
 			self.profile.process_package (self)
 
 			if not self.dont_clean:
-				retry (self.clean, dir = workspace_dir)
+				retry (self.clean, dir = self.workspace)
 		except (Exception, KeyboardInterrupt) as e:
 			self.rm_if_exists (self.stage_root)
 			if isinstance (e,CommandException):
-				if os.path.exists (workspace_dir):
-					problem_dir = os.path.join (self.profile.root, os.path.basename (workspace_dir) + '.problem')
+				if os.path.exists (self.workspace):
+					problem_dir = os.path.join (self.profile.root, os.path.basename (self.workspace) + '.problem')
 
 					#take this chance to clear out older .problems
 					for d in os.listdir (self.profile.root):
 						if d.endswith ('.problem'):
 							self.rm (os.path.join(self.profile.root, d))
 
-					shutil.move (workspace_dir, problem_dir)
+					shutil.move (self.workspace, problem_dir)
 					info ('Build moved to ./%s \n Run "source ./%s" first to replicate bockbuild environment.' % (os.path.basename (problem_dir), os.path.basename (self.profile.env_script)))
 					error (str(e))
 			else:
-				self.rm_if_exists (workspace_dir)
+				self.rm_if_exists (self.workspace)
 				raise
 
 		self.verbose = False
