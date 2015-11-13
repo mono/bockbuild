@@ -109,13 +109,13 @@ class Profile:
 	def bundle (self, output_dir):
 		sys.exit ('Bundle support not implemented for this profile')
 
-	def build_distribution (self, packages, dest, stage):
+	def build_distribution (self, packages, dest, stage, arch):
 		#TODO: full relocation means that we shouldn't need dest at this stage
 		build_list = []
 
 		progress ('Fetching packages')
 		for package in packages.values ():
-			package.build_artifact = os.path.join (self.artifact_root, package.name)
+			package.build_artifact = os.path.join (self.artifact_root, '%s-%s' % (package.name, arch))
 			package.buildstring_file = package.build_artifact + '.buildstring'
 			package.log = os.path.join (self.logs, package.name + '.log')
 			if os.path.exists (package.log):
@@ -139,7 +139,7 @@ class Profile:
 		verbose (['%s (%s)' % (x.name, x.needs_build) for x in build_list])
 
 		for package in packages.values ():
-			package.start_build (self.arch, dest, stage)
+			package.start_build (arch, dest, stage)
 			#make artifact in scratch
 			#delete artifact + buildstring
 			with open (package.buildstring_file, 'w') as output:
@@ -198,10 +198,10 @@ class Profile:
 			ensure_dir (self.staged_prefix, purge = True)
 
 			title ('Building toolchain')
-			self.build_distribution (self.toolchain_packages, self.toolchain_root, self.toolchain_root)
+			self.build_distribution (self.toolchain_packages, self.toolchain_root, self.toolchain_root, arch = 'toolchain')
 
 			title ('Building release')
-			self.build_distribution (self.release_packages, self.prefix, self.staged_prefix)
+			self.build_distribution (self.release_packages, self.prefix, self.staged_prefix, arch = self.arch)
 
 			#update env
 			with open (self.env_file, 'w') as output:

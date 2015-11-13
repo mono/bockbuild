@@ -358,14 +358,14 @@ def delete (path):
 	if not os.path.isabs (path):
 		raise BockbuildException ('Relative paths are not allowed: %s' % path)
 
-	if not os.path.exists (path):
+	if not os.path.lexists (path):
 		raise CommandException ('Invalid path to rm: %s' % path)
 
 	if os.getcwd () == path:
 		raise BockbuildException ('Will not delete current directory: %s' % path)
 
 	# get the dir out of the way so that we don't have to deal with inconsistent state if we fail
-	if os.path.isfile (path):
+	if os.path.isfile (path) or os.path.islink (path):
 		os.remove (path)
 		return
 

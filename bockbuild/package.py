@@ -619,8 +619,8 @@ class Package:
 
 	def rm_if_exists (self, path):
 		path = expand_macros (path, self)
-		if os.path.exists (path):
-			self.rm (path)
+		if os.path.lexists (path):
+			delete (path)
 
 	def rm (self, path):
 		delete (expand_macros (path, self))
@@ -629,8 +629,8 @@ class Package:
 		trace('%s -> %s' % (link, source))
 		source = expand_macros (source, self)
 		link = expand_macros (link, self)
-		if os.path.exists (link):
-			 self.rm(link)
+		if os.path.lexists (link):
+			 delete (link)
 		os.symlink (source, link)
 
 	def extract_archive (self, archive, cwd, validate_only, overwrite=False):
