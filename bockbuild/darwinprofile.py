@@ -55,25 +55,19 @@ class DarwinProfile (UnixProfile):
 		
 		self.toolchain = DarwinProfile.default_toolchain
 		self.name = 'darwin'
+		xcode_version = backtick ('xcodebuild -version')[0]
+		self.env.set ('xcode_version', xcode_version)
+		osx_sdk = backtick ('xcrun --show-sdk-path')[0]
+		self.env.set ('osx_sdk', osx_sdk)
 
-		sdkroot = '/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/'
-		if (not os.path.isdir (sdkroot)):
-			sdkroot = '/Developer/SDKs/'
+		if not os.path.exists (osx_sdk):
+			error ('Mac OS X SDK not found under %s' % osx_sdk)
 
-		sdk_paths = (sdkroot + 'MacOSX10.%s.sdk' % v for v in range (min_version, 20)) #future-proof! :P
-
-		self.mac_sdk_path = None
-
-		for sdk in sdk_paths:
-			if os.path.isdir (sdk):
-				self.mac_sdk_path = sdk
-				break
-
-		if self.mac_sdk_path is None: error ('Mac OS X SDK (>=10.%s) not found under %s' % (min_version, sdkroot))
+		info ('%s, %s' % (xcode_version, os.path.basename (osx_sdk)))
 
 		self.gcc_flags.extend ([
 				'-D_XOPEN_SOURCE',
-				'-isysroot %s' % self.mac_sdk_path,
+				'-isysroot %s' % osx_sdk,
 				'-Wl,-headerpad_max_install_names' #needed to ensure install_name_tool can succeed staging binaries
 			])
 
@@ -81,9 +75,8 @@ class DarwinProfile (UnixProfile):
 				'-headerpad_max_install_names' #needed to ensure install_name_tool can succeed staging binaries
 			])
 
-		self.target_osx = '10.%s' % min_version
-
 		if min_version:
+			self.target_osx = '10.%s' % min_version
 			self.gcc_flags.extend (['-mmacosx-version-min=%s' % self.target_osx])
 			self.env.set ('MACOSX_DEPLOYMENT_TARGET', self.target_osx)
 		
