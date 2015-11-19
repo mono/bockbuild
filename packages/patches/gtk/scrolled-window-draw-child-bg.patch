@@ -1,0 +1,98 @@
+From a59c427f2ba2ef18684bc60048d013ec0620e9b6 Mon Sep 17 00:00:00 2001
+From: Vsevolod Kukol <sevo@xamarin.com>
+Date: Thu, 12 Nov 2015 10:56:29 +0100
+Subject: [PATCH] Add ScrolledWindow draw-child-bg property
+
+With draw-child-bg style property enabled, the ScrolledWindow
+fills its background with the background color of its child
+(disabled by default).
+---
+ gtk/gtkscrolledwindow.c | 60 ++++++++++++++++++++++++++++++++++++++++++-------
+ 1 file changed, 52 insertions(+), 8 deletions(-)
+
+diff --git a/gtk/gtkscrolledwindow.c b/gtk/gtkscrolledwindow.c
+index 1704d3c..029c1fb 100644
+--- a/gtk/gtkscrolledwindow.c
++++ b/gtk/gtkscrolledwindow.c
+@@ -292,6 +292,13 @@ gtk_scrolled_window_class_init (GtkScrolledWindowClass *class)
+ 							         GTK_PARAM_READABLE));
+ 
+   gtk_widget_class_install_style_property (widget_class,
++             g_param_spec_boolean ("draw-child-bg",
++                       P_("Draw Child Background"),
++                       P_("Fill window with child background color"),
++                       FALSE,
++                       GTK_PARAM_READABLE));
++
++  gtk_widget_class_install_style_property (widget_class,
+ 					   g_param_spec_int ("scrollbar-spacing",
+ 							     P_("Scrollbar spacing"),
+ 							     P_("Number of pixels between the scrollbars and the scrolled window"),
+@@ -1019,8 +1026,11 @@ gtk_scrolled_window_paint (GtkWidget    *widget,
+ 			   GdkRectangle *area)
+ {
+   GtkScrolledWindow *scrolled_window = GTK_SCROLLED_WINDOW (widget);
++  gboolean draw_child_bg;
++  gtk_widget_style_get (widget, "draw-child-bg", &draw_child_bg, NULL);
+ 
+-  if (scrolled_window->shadow_type != GTK_SHADOW_NONE)
++
++  if (draw_child_bg || (scrolled_window->shadow_type != GTK_SHADOW_NONE))
+     {
+       GtkAllocation relative_allocation;
+       gboolean scrollbars_within_bevel;
+@@ -1046,13 +1056,47 @@ gtk_scrolled_window_paint (GtkWidget    *widget,
+           relative_allocation.height = widget->allocation.height - 2 * container->border_width;
+         }
+ 
+-      gtk_paint_shadow (widget->style, widget->window,
+-			GTK_STATE_NORMAL, scrolled_window->shadow_type,
+-			area, widget, "scrolled_window",
+-			widget->allocation.x + relative_allocation.x,
+-			widget->allocation.y + relative_allocation.y,
+-			relative_allocation.width,
+-			relative_allocation.height);
++      if (draw_child_bg)
++        {
++          GtkWidget *child  = gtk_bin_get_child (GTK_BIN (widget));
++          if (child != NULL)
++            {
++              GdkColor *bgcolor = NULL;
++              if (GTK_IS_TREE_VIEW (child))
++                {
++                  gtk_widget_style_get (child, "even-row-color", &bgcolor, NULL);
++                  if (!bgcolor)
++                    bgcolor = &child->style->base[child->state];
++                } else
++                  bgcolor = &child->style->bg[child->state];
++
++              if (bgcolor)
++                {
++                  cairo_t *cr = gdk_cairo_create (widget->window);
++                  cairo_rectangle (cr,
++                                  widget->allocation.x + relative_allocation.x,
++                                  widget->allocation.y + relative_allocation.y,
++                                  relative_allocation.width,
++                                  relative_allocation.height);
++                  cairo_clip_preserve (cr);
++                  gdk_cairo_set_source_color (cr, bgcolor);
++                  cairo_fill (cr);
++                  cairo_destroy (cr);
++                }
++            }
++        }
++
++      if (scrolled_window->shadow_type != GTK_SHADOW_NONE)
++        {
++
++          gtk_paint_shadow (widget->style, widget->window,
++                           GTK_STATE_NORMAL, scrolled_window->shadow_type,
++                           area, widget, "scrolled_window",
++                           widget->allocation.x + relative_allocation.x,
++                           widget->allocation.y + relative_allocation.y,
++                           relative_allocation.width,
++                           relative_allocation.height);
++        }
+     }
+ }
+ 
