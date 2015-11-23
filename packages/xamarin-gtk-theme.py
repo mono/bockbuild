@@ -2,7 +2,7 @@ class XamarinGtkThemePackage (Package):
 	def __init__ (self):
 		Package.__init__ (self, 'xamarin-gtk-theme',
 			sources = [ 'git://github.com/mono/xamarin-gtk-theme.git' ],
-			revision = '01d1c14e14c8bb8bfe7eb1e0fc043d1fff077568')
+			revision = '65d4ae62093db0f0460ec83a31533670f86b592b')
 
 	def build (self):
 		try:
