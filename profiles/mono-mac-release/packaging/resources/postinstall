@@ -59,6 +59,9 @@ if [ -d ${FW_CURRENT} ]; then
     pango-querymodules >  pango/pango.modules
     pango-querymodules --update-cache
     fc-cache
+    
+    cd ${FW_CURRENT}/lib/gtk-2.0/2.10.0
+    gtk-query-immodules-2.0 > immodules.cache
 fi
 
 # Delete older Monos
