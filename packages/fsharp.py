@@ -7,13 +7,6 @@ class FsharpPackage(GitHubTarballPackage):
 			configure = './configure --prefix="%{package_prefix}"')
 
 		self.extra_stage_files = ['lib/mono/xbuild/Microsoft/VisualStudio/v/FSharp/Microsoft.FSharp.Targets']
-		self.sources.extend (['patches/fsharp-el-capitan-fix.patch']) # https://github.com/fsharp/fsharp/pull/495
-
-	def prep(self):
-		Package.prep (self)
-
-		for p in range (1, len (self.sources)):
-				self.sh ('patch -p1 < "%{local_sources[' + str (p) + ']}"')
 
 	def build(self):
 		self.sh ('autoreconf')
