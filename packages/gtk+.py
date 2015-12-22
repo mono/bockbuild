@@ -163,7 +163,10 @@ class GtkPackage (GnomeGitPackage):
 				# https://bugzilla.xamarin.com/show_bug.cgi?id=29001
 				'patches/gtk/quartz-call-undo-redo-on-cmdz.patch',
 
-				'patches/gtk/scrolled-window-draw-child-bg.patch'
+				'patches/gtk/scrolled-window-draw-child-bg.patch',
+
+				# https://bugzilla.xamarin.com/show_bug.cgi?id=37239
+				'patches/gtk/fix-imquartz-crasher.patch'
 			])
 
 	def prep (self):
