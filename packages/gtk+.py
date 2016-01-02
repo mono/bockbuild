@@ -166,7 +166,11 @@ class GtkPackage (GnomeGitPackage):
 				'patches/gtk/scrolled-window-draw-child-bg.patch',
 
 				# https://bugzilla.xamarin.com/show_bug.cgi?id=37239
-				'patches/gtk/fix-imquartz-crasher.patch'
+				'patches/gtk/fix-imquartz-crasher.patch',
+
+				# https://bugzilla.gnome.org/show_bug.cgi?id=630226
+				# https://bugzilla.xamarin.com/show_bug.cgi?id=34973
+				'patches/gtk/remove-mouse-scrolling-from-GtkNotebook-tabs.patch'
 			])
 
 	def prep (self):
