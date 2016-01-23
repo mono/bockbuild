@@ -170,7 +170,10 @@ class GtkPackage (GnomeGitPackage):
 
 				# https://bugzilla.gnome.org/show_bug.cgi?id=630226
 				# https://bugzilla.xamarin.com/show_bug.cgi?id=34973
-				'patches/gtk/remove-mouse-scrolling-from-GtkNotebook-tabs.patch'
+				'patches/gtk/remove-mouse-scrolling-from-GtkNotebook-tabs.patch',
+
+				# https://bugzilla.xamarin.com/show_bug.cgi?id=37951
+				'patches/gtk/dont-call-CopySymbolicHotKeys-so-much.patch'
 			])
 
 	def prep (self):
