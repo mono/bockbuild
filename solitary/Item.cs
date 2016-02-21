@@ -40,7 +40,7 @@ public enum FileType
 
 public abstract class Item
 {
-    public Solitary Confinement { get; set; }
+    public Solitary Confinement { get; private set; }
     public abstract IEnumerable<Item> Load ();
 
     public FileInfo OriginalFile { get; private set; }
@@ -48,7 +48,7 @@ public abstract class Item
     private FileInfo file;
     public FileInfo File {
         get { return file; }
-        set {
+        private set {
             if (value == null) {
                 file = null;
                 return;
@@ -59,6 +59,19 @@ public abstract class Item
                 OriginalFile = file;
             }
         }
+    }
+
+    protected Item (Solitary confinement, FileInfo file)
+    {
+        if (confinement == null) {
+            throw new ArgumentNullException ("confinement");
+        }
+        if (file == null) {
+            throw new ArgumentNullException ("file");
+        }
+
+        Confinement = confinement;
+        File = file;
     }
 
     public bool IsValidConfinementItem (Item item)
@@ -136,27 +149,26 @@ public abstract class Item
         }
 
         if (SymlinkItem.IsSymlink (file.FullName)) {
-            return new SymlinkItem () {
-                File = file,
-                Confinement = confinement
-            };
+            return new SymlinkItem (confinement, file);
         }
 
         switch (GetFileType (file)) {
             case FileType.PE32Executable: 
-                item = new AssemblyItem ();
+                var tempFileName = Path.Combine (confinement.TempPath, Path.GetFileName (file.FullName));
+                if (!System.IO.File.Exists (tempFileName)) {
+                    file.CopyTo (tempFileName);
+                }
+                item = new AssemblyItem (confinement, file);
                 break;
             case FileType.MachO:
             case FileType.ELF:
-                item = new NativeLibraryItem ();
+                item = new NativeLibraryItem (confinement, file);
                 break;
             default:
-                item = new DataItem ();
+                item = new DataItem (confinement, file);
                 break;
         }
 
-        item.Confinement = confinement;
-        item.File = file;
         return item;
     }
 

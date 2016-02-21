@@ -26,9 +26,14 @@
 
 using System;
 using System.Collections.Generic;
+using System.IO;
 
 public class DataItem : Item
 {
+    public DataItem (Solitary confinement, FileInfo file) : base (confinement, file)
+    {
+    }
+
     public override IEnumerable<Item> Load ()
     {
         if (!IsValidConfinementItem (this)) {

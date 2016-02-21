@@ -33,6 +33,10 @@ using Mono.Unix;
 public class SymlinkItem : Item
 {
     private UnixSymbolicLinkInfo link;
+
+    public SymlinkItem (Solitary confinement, FileInfo file) : base (confinement, file)
+    {
+    }
     
     public static bool IsSymlink (string path)
     {

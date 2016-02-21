@@ -35,14 +35,48 @@ public class AssemblyItem : Item
 {
     public Assembly Assembly { get; private set; }
 
-    public override IEnumerable<Item> Load ()
+    public AssemblyItem (Solitary confinement, FileInfo file) : base (confinement, file)
     {
-        if (Assembly == null && File != null) {
-            Assembly = Assembly.LoadFrom (File.FullName);
-        } else if (Assembly != null && File == null) {
-            File = new FileInfo (Assembly.Location);
+        var tempFile = FindPossibleTempFile ();
+        if (tempFile == null) {
+            // could be a referenced assembly, such as mscorlib
+            tempFile = file.FullName;
+        }
+        Assembly = Assembly.LoadFrom (tempFile);
+    }
+
+    public AssemblyItem (Solitary confinement, Assembly assembly) : base (confinement, new FileInfo (assembly.Location))
+    {
+        if (assembly == null) {
+            throw new ArgumentNullException ("assembly");
         }
 
+        Assembly = assembly;
+    }
+
+    private string FindPossibleTempFile ()
+    {
+        if (String.IsNullOrEmpty (Confinement.TempPath)) {
+            throw new InvalidOperationException ("Confinement.TempPath cannot be empty.");
+        }
+        if (!Directory.Exists (Confinement.TempPath)) {
+            throw new InvalidOperationException ("Confinement.TempPath should have been created at this point.");
+        }
+        var tempPathElements = new DirectoryInfo (Confinement.TempPath).GetFileSystemInfos ();
+        var assemblyFileName = System.IO.Path.GetFileName (File.FullName);
+        foreach (var fileSystemInfo in tempPathElements) {
+            if (Directory.Exists (fileSystemInfo.FullName)) {
+                throw new InvalidOperationException ("There cannot be subfolders inside Confinement.TempPath.");
+            }
+            if (System.IO.Path.GetFileName (fileSystemInfo.FullName).Equals (assemblyFileName)) {
+                return fileSystemInfo.FullName;
+            }
+        }
+        return null;
+    }
+
+    public override IEnumerable<Item> Load ()
+    {
         if (!IsValidConfinementItem (this)) {
             yield break;
         }
@@ -64,10 +98,8 @@ public class AssemblyItem : Item
         }
 
         foreach (var rname in Assembly.GetReferencedAssemblies ()) {
-            var ritem = new AssemblyItem () {
-                Confinement = Confinement,
-                Assembly = Assembly.Load (rname.FullName)
-            };
+            var loadedReference = Assembly.Load (rname.FullName);
+            var ritem = new AssemblyItem (Confinement, loadedReference);
             foreach (var item in ritem.Load ()) {
                 yield return item;
             }
