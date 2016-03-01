@@ -84,7 +84,6 @@ class MonoReleaseProfile(DarwinProfile):
 
         self.MONO_ROOT = "/Library/Frameworks/Mono.framework"
         self.BUILD_NUMBER = "0"
-        self.MRE_GUID = "432959f9-ce1b-47a7-94d3-eb99cb2e1aa8"
         self.MDK_GUID = "964ebddd-1ffe-47e7-8128-5ce17ffffb05"
 
 
@@ -118,7 +117,7 @@ class MonoReleaseProfile(DarwinProfile):
             error ('Prefix %s exists, and may interfere with the staged build. Please remove and try again.' % self.prefix)
 
         self.calculate_updateid ()
-        trace (self.package_info('MDK/MRE'))
+        trace (self.package_info('MDK'))
 
         self.dont_optimize = ['pixman']
 
@@ -142,12 +141,6 @@ class MonoReleaseProfile(DarwinProfile):
         title (mdk_pkg)
         # self.make_dmg(mdk_dmg, title, mdk_pkg, uninstall_script)
 
-        # make the MRE
-        self.apply_blacklist(working, 'mre_blacklist.sh')
-        self.make_updateinfo(working, self.MRE_GUID)
-        mre_pkg = self.run_pkgbuild(working, "MRE")
-        title (mre_pkg)
-        # self.make_dmg(mre_dmg, title, mre_pkg, uninstall_script)
         shutil.rmtree(working)
 
     def calculate_updateid(self):
@@ -213,7 +206,6 @@ class MonoReleaseProfile(DarwinProfile):
             '@@MONO_VERSION@@': self.RELEASE_VERSION,
             '@@MONO_RELEASE@@': self.BUILD_NUMBER,
             '@@MONO_VERSION_RELEASE@@': self.RELEASE_VERSION + '_' + self.BUILD_NUMBER,
-            '@@MONO_PACKAGE_GUID@@': self.MRE_GUID,
             '@@MONO_CSDK_GUID@@': self.MDK_GUID,
             '@@MONO_VERSION_RELEASE_INT@@': self.updateid,
             '@@PACKAGES@@': packages_list,
