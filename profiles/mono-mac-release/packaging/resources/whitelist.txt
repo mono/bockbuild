@@ -72,6 +72,7 @@ mono
 mono64
 mono-boehm
 mono-api-info
+mono-api-html
 mono-cil-strip
 mono-configuration-crypto
 monodis
