@@ -41,7 +41,7 @@ class config:
 class CommandException (Exception):  # shell command failure
 
     def __init__(self, message, cwd=None):
-        if cwd == None:
+        if cwd is None:
             cwd = os.getcwd()
         Exception.__init__(self, '%s: %s (path: %s)' %
                            (get_caller(), cwd, message))
@@ -91,7 +91,7 @@ def get_caller(skip=0, get_dump=False):
                 except Exception as e:
                     pass
                 finally:
-                    if output == None:
+                    if output is None:
                         output = '%s->%s' % (
                             frame.f_locals['self'].__class__.__name__, caller)
             else:
@@ -102,10 +102,10 @@ def get_caller(skip=0, get_dump=False):
 
         except Exception as e:
             pass
-        if output != None:
+        if output is not None:
             return output
 
-    if output == None:
+    if output is None:
         return last_caller
 
 
@@ -151,12 +151,12 @@ def logprint(message, color, summary=False, header=None, trace=False):
     if header != Logger.last_header:
         Logger.last_header = header
         print
-        if header != None:
+        if header is not None:
             colorprint('%s:' % header, color)
 
     for line in lines:
         output = ''
-        if header != None:
+        if header is not None:
             output = '\t'
         output = output + '%s' % line.rstrip('\r\n')
         colorprint(output, color)
@@ -201,7 +201,7 @@ def trace(message, skip=0):
 
     caller = get_caller(skip)
 
-    if config.filter != None and config.filter not in caller:
+    if config.filter is not None and config.filter not in caller:
         return
 
     logprint(message, bcolors.FAIL, summary=True, header=caller, trace=True)
@@ -212,7 +212,7 @@ def test(func):
         return
     caller = get_caller()
 
-    if config.filter != None and config.filter not in caller:
+    if config.filter is not None and config.filter not in caller:
         return
 
     if func() == False:
@@ -286,7 +286,7 @@ def is_changed(new, file, show_diff=True):
 
     diff = compare_text(new, orig)
 
-    if diff != None:
+    if diff is not None:
         if show_diff:
             map(lambda x: info(x), diff)
         return True
@@ -372,7 +372,7 @@ def git_patch(self, dir, patch):
 def git_shortid(self, cwd):
     branch = git_get_branch(self, cwd)
     short_rev = self.git('describe --abbrev --always --dirty', cwd)[0]
-    if branch == None:
+    if branch is None:
         return short_rev
     else:
         return '%s-%s' % (branch, short_rev)
@@ -549,7 +549,7 @@ def expand_macros(node, vars, extra_vars=None):
         if not resolved:
             error("'%s' could not be resolved in string '%s'" %
                   (m.groups()[1], node))
-        if o == None:
+        if o is None:
             return ''
         elif isinstance(o, (list, tuple)):
             return ' '.join(o)

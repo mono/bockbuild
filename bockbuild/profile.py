@@ -253,7 +253,7 @@ class Profile:
 
         execfile(fullpath, globals())
 
-        if Package.last_instance == None:
+        if Package.last_instance is None:
             error('%s does not provide a valid package.' % source)
 
         new_package = Package.last_instance
@@ -292,9 +292,9 @@ class Profile:
 
         for proc in processors:
             proc.root = directory
-            if proc.harness == None:
+            if proc.harness is None:
                 proc.harness = simple_harness
-            if proc.match == None:
+            if proc.match is None:
                 error('proc %s has no match function' %
                       proc.__class__.__name__)
 

@@ -64,15 +64,15 @@ class Package:
             self.configure_flags.extend(configure_flags)
 
         self.sources = sources
-        if self.sources == None \
-                and not self.__class__.default_sources == None:
+        if self.sources is None \
+                and not self.__class__.default_sources is None:
             self.sources = list(self.__class__.default_sources)
 
-        if self.organization == None and self.sources != None and len(self.sources) > 0:
+        if self.organization is None and self.sources is not None and len(self.sources) > 0:
             self.organization = self.extract_organization(self.sources[0])
 
         self.source_dir_name = source_dir_name
-        if self.source_dir_name == None:
+        if self.source_dir_name is None:
             self.source_dir_name = "%s-%s" % (name, version)
 
         self.revision = revision
@@ -88,7 +88,7 @@ class Package:
         self.git_branch = git_branch
         self.git = Package.profile.git
 
-        if not override_properties == None:
+        if not override_properties is None:
             for k, v in override_properties.iteritems():
                 self.__dict__[k] = v
 
@@ -128,7 +128,7 @@ class Package:
     def resolve_version(self, source_dir):
         package_version = expand_macros(self.version, self)
         found_version = self.try_get_version(source_dir) or package_version
-        if package_version == None:
+        if package_version is None:
             package_version = found_version
             trace('%s: Using found version %s' % (self.name, found_version))
         elif found_version[0] != package_version[0]:  # major version differs
@@ -170,7 +170,7 @@ class Package:
 
             def update_cache():
                 trace('Updating cache: ' + cache_dir)
-                if self.git_branch == None:
+                if self.git_branch is None:
                     self.git('fetch --all --prune', cache_dir)
                 else:
                     self.git('fetch origin %s' % self.git_branch, cache_dir)
@@ -181,7 +181,7 @@ class Package:
 
             def update_workspace():
                 trace('Updating workspace')
-                if self.git_branch == None:
+                if self.git_branch is None:
                     self.git('fetch --all --prune', workspace_dir)
                 else:
                     self.git('fetch origin %s:refs/remotes/origin/%s' %
@@ -193,20 +193,20 @@ class Package:
                 if current_revision == self.revision:
                     return
 
-                if self.revision == None and self.git_branch == None:
+                if self.revision is None and self.git_branch is None:
                     warn(
                         'Package does not define revision or branch, defaulting to tip of "master"')
                     self.git_branch = self.git_branch or 'master'
 
-                if self.revision != None:
+                if self.revision is not None:
                     target_revision = self.revision
 
-                if self.git_branch != None:
+                if self.git_branch is not None:
                     self.git('checkout %s' % self.git_branch, workspace_dir)
                     self.git('merge origin/%s --ff-only' %
                              self.git_branch, workspace_dir)
 
-                    if self.revision == None:  # target the tip of the branch
+                    if self.revision is None:  # target the tip of the branch
                         target_revision = git_get_revision(self, workspace_dir)
 
                 if (current_revision != target_revision):
@@ -216,7 +216,7 @@ class Package:
 
                 current_revision = git_get_revision(self, workspace_dir)
 
-                if (self.revision != None and self.revision != current_revision):
+                if (self.revision is not None and self.revision != current_revision):
                     error('Workspace error: Revision is %s, package specifies %s' % (
                         current_revision, self.revision))
 
@@ -317,7 +317,7 @@ class Package:
 
         clean_func = None  # what to run if the workspace needs to be redone
 
-        if self.sources == None:
+        if self.sources is None:
             return None
 
         expand_macros(self.sources, self)
@@ -332,7 +332,7 @@ class Package:
 
                 if source.startswith(('http://', 'https://', 'ftp://')):
                     cache = get_download_dest(source)
-                    if self.profile.cache_host != None:
+                    if self.profile.cache_host is not None:
                         cached_source = os.path.join(
                             self.profile.cache_host, os.path.basename(source))
                         try:
@@ -381,7 +381,7 @@ class Package:
                 local_sources.append(resolved_source)
 
         except Exception as e:
-            if cache != None:
+            if cache is not None:
                 self.rm_if_exists(cache)
             self.rm_if_exists(scratch_workspace)
             raise
@@ -771,7 +771,7 @@ class Package:
                 if not os.path.exists(dest_orig_file):
                     error('lipo: %s exists in %s but not in %s' %
                           (relpath, src_dir, dest_dir))
-                if orig_suffix != None:
+                if orig_suffix is not None:
                     suffixed = os.path.join(
                         dest_dir, reldir, add_suffix(filename, orig_suffix))
                     trace(suffixed)

@@ -49,8 +49,7 @@ class Environment:
         os.chmod(filename, 0755)
 
     def serialize(self):
-        names = list(self.get_names())
-        names.sort()
+        names = sorted(self.get_names())
         for k in names:
             yield '%s = "%s"' % (k, self.__dict__[k])
 

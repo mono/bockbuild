@@ -359,7 +359,7 @@ class DarwinProfile (UnixProfile):
 
         # Generate the PkgInfo
         pkginfo_path = os.path.join(self.bundle_contents_dir, 'PkgInfo')
-        if not os.path.exists(pkginfo_path) and not plist == None:
+        if not os.path.exists(pkginfo_path) and not plist is None:
             fp = open(pkginfo_path, 'w')
             fp.write(plist['CFBundlePackageType'])
             fp.write(plist['CFBundleSignature'])
