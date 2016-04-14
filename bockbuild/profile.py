@@ -8,298 +8,310 @@ import collections
 import hashlib
 import itertools
 
+
 class Profile:
-	def __init__ (self, prefix = False):
-		self.name = 'bockbuild'
-		self.root = os.getcwd ()
-		self.resource_root = os.path.realpath (os.path.join('..', '..', 'packages'))
-		self.build_root = os.path.join (self.root, 'build-root')
-		self.staged_prefix = os.path.join (self.root, 'stage-root')
-		self.toolchain_root = os.path.join (self.root, 'toolchain-root')
-		self.artifact_root = os.path.join (self.root, 'artifacts')
-		self.package_root = os.path.join (self.root, 'package-root')
-		self.scratch = os.path.join (self.root, 'scratch')
-		self.logs = os.path.join (self.root, 'logs')
-		self.env_file = os.path.join (self.root, 'global.env')
-		self.source_cache = os.getenv('BOCKBUILD_SOURCE_CACHE') or os.path.realpath (os.path.join (self.root, 'cache'))
-		self.cpu_count = get_cpu_count ()
-		self.host = get_host ()
-		self.uname = backtick ('uname -a')
 
-		self.env = Environment (self)
-		self.env.set ('BUILD_PREFIX', '%{prefix}')
-		self.env.set ('BUILD_ARCH', '%{arch}')
-		self.env.set ('BOCKBUILD_ENV', '1')
+    def __init__(self, prefix=False):
+        self.name = 'bockbuild'
+        self.root = os.getcwd()
+        self.resource_root = os.path.realpath(
+            os.path.join('..', '..', 'packages'))
+        self.build_root = os.path.join(self.root, 'build-root')
+        self.staged_prefix = os.path.join(self.root, 'stage-root')
+        self.toolchain_root = os.path.join(self.root, 'toolchain-root')
+        self.artifact_root = os.path.join(self.root, 'artifacts')
+        self.package_root = os.path.join(self.root, 'package-root')
+        self.scratch = os.path.join(self.root, 'scratch')
+        self.logs = os.path.join(self.root, 'logs')
+        self.env_file = os.path.join(self.root, 'global.env')
+        self.source_cache = os.getenv('BOCKBUILD_SOURCE_CACHE') or os.path.realpath(
+            os.path.join(self.root, 'cache'))
+        self.cpu_count = get_cpu_count()
+        self.host = get_host()
+        self.uname = backtick('uname -a')
 
-		self.env.set ('bockbuild_buildver', '1')
+        self.env = Environment(self)
+        self.env.set('BUILD_PREFIX', '%{prefix}')
+        self.env.set('BUILD_ARCH', '%{arch}')
+        self.env.set('BOCKBUILD_ENV', '1')
 
-		self.full_rebuild = False
+        self.env.set('bockbuild_buildver', '1')
 
-		self.profile_name = self.__class__.__name__
+        self.full_rebuild = False
 
-		find_git (self)
-		self.bockbuild_rev =  git_get_revision(self, self.root)
+        self.profile_name = self.__class__.__name__
 
-		loginit ('bockbuild (%s)' % (git_shortid (self, self.root)))
-		info ('cmd: %s' % ' '.join(sys.argv))
+        find_git(self)
+        self.bockbuild_rev = git_get_revision(self, self.root)
 
-		self.parse_options ()
-		self.toolchain = []
-		self.packages_to_build = self.cmd_args or self.packages
-		self.verbose = self.cmd_options.verbose
-		config.verbose = self.cmd_options.verbose
-		self.arch = self.cmd_options.arch
-		self.unsafe = self.cmd_options.unsafe
-		config.trace = self.cmd_options.trace
-		self.tracked_env = []
+        loginit('bockbuild (%s)' % (git_shortid(self, self.root)))
+        info('cmd: %s' % ' '.join(sys.argv))
 
-		Package.profile = self
+        self.parse_options()
+        self.toolchain = []
+        self.packages_to_build = self.cmd_args or self.packages
+        self.verbose = self.cmd_options.verbose
+        config.verbose = self.cmd_options.verbose
+        self.arch = self.cmd_options.arch
+        self.unsafe = self.cmd_options.unsafe
+        config.trace = self.cmd_options.trace
+        self.tracked_env = []
 
-		ensure_dir (self.source_cache, purge = False)
-		ensure_dir (self.artifact_root, purge = False)
-		ensure_dir (self.build_root, purge = False)
-		ensure_dir (self.scratch, purge = True)
-		ensure_dir (self.logs, purge = False)
+        Package.profile = self
 
-	def parse_options (self):
-		parser = OptionParser (usage = 'usage: %prog [options] [package_names...]')
-		parser.add_option ('-b', '--build',
-			action = 'store_true', dest = 'do_build', default = False,
-			help = 'build the profile')
-		parser.add_option ('-P', '--package',
-			action = 'store_true', dest = 'do_package', default = False,
-			help = 'package the profile')
-		parser.add_option ('-v', '--verbose',
-			action = 'store_true', dest = 'verbose', default = False,
-			help = 'show all build output (e.g. configure, make)')
-		parser.add_option ('-d', '--debug', default = False,
-			action = 'store_true', dest = 'debug',
-			help = 'Build with debug flags enabled')
-		parser.add_option ('-e', '--environment', default = False,
-			action = 'store_true', dest = 'dump_environment',
-			help = 'Dump the profile environment as a shell-sourceable list of exports ')
-		parser.add_option ('-r', '--release', default = False,
-			action = 'store_true', dest = 'release_build',
-			help = 'Whether or not this build is a release build')
-		parser.add_option ('', '--csproj-env', default = False,
-			action = 'store_true', dest = 'dump_environment_csproj',
-			help = 'Dump the profile environment xml formarted for use in .csproj files')
-		parser.add_option ('', '--csproj-insert', default = None,
-			action = 'store', dest = 'csproj_file',
-			help = 'Inserts the profile environment variables into VS/MonoDevelop .csproj files')
-		parser.add_option ('', '--arch', default = 'default',
-			action = 'store', dest = 'arch',
-			help = 'Select the target architecture(s) for the package')
-		parser.add_option ('', '--shell', default = False,
-			action = 'store_true', dest = 'shell',
-			help = 'Get an shell with the package environment')
-		parser.add_option ('', '--unsafe', default = False,
-			action = 'store_true', dest = 'unsafe',
-			help = 'Prevents full rebuilds when a build environment change is detected. Useful for debugging.')
-		parser.add_option ('', '--trace', default = False,
-			action = 'store_true', dest = 'trace',
-			help = 'Enable tracing (for diagnosing bockbuild problems')
+        ensure_dir(self.source_cache, purge=False)
+        ensure_dir(self.artifact_root, purge=False)
+        ensure_dir(self.build_root, purge=False)
+        ensure_dir(self.scratch, purge=True)
+        ensure_dir(self.logs, purge=False)
 
-		self.parser = parser
-		self.cmd_options, self.cmd_args = parser.parse_args ()
+    def parse_options(self):
+        parser = OptionParser(
+            usage='usage: %prog [options] [package_names...]')
+        parser.add_option('-b', '--build',
+                          action='store_true', dest='do_build', default=False,
+                          help='build the profile')
+        parser.add_option('-P', '--package',
+                          action='store_true', dest='do_package', default=False,
+                          help='package the profile')
+        parser.add_option('-v', '--verbose',
+                          action='store_true', dest='verbose', default=False,
+                          help='show all build output (e.g. configure, make)')
+        parser.add_option('-d', '--debug', default=False,
+                          action='store_true', dest='debug',
+                          help='Build with debug flags enabled')
+        parser.add_option('-e', '--environment', default=False,
+                          action='store_true', dest='dump_environment',
+                          help='Dump the profile environment as a shell-sourceable list of exports ')
+        parser.add_option('-r', '--release', default=False,
+                          action='store_true', dest='release_build',
+                          help='Whether or not this build is a release build')
+        parser.add_option('', '--csproj-env', default=False,
+                          action='store_true', dest='dump_environment_csproj',
+                          help='Dump the profile environment xml formarted for use in .csproj files')
+        parser.add_option('', '--csproj-insert', default=None,
+                          action='store', dest='csproj_file',
+                          help='Inserts the profile environment variables into VS/MonoDevelop .csproj files')
+        parser.add_option('', '--arch', default='default',
+                          action='store', dest='arch',
+                          help='Select the target architecture(s) for the package')
+        parser.add_option('', '--shell', default=False,
+                          action='store_true', dest='shell',
+                          help='Get an shell with the package environment')
+        parser.add_option('', '--unsafe', default=False,
+                          action='store_true', dest='unsafe',
+                          help='Prevents full rebuilds when a build environment change is detected. Useful for debugging.')
+        parser.add_option('', '--trace', default=False,
+                          action='store_true', dest='trace',
+                          help='Enable tracing (for diagnosing bockbuild problems')
 
-	def make_package (self, output_dir):
-		sys.exit ("Package support not implemented for this profile")
+        self.parser = parser
+        self.cmd_options, self.cmd_args = parser.parse_args()
 
-	def bundle (self, output_dir):
-		sys.exit ('Bundle support not implemented for this profile')
+    def make_package(self, output_dir):
+        sys.exit("Package support not implemented for this profile")
 
-	def build_distribution (self, packages, dest, stage, arch):
-		#TODO: full relocation means that we shouldn't need dest at this stage
-		build_list = []
+    def bundle(self, output_dir):
+        sys.exit('Bundle support not implemented for this profile')
 
-		progress ('Fetching packages')
-		for package in packages.values ():
-			package.build_artifact = os.path.join (self.artifact_root, '%s-%s' % (package.name, arch))
-			package.buildstring_file = package.build_artifact + '.buildstring'
-			package.log = os.path.join (self.logs, package.name + '.log')
-			if os.path.exists (package.log):
-				delete (package.log)
+    def build_distribution(self, packages, dest, stage, arch):
+        # TODO: full relocation means that we shouldn't need dest at this stage
+        build_list = []
 
-			retry (package.fetch)
+        progress('Fetching packages')
+        for package in packages.values():
+            package.build_artifact = os.path.join(
+                self.artifact_root, '%s-%s' % (package.name, arch))
+            package.buildstring_file = package.build_artifact + '.buildstring'
+            package.log = os.path.join(self.logs, package.name + '.log')
+            if os.path.exists(package.log):
+                delete(package.log)
 
-			if self.full_rebuild:
-				package.request_build ('Full rebuild')
+            retry(package.fetch)
 
-			elif not os.path.exists (package.build_artifact):
-				package.request_build ('No artifact')
+            if self.full_rebuild:
+                package.request_build('Full rebuild')
 
-			elif is_changed (package.buildstring, package.buildstring_file):
-				package.request_build ('Updated')
+            elif not os.path.exists(package.build_artifact):
+                package.request_build('No artifact')
 
-			if package.needs_build:
-				build_list.append (package)
+            elif is_changed(package.buildstring, package.buildstring_file):
+                package.request_build('Updated')
 
-		verbose ('%d packages need building:' % len (build_list))
-		verbose (['%s (%s)' % (x.name, x.needs_build) for x in build_list])
+            if package.needs_build:
+                build_list.append(package)
 
-		for package in packages.values ():
-			package.start_build (arch, dest, stage)
-			#make artifact in scratch
-			#delete artifact + buildstring
-			with open (package.buildstring_file, 'w') as output:
-				output.write ('\n'.join (package.buildstring))
+        verbose('%d packages need building:' % len(build_list))
+        verbose(['%s (%s)' % (x.name, x.needs_build) for x in build_list])
 
-	def build (self):
+        for package in packages.values():
+            package.start_build(arch, dest, stage)
+            # make artifact in scratch
+            # delete artifact + buildstring
+            with open(package.buildstring_file, 'w') as output:
+                output.write('\n'.join(package.buildstring))
 
-		if self.cmd_options.dump_environment:
-			self.env.compile ()
-			self.env.dump ()
-			sys.exit (0)
+    def build(self):
 
-		if self.cmd_options.dump_environment_csproj:
-			# specify to use our GAC, else MonoDevelop would
-			# use its own 
-			self.env.set ('MONO_GAC_PREFIX', self.staged_prefix)
+        if self.cmd_options.dump_environment:
+            self.env.compile()
+            self.env.dump()
+            sys.exit(0)
 
-			self.env.compile ()
-			self.env.dump_csproj ()
-			sys.exit (0)
+        if self.cmd_options.dump_environment_csproj:
+            # specify to use our GAC, else MonoDevelop would
+            # use its own
+            self.env.set('MONO_GAC_PREFIX', self.staged_prefix)
 
-		if self.cmd_options.csproj_file is not None:
-			self.env.set ('MONO_GAC_PREFIX', self.staged_prefix)
-			self.env.compile ()
-			self.env.write_csproj (self.cmd_options.csproj_file)
-			sys.exit (0)
+            self.env.compile()
+            self.env.dump_csproj()
+            sys.exit(0)
 
-		self.toolchain_packages = collections.OrderedDict()
-		for source in self.toolchain:
-			package = self.load_package (source)
-			self.toolchain_packages [package.name] = package
+        if self.cmd_options.csproj_file is not None:
+            self.env.set('MONO_GAC_PREFIX', self.staged_prefix)
+            self.env.compile()
+            self.env.write_csproj(self.cmd_options.csproj_file)
+            sys.exit(0)
 
-		self.setup_toolchain ()
+        self.toolchain_packages = collections.OrderedDict()
+        for source in self.toolchain:
+            package = self.load_package(source)
+            self.toolchain_packages[package.name] = package
 
-		self.release_packages = collections.OrderedDict()
-		for source in self.packages_to_build:
-			package = self.load_package (source)
-			self.release_packages [package.name] = package
+        self.setup_toolchain()
 
-		self.setup_release ()
+        self.release_packages = collections.OrderedDict()
+        for source in self.packages_to_build:
+            package = self.load_package(source)
+            self.release_packages[package.name] = package
 
-		if self.track_env ():
-			if self.unsafe:
-				warn ('Build environment changed, but overriding full rebuild!')
-			else:
-				info ('Build environment changed, full rebuild triggered')
-				self.full_rebuild = True
-				ensure_dir (self.build_root, purge = True)
+        self.setup_release()
 
-		if self.cmd_options.shell:
-			title ('Shell')
-			self.shell ()
+        if self.track_env():
+            if self.unsafe:
+                warn('Build environment changed, but overriding full rebuild!')
+            else:
+                info('Build environment changed, full rebuild triggered')
+                self.full_rebuild = True
+                ensure_dir(self.build_root, purge=True)
 
-		if self.cmd_options.do_build:
-			ensure_dir (self.toolchain_root, purge = True)
-			ensure_dir (self.staged_prefix, purge = True)
+        if self.cmd_options.shell:
+            title('Shell')
+            self.shell()
 
-			title ('Building toolchain')
-			self.build_distribution (self.toolchain_packages, self.toolchain_root, self.toolchain_root, arch = 'toolchain')
+        if self.cmd_options.do_build:
+            ensure_dir(self.toolchain_root, purge=True)
+            ensure_dir(self.staged_prefix, purge=True)
 
-			title ('Building release')
-			self.build_distribution (self.release_packages, self.prefix, self.staged_prefix, arch = self.arch)
+            title('Building toolchain')
+            self.build_distribution(
+                self.toolchain_packages, self.toolchain_root, self.toolchain_root, arch='toolchain')
 
-			#update env
-			with open (self.env_file, 'w') as output:
-				output.write ('\n'.join (self.tracked_env))
+            title('Building release')
+            self.build_distribution(
+                self.release_packages, self.prefix, self.staged_prefix, arch=self.arch)
 
-		if self.cmd_options.do_package:
-			title ('Packaging')
-			protect_dir (self.staged_prefix)
-			ensure_dir (self.package_root, True)
+            # update env
+            with open(self.env_file, 'w') as output:
+                output.write('\n'.join(self.tracked_env))
 
-			run_shell('rsync -aPq %s/* %s' % (self.staged_prefix, self.package_root), False)
-			unprotect_dir (self.package_root)
+        if self.cmd_options.do_package:
+            title('Packaging')
+            protect_dir(self.staged_prefix)
+            ensure_dir(self.package_root, True)
 
-			self.process_release (self.package_root)
-			self.package ()
+            run_shell('rsync -aPq %s/* %s' %
+                      (self.staged_prefix, self.package_root), False)
+            unprotect_dir(self.package_root)
 
-	def track_env (self):
-		self.env.compile ()
-		self.env.export ()
-		self.env_script = os.path.join (self.root, self.profile_name) + '_env.sh'
-		self.env.write_source_script (self.env_script)
-		
-		self.tracked_env.extend (self.env.serialize ())
-		return is_changed (self.tracked_env, self.env_file)
+            self.process_release(self.package_root)
+            self.package()
 
-	def load_package (self, source):
-		if isinstance (source, Package): # package can already be loaded in the source list
-			return source
+    def track_env(self):
+        self.env.compile()
+        self.env.export()
+        self.env_script = os.path.join(
+            self.root, self.profile_name) + '_env.sh'
+        self.env.write_source_script(self.env_script)
 
-		if not os.path.isabs (source):
-			fullpath = os.path.join (self.resource_root, source + '.py')
-		else:
-			fullpath = source
+        self.tracked_env.extend(self.env.serialize())
+        return is_changed(self.tracked_env, self.env_file)
 
-		if not os.path.exists (fullpath):
-			error ("Resource '%s' not found" % source)
+    def load_package(self, source):
+        if isinstance(source, Package):  # package can already be loaded in the source list
+            return source
 
-		Package.last_instance = None
+        if not os.path.isabs(source):
+            fullpath = os.path.join(self.resource_root, source + '.py')
+        else:
+            fullpath = source
 
-		execfile (fullpath, globals())
+        if not os.path.exists(fullpath):
+            error("Resource '%s' not found" % source)
 
-		if Package.last_instance == None:
-			error ('%s does not provide a valid package.' % source)
+        Package.last_instance = None
 
-		new_package = Package.last_instance
-		new_package._path = fullpath
-		return new_package
+        execfile(fullpath, globals())
 
-	class FileProcessor (object):
-		def __init__ (self, harness = None, match = None, process = None,  extra_files = None):
-			self.harness = harness
-			self.match = match
-			self.files = list (extra_files) if extra_files else list ()
-			self.root = None
+        if Package.last_instance == None:
+            error('%s does not provide a valid package.' % source)
 
-		def relpath (self, path):
-			return os.path.relpath (path, self.root)
+        new_package = Package.last_instance
+        new_package._path = fullpath
+        return new_package
 
-		def run (self):
-			for path in self.files:
-				self.harness (path, self.process)
-		def end (self):
-			return
+    class FileProcessor (object):
 
+        def __init__(self, harness=None, match=None, process=None,  extra_files=None):
+            self.harness = harness
+            self.match = match
+            self.files = list(extra_files) if extra_files else list()
+            self.root = None
 
-	def postprocess (self, processors, directory, filefilter = None):
-		def simple_harness (path, func):
-			if not os.path.lexists (path):
-				return # file removed by previous processor function
-			# TODO: Fix so that it works on symlinks
-			# hash = hashlib.sha1(open(path).read()).hexdigest()
-			func (path)
-			if not os.path.lexists (path):
-				trace ('Removed file: %s' % path)
-			#if hash != hashlib.sha1(open(path).read()).hexdigest():
-			#	warn ('Changed file: %s' % path)
+        def relpath(self, path):
+            return os.path.relpath(path, self.root)
 
-		for proc in processors:
-			proc.root = directory
-			if proc.harness == None:
-				proc.harness = simple_harness
-			if proc.match == None:
-					error ('proc %s has no match function' % proc.__class__.__name__)
+        def run(self):
+            for path in self.files:
+                self.harness(path, self.process)
 
-		for path in filter (filefilter, iterate_dir (directory, with_dirs = True, with_links = True)):
-			filetype = get_filetype (path)
-			for proc in processors:
-				if proc.match (path, filetype) == True:
-					trace ('%s  matched %s / %s' % (proc.__class__.__name__, os.path.basename(path), filetype) )
-					proc.files.append (path)
+        def end(self):
+            return
 
-		for proc in processors:
-			verbose ('%s: %s items' % (proc.__class__.__name__ , len (proc.files)))
-			proc.run ()
+    def postprocess(self, processors, directory, filefilter=None):
+        def simple_harness(path, func):
+            if not os.path.lexists(path):
+                return  # file removed by previous processor function
+            # TODO: Fix so that it works on symlinks
+            # hash = hashlib.sha1(open(path).read()).hexdigest()
+            func(path)
+            if not os.path.lexists(path):
+                trace('Removed file: %s' % path)
+            # if hash != hashlib.sha1(open(path).read()).hexdigest():
+            #	warn ('Changed file: %s' % path)
 
+        for proc in processors:
+            proc.root = directory
+            if proc.harness == None:
+                proc.harness = simple_harness
+            if proc.match == None:
+                error('proc %s has no match function' %
+                      proc.__class__.__name__)
 
-		for proc in processors:
-			proc.end ()
-			proc.harness = None
-			proc.files = []
+        for path in filter(filefilter, iterate_dir(directory, with_dirs=True, with_links=True)):
+            filetype = get_filetype(path)
+            for proc in processors:
+                if proc.match(path, filetype) == True:
+                    trace('%s  matched %s / %s' % (proc.__class__.__name__,
+                                                   os.path.basename(path), filetype))
+                    proc.files.append(path)
 
+        for proc in processors:
+            verbose('%s: %s items' %
+                    (proc.__class__.__name__, len(proc.files)))
+            proc.run()
+
+        for proc in processors:
+            proc.end()
+            proc.harness = None
+            proc.files = []

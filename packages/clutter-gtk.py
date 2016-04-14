@@ -1,1 +1,1 @@
-GnomeXzPackage ('clutter-gtk', '1.2', '0')
+GnomeXzPackage('clutter-gtk', '1.2', '0')

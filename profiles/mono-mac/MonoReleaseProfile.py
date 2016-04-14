@@ -9,7 +9,7 @@ import subprocess
 import stat
 
 if __name__ == "__main__":
-        sys.path.append('../..')
+    sys.path.append('../..')
 
 from bockbuild.darwinprofile import DarwinProfile
 from bockbuild.util.util import *
@@ -17,14 +17,14 @@ from glob import glob
 
 
 class MonoReleaseProfile(DarwinProfile):
-    
+
     packages = [
         'autoconf',
         'automake',
         'gettext',
         'pkg-config',
 
-    # Base Libraries
+        # Base Libraries
         'libpng',
         'libjpeg',
         'libtiff',
@@ -46,7 +46,7 @@ class MonoReleaseProfile(DarwinProfile):
         'expat',
         'ige-mac-integration',
 
-    # Theme
+        # Theme
         'libcroco',
         'librsvg',
         'hicolor-icon-theme',
@@ -55,7 +55,7 @@ class MonoReleaseProfile(DarwinProfile):
         'xamarin-gtk-theme',
         'gtk-quartz-engine',
 
-    # Mono
+        # Mono
         'mono-llvm',
         'mono_master',
         'pcl-reference-assemblies',
@@ -66,65 +66,71 @@ class MonoReleaseProfile(DarwinProfile):
         'fsharp',
         'mono-basic',
         'nuget'
-        ]
+    ]
 
     def __init__(self):
-        DarwinProfile.__init__(self, min_version = 7)
+        DarwinProfile.__init__(self, min_version=7)
 
         # quick disk space check (http://stackoverflow.com/questions/787776/)
         s = os.statvfs(self.root)
-        free_space =  (s.f_bavail * s.f_frsize) / (1024 * 1024 * 1024) # in GB
+        free_space = (s.f_bavail * s.f_frsize) / (1024 * 1024 * 1024)  # in GB
 
         if free_space < 15:
-            error ('Low disk space (less than 15GB), aborting')
+            error('Low disk space (less than 15GB), aborting')
 
         # check for XQuartz installation (needed for libgdiplus)
-        if not os.path.exists ('/opt/X11/include/X11/Xlib.h'):
-            error ('XQuartz is required to be installed (download from http://xquartz.macosforge.org/) ')
+        if not os.path.exists('/opt/X11/include/X11/Xlib.h'):
+            error(
+                'XQuartz is required to be installed (download from http://xquartz.macosforge.org/) ')
 
         self.MONO_ROOT = "/Library/Frameworks/Mono.framework"
         self.BUILD_NUMBER = "0"
         self.MDK_GUID = "964ebddd-1ffe-47e7-8128-5ce17ffffb05"
 
-
         self.self_dir = os.path.realpath(os.path.dirname(sys.argv[0]))
         self.packaging_dir = os.path.join(self.self_dir, "packaging")
 
         system_mono_dir = '/Library/Frameworks/Mono.framework/Versions/Current'
-        self.env.set ('system_mono', os.path.join (system_mono_dir, 'bin', 'mono'))
-        self.env.set ('system_mcs', os.path.join (system_mono_dir, 'bin', 'mcs'))
+        self.env.set('system_mono', os.path.join(
+            system_mono_dir, 'bin', 'mono'))
+        self.env.set('system_mcs', os.path.join(system_mono_dir, 'bin', 'mcs'))
 
-        self.env.set ('system_mono_version', backtick ('%s --version' % self.env.system_mono)[0])
+        self.env.set('system_mono_version', backtick(
+            '%s --version' % self.env.system_mono)[0])
 
         # config overrides for some programs to be functional while staged
 
-        self.env.set ('GDK_PIXBUF_MODULE_FILE', '%{staged_prefix}/lib/gdk-pixbuf-2.0/2.10.0/loaders.cache')
-        self.env.set ('GDK_PIXBUF_MODULEDIR', '%{staged_prefix}/lib/gdk-pixbuf-2.0/2.10.0/loaders')
-        self.env.set ('PANGO_SYSCONFDIR', '%{staged_prefix}/etc')
-        self.env.set ('PANGO_LIBDIR', '%{staged_prefix}/lib')
+        self.env.set('GDK_PIXBUF_MODULE_FILE',
+                     '%{staged_prefix}/lib/gdk-pixbuf-2.0/2.10.0/loaders.cache')
+        self.env.set('GDK_PIXBUF_MODULEDIR',
+                     '%{staged_prefix}/lib/gdk-pixbuf-2.0/2.10.0/loaders')
+        self.env.set('PANGO_SYSCONFDIR', '%{staged_prefix}/etc')
+        self.env.set('PANGO_LIBDIR', '%{staged_prefix}/lib')
         # self.env.set ('MONO_PATH', '%{staged_prefix}/lib/mono/4.0')
-        self.debug_info = ['gtk+', 'cairo', 'pango', 'mono', 'llvm', 'libgdiplus']
+        self.debug_info = ['gtk+', 'cairo',
+                           'pango', 'mono', 'llvm', 'libgdiplus']
 
-    def setup_release (self):
+    def setup_release(self):
         self.mono_package = self.release_packages['mono']
-        self.mono_package.fetch ()
+        self.mono_package.fetch()
 
-        verbose ('Mono version: %s' % self.mono_package.version)
+        verbose('Mono version: %s' % self.mono_package.version)
         self.RELEASE_VERSION = self.mono_package.version
-        self.prefix = os.path.join(self.MONO_ROOT, "Versions", self.RELEASE_VERSION)
+        self.prefix = os.path.join(
+            self.MONO_ROOT, "Versions", self.RELEASE_VERSION)
 
-        if os.path.exists (self.prefix):
-            error ('Prefix %s exists, and may interfere with the staged build. Please remove and try again.' % self.prefix)
+        if os.path.exists(self.prefix):
+            error('Prefix %s exists, and may interfere with the staged build. Please remove and try again.' % self.prefix)
 
-        self.calculate_updateid ()
-        trace (self.package_info('MDK'))
+        self.calculate_updateid()
+        trace(self.package_info('MDK'))
 
         self.dont_optimize = ['pixman']
 
-        for p in self.release_packages.values ():
+        for p in self.release_packages.values():
             if p.name in self.dont_optimize:
                 continue
-            self.gcc_flags.extend (['-O2'])
+            self.gcc_flags.extend(['-O2'])
 
     # THIS IS THE MAIN METHOD FOR MAKING A PACKAGE
     def package(self):
@@ -138,32 +144,34 @@ class MonoReleaseProfile(DarwinProfile):
         self.apply_blacklist(working, 'mdk_blacklist.sh')
         self.make_updateinfo(working, self.MDK_GUID)
         mdk_pkg = self.run_pkgbuild(working, "MDK")
-        title (mdk_pkg)
+        title(mdk_pkg)
         # self.make_dmg(mdk_dmg, title, mdk_pkg, uninstall_script)
 
         shutil.rmtree(working)
 
     def calculate_updateid(self):
         # Create the updateid
-        pwd = os.getcwd ()
-        trace ("cur path is %s and git is %s" % (pwd, self.git_bin))
-        blame_rev_str = 'cd %s; %s blame configure.ac HEAD | grep AC_INIT | sed \'s/ .*//\' ' % (self.mono_package.workspace, self.git_bin)
+        pwd = os.getcwd()
+        trace("cur path is %s and git is %s" % (pwd, self.git_bin))
+        blame_rev_str = 'cd %s; %s blame configure.ac HEAD | grep AC_INIT | sed \'s/ .*//\' ' % (
+            self.mono_package.workspace, self.git_bin)
         blame_rev = backtick(blame_rev_str)[0]
-        trace ("Last commit to the version string %s" % (blame_rev))
-        version_number_str = 'cd %s; %s log %s..HEAD --oneline | wc -l | sed \'s/ //g\'' % (self.mono_package.workspace, self.git_bin, blame_rev)
+        trace("Last commit to the version string %s" % (blame_rev))
+        version_number_str = 'cd %s; %s log %s..HEAD --oneline | wc -l | sed \'s/ //g\'' % (
+            self.mono_package.workspace, self.git_bin, blame_rev)
         self.BUILD_NUMBER = backtick(version_number_str)[0]
-        trace ("Calculating commit distance, %s" % (self.BUILD_NUMBER))
+        trace("Calculating commit distance, %s" % (self.BUILD_NUMBER))
         self.FULL_VERSION = self.RELEASE_VERSION + "." + self.BUILD_NUMBER
-        os.chdir (pwd)
+        os.chdir(pwd)
 
         parts = self.RELEASE_VERSION.split(".")
         version_list = (parts + ["0"] * (3 - len(parts)))[:4]
         for i in range(1, 3):
             version_list[i] = version_list[i].zfill(2)
             self.updateid = "".join(version_list)
-            self.updateid += self.BUILD_NUMBER.replace(".", "").zfill(9 - len(self.updateid))
-        trace (self.updateid)
-
+            self.updateid += self.BUILD_NUMBER.replace(
+                ".", "").zfill(9 - len(self.updateid))
+        trace(self.updateid)
 
     # creates and returns the path to a working directory containing:
     #   PKGROOT/ - this root will be bundled into the .pkg and extracted at /
@@ -174,7 +182,7 @@ class MonoReleaseProfile(DarwinProfile):
         def make_package_symlinks(root):
             os.symlink(self.prefix, os.path.join(root, "Versions", "Current"))
             currentlink = os.path.join(self.MONO_ROOT, "Versions", "Current")
-            links = [ 
+            links = [
                 ("bin", "Commands"),
                 ("include", "Headers"),
                 ("lib", "Libraries"),
@@ -184,7 +192,8 @@ class MonoReleaseProfile(DarwinProfile):
             for srcname, destname in links:
                 src = os.path.join(currentlink, srcname)
                 dest = os.path.join(root, destname)
-                #If the symlink exists, we remove it so we can create a fresh one
+                # If the symlink exists, we remove it so we can create a fresh
+                # one
                 if os.path.exists(dest):
                     os.unlink(dest)
                 os.symlink(src, dest)
@@ -199,8 +208,10 @@ class MonoReleaseProfile(DarwinProfile):
         # setup metadata
         run_shell('rsync -aPq %s/* %s' % (self.packaging_dir, tmpdir), False)
 
-        packages_list = string.join([pkg.desc for pkg in self.release_packages.values ()], "\\\n")
-        deps_list = 'bockbuild (rev. %s)\\\n' % self.bockbuild_rev + string.join([pkg.desc for pkg in self.toolchain_packages.values ()], "\\\n")
+        packages_list = string.join(
+            [pkg.desc for pkg in self.release_packages.values()], "\\\n")
+        deps_list = 'bockbuild (rev. %s)\\\n' % self.bockbuild_rev + string.join(
+            [pkg.desc for pkg in self.toolchain_packages.values()], "\\\n")
 
         parameter_map = {
             '@@MONO_VERSION@@': self.RELEASE_VERSION,
@@ -219,7 +230,8 @@ class MonoReleaseProfile(DarwinProfile):
         make_package_symlinks(monoroot)
 
         # copy to package root
-        run_shell('rsync -aPq "%s"/* "%s/%s"' % (self.package_root, versions, self.RELEASE_VERSION), False)
+        run_shell('rsync -aPq "%s"/* "%s/%s"' %
+                  (self.package_root, versions, self.RELEASE_VERSION), False)
 
         return tmpdir
 
@@ -227,7 +239,7 @@ class MonoReleaseProfile(DarwinProfile):
         print "Applying blacklist script:", blacklist_name
         blacklist = os.path.join(self.packaging_dir, blacklist_name)
         root = os.path.join(working_dir, "PKGROOT", self.prefix[1:])
-        run_shell('%s "%s" > /dev/null' % (blacklist, root), print_cmd = False)
+        run_shell('%s "%s" > /dev/null' % (blacklist, root), print_cmd=False)
 
     def run_pkgbuild(self, working_dir, package_type):
         print 'Running pkgbuild & productbuild...',
@@ -261,7 +273,7 @@ class MonoReleaseProfile(DarwinProfile):
 
         run_shell(productbuild_cmd)
 
-        assert_exists (output)
+        assert_exists(output)
         os.chdir(old_cwd)
         print output
         return output
@@ -284,7 +296,8 @@ class MonoReleaseProfile(DarwinProfile):
         if self.cmd_options.release_build:
             info = (pkg_type, self.FULL_VERSION, arch_str)
         else:
-            info = (pkg_type, '%s-%s' % (git_shortid (self, self.mono_package.workspace), self.FULL_VERSION) , arch_str)
+            info = (pkg_type, '%s-%s' % (git_shortid(self,
+                                                     self.mono_package.workspace), self.FULL_VERSION), arch_str)
 
         filename = "MonoFramework-%s-%s.macos10.xamarin.%s.pkg" % info
         return {
@@ -341,7 +354,7 @@ class MonoReleaseProfile(DarwinProfile):
         if match is None:
             return
         token = match.group(1)
-        trace (token)
+        trace(token)
         if self.RELEASE_VERSION not in token:
             raise Exception("%s references Mono %s\n%s" % (f, token, text))
 
@@ -375,6 +388,6 @@ class MonoReleaseProfile(DarwinProfile):
         with open(path, 'w') as f:
             f.write(envscript)
 
-        os.chmod (path, os.stat(path).st_mode | stat.S_IEXEC)
+        os.chmod(path, os.stat(path).st_mode | stat.S_IEXEC)
 
-        subprocess.call(['bash', '-c', path] )
+        subprocess.call(['bash', '-c', path])

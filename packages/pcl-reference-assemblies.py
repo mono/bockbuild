@@ -4,6 +4,7 @@ import shutil
 
 
 class PCLReferenceAssembliesPackage(Package):
+
     def __init__(self):
         Package.__init__(self,
                          name='PortableReferenceAssemblies',
@@ -15,7 +16,8 @@ class PCLReferenceAssembliesPackage(Package):
 
     # A bunch of shell script written inside python literals ;(
     def install(self):
-        dest = os.path.join(self.staged_prefix, "lib", "mono", "xbuild-frameworks", ".NETPortable")
+        dest = os.path.join(self.staged_prefix, "lib", "mono",
+                            "xbuild-frameworks", ".NETPortable")
         if not os.path.exists(dest):
             os.makedirs(dest)
 
