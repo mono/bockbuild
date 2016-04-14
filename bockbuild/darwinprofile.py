@@ -6,34 +6,68 @@ from unixprofile import UnixProfile
 from profile import Profile
 import stat
 
+# staging helper functions
+
+def match_stageable_text (path, filetype):
+	if os.path.islink (path) or os.path.isdir (path):
+		return False
+	return path.endswith ('.pc') or filetype == 'libtool library file' or filetype.endswith ('text executable')
+
+def match_text (path, filetype):
+	if os.path.islink (path) or os.path.isdir (path):
+		return False
+	return match_stageable_text (path, filetype) or 'text' in filetype
+
+def match_stageable_binary (path, filetype):
+	if os.path.islink (path) or os.path.isdir (path):
+		return False
+	return 'Mach-O' in filetype and not path.endswith ('.a') and not 'dSYM' in path
+
+def match_symlinks (path, filetype):
+	return os.path.islink (path)
+
+def match_real_files (path, filetype):
+	return (not os.path.islink (path) and not os.path.isdir (path))
+
 class DarwinProfile (UnixProfile):
-	def __init__ (self, prefix = None, m64 = False, min_version = 6):
+
+	# package order is very important.
+	# autoconf and automake don't depend on CC
+	# ccache uses a different CC since it's not installed yet
+	# every thing after ccache needs a working ccache
+	default_toolchain = [
+	        'autoconf',
+	        'automake',
+	        'ccache',
+	        'libtool',
+	        'xz',
+	        'tar',
+	        'gtk-osx-docbook',
+	        'gtk-doc',
+
+	        # needed to autogen gtk+
+	        'gtk-osx-docbook',
+	        'gtk-doc'
+	        ]
+
+	def __init__ (self, prefix = None, min_version = 6):
 		UnixProfile.__init__ (self, prefix)
 		
+		self.toolchain = DarwinProfile.default_toolchain
 		self.name = 'darwin'
-		self.m64 = m64
+		xcode_version = backtick ('xcodebuild -version')[0]
+		self.env.set ('xcode_version', xcode_version)
+		osx_sdk = backtick ('xcrun --show-sdk-path')[0]
+		self.env.set ('osx_sdk', osx_sdk)
 
-		if os.path.exists (self.prefix):
-			error ('Prefix %s exists, and may interfere with the staged build. Please remove and try again.' % self.prefix)
+		if not os.path.exists (osx_sdk):
+			error ('Mac OS X SDK not found under %s' % osx_sdk)
 
-		sdkroot = '/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/'
-		if (not os.path.isdir (sdkroot)):
-			sdkroot = '/Developer/SDKs/'
-
-		sdk_paths = (sdkroot + 'MacOSX10.%s.sdk' % v for v in range (min_version, 20)) #future-proof! :P
-
-		self.mac_sdk_path = None
-
-		for sdk in sdk_paths:
-			if os.path.isdir (sdk):
-				self.mac_sdk_path = sdk
-				break
-
-		if self.mac_sdk_path is None: error ('Mac OS X SDK (>=10.%s) not found under %s' % (min_version, sdkroot))
+		info ('%s, %s' % (xcode_version, os.path.basename (osx_sdk)))
 
 		self.gcc_flags.extend ([
 				'-D_XOPEN_SOURCE',
-				'-isysroot %s' % self.mac_sdk_path,
+				'-isysroot %s' % osx_sdk,
 				'-Wl,-headerpad_max_install_names' #needed to ensure install_name_tool can succeed staging binaries
 			])
 
@@ -41,9 +75,8 @@ class DarwinProfile (UnixProfile):
 				'-headerpad_max_install_names' #needed to ensure install_name_tool can succeed staging binaries
 			])
 
-		self.target_osx = '10.%s' % min_version
-
 		if min_version:
+			self.target_osx = '10.%s' % min_version
 			self.gcc_flags.extend (['-mmacosx-version-min=%s' % self.target_osx])
 			self.env.set ('MACOSX_DEPLOYMENT_TARGET', self.target_osx)
 		
@@ -60,9 +93,10 @@ class DarwinProfile (UnixProfile):
 		if self.arch == 'default':
 			self.arch = 'darwin-32'
 
-		# GTK2_RC_FILES must be a ":"-seperated list of files (NOT a single folder)
-		self.gtk2_rc_files = os.path.join (os.getcwd (), 'skeleton.darwin', 'Contents', 'Resources', 'etc', 'gtk-2.0', 'gtkrc')
-		self.env.set ('GTK2_RC_FILES', '%{gtk2_rc_files}')
+		self.debug_info = []
+
+	def setup_toolchain (self):
+		pass
 
 	
 	def arch_build (self, arch, package):
@@ -82,28 +116,9 @@ class DarwinProfile (UnixProfile):
 
 		package.local_configure_flags.extend (['--cache-file=%s/%s-%s.cache' % (self.build_root, package.name, arch)])
 
-	# staging helper functions
+		if package.name in self.debug_info:
+			package.local_gcc_flags.extend (['-g'])
 
-	def match_stageable_text (self, path, filetype):
-		if os.path.islink (path) or os.path.isdir (path):
-			return False
-		return path.endswith ('.pc') or filetype == 'libtool library file' or filetype.endswith ('text executable')
-
-	def match_text (self, path, filetype):
-		if os.path.islink (path) or os.path.isdir (path):
-			return False
-		return self.match_stageable_text (path, filetype) or 'text' in filetype
-
-	def match_stageable_binary (self, path, filetype):
-		if os.path.islink (path) or os.path.isdir (path):
-			return False
-		return 'Mach-O' in filetype and not path.endswith ('.a') and not 'dSYM' in path
-
-	def match_symlinks (self, path, filetype):
-		return os.path.islink (path)
-
-	def match_real_files (self, path, filetype):
-		return (not os.path.islink (path) and not os.path.isdir (path))
 
 	def process_package (self, package):
 		failure_count = 0
@@ -143,10 +158,14 @@ class DarwinProfile (UnixProfile):
 		extra_files = [os.path.join (package.staged_prefix, expand_macros (file, package))
 			for file in package.extra_stage_files]
 
-		text_stager = self.stage_textfiles (harness = staging_harness, match = self.match_stageable_text, extra_files = extra_files)
-		binary_stager = self.stage_binaries (harness = staging_harness, match = self.match_stageable_binary)
+		procs = []
+		if package.name in self.debug_info:
+			procs.append (self.generate_dsyms ())
 
-		Profile.postprocess (self, [text_stager, binary_stager], package.staged_prefix)
+		procs.append (self.stage_textfiles (harness = staging_harness, match = match_stageable_text, extra_files = extra_files))
+		procs.append (self.stage_binaries (harness = staging_harness, match = match_stageable_binary))
+
+		Profile.postprocess (self, procs, package.staged_prefix)
 
 
 	def process_release (self, directory):
@@ -182,8 +201,8 @@ class DarwinProfile (UnixProfile):
 				warn ('Critical: Destaging failed for ''%s''' % path)
 				raise
 
-		procs = [ self.stage_textfiles (harness = destaging_harness, match = self.match_text),
-			self.stage_binaries (harness = destaging_harness, match = self.match_stageable_binary)]
+		procs = [ self.stage_textfiles (harness = destaging_harness, match = match_text),
+			self.stage_binaries (harness = destaging_harness, match = match_stageable_binary)]
 
 		Profile.postprocess (self, procs , directory, lambda l: l.endswith ('.release'))
 
@@ -220,7 +239,12 @@ class DarwinProfile (UnixProfile):
 			if len(self.problem_links) > 0:
 				warn ('Broken symlinks:\n' + '\n'.join (self.problem_links) ) #TODO: Turn into error when we handle them
 
-
+	class generate_dsyms (Profile.FileProcessor):
+		def __init__ (self):
+			Profile.FileProcessor.__init__ (self, match = match_stageable_binary)
+		def process (self, path):
+			run_shell('dsymutil -t 2 "%s" >/dev/null' % path)
+			run_shell('strip -S "%s" > /dev/null' % path)
 
 	class validate_rpaths (Profile.FileProcessor):
 		def process (self, path):

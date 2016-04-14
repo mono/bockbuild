@@ -11,6 +11,7 @@ import shutil
 import tarfile
 import hashlib
 import stat
+import functools
 
 # from https://svn.blender.org/svnroot/bf-blender/trunk/blender/build_files/scons/tools/bcolors.py
 class bcolors:
@@ -30,14 +31,23 @@ class config:
 	iterative = False # FIXME: this needs a bit more work
 	quiet = None
 	never_rebuild = False
+	verbose = False
 
 class CommandException (Exception): # shell command failure
-	def __init__ (self, message):
-		Exception.__init__ (self, message)
+	def __init__ (self, message, cwd = None):
+		if cwd == None:
+			cwd = os.getcwd ()
+		Exception.__init__ (self, '%s: %s (path: %s)' % (get_caller(), cwd, message))
+		verbose (message)
 
 class BockbuildException (Exception): # internal/unexpected issue, treat as unrecoverable
 	def __init__ (self, message):
 		Exception.__init__ (self, message)
+
+class Logger:
+	last_header = None
+	print_color = False
+	monkeywrench = False
 
 def log (phase, message):
 	#DISABLED until we can properly refactor/redirect logging
@@ -45,24 +55,43 @@ def log (phase, message):
 
 #TODO: move these functions to either Profile or their own class
 
-def get_caller (skip = 0):
+def get_caller (skip = 0, get_dump = False):
+	#this whole thing fails if we're not in a valid directory
 	try:
-		stack = inspect.stack ()
-		if len (inspect.stack()) < 3 + skip:
-			return 'top'
-		record = stack [2 + skip]
+		cwd = os.getcwd ()
+	except OSError as e:
+		return '~could not get caller (current directory not valid)~'
+
+	stack = inspect.stack (3)
+	if len (inspect.stack()) < 3 + skip:
+		return 'top'
+	output = None
+	last_caller = None
+	for record in stack [2 + skip:]:
 		caller = record[3]
 		frame = record[0]
 
-		if 'self' in frame.f_locals:
-			try:
-				return '%s->%s' % (frame.f_locals['self'].name, caller)
-			except Exception as e:
-				return '%s->%s' % (frame.f_locals['self'].__class__.__name__, caller)
-		else:
-			return caller
-	except Exception as e:
-		return '~error getting caller~'
+		try:
+			if 'self' in frame.f_locals:
+				try:
+					output = '%s->%s' % (frame.f_locals['self'].name, caller)
+				except Exception as e:
+					pass
+				finally:
+					if output == None:
+						output = '%s->%s' % (frame.f_locals['self'].__class__.__name__, caller)
+			else:
+				last_caller = caller
+			if get_dump:
+				output = output + "\n" + "\t".join(dump (frame.f_locals['self'], 'self'))
+
+		except Exception as e:
+			pass
+		if output != None:
+			return output
+
+	if output == None:
+		return last_caller
 
 def assert_exists (path):
 	if not os.path.exists (path):
@@ -71,39 +100,74 @@ def assert_exists (path):
 def loginit (message):
 	if os.getenv ('BUILD_REVISION') is not None:  #MonkeyWrench
 		print '@MonkeyWrench: SetSummary:<h3>%s</h3>' % message
-	else:
+		Logger.monkeywrench = True
+	elif sys.stdout.isatty ():
+		Logger.print_color = True
 		logprint (message, bcolors.BOLD)
 
-def logprint (message, color, summary = False, trace = False):
-	if config.quiet == True and trace == False:
-		return
-	if summary:
-		if os.getenv ('BUILD_REVISION') is not None:  #MonkeyWrench
-				print '@MonkeyWrench: AddSummary:<p>%s</p>' % message
-				return
-
-	message = '%s%s%s' % ('\n', message, '\n')
-	if sys.stdout.isatty():
+def colorprint (message, color):
+	if Logger.print_color:
 		print '%s%s%s' % (color, message , bcolors.ENDC)
 	else:
 		print message
 
-def title (message, summary = True):
-	logprint ('** %s **' % message, bcolors.HEADER, summary)
+def logprint (message, color, summary = False, header = None, trace = False):
+	if isinstance (message, str):
+		lines = message.split('\n')
+	elif isinstance (message, dict):
+		lines = list()
+		for k in message.keys ():
+			lines.append ('%s : %s' % (k, message [k]))
+	else: #assume iterable
+		lines = message
 
-def info (message, summary = True):
-	logprint (message ,bcolors.OKGREEN, summary)
+	if config.quiet == True and trace == False:
+		return
+	if summary:
+		if Logger.monkeywrench:
+			for line in lines:
+				print '@MonkeyWrench: AddSummary:<p>%s</p>' % line
+			return
+
+	if header != Logger.last_header:
+		Logger.last_header = header
+		print
+		if header != None:
+			colorprint ('%s:' % header, color)
+
+	for line in lines:
+		output = ''
+		if header != None:
+			output = '\t'
+		output = output + '%s' % line.rstrip('\r\n')
+		colorprint (output, color)
+
+def title (message, summary = True):
+	logprint ('\n** %s **\n' % message, bcolors.HEADER, summary)
+
+def info (message, 	summary = True):
+	logprint (message ,bcolors.OKGREEN, summary, header = 'info')
 
 def progress (message):
-	logprint ('%s: %s' % (get_caller (), message), bcolors.OKBLUE)
+	logprint (message, bcolors.OKBLUE, header = get_caller ())
+
+def verbose (message):
+	if not config.verbose and not config.trace:
+		return
+	logprint (message, bcolors.OKBLUE, header = get_caller ())
 
 def warn (message):
-	logprint ('(bockbuild warning) %s: %s' % (get_caller (), message), bcolors.UNDERLINE)
+	if isinstance (message, str):
+		message = '%s %s' % ('(bockbuild warning)', message)
+	logprint (message, bcolors.FAIL, header = get_caller ())
 
-def error (message):
+def error (message, more_output = False):
 	config.trace = False
-	logprint ('(bockbuild error) %s: %s' % (get_caller (), message) , bcolors.FAIL, summary = True)
-	sys.exit (255)
+	if isinstance (message, str):
+		message = '%s %s' % ('(bockbuild error)', message)
+	logprint (message , bcolors.FAIL, header =  get_caller (), summary = True)
+	if not more_output:
+		sys.exit (255)
 
 def trace (message, skip = 0):
 	if config.trace == False:
@@ -114,7 +178,7 @@ def trace (message, skip = 0):
 	if config.filter != None and config.filter not in caller:
 		return
 
-	logprint ('%s: %s' % (caller, message), bcolors.FAIL, summary = True, trace = True)
+	logprint (message, bcolors.FAIL, summary = True, header = caller, trace = True)
 
 def test (func):
 	if config.test == False:
@@ -127,36 +191,36 @@ def test (func):
 	if func() == False:
 		error ('Test ''%s'' failed.' % func.__name__)
 
-def retry (func, tries = 3, delay = 5):
+def retry (func, tries = 3, delay = 5, **kwargs):
 	result = None
 	exc = None
-	cwd = None
+	cwd = os.getcwd ()
 	result = None
 	for x in range(tries):
 		try:
-			cwd = os.getcwd ()
-			result = func ()
+			os.chdir (cwd)
+			result = func (**kwargs)
 			break
 		except CommandException as e:
 			if x == tries - 1:
-				raise
-			warn (str(e))
-			warn ("Retrying ''%s'' in %s secs" % (func.__name__, delay))
+				error (str(e))
+			info (str(e))
+			info ("Retrying ''%s'' in %s secs" % (func.__name__, delay))
 			time.sleep (delay)
-		finally:
-			if cwd != os.getcwd ():
-				warn ('%s returned on different directory: Was %s, is %s' % (func.__name__, cwd, os.getcwd ()))
-		os.chdir (cwd)
+
 	return result
 
 
 def ensure_dir (d, purge = False):
+	trace ('ensuring:' + d)
 	if os.path.exists(d):
-		if purge == True:
-			trace ('Nuking %s' % d)
-			unprotect_dir (d, recursive = True)
-			delete (d)
-		else: return
+		if not purge:
+			return
+
+		verbose ('Nuking %s' % d)
+		unprotect_dir (d, recursive = True)
+		delete (d)
+
 	os.makedirs (d)
 
 def identical_files (first, second): # quick and dirty assuming they have the same name/paths
@@ -165,94 +229,176 @@ def identical_files (first, second): # quick and dirty assuming they have the sa
 
 	return hash1 == hash2
 
-def update (new_text, file, show_diff = True):
-	orig_text = None
-	if os.path.exists (file):
-		orig_text = open (file).readlines ()
+def md5 (path):
+	return hashlib.md5 (open (path).read ()).hexdigest ()
 
-	output = open (file, 'w')
-	output.writelines (new_text)
-
-	if orig_text == None:
-		return False
-
-	difflines = [line for line in difflib.context_diff(orig_text, new_text, n=0)]
+def compare_text (new, old):
+	difflines = [line for line in difflib.context_diff(old, new, n=0)]
 	if len (difflines) > 0:
-		if show_diff == True:
-			brieflines = [line.rstrip('\r\n') for line in difflines if line.startswith(('+ ','- ','! '))]
-			info ('\n'.join (brieflines))
-		return True # changes
+		changes = [line.rstrip('\r\n') for line in difflines if line.startswith(('+ ','- ','! '))]
+		return changes
+	else:
+		return None
+
+def is_changed (new, file, show_diff = True):
+	orig = []
+
+	if os.path.exists (file):
+		with open (file) as input:
+			orig = [line.rstrip('\r\n') for line in input.readlines ()]
+
+	else:
+		return len(new) > 0
+
+	diff = compare_text (new, orig)
+
+	if diff != None:
+		if show_diff:
+			map (lambda x: info (x), diff)
+		return True
 	else:
 		return False
 
+
 def get_filetype (path):
-	return backtick ('file -b "%s"' % path)[0]
+	# the env variables are to work around a issue with OS X and 'file': https://trac.macports.org/ticket/38771
+	return backtick ('LC_CTYPE=C LANG=C file -b "%s"' % path)[0]
 
+# http://stackoverflow.com/questions/377017/test-if-executable-exists-in-python
+def which(program):
+    def is_exe(fpath):
+        return os.path.exists(fpath) and os.access(fpath, os.X_OK)
 
-def find_git(self):
-        self.git = 'git'
-        for git in ['/usr/local/bin/git', '/usr/local/git/bin/git', '/usr/bin/git']:
-			if os.path.isfile (git):
-				self.git = git
-				break
+    def ext_candidates(fpath):
+        yield fpath
+        for ext in os.environ.get("PATHEXT", "").split(os.pathsep):
+            yield fpath + ext
+
+    fpath, fname = os.path.split(program)
+    if fpath:
+        if is_exe(program):
+            return program
+    else:
+        for path in os.environ["PATH"].split(os.pathsep):
+            exe_file = os.path.join(path, program)
+            for candidate in ext_candidates(exe_file):
+                if is_exe(candidate):
+                    return candidate
+
+    return None
+
+def find_git(self, echo = False):
+	git_bin = which ('git')
+	if not git_bin:
+		error ('git not found in PATH')
+
+	def git_func (self, args, cwd):
+		#assert_git_dir(self)
+		(exit, out, err) = run (git_bin, args.split(' '), cwd)
+		return out.split ('\n')
+
+	self.git = git_func.__get__ (self, self.__class__)
+	self.git_bin = git_bin
 
 def assert_git_dir(self):
-	if (os.system(expand_macros ('%{git} rev-parse HEAD > /dev/null', self))) != 0:
-		raise Exception('assert_git_dir')
+	try:
+		self.git ('rev-parse HEAD')
+	except:
+		error ('Attempted git action in non-git directory')
 
-def git_get_revision(self):
-	assert_git_dir(self)
-	return backtick (expand_macros ('%{git} rev-parse HEAD', self))[0]
+def git_get_revision(self, cwd):
+	return self.git ('rev-parse HEAD', cwd)[0]
 
-def git_get_branch(self):
-	assert_git_dir(self)
-	revision = git_get_revision (self)
-	branch = backtick (expand_macros ('%{git} symbolic-ref --short HEAD', self))[0]
-	if branch == revision: return None #detached HEAD
-	else: return branch
+def git_get_branch(self, cwd):
+	revision = git_get_revision (self, cwd)
+	try:
+		output = self.git ('symbolic-ref -q --short HEAD', cwd)
+	except:
+		return None #detached HEAD
+	else: return output[0]
 
-def git_is_dirty(self):
-	assert_git_dir(self)
-	str = backtick (expand_macros ('%{git} symbolic-ref --short HEAD', self))[0]
+def git_is_dirty(self, cwd):
+	str = self.git ('symbolic-ref --short HEAD --dirty', cwd)[0]
 	return 'dirty' in str
 
 def git_patch (self, dir, patch):
-	assert_git_dir(self)
-	run_shell (expand_macros ('%' + '{git} diff > %s', self))
+	self.git ('diff > %s' % patch)
 
-def protect_dir (dir, recursive = False):
-	if not recursive:
-		os.chmod (dir, stat.S_IRUSR | stat.S_IXUSR)
+def git_shortid (self, cwd):
+	branch = git_get_branch (self, cwd)
+	short_rev = self.git ('describe --abbrev --always --dirty', cwd)[0]
+	if branch == None:
+		return  short_rev
 	else:
-		for root,subdirs,filelist in os.walk (dir):
+		return '%s-%s' % (branch, short_rev)
+
+def protect_dir (path, recursive = False):
+	if not os.path.isdir (path):
+		error ('only safe for dirs: %s' % path)
+
+	os.chmod (path, stat.S_IRUSR | stat.S_IXUSR)
+
+	if recursive:
+		for root,subdirs,filelist in os.walk (path):
 			protect_dir (root, recursive = False)
 
-def unprotect_dir (dir, recursive = False):
-	if not recursive:
-		os.chmod (dir, stat.S_IRUSR | stat.S_IXUSR | stat.S_IWUSR)
-	elif os.path.isdir (dir):
-		for root,subdirs,filelist in os.walk (dir):
+def unprotect_dir (path, recursive = False):
+	if not os.path.isdir (path):
+		error ('only safe for dirs: %s' % path)
+
+	os.chmod (path, stat.S_IRUSR | stat.S_IXUSR | stat.S_IWUSR | stat.S_IXGRP | stat.S_IRGRP | stat.S_IXOTH | stat.S_IROTH)
+
+	if recursive:
+		for root,subdirs,filelist in os.walk (path):
 			unprotect_dir (root, recursive = False)
 
+# wrap around shutil.rmtree, which is unreliable. Sometimes a few attempts do the trick...
 def delete (path):
+	trace ('deleting %s' % path)
 	if not os.path.isabs (path):
-		raise BockbuildException ('Relative paths are not allowed.')
+		raise BockbuildException ('Relative paths are not allowed: %s' % path)
 
-	if not os.path.exists (path):
+	if not os.path.lexists (path):
 		raise CommandException ('Invalid path to rm: %s' % path)
 
-	def rmtree ():
+	if os.getcwd () == path:
+		raise BockbuildException ('Will not delete current directory: %s' % path)
+
+	# get the dir out of the way so that we don't have to deal with inconsistent state if we fail
+	if os.path.isfile (path):
+		os.remove (path)
+		return
+
+	# directory removal
+	if os.path.islink (path):
+		os.unlink (path)
+		return
+
+	orig_path = path
+	unprotect_dir (path, recursive = True)
+	path = path + '.deleting'
+	if os.path.exists (path):
+		delete (path)
+
+	shutil.move (orig_path, path)
+	for x in range(1,5):
 		try:
-			unprotect_dir (path, recursive = True)
 			if os.path.isfile (path) or os.path.islink (path):
 				os.remove (path)
 			elif os.path.isdir (path):
 				shutil.rmtree (path, ignore_errors=False)
 		except OSError as e:
-			if os.path.exists (path):
-				raise # It's still there, so we try again
+			pass
+		finally:
+			if not os.path.exists (path):
+				break
+		warn ('retrying delete of %s' % path)
+		protect_dir (path, recursive = True) # try to sabotage whoever else is writing in the directory...
+		time.sleep(1)
+		unprotect_dir (path, recursive = True)
 
-	retry (rmtree, tries = 5, delay = 1)
+	if os.path.exists (path):
+		error ('Deleting failed: %s' % orig_path)
 
 def merge_trees(src, dst, delete_src = True):
 	if not os.path.isdir(src) or not os.path.isdir(dst):
@@ -380,21 +526,52 @@ def replace_in_file(filename, word_dic):
 	for line in fileinput.FileInput(filename, inplace=1):
 		print rc.sub(translate, line)
 
-def run_shell (cmd, print_cmd = False):
+def run (cmd, args, cwd, env = None):
+	trace ('@%s %s' % (cmd, args))
+
+	if not isinstance (cmd, str):
+		error ('cmd argument must be a string')
+	if not isinstance (args, list):
+		error ('args argument must be a list')
+	cmd_list = [cmd] + args
+	try:
+		proc = subprocess.Popen (cmd_list, shell = False, cwd = cwd, env = env, stdout = subprocess.PIPE, stderr = subprocess.PIPE)
+	except Exception as e:
+		error (e)
+
+	stdout, stderr = proc.communicate ()
+	exit_code = proc.returncode
+
+	if not exit_code == 0:
+		raise CommandException('"%s" failed, error code %s\nstderr:\n%s' % (cmd, exit_code, stderr), cwd = cwd)
+
+	return (exit_code, stdout, stderr)
+
+def run_shell (cmd, print_cmd = False, cwd = None):
 	if print_cmd: print '++',cmd
 	if not print_cmd: trace (cmd)
-	proc = subprocess.Popen (cmd, shell = True)
-	exit_code = os.waitpid (proc.pid, 0)[1]
+	proc = subprocess.Popen (cmd, shell = True, bufsize = -1, cwd = cwd)
+	exit_code = proc.wait ()
 	if not exit_code == 0:
-		raise CommandException('ERROR: command exited with exit code %s: %s' % (exit_code, cmd))
+		raise CommandException('"%s" failed, error code %s' % (cmd, exit_code), cwd)
 
-def backtick (cmd, print_cmd = False):
-	if print_cmd: print '``', cmd
-	if not print_cmd: trace (cmd)
-	lines = []
-	for line in os.popen (cmd).readlines ():
-		lines.append (line.rstrip ('\r\n'))
-	return lines
+def backtick (cmd, print_cmd = False, echo = False):
+	if print_cmd or echo: print '``', cmd
+	if not print_cmd: trace ('``' + cmd)
+	proc = subprocess.Popen (cmd, shell = True, bufsize = -1, stdout = subprocess.PIPE, stderr = subprocess.PIPE)
+	stdout, stderr = proc.communicate ()
+
+	exit_code = proc.returncode
+
+	if echo:
+		info (stdout)
+		if len(stderr) > 0:
+			warn (stderr)
+
+	if not exit_code == 0:
+		raise CommandException('"%s" failed, error code %s\nstderr:\n%s' % (cmd, exit_code, stderr), os.getcwd ())
+
+	return stdout.split ('\n')
 
 def get_host ():
 	search_paths = ['/usr/share', '/usr/local/share']

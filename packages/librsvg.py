@@ -15,7 +15,10 @@ class LibrsvgPackage(GnomeXzPackage):
 		if not os.path.exists (misdir):
 			error ('Could not find mislocated libsrvg files')
 
-		self.sh('rsync -a --ignore-existing %s/* %s' % (misdir, self.profile.staged_prefix))
+		self.sh('rsync -a --ignore-existing %s/* %s' % (misdir, self.staged_prefix))
 		self.sh('rm -rf %s/*' % misdir)
+
+	def deploy (self):
+		self.sh ('gdk-pixbuf-query-loaders --update-cache')
 
 LibrsvgPackage()

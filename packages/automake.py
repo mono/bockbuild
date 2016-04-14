@@ -3,13 +3,6 @@ class Automake (GnuPackage):
 		GnuPackage.__init__ (self, 'automake', '1.13', override_properties = { 'build_dependency' : True })
 		self.extra_stage_files = ['share/automake-%{version}/Automake/Config.pm']
 
-	def deploy (self):
-		# second build, to be bundled with the package
-		self.package_prefix = self.profile.prefix
-		self.staged_profile = self.profile.staged_prefix
-		package_stage = self.do_build (self.profile.arch, self.workspace)
-		merge_trees (package_stage, self.profile.staged_prefix)
-
 	def arch_build (self, arch):
 		if arch == 'darwin-universal':
 			self.local_ld_flags = ['-arch i386' , '-arch x86_64']

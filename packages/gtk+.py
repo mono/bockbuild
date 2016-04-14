@@ -161,7 +161,22 @@ class GtkPackage (GnomeGitPackage):
 				'patches/gtk/gtknsview-fix-invalid-casts.patch',
 
 				# https://bugzilla.xamarin.com/show_bug.cgi?id=29001
-				'patches/gtk/quartz-call-undo-redo-on-cmdz.patch'
+				'patches/gtk/quartz-call-undo-redo-on-cmdz.patch',
+
+				'patches/gtk/scrolled-window-draw-child-bg.patch',
+
+				# https://bugzilla.xamarin.com/show_bug.cgi?id=37239
+				'patches/gtk/fix-imquartz-crasher.patch',
+
+				# https://bugzilla.gnome.org/show_bug.cgi?id=630226
+				# https://bugzilla.xamarin.com/show_bug.cgi?id=34973
+				'patches/gtk/remove-mouse-scrolling-from-GtkNotebook-tabs.patch',
+
+				# https://bugzilla.xamarin.com/show_bug.cgi?id=37951
+				'patches/gtk/dont-call-CopySymbolicHotKeys-so-much.patch',
+
+				# https://bugzilla.xamarin.com/show_bug.cgi?id=38664
+				'patches/gtk/combobox-crossing-events.patch'
 			])
 
 	def prep (self):

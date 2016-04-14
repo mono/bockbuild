@@ -32,7 +32,7 @@ class Environment:
 	def compile (self):
 		expand_macros (self, self._profile)
 
-	def dump (self, filename):
+	def write_source_script (self, filename):
 
 		envscript = '#!/bin/sh\n'
 
@@ -42,9 +42,13 @@ class Environment:
 		with open(filename, 'w') as f:
   		  f.write(envscript)
 
+  		os.chmod (filename, 0755)
+
 	def serialize (self):
-		for k in self.get_names ():
-			yield 'environment.%s = "%s"\n' % (k, self.__dict__[k])
+		names = list (self.get_names())
+		names.sort ()
+		for k in names:
+			yield '%s = "%s"' % (k, self.__dict__[k])
 
 	def dump_csproj (self):
 		for k in self.get_names ():

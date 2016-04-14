@@ -7,6 +7,8 @@ class LibTiffPackage (Package):
 				'http://download.osgeo.org/libtiff/tiff-%{version}.tar.gz',
 			])
 
+		self.needs_lipo = True
+
 		if Package.profile.name == 'darwin':
 			self.sources.extend ([
 				# Fix Snow Leopard build

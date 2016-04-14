@@ -54,7 +54,7 @@ class GlibPackage (GnomeXzPackage):
 		if self.darwin: 
 			self.local_configure_flags.extend (['--disable-compile-warnings'])
 			Package.configure (self)
-			self.sh (
+			self.sh ([
 				# 'autoconf',
 				#'%{configure} --disable-compile-warnings',
 				'ed - config.h < %{local_sources[1]}',
@@ -62,7 +62,7 @@ class GlibPackage (GnomeXzPackage):
 				'touch docs/reference/*/Makefile.in',
 				'touch docs/reference/*/*/Makefile.in',
 				#'%{make}'
-			)
+			])
 			Package.make (self)
 		else:	
 			Package.build (self)

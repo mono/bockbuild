@@ -15,32 +15,39 @@ class IronLanguagesPackage(GitHubTarballPackage):
 		self.source_dir_name = '%s-%s-%s' % ( self.organization, 'main', self.revision[:7] )
 
 	def build (self):
-		self.ironruby = os.path.join (os.getcwd(), 'ironruby', 'bin') + os.sep
-		self.ironpython = os.path.join (os.getcwd(), 'ironpython', 'bin') + os.sep
+		self.ironruby = os.path.join (self.workspace, 'ironruby', 'bin') + os.sep
+		self.ironpython = os.path.join (self.workspace, 'ironpython', 'bin') + os.sep
 		self.sh ('xbuild /p:Configuration=Release /p:OutDir="%{ironruby}" Solutions/Ruby.sln')
 		self.sh ('xbuild /p:Configuration=Release /p:OutDir="%{ironpython}" Solutions/IronPython.Mono.sln')
 
 
-	def install_wrapper_scripts (self, path, ironpython_or_ironruby):
+	def install_ruby_scripts (self, path, installdir):
 		for cmd, ext in map(os.path.splitext, os.listdir (path)):
 			if ext != '.exe': continue
 			wrapper = os.path.join (self.staged_prefix, "bin", cmd)
 			with open(wrapper, "w") as output:
 				output.write ("#!/bin/sh\n")
-				output.write ("exec {0}/bin/mono {0}/lib/{1}/{2}.exe \"$@\"\n".format (self.staged_prefix, ironpython_or_ironruby, cmd))
+				output.write ("exec {0}/bin/mono {0}/lib/{1}/{2}.exe \"$@\"\n".format (self.staged_prefix, installdir, cmd))
+			os.chmod (wrapper, 0755)
+
+	def install_python_scripts (self, path, installdir):
+		for cmd, ext in map(os.path.splitext, os.listdir (path)):
+			if ext != '.exe': continue
+			wrapper = os.path.join (self.staged_prefix, "bin", cmd)
+			with open(wrapper, "w") as output:
+				output.write ("#!/bin/sh\n")
+				output.write ('export IRONPYTHONPATH=/System/Library/Frameworks/Python.framework/Versions/2.7/lib/python2.7/\n')
+				output.write ("exec {0}/bin/mono {0}/lib/{1}/{2}.exe \"$@\"\n".format (self.staged_prefix, installdir, cmd))
 			os.chmod (wrapper, 0755)
 
 	def install (self):
-		self.ironruby = os.path.join (os.getcwd(), 'ironruby', 'bin') + os.sep
-		self.ironpython = os.path.join (os.getcwd(), 'ironpython', 'bin') + os.sep
-
 		self.sh ("mkdir -p %{staged_prefix}/lib/ironruby/")
 		self.sh ("mkdir -p %{staged_prefix}/bin/")
 		self.sh ("cp -R %{ironruby} %{staged_prefix}/lib/ironruby/")
-		self.install_wrapper_scripts (self.ironruby, 'ironruby')
+		self.install_ruby_scripts (self.ironruby, 'ironruby')
 
 		self.sh ("mkdir -p %{staged_prefix}/lib/ironpython/")
 		self.sh ("cp -R %{ironpython} %{staged_prefix}/lib/ironpython/")
-		self.install_wrapper_scripts (self.ironpython, 'ironpython')
+		self.install_python_scripts (self.ironpython, 'ironpython')
 
 IronLanguagesPackage()
