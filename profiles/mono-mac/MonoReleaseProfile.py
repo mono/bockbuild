@@ -109,6 +109,7 @@ class MonoReleaseProfile(DarwinProfile):
         # self.env.set ('MONO_PATH', '%{staged_prefix}/lib/mono/4.0')
         self.debug_info = ['gtk+', 'cairo',
                            'pango', 'mono', 'llvm', 'libgdiplus']
+        self.cache_host = None
 
     def setup_release(self):
         self.mono_package = self.release_packages['mono']
