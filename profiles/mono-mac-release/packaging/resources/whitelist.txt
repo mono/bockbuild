@@ -96,6 +96,7 @@ mono-test-install
 mono-xmltool
 mozroots
 mprof-report
+msbuild
 nant
 nuget
 nunit-console
