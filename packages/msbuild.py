@@ -4,6 +4,9 @@ class MSBuild (GitHubPackage):
 			git_branch = 'xplat-p1')
 
 	def build (self):
+		retry(self.msbuild_cibuild)
+
+	def msbuild_cibuild (self):
 		self.sh ('./cibuild.sh --scope Compile --target Mono --host Mono')
 
 	def install (self):
