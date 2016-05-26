@@ -32,7 +32,9 @@ class PangoPackage (GnomeXzPackage):
                         'patches/pango-coretext-condensed-trait.patch',
 
 			# https://bugzilla.xamarin.com/show_bug.cgi?id=32938
-			'patches/pango-coretext-fix-yosemite-crasher.patch'
+			'patches/pango-coretext-fix-yosemite-crasher.patch',
+
+			'patches/pango-system-font.patch'
 		])
 
 	def prep (self):
