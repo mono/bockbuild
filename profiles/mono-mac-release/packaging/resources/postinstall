@@ -11,10 +11,6 @@ if [ -f "$FW/External/xbuild-frameworks/.NETPortable/$LICENSE" ]; then
     rm -rf $FW/External/xbuild-frameworks/.NETPortable
 fi
 
-# Ensure /usr/local/bin & /usr/local/share exist
-mkdir -p /usr/local/bin
-mkdir -p /usr/local/share
-
 # Remove /usr/local/bin/pkg-config if it's a symlink to the Mono-installed one
 PKG_CONFIG_LINK="/usr/local/bin/pkg-config"
 if [ -L $PKG_CONFIG_LINK ]; then
@@ -25,18 +21,26 @@ if [ -L $PKG_CONFIG_LINK ]; then
 fi
 
 WHITELIST=$(cat "$(dirname "$0")/whitelist.txt")
+MONO_COMMANDS_FILE=/etc/paths.d/mono-commands
+FW_WHITELISTED_COMMANDS=${FW_CURRENT}/Commands
 
-if [ -d ${FW}/Commands ]; then
+mkdir ${FW_WHITELISTED_COMMANDS}
+
+if test -e ${MONO_COMMANDS_FILE}; then
+    rm "${MONO_COMMANDS_FILE}"
+fi
+
+echo "${FW_WHITELISTED_COMMANDS}" >> "${MONO_COMMANDS_FILE}"
+
+if [ -d "${FW}"/Commands ]; then
     for i in ${WHITELIST}; do
-	# Only create a symlink if there isn't a file there
-	if test -e "${FW}/Commands/${i}" && test ! -e "/usr/local/bin/${i}"; then
-        	echo "${i}"
-	        ln -sf "${FW}/Commands/${i}" "/usr/local/bin/${i}"
-	fi
+        if test -e "${FW}/Commands/${i}"; then
+            ln -s "${FW}/Commands/${i}" "${FW_WHITELISTED_COMMANDS}/${i}"
+        fi
     done;
 else
     echo "${FW}/Commands does not exist"
-    echo "Can not create links to /usr/local/bin."
+    echo "Can not add command links to $PATH."
 fi
 
 if [ -d ${FW_CURRENT} ]; then
