@@ -34,7 +34,8 @@ class PangoPackage (GnomeXzPackage):
 			# https://bugzilla.xamarin.com/show_bug.cgi?id=32938
 			'patches/pango-coretext-fix-yosemite-crasher.patch',
 
-			'patches/pango-system-font-single.patch'
+			'patches/pango-system-font-single.patch',
+			'patches/pango-system-font-check-version.patch'
 		])
 
 	def prep (self):
