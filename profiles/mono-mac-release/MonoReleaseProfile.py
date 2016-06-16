@@ -76,8 +76,8 @@ class MonoReleaseProfile(DarwinProfile):
         s = os.statvfs(self.root)
         free_space =  (s.f_bavail * s.f_frsize) / (1024 * 1024 * 1024) # in GB
 
-        if free_space < 15:
-            error ('Low disk space (less than 15GB), aborting')
+        if free_space < 10:
+            error ('Low disk space (less than 10GB), aborting')
 
         # check for XQuartz installation (needed for libgdiplus)
         if not os.path.exists ('/opt/X11/include/X11/Xlib.h'):
