@@ -176,7 +176,10 @@ class GtkPackage (GnomeGitPackage):
 				'patches/gtk/dont-call-CopySymbolicHotKeys-so-much.patch',
 
 				# https://bugzilla.xamarin.com/show_bug.cgi?id=38664
-				'patches/gtk/combobox-crossing-events.patch'
+				'patches/gtk/combobox-crossing-events.patch',
+
+				# https://bugzilla.xamarin.com/show_bug.cgi?id=41657
+				'patches/gtk/bxc-41657.patch'
 			])
 
 	def prep (self):
