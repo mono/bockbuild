@@ -8,6 +8,7 @@ class NuGetPackage(GitHubPackage):
 			configure = '')
 
 	def build(self):
+		self.sh ('%{make} update_submodules')
 		self.sh ('%{make} PREFIX=%{package_prefix}')
 
 	def install(self):
