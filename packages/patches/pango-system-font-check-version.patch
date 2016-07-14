@@ -30,8 +30,8 @@ index 6cb3809..c75737c 100644
        PangoCairoCoreTextFont *cafont = g_object_new (PANGO_TYPE_CAIRO_CORE_TEXT_FONT, NULL);
        cfont = PANGO_CORE_TEXT_FONT (cafont);
        cafont->abs_size = abs_size;
--      _pango_core_text_font_set_ctfont (cfont, sysfont);
-+      _pango_core_text_font_set_ctfont (cfont, (CTFontRef)sysfont);
+-      _pango_core_text_font_set_ctfont (cfont, CFRetain (sysfont));
++      _pango_core_text_font_set_ctfont (cfont, (CTFontRef)CFRetain (sysfont));
  
        tmp_desc = pango_font_description_copy_static (description);
  
