@@ -1,7 +1,7 @@
 
 class MonoBasicPackage (GitHubTarballPackage):
 	def __init__ (self):
-		GitHubTarballPackage.__init__ (self, 'mono', 'mono-basic', '4.4', '8a804fd8f12f2e6a002173bbbc0974197530ec2f',
+		GitHubTarballPackage.__init__ (self, 'mono', 'mono-basic', '4.6', 'c93133db1d511f994918391f429fee29b9250004',
 				configure = './configure --prefix="%{staged_profile}"')
 
 	def install (self):
