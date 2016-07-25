@@ -1,14 +1,15 @@
 
-class NuGetPackage(GitHubTarballPackage):
+class NuGetPackage(GitHubPackage):
 
     def __init__(self):
-        GitHubTarballPackage.__init__(self,
-                                      'mono', 'nuget',
-                                      '2.8.5',
-                                      'ea1d244b066338c9408646afdcf8acae6299f7fb',
-                                      configure='')
+        GitHubPackage.__init__(self,
+                               'mono', 'nuget',
+                               '2.12.0',
+                               '9e2d2c1cc09d2a40eeb72e8c5db789e3b9bf2586',
+                               configure='')
 
     def build(self):
+        self.sh('%{make} update_submodules')
         self.sh('%{make} PREFIX=%{package_prefix}')
 
     def install(self):

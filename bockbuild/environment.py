@@ -46,7 +46,7 @@ class Environment:
         with open(filename, 'w') as f:
             f.write(envscript)
 
-        os.chmod(filename, 0755)
+        os.chmod(filename, 0o755)
 
     def serialize(self):
         names = sorted(self.get_names())

@@ -197,7 +197,7 @@ class DarwinProfile (UnixProfile):
             trace(path)
 
             def relocate_for_release(token):
-                newtoken = token.replace(self.staged_prefix, self.prefix)
+                newtoken = token.replace(self.staged_prefix, self.prefix).replace(directory, self.prefix)
 
                 if newtoken != token:
                     trace('%s:\n\t%s\t->\t%s' %

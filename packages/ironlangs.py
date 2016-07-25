@@ -36,7 +36,7 @@ class IronLanguagesPackage(GitHubTarballPackage):
                 output.write("#!/bin/sh\n")
                 output.write(
                     "exec {0}/bin/mono {0}/lib/{1}/{2}.exe \"$@\"\n".format(self.staged_prefix, installdir, cmd))
-            os.chmod(wrapper, 0755)
+            os.chmod(wrapper, 0o755)
 
     def install_python_scripts(self, path, installdir):
         for cmd, ext in map(os.path.splitext, os.listdir(path)):
@@ -49,7 +49,7 @@ class IronLanguagesPackage(GitHubTarballPackage):
                     'export IRONPYTHONPATH=/System/Library/Frameworks/Python.framework/Versions/2.7/lib/python2.7/\n')
                 output.write(
                     "exec {0}/bin/mono {0}/lib/{1}/{2}.exe \"$@\"\n".format(self.staged_prefix, installdir, cmd))
-            os.chmod(wrapper, 0755)
+            os.chmod(wrapper, 0o755)
 
     def install(self):
         self.sh("mkdir -p %{staged_prefix}/lib/ironruby/")
