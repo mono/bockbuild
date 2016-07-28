@@ -44,6 +44,7 @@ class DarwinProfile (UnixProfile):
     default_toolchain = [
         'autoconf',
         'automake',
+        'cmake',
         'ccache',
         'libtool',
         'xz',
@@ -108,6 +109,9 @@ class DarwinProfile (UnixProfile):
         pass
 
     def arch_build(self, arch, package):
+        if package.name == "cmake":
+            return
+
         if arch == 'darwin-universal':
             package.local_ld_flags = ['-arch i386', '-arch x86_64']
             package.local_gcc_flags = ['-arch i386', '-arch x86_64']
