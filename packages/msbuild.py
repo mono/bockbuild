@@ -23,10 +23,10 @@ class MSBuild (GitHubPackage):
 
         self.sh('cp msbuild-mono-deploy.in %s/msbuild' % bindir)
 
-		for line in fileinput.input('%s/msbuild' % bindir, inplace=True):
-			line = line.replace ('@bindir@' , '%s/bin' % self.staged_prefix)
-			line = line.replace ('@mono_instdir@', '%s/lib/mono' % self.staged_prefix)
-			print line
+        for line in fileinput.input('%s/msbuild' % bindir, inplace=True):
+            line = line.replace ('@bindir@' , '%s/bin' % self.staged_prefix)
+            line = line.replace ('@mono_instdir@', '%s/lib/mono' % self.staged_prefix)
+            print line
 
         for excluded in glob.glob("%s/*UnitTests*" % new_location):
             self.rm(excluded)
