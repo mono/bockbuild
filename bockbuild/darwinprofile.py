@@ -39,6 +39,7 @@ class DarwinProfile (UnixProfile):
 	        'autoconf',
 	        'automake',
 	        'ccache',
+          'cmake',
 	        'libtool',
 	        'xz',
 	        'tar',
@@ -100,6 +101,9 @@ class DarwinProfile (UnixProfile):
 
 	
 	def arch_build (self, arch, package):
+		if package.name == "cmake":
+			return
+
 		if arch == 'darwin-universal':
 			package.local_ld_flags = ['-arch i386' , '-arch x86_64']
 			package.local_gcc_flags = ['-arch i386' , '-arch x86_64']
