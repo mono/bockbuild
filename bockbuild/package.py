@@ -313,7 +313,7 @@ class Package:
 
 				if source.startswith (('http://', 'https://', 'ftp://')):
 					cache = get_download_dest (source)
-					if self.profile.cache_host != None:
+					if hasattr(self.profile, 'cache_host') and self.profile.cache_host != None:
 						cached_source = os.path.join (self.profile.cache_host, os.path.basename (source))
 						try:
 							clean_func = checkout_archive (cached_source, cache, scratch_workspace)
