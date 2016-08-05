@@ -30,7 +30,12 @@ class MonoLlvmPackage (GitHubPackage):
         # We want to use the variables set before this, so we need to group the commands with bash
         self.make = "bash -c 'cd build ; " + self.make + "'"
 
+        self.skip_for_arch = False
+
     def install(self):
+        if self.skip_for_arch:
+            return
+
         unprotect_dir(self.stage_root)
 
         makeinstall_cmds = []
@@ -41,6 +46,8 @@ class MonoLlvmPackage (GitHubPackage):
         Package.install(self)
 
     def arch_build(self, arch):
+        if arch == 'darwin-32':
+            self.skip_for_arch = true
         # FIXME: Still applicable? No equivalent CMAKE flag
         # LLVM says that libstdc++4.6 is broken and we should use libstdc++4.7.
         # This switches it to the right libstdc++.
