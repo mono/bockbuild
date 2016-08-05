@@ -21,9 +21,6 @@ class MonoLlvmPackage (GitHubPackage):
                                    '../' # Path argument
                                ])
 
-        # This package would like to be lipoed.
-        self.needs_lipo = True
-
         self.ld_flags = []  # TODO: find out which flags are causing issues. reset ld_flags for the package
         self.cpp_flags = []
 
