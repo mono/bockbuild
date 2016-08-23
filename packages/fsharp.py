@@ -2,12 +2,11 @@ class FsharpPackage(GitHubTarballPackage):
 	def __init__(self):
 		GitHubTarballPackage.__init__(self,
 			'fsharp', 'fsharp',
-			'4.0.1.1',
-			'849e3061fd7db397f07c7bd0c08e5df19f2b712a',
+			'4.0.1.9',
+			'0a6c66a8f18eb8a5c4d0bfac61d883b6994a918a',
 			configure = './configure --prefix="%{package_prefix}"')
 
 		self.extra_stage_files = ['lib/mono/xbuild/Microsoft/VisualStudio/v/FSharp/Microsoft.FSharp.Targets']
-		self.sources.extend (['patches/fsharp-assemblysearchpath-fix.patch']) # https://github.com/fsharp/fsharp/pull/596
 
 	def prep(self):
 		Package.prep (self)
