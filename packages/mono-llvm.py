@@ -44,7 +44,7 @@ class MonoLlvmPackage (GitHubPackage):
 
     def arch_build(self, arch):
         if arch == 'darwin-32':
-            self.skip_for_arch = true
+            self.skip_for_arch = True
         # FIXME: Still applicable? No equivalent CMAKE flag
         # LLVM says that libstdc++4.6 is broken and we should use libstdc++4.7.
         # This switches it to the right libstdc++.
