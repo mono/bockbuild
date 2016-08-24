@@ -70,8 +70,7 @@ class MonoReleaseProfile(DarwinProfile):
         ]
 
     def __init__(self):
-        # Because of mono-llvm 3.9's atomics check, min_version must be at least OSX 10.9 to build
-        DarwinProfile.__init__(self, min_version = 9)
+        DarwinProfile.__init__(self, min_version = 7)
 
         # quick disk space check (http://stackoverflow.com/questions/787776/)
         s = os.statvfs(self.root)
