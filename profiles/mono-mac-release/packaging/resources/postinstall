@@ -38,6 +38,7 @@ if [ -d "${FW}"/Commands ]; then
             ln -s "${FW}/Commands/${i}" "${FW_WHITELISTED_COMMANDS}/${i}"
         fi
     done;
+    eval $(/usr/libexec/path_helper -s)
 else
     echo "${FW}/Commands does not exist"
     echo "Can not add command links to $PATH."
