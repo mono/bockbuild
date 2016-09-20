@@ -38,6 +38,6 @@ class MSBuild (GitHubPackage):
 		new_xbuild_tv_dir = os.path.join (xbuild_dir, self.version)
 
 		self.sh('cp -R %s/14.0/Imports %s' % (xbuild_dir, new_xbuild_tv_dir))
-		self.sh('cp %s/14.0/Microsoft.Common.targets %s' % (xbuild_dir, new_xbuild_tv_dir))
+		self.sh('cp -R %s/14.0/Microsoft.Common.targets %s' % (xbuild_dir, new_xbuild_tv_dir))
 
 MSBuild ()
