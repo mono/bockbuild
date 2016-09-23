@@ -36,6 +36,7 @@ class MSBuild (GitHubPackage):
 		# Add ImportBefore/ImportAfter files from xbuild
 		xbuild_dir = os.path.join (self.staged_prefix, 'lib/mono/xbuild')
 		new_xbuild_tv_dir = os.path.join (xbuild_dir, self.version)
+		os.makedirs(new_xbuild_tv_dir)
 
 		self.sh('cp -R %s/14.0/Imports %s' % (xbuild_dir, new_xbuild_tv_dir))
 		self.sh('cp -R %s/14.0/Microsoft.Common.targets %s' % (xbuild_dir, new_xbuild_tv_dir))
