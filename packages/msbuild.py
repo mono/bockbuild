@@ -2,8 +2,8 @@ import fileinput
 
 class MSBuild (GitHubPackage):
 	def __init__ (self):
-		GitHubPackage.__init__ (self, 'mono', 'msbuild', '14.1',
-			git_branch = 'xplat-p1')
+		GitHubPackage.__init__ (self, 'mono', 'msbuild', '15.0',
+			git_branch = 'xplat-c8p')
 
 	def build (self):
 		self.sh ('./cibuild.sh --scope Compile --target Mono --host Mono')
@@ -32,5 +32,12 @@ class MSBuild (GitHubPackage):
 
 		for excluded in glob.glob("%s/*xunit*" % new_location):
 			self.rm(excluded)
+
+		# Add ImportBefore/ImportAfter files from xbuild
+		xbuild_dir = os.path.join (self.staged_prefix, 'lib/mono/xbuild')
+		new_xbuild_tv_dir = os.path.join (xbuild_dir, self.version)
+
+		self.sh('cp -R %s/14.0/Imports %s' % (xbuild_dir, new_xbuild_tv_dir))
+		self.sh('cp -R %s/14.0/Microsoft.Common.targets %s' % (xbuild_dir, new_xbuild_tv_dir))
 
 MSBuild ()
