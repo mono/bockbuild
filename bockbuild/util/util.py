@@ -403,7 +403,7 @@ def delete (path):
 def merge_trees(src, dst, delete_src = True):
 	if not os.path.isdir(src) or not os.path.isdir(dst):
 		raise Exception ('"%s" or "%s" are not both directories ' % (src, dst))
-	run_shell('rsync -a --ignore-existing %s/* %s' % (src, dst), False)
+	run_shell('rsync -a --ignore-existing "%s/"* "%s"' % (src, dst), False)
 	if delete_src:
 		delete (src)
 
