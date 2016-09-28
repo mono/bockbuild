@@ -24,7 +24,8 @@ WHITELIST=$(cat "$(dirname "$0")/whitelist.txt")
 MONO_COMMANDS_FILE=/etc/paths.d/mono-commands
 FW_WHITELISTED_COMMANDS=${FW_CURRENT}/Commands
 
-mkdir ${FW_WHITELISTED_COMMANDS}
+mkdir -p ${FW_WHITELISTED_COMMANDS}
+mkdir -p $(dirname ${MONO_COMMANDS_FILE})
 
 if test -e ${MONO_COMMANDS_FILE}; then
     rm "${MONO_COMMANDS_FILE}"
