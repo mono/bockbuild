@@ -377,6 +377,16 @@ def git_shortid(self, cwd):
     else:
         return '%s-%s' % (branch, short_rev)
 
+def git_isrootdir(self, cwd):
+    try:
+        root = self.git('rev-parse --show-toplevel', cwd)[0]
+        info (cwd, root)
+        return root == cwd
+    except:
+        return False
+
+def git_rootdir(self, cwd):
+    return self.git('rev-parse --show-toplevel', cwd)[0]
 
 def protect_dir(path, recursive=False):
     if not os.path.isdir(path):
@@ -454,6 +464,12 @@ def delete(path):
     if os.path.exists(path):
         error('Deleting failed: %s' % orig_path)
 
+def link_dir(link_path, dest_path):
+    if not os.path.isdir (dest_path):
+        error ('Not found or not a directory: %s' % dest_path)
+    if os.path.lexists(link_path):
+        delete(link_path)
+    os.symlink(dest_path, link_path)
 
 def merge_trees(src, dst, delete_src=True):
     if not os.path.isdir(src) or not os.path.isdir(dst):

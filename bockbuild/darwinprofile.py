@@ -56,11 +56,11 @@ class DarwinProfile (UnixProfile):
         'gtk-doc'
     ]
 
-    def __init__(self, prefix=None, min_version=6):
-        UnixProfile.__init__(self, prefix)
-
-        self.toolchain = DarwinProfile.default_toolchain
+    def attach (self, bockbuild):
+        UnixProfile.attach (self, bockbuild)
+        bockbuild.toolchain = list (DarwinProfile.default_toolchain)
         self.name = 'darwin'
+
         xcode_version = backtick('xcodebuild -version')[0]
         self.env.set('xcode_version', xcode_version)
         osx_sdk = backtick('xcrun --show-sdk-path')[0]
@@ -83,13 +83,14 @@ class DarwinProfile (UnixProfile):
             '-headerpad_max_install_names'
         ])
 
-        if min_version:
-            self.target_osx = '10.%s' % min_version
+    def setup (self):
+        if self.min_version:
+            self.target_osx = '10.%s' % self.min_version
             self.gcc_flags.extend(
                 ['-mmacosx-version-min=%s' % self.target_osx])
             self.env.set('MACOSX_DEPLOYMENT_TARGET', self.target_osx)
 
-        if self.cmd_options.debug is True:
+        if Profile.bockbuild.cmd_options.debug is True:
             self.gcc_flags.extend(['-O0', '-ggdb3'])
 
         if os.getenv('BOCKBUILD_USE_CCACHE') is None:
@@ -99,13 +100,10 @@ class DarwinProfile (UnixProfile):
             self.env.set('CC',  'ccache xcrun gcc')
             self.env.set('CXX', 'ccache xcrun g++')
 
-        if self.arch == 'default':
-            self.arch = 'darwin-32'
-
         self.debug_info = []
 
-    def setup_toolchain(self):
-        pass
+        if self.bockbuild.cmd_options.arch == 'default':
+            self.bockbuild.cmd_options.arch = 'darwin-32'
 
     def arch_build(self, arch, package):
         if arch == 'darwin-universal':
@@ -124,7 +122,7 @@ class DarwinProfile (UnixProfile):
             error('Unknown arch %s' % arch)
 
         package.local_configure_flags.extend(
-            ['--cache-file=%s/%s-%s.cache' % (self.build_root, package.name, arch)])
+            ['--cache-file=%s/%s-%s.cache' % (self.bockbuild.build_root, package.name, arch)])
 
         if package.name in self.debug_info:
             package.local_gcc_flags.extend(['-g'])
