@@ -160,6 +160,9 @@ class Package:
                 else:
                     warn('iterative')
 
+            def clean_local_git_workspace(dir): # avoid resetting and destroying work!
+                self.git('clean -xffd', dir)
+
             def create_cache():
                 # since this is a fresh cache, the workspace copy is invalid if
                 # it exists
@@ -189,6 +192,9 @@ class Package:
                              (self.git_branch, self.git_branch), workspace_dir)
 
             def resolve():
+                root = git_rootdir(self, os.path.realpath (workspace_dir))
+                if not is_modifiable_repo(root):
+                    return clean_local_git_workspace
                 current_revision = git_get_revision(self, workspace_dir)
                 target_revision = None
 

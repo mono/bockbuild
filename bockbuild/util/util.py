@@ -346,6 +346,8 @@ def assert_modifiable_repo(cwd):
     if cwd in config.protected_git_repos:
         error ('Hazardous Git operation attempt at protected path: %s' % cwd)
 
+is_modifiable_repo = lambda x: os.path.realpath(x) not in config.protected_git_repos
+
 def git_get_revision(self, cwd):
     return self.git('rev-parse HEAD', cwd)[0]
 
