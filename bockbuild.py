@@ -28,10 +28,11 @@ class Bockbuild:
 
     def run(self):
         self.name = 'bockbuild'
-        self.root = os.path.dirname (os.path.realpath(__file__))
-        self.execution_root = os.getcwd() # TODO: This should be the 'root' of bockbuild installation (where 'bockbuild.py' is)
+        self.root = os.path.dirname (os.path.realpath(__file__)) # Bockbuild system root
+        config.protected_git_repos.append (self.root)
+        self.execution_root = os.getcwd()
         self.resources = [os.path.realpath(
-            os.path.join(self.root, 'packages'))]
+            os.path.join(self.root, 'packages'))] # list of paths on where to look for packages, patches, etc.
         self.build_root = os.path.join(self.root, 'builds')
         self.staged_prefix = os.path.join(self.root, 'stage')
         self.toolchain_root = os.path.join(self.root, 'toolchain')
@@ -48,13 +49,9 @@ class Bockbuild:
 
         self.env = Environment(self)
         self.env.set('BUILD_ARCH', '%{arch}')
-        self.env.set('BOCKBUILD_ENV', '1')
-
-        self.env.set('bockbuild_buildver', '1')
 
         self.full_rebuild = False
 
-        self.profile_name = self.__class__.__name__
         self.toolchain = []
 
         find_git(self)
@@ -267,13 +264,14 @@ class Bockbuild:
         fullpath = None
         for i in self.resources:
             candidate_fullpath = os.path.join(i, source + '.py')
+            trace (candidate_fullpath)
             if os.path.exists(candidate_fullpath):
                 if fullpath is not None:
                     error ('Package "%s" resolved in multiple locations (search paths: %s' % (source, self.resources))
                 fullpath = candidate_fullpath
             
         if not fullpath:
-            error("Package '%s' not found" % source)
+            error("Package '%s' not found ('search paths: %s')" % (source, self.resources))
 
         Package.last_instance = None
 
@@ -285,7 +283,6 @@ class Bockbuild:
         new_package = Package.last_instance
         new_package._path = fullpath
         return new_package
-        self.name = 'bockbuild'
 
     def load_profile(self, source):
         path = None

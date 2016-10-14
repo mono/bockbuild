@@ -61,12 +61,6 @@ class Logger:
     monkeywrench = False
 
 
-def log(phase, message):
-    # DISABLED until we can properly refactor/redirect logging
-    return
-
-# TODO: move these functions to either Profile or their own class
-
 
 def get_caller(skip=0, get_dump=False):
     # this whole thing fails if we're not in a valid directory
