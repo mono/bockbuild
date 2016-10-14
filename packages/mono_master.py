@@ -71,14 +71,6 @@ class MonoMasterPackage(Package):
 		registry_dir = os.path.join(self.staged_prefix, "etc", "mono", "registry", "LocalMachine")
 		ensure_dir (registry_dir)
 
-		# Add ImportBefore/ImportAfter files from xbuild to the msbuild directories
-		xbuild_dir = os.path.join (self.staged_prefix, 'lib/mono/xbuild')
-		new_xbuild_tv_dir = os.path.join (xbuild_dir, self.version)
-		os.makedirs(new_xbuild_tv_dir)
-
-		self.sh('cp -R %s/14.0/Imports %s' % (xbuild_dir, new_xbuild_tv_dir))
-		self.sh('cp -R %s/14.0/Microsoft.Common.targets %s' % (xbuild_dir, new_xbuild_tv_dir))
-
 	def deploy(self):
 		if self.profile.arch == 'darwin-universal':
 			os.symlink ('mono-sgen64', '%s/bin/mono64' % self.staged_profile)
