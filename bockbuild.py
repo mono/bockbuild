@@ -11,7 +11,18 @@ import collections
 import hashlib
 import itertools
 import traceback
+from collections import namedtuple
 
+ProfileDesc = namedtuple ('Profile', 'name description path modes')
+
+def find_profiles (base_path):
+    import glob
+    profiles = []
+    for path in iterate_dir ('%s/bockbuild' % base_path, with_dirs=True):
+        if os.path.isdir (path) and os.path.isfile ('%s/profile.py' % path):
+            sys.path.append (os.path.realpath (path))
+            profiles.append (ProfileDesc (name = os.path.basename (path), description = "", path = path, modes = ""))
+    return profiles
 
 class Bockbuild:
 
@@ -48,11 +59,14 @@ class Bockbuild:
 
         find_git(self)
         self.bockbuild_rev = git_get_revision(self, self.root)
+        self.profiles = find_profiles (self.profile_root)
 
         loginit('bockbuild (%s)' % (git_shortid(self, self.root)))
         info('cmd: %s' % ' '.join(sys.argv))
 
         if len (sys.argv) < 2:
+            info ('Products in %s' % self.git ('config --get remote.origin.url', self.profile_root)[0])
+            info (self.profiles)
             error ('One argument needed at least (the profile name)')
 
         self.load_profile (sys.argv[1])
@@ -274,19 +288,21 @@ class Bockbuild:
         self.name = 'bockbuild'
 
     def load_profile(self, source):
+        path = None
+        for profile in self.profiles:
+            if profile.name == source:
+                path = profile.path
+
         if isinstance(source, Profile):  # package can already be loaded in the source list
-            return source
+            Profile.active = source
 
-        if not os.path.isabs(source):
-            source = os.path.join(self.execution_root, source)
-
-        fullpath = os.path.join(source, 'profile.py')
+        fullpath = os.path.join(path, 'profile.py')
 
         if not os.path.exists(fullpath):
             error("Profile '%s' not found" % source)
 
-        sys.path.append (source)
-        self.resources.append (source)
+        sys.path.append (path)
+        self.resources.append (path)
         execfile(fullpath, globals())
         Profile.active.attach (self)
 
@@ -298,7 +314,9 @@ class Bockbuild:
 
         new_profile = Profile.active
         new_profile._path = fullpath
-        new_profile.git_root = git_rootdir (self, os.path.dirname (fullpath))
+        new_profile.git_root = git_rootdir (self, os.path.dirname (path))
+        config.protected_git_repos.append (new_profile.git_root)
+        self.profile_name = source
         return new_profile
 
 if __name__ == "__main__":
