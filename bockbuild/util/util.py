@@ -36,6 +36,7 @@ class config:
     quiet = None
     never_rebuild = False
     verbose = False
+    protected_git_repos = [] # we do not allow modifying behavior on our profile repo or bockbuild repo.
 
 
 class CommandException (Exception):  # shell command failure
@@ -324,8 +325,10 @@ def find_git(self, echo=False):
     if not git_bin:
         error('git not found in PATH')
 
-    def git_func(self, args, cwd):
-        # assert_git_dir(self)
+    def git_func(self, args, cwd, hazard = False):
+        if hazard:
+            root = git_rootdir (self, cwd)
+            assert_modifiable_repo (root)
         (exit, out, err) = run(git_bin, args.split(' '), cwd)
         return out.split('\n')
 
@@ -339,6 +342,9 @@ def assert_git_dir(self):
     except:
         error('Attempted git action in non-git directory')
 
+def assert_modifiable_repo(cwd):
+    if cwd in config.protected_git_repos:
+        error ('Hazardous Git operation attempt at protected path: %s' % cwd)
 
 def git_get_revision(self, cwd):
     return self.git('rev-parse HEAD', cwd)[0]

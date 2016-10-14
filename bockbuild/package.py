@@ -238,6 +238,8 @@ class Package:
 
             if is_local:
                 link_dir (workspace_dir, source_url)
+                if git_is_dirty (self, workspace_dir):
+                    error ('Cannot perform on a dirty local workspace')
             else:
                 if os.path.exists(cache_dir):
                     update_cache()

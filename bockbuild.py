@@ -56,6 +56,7 @@ class Bockbuild:
 
         find_git(self)
         self.bockbuild_rev = git_get_revision(self, self.root)
+        self.profile_root = git_rootdir (self, self.execution_root)
         self.profiles = find_profiles (self.profile_root)
 
         loginit('bockbuild (%s)' % (git_shortid(self, self.root)))
