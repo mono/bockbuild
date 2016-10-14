@@ -71,7 +71,8 @@ class Bockbuild:
 
         self.load_profile (sys.argv[1])
 
-        self.parse_options()
+        self.parser = self.init_parser()
+        self.cmd_options, self.cmd_args = self.parser.parse_args(sys.argv[2:])
         Profile.active.setup()
         self.profile = Package.profile = Profile.active
 
@@ -93,16 +94,16 @@ class Bockbuild:
 
         self.build()
 
-    def parse_options(self):
+    def init_parser(self):
         parser = OptionParser(
             usage='usage: %prog [options] [package_names...]')
-        parser.add_option('-b', '--build',
-                          action='store_true', dest='do_build', default=False,
+        parser.add_option('--build',
+                          action='store_true', dest='do_build', default=True,
                           help='build the profile')
-        parser.add_option('-P', '--package',
+        parser.add_option('--package',
                           action='store_true', dest='do_package', default=False,
                           help='package the profile')
-        parser.add_option('-v', '--verbose',
+        parser.add_option('--verbose',
                           action='store_true', dest='verbose', default=False,
                           help='show all build output (e.g. configure, make)')
         parser.add_option('-d', '--debug', default=False,
@@ -133,8 +134,7 @@ class Bockbuild:
                           action='store_true', dest='trace',
                           help='Enable tracing (for diagnosing bockbuild problems')
 
-        self.parser = parser
-        self.cmd_options, self.cmd_args = parser.parse_args(sys.argv[2:])
+        return parser
 
     def build_distribution(self, packages, dest, stage, arch):
         # TODO: full relocation means that we shouldn't need dest at this stage
