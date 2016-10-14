@@ -125,6 +125,7 @@ class Bockbuild:
     def build_distribution(self, packages, dest, stage, arch):
         # TODO: full relocation means that we shouldn't need dest at this stage
         build_list = []
+        dest_invalidated = False #if anything is dirty we flush the destination path and fill it again
 
         progress('Fetching packages')
         for package in packages.values():
@@ -148,9 +149,13 @@ class Bockbuild:
 
             if package.needs_build:
                 build_list.append(package)
+                dest_invalidated = True
 
         verbose('%d packages need building:' % len(build_list))
         verbose(['%s (%s)' % (x.name, x.needs_build) for x in build_list])
+
+        if dest_invalidated:
+            ensure_dir (dest, purge = True)
 
         for package in packages.values():
             package.start_build(arch, dest, stage)
@@ -207,9 +212,6 @@ class Bockbuild:
             self.shell()
 
         if self.cmd_options.do_build:
-            ensure_dir(self.toolchain_root, purge=True)
-            ensure_dir(self.staged_prefix, purge=True)
-
             title('Building toolchain')
             self.build_distribution(
                 profile.toolchain_packages, self.toolchain_root, self.toolchain_root, arch='toolchain')
