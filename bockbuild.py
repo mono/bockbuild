@@ -16,12 +16,32 @@ from collections import namedtuple
 ProfileDesc = namedtuple ('Profile', 'name description path modes')
 
 def find_profiles (base_path):
-    import glob
     profiles = []
-    for path in iterate_dir ('%s/bockbuild' % base_path, with_dirs=True):
-        if os.path.isdir (path) and os.path.isfile ('%s/profile.py' % path):
-            sys.path.append (os.path.realpath (path))
-            profiles.append (ProfileDesc (name = os.path.basename (path), description = "", path = path, modes = ""))
+    successes = 0
+    while True:
+        successes = 0
+        exc = None
+        for path in iterate_dir ('%s/bockbuild' % base_path, with_dirs=True):
+            file = '%s/profile.py' % path
+            if os.path.isdir (path) and os.path.isfile (file):
+                sys.path.append (os.path.realpath (path))
+                name = os.path.basename (path)
+                for profile in profiles:
+                    if profile.name == name:
+                        exc = 'Already loaded'
+                if not exc:
+                    try:
+                        execfile(file, globals())
+                    except Exception as e:
+                        exc = e
+                        Profile.active = None
+                    finally:
+                        if not exc:
+                            successes = successes + 1
+                            profiles.append (ProfileDesc (name = name, description = "", path = path, modes = ""))
+                        exc = None
+        if successes == 0:
+            break
     return profiles
 
 class Bockbuild:
@@ -63,9 +83,8 @@ class Bockbuild:
         info('cmd: %s' % ' '.join(sys.argv))
 
         if len (sys.argv) < 2:
-            info ('Products in %s' % self.git ('config --get remote.origin.url', self.profile_root)[0])
-            info (self.profiles)
-            error ('One argument needed at least (the profile name)')
+            info ('Profiles in %s --' % self.git ('config --get remote.origin.url', self.profile_root)[0])
+            info(map (lambda x: '\t%s\t\t%s' % (x.name, x.description), self.profiles))
 
         self.load_profile (sys.argv[1])
 
@@ -291,8 +310,11 @@ class Bockbuild:
             if profile.name == source:
                 path = profile.path
 
-        if isinstance(source, Profile):  # package can already be loaded in the source list
-            Profile.active = source
+        if path == None:
+            if isinstance(source, Profile):  # package can already be loaded in the source list
+                Profile.active = source
+            else:
+                error("Profile '%s' not found" % source)
 
         fullpath = os.path.join(path, 'profile.py')
 
