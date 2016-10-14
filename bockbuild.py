@@ -156,7 +156,7 @@ class Bockbuild:
     def build_distribution(self, packages, dest, stage, arch):
         # TODO: full relocation means that we shouldn't need dest at this stage
         build_list = []
-        dest_invalidated = False #if anything is dirty we flush the destination path and fill it again
+        stage_invalidated = False #if anything is dirty we flush the stageination path and fill it again
 
         progress('Fetching packages')
         for package in packages.values():
@@ -180,16 +180,16 @@ class Bockbuild:
 
             if package.needs_build:
                 build_list.append(package)
-                dest_invalidated = True
+                stage_invalidated = True
 
         verbose('%d packages need building:' % len(build_list))
         verbose(['%s (%s)' % (x.name, x.needs_build) for x in build_list])
 
-        if dest_invalidated:
-            ensure_dir (dest, purge = True)
+        if stage_invalidated:
+            ensure_dir (stage, purge = True)
 
         for package in packages.values():
-            package.start_build(arch, dest, stage)
+            package.start_build(arch, stage, stage)
             # make artifact in scratch
             # delete artifact + buildstring
             with open(package.buildstring_file, 'w') as output:
