@@ -363,8 +363,7 @@ def git_get_branch(self, cwd):
 
 
 def git_is_dirty(self, cwd):
-    str = self.git('symbolic-ref --short HEAD --dirty', cwd)[0]
-    return 'dirty' in str
+    return 'dirty' in git_shortid (self, cwd)[0]
 
 
 def git_patch(self, dir, patch):
