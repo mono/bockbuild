@@ -15,7 +15,7 @@ index 224d84c..80ef87f 100644
 @@ -695,6 +695,23 @@ static GSourceFuncs event_funcs = {
   *********             Our Poll Function            *********
   ************************************************************/
- 
+
 +static inline void
 +ensure_finish_launching_called (void)
 +{
@@ -35,17 +35,16 @@ index 224d84c..80ef87f 100644
 +
  static gint
  poll_func (GPollFD *ufds,
- 	   guint    nfds,
+	   guint    nfds,
 @@ -706,6 +723,9 @@ poll_func (GPollFD *ufds,
    static GPollFD *current_ufds = NULL;
    static int current_nfds = 0;
- 
+
 +  /* This is performed *once* before we poll Cocoa for the first event. */
 +  ensure_finish_launching_called ();
 +
    current_ufds = ufds;
    current_nfds = nfds;
- 
--- 
-1.7.4.4
 
+--
+1.7.4.4
