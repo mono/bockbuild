@@ -28,7 +28,7 @@ class MSBuild (GitHubPackage):
 
 		self.sh('cp %s/Extensions/14.1/Microsoft.Common.props %s' % (build_output, new_xbuild_tv_dir))
 		self.sh('cp -R nuget-support/tv/ %s' % new_xbuild_tv_dir)
-		self.sh('cp -R nuget-support/tasks-targets %s/' % xbuild_dir)
+		self.sh('cp -R nuget-support/tasks-targets/ %s/' % xbuild_dir)
 		for dep in glob.glob("%s/Microsoft/NuGet/*" % xbuild_dir):
                     self.sh('ln -s %s %s' % (dep, xbuild_dir))
 
