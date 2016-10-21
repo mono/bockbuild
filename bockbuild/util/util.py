@@ -250,6 +250,10 @@ def ensure_dir(d, purge=False):
 
     os.makedirs(d)
 
+def first_existing (paths):
+    for p in paths:
+        if os.path.exists (p): return p
+    error ('None of these paths were found: %s' % paths)
 
 # quick and dirty assuming they have the same name/paths
 def identical_files(first, second):

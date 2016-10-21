@@ -19,6 +19,8 @@ bockbuild = None
 
 def find_profiles (base_path):
     assert Profile.loaded == None
+
+    search_path = first_existing(['%s/bockbuild' % base_path, '%s/packaging' % base_path])
     sys.path.append('%s/bockbuild' % base_path)
     profiles = []
     resolved_names = []
