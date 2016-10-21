@@ -367,7 +367,7 @@ def git_get_branch(self, cwd):
 
 
 def git_is_dirty(self, cwd):
-    return 'dirty' in git_shortid (self, cwd)[0]
+    return 'dirty' in git_shortid (self, cwd)
 
 
 def git_patch(self, dir, patch):
