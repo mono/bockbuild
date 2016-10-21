@@ -14,6 +14,8 @@ import traceback
 from collections import namedtuple
 
 ProfileDesc = namedtuple ('Profile', 'name description path modes')
+
+global active_profile, bockbuild
 active_profile = None
 bockbuild = None
 
@@ -369,7 +371,6 @@ class Bockbuild:
 
 if __name__ == "__main__":
     try:
-        global bockbuild
         bockbuild = Bockbuild()
         bockbuild.run()
     except Exception as e:
