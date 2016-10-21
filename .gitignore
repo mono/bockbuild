@@ -12,6 +12,7 @@ solitary/Solitary.exe*
 *.pyc
 *.pyo
 *.pkg
+*.sh
 *~
 .DS_Store
 cache
@@ -20,3 +21,5 @@ cache
 /stage/
 /toolchain/
 /logs/
+/scratch/
+/.idea/
