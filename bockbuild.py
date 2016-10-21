@@ -16,30 +16,35 @@ from collections import namedtuple
 ProfileDesc = namedtuple ('Profile', 'name description path modes')
 
 def find_profiles (base_path):
+    sys.path.append('%s/bockbuild' % base_path)
     profiles = []
-    successes = 0
+    resolved_names = []
     while True:
         successes = 0
-        exc = None
+        fail = None
         for path in iterate_dir ('%s/bockbuild' % base_path, with_dirs=True):
             file = '%s/profile.py' % path
             if os.path.isdir (path) and os.path.isfile (file):
-                sys.path.append (os.path.realpath (path))
                 name = os.path.basename (path)
-                for profile in profiles:
-                    if profile.name == name:
-                        exc = 'Already loaded'
-                if not exc:
+                if name in resolved_names:
+                    fail = 'Already loaded'
+
+                if not fail:
                     try:
                         execfile(file, globals())
                     except Exception as e:
-                        exc = e
-                        Profile.active = None
+                        fail = e
+                        print (fail)
                     finally:
-                        if not exc:
-                            successes = successes + 1
-                            profiles.append (ProfileDesc (name = name, description = "", path = path, modes = ""))
-                        exc = None
+                        if not fail:
+                            successes+= 1
+                            description = ""
+                            if hasattr(Profile.active.__class__, 'description'):
+                                description = Profile.active.__class__.description
+                            profiles.append (ProfileDesc (name = name, description = description, path = path, modes = ""))
+                            resolved_names.append(name)
+                        fail = None
+                        Profile.active = None
         if successes == 0:
             break
     return profiles
@@ -84,7 +89,8 @@ class Bockbuild:
 
         if len (sys.argv) < 2:
             info ('Profiles in %s --' % self.git ('config --get remote.origin.url', self.profile_root)[0])
-            info(map (lambda x: '\t%s\t\t%s' % (x.name, x.description), self.profiles))
+            info(map (lambda x: '\t%s\t\t\t\t%s' % (x.name, x.description), self.profiles))
+            finish()
 
         self.load_profile (sys.argv[1])
 

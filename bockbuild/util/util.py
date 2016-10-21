@@ -189,6 +189,10 @@ def error(message, more_output=False):
     if not more_output:
         sys.exit(255)
 
+def finish():
+    logprint('\n** %s **\n' % 'Goodbye!', bcolors.BOLD)
+    sys.exit(0)
+
 
 def trace(message, skip=0):
     if config.trace == False:
