@@ -67,8 +67,8 @@ class Bockbuild:
         self.root = os.path.dirname (os.path.realpath(__file__)) # Bockbuild system root
         config.protected_git_repos.append (self.root)
         self.execution_root = os.getcwd()
-        self.resources = [os.path.realpath(
-            os.path.join(self.root, 'packages'))] # list of paths on where to look for packages, patches, etc.
+        self.resources = set([os.path.realpath(
+            os.path.join(self.root, 'packages'))]) # list of paths on where to look for packages, patches, etc.
         self.build_root = os.path.join(self.root, 'builds')
         self.staged_prefix = os.path.join(self.root, 'stage')
         self.toolchain_root = os.path.join(self.root, 'toolchain')
@@ -96,7 +96,7 @@ class Bockbuild:
         self.profiles = find_profiles (self.profile_root)
 
         for profile in self.profiles:
-            self.resources.append(profile.path)
+            self.resources.add(profile.path)
 
         loginit('bockbuild (%s)' % (git_shortid(self, self.root)))
         info('cmd: %s' % ' '.join(sys.argv))
@@ -348,7 +348,7 @@ class Bockbuild:
             error("Profile '%s' not found" % source)
 
         sys.path.append (path)
-        self.resources.append (path)
+        self.resources.add (path)
         execfile(fullpath, globals())
         Profile.loaded.attach (self)
 
