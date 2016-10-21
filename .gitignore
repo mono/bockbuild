@@ -15,3 +15,8 @@ solitary/Solitary.exe*
 *~
 .DS_Store
 cache
+/artifacts/
+/builds/
+/stage/
+/toolchain/
+/logs/
