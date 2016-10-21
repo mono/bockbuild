@@ -11,10 +11,7 @@ import itertools
 
 class Profile:
     def __init__ (self):
-        if Profile.active:
-            error ('A profile was already loaded')
-        else:
-            Profile.active = self
+        Profile.loaded = self
 
     def attach (self, bockbuild):
         Profile.bockbuild = bockbuild
@@ -75,5 +72,5 @@ class Profile:
             proc.harness = None
             proc.files = []
 
-Profile.active = None
+Profile.loaded = None
 Profile.bockbuild = None

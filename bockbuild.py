@@ -14,39 +14,50 @@ import traceback
 from collections import namedtuple
 
 ProfileDesc = namedtuple ('Profile', 'name description path modes')
+active_profile = None
+bockbuild = None
 
 def find_profiles (base_path):
+    assert Profile.loaded == None
     sys.path.append('%s/bockbuild' % base_path)
     profiles = []
     resolved_names = []
     while True:
-        successes = 0
-        fail = None
+        progress_made = False
         for path in iterate_dir ('%s/bockbuild' % base_path, with_dirs=True):
             file = '%s/profile.py' % path
             if os.path.isdir (path) and os.path.isfile (file):
                 name = os.path.basename (path)
                 if name in resolved_names:
-                    fail = 'Already loaded'
+                    continue
+
+                fail = None
+                profile = None
+                try:
+                    execfile(file, globals())
+                    if not Profile.loaded:
+                        fail = 'No profile loaded'
+                    profile = Profile.loaded
+                except Exception as e:
+                    fail = e
+                finally:
+                    Profile.loaded = None
 
                 if not fail:
-                    try:
-                        execfile(file, globals())
-                    except Exception as e:
-                        fail = e
-                        print (fail)
-                    finally:
-                        if not fail:
-                            successes+= 1
-                            description = ""
-                            if hasattr(Profile.active.__class__, 'description'):
-                                description = Profile.active.__class__.description
-                            profiles.append (ProfileDesc (name = name, description = description, path = path, modes = ""))
-                            resolved_names.append(name)
-                        fail = None
-                        Profile.active = None
-        if successes == 0:
+                    profile = Profile.loaded
+                    Profile.loaded = None
+                    progress_made = True
+                    description = ""
+                    if hasattr(profile, 'description'):
+                        description = profile.__class__.description
+                    profiles.append (ProfileDesc (name = name, description = description, path = path, modes = ""))
+                    resolved_names.append(name)
+                else:
+                    warn(fail)
+
+        if not progress_made:
             break
+    assert Profile.loaded == None
     return profiles
 
 class Bockbuild:
@@ -84,22 +95,27 @@ class Bockbuild:
         self.profile_root = git_rootdir (self, self.execution_root)
         self.profiles = find_profiles (self.profile_root)
 
+        for profile in self.profiles:
+            self.resources.append(profile.path)
+
         loginit('bockbuild (%s)' % (git_shortid(self, self.root)))
         info('cmd: %s' % ' '.join(sys.argv))
 
         if len (sys.argv) < 2:
             info ('Profiles in %s --' % self.git ('config --get remote.origin.url', self.profile_root)[0])
-            info(map (lambda x: '\t%s\t\t\t\t%s' % (x.name, x.description), self.profiles))
+            info(map (lambda x: '\t%s: %s' % (x.name, x.description), self.profiles))
             finish()
 
-        self.load_profile (sys.argv[1])
+        global active_profile
+        Package.profile = active_profile = self.load_profile (sys.argv[1])
 
         self.parser = self.init_parser()
         self.cmd_options, self.cmd_args = self.parser.parse_args(sys.argv[2:])
-        Profile.active.setup()
-        self.profile = Package.profile = Profile.active
 
-        self.packages_to_build = self.cmd_args or Profile.active.packages
+        self.packages_to_build = self.cmd_args or active_profile.packages
+
+
+        active_profile.setup()
         self.verbose = self.cmd_options.verbose
         config.verbose = self.cmd_options.verbose
         self.arch = self.cmd_options.arch
@@ -202,7 +218,7 @@ class Bockbuild:
                 output.write('\n'.join(package.buildstring))
 
     def build(self):
-        profile = Profile.active
+        profile = active_profile
 
         if self.cmd_options.dump_environment:
             self.env.compile()
@@ -313,6 +329,8 @@ class Bockbuild:
         return new_package
 
     def load_profile(self, source):
+        if Profile.loaded:
+            error ('A profile is already loaded: %s' % Profile.loaded)
         path = None
         for profile in self.profiles:
             if profile.name == source:
@@ -320,7 +338,7 @@ class Bockbuild:
 
         if path == None:
             if isinstance(source, Profile):  # package can already be loaded in the source list
-                Profile.active = source
+                Profile.loaded = source
             else:
                 error("Profile '%s' not found" % source)
 
@@ -332,15 +350,15 @@ class Bockbuild:
         sys.path.append (path)
         self.resources.append (path)
         execfile(fullpath, globals())
-        Profile.active.attach (self)
+        Profile.loaded.attach (self)
 
-        if Profile.active is None:
+        if Profile.loaded is None:
             error('%s does not provide a valid profile (developers: ensure Profile.attach() is called.)' % source)
 
-        if Profile.active.bockbuild is None:
+        if Profile.loaded.bockbuild is None:
             error ('Profile init is invalid: Failed to attach to bockbuild object')
 
-        new_profile = Profile.active
+        new_profile = Profile.loaded
         new_profile._path = fullpath
         new_profile.git_root = git_rootdir (self, os.path.dirname (path))
         config.protected_git_repos.append (new_profile.git_root)
@@ -349,7 +367,9 @@ class Bockbuild:
 
 if __name__ == "__main__":
     try:
-        Bockbuild().run()
+        global bockbuild
+        bockbuild = Bockbuild()
+        bockbuild.run()
     except Exception as e:
         exc_type, exc_value, exc_traceback = sys.exc_info()
         error('%s (%s)' % (e, exc_type.__name__), more_output=True)
@@ -357,3 +377,5 @@ if __name__ == "__main__":
             exc_traceback)[-3:]), more_output=True)
     except KeyboardInterrupt:
         error('Interrupted.')
+    finally:
+        finish()
