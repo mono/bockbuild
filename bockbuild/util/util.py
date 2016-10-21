@@ -115,7 +115,8 @@ def loginit(message):
         Logger.monkeywrench = True
     elif sys.stdout.isatty():
         Logger.print_color = True
-        logprint(message, bcolors.BOLD)
+        logprint('** %s **' % message, bcolors.BOLD)
+        print
 
 
 def colorprint(message, color):
@@ -162,7 +163,7 @@ def title(message, summary=True):
 
 
 def info(message, 	summary=True):
-    logprint(message, bcolors.OKGREEN, summary, header='info')
+    logprint(message, '--\t' + bcolors.OKGREEN, summary, header= None)
 
 
 def progress(message):
