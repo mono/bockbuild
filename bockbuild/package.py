@@ -245,19 +245,19 @@ class Package:
             if is_local:
                 link_dir (workspace_dir, source_url)
                 if git_is_dirty (self, workspace_dir):
-                    error ('Cannot perform on a dirty local workspace')
+                    warn('The repository is dirty!')
             else:
                 if os.path.exists(cache_dir):
                     update_cache()
                 else:
                     create_cache()
 
-            if os.path.exists(workspace_dir):
-                if self.dont_clean == True:  # previous workspace was left dirty, delete
-                    clean_git_workspace(workspace_dir)
-                update_workspace()
-            else:
-                create_workspace()
+                if os.path.exists(workspace_dir):
+                    if self.dont_clean == True:  # previous workspace was left dirty, delete
+                        clean_git_workspace(workspace_dir)
+                    update_workspace()
+                else:
+                    create_workspace()
 
             cache = None  # at this point, the cache is not the problem; keep _fetch_sources from deleting it
 

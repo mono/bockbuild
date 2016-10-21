@@ -573,7 +573,7 @@ def expand_macros(node, vars, extra_vars=None):
             except:
                 pass
         if not resolved:
-            error("'%s' could not be resolved in string '%s'" %
+            raise ("'%s' could not be resolved in string '%s'" %
                   (m.groups()[1], node))
         if o is None:
             return ''
