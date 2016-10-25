@@ -31,7 +31,7 @@ class MonoXamarinPackageProfile(MonoReleaseProfile):
         else:
             info ("'--release' option not set, will not attempt to sign package!")
 
-        self.cache_host = 'http://xamarin-storage/storage/bockbuild_cache/'
+        self.cache_host = 'http://xamarin-storage/bockbuild_cache/'
 
     def setup_codesign (self):
         self.identity = "Developer ID Installer: Xamarin Inc"
