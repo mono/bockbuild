@@ -87,8 +87,7 @@ class Bockbuild:
         self.host = get_host()
         self.uname = backtick('uname -a')
 
-        self.env = Environment(self)
-        self.env.set('BUILD_ARCH', '%{arch}')
+
 
         self.full_rebuild = False
 
@@ -223,25 +222,26 @@ class Bockbuild:
 
     def build(self):
         profile = active_profile
+        env = profile.env
 
         if self.cmd_options.dump_environment:
-            self.env.compile()
-            self.env.dump()
+            env.compile()
+            env.dump()
             sys.exit(0)
 
         if self.cmd_options.dump_environment_csproj:
             # specify to use our GAC, else MonoDevelop would
             # use its own
-            self.env.set('MONO_GAC_PREFIX', self.staged_prefix)
+            env.set('MONO_GAC_PREFIX', self.staged_prefix)
 
-            self.env.compile()
-            self.env.dump_csproj()
+            env.compile()
+            env.dump_csproj()
             sys.exit(0)
 
         if self.cmd_options.csproj_file is not None:
-            self.env.set('MONO_GAC_PREFIX', self.staged_prefix)
-            self.env.compile()
-            self.env.write_csproj(self.cmd_options.csproj_file)
+            env.set('MONO_GAC_PREFIX', self.staged_prefix)
+            env.compile()
+            env.write_csproj(self.cmd_options.csproj_file)
             sys.exit(0)
 
         profile.toolchain_packages = collections.OrderedDict()
@@ -294,11 +294,12 @@ class Bockbuild:
             self.package()
 
     def track_env(self):
-        self.env.compile()
-        self.env.export()
+        env = active_profile.env
+        env.compile()
+        env.export()
         self.env_script = os.path.join(
             self.root, self.profile_name) + '_env.sh'
-        self.env.write_source_script(self.env_script)
+        env.write_source_script(self.env_script)
 
         if not os.path.exists (self.env_file):
             return False
@@ -377,7 +378,7 @@ if __name__ == "__main__":
         exc_type, exc_value, exc_traceback = sys.exc_info()
         error('%s (%s)' % (e, exc_type.__name__), more_output=True)
         error(('%s:%s @%s\t\t"%s"' % p for p in traceback.extract_tb(
-            exc_traceback)[-3:]), more_output=True)
+            exc_traceback)[-5:]), more_output=True)
     except KeyboardInterrupt:
         error('Interrupted.')
     finally:
