@@ -154,9 +154,9 @@ class Package:
             is_local = os.path.isdir (source_url)
             def clean_git_workspace(dir):
                 trace('Cleaning git workspace: ' + self.name)
-                self.git('reset --hard', dir)
+                self.git('reset --hard', dir, hazard = True)
                 if config.iterative == False:
-                    self.git('clean -xffd', dir)
+                    self.git('clean -xffd', dir, hazard = True)
                 else:
                     warn('iterative')
 
@@ -219,7 +219,7 @@ class Package:
 
                 if target_revision and (current_revision != target_revision):
                     self.git('reset --hard %s' %
-                             target_revision, workspace_dir)
+                             target_revision, workspace_dir, hazard = True)
                 self.git('submodule update --recursive', workspace_dir)
 
                 current_revision = git_get_revision(self, workspace_dir)

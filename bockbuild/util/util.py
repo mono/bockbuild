@@ -353,7 +353,7 @@ def assert_git_dir(self):
 
 def assert_modifiable_repo(cwd):
     if cwd in config.protected_git_repos:
-        error ('Hazardous Git operation attempt at protected path: %s' % cwd)
+        raise BockbuildException ('Hazardous Git operation attempt at protected path: %s' % cwd)
 
 is_modifiable_repo = lambda x: os.path.realpath(x) not in config.protected_git_repos
 
@@ -557,7 +557,7 @@ def dump(self, name):
             yield '%s.%s = "%s"\n' % (name, k, self.__dict__[k])
 
 
-def expand_macros(node, vars, extra_vars=None):
+def expand_macros(node, vars, extra_vars='active_profile'):
     def sub_macro(m):
         type = m.groups()[0]
         expr = m.groups()[1]
@@ -573,7 +573,7 @@ def expand_macros(node, vars, extra_vars=None):
             except:
                 pass
         if not resolved:
-            raise ("'%s' could not be resolved in string '%s'" %
+            raise Exception("'%s' could not be resolved in string '%s'" %
                   (m.groups()[1], node))
         if o is None:
             return ''
