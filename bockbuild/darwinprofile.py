@@ -12,7 +12,7 @@ import stat
 def match_stageable_text(path, filetype):
     if os.path.islink(path) or os.path.isdir(path):
         return False
-    return path.endswith('.pc') or filetype == 'libtool library file' or filetype.endswith('text executable')
+    return path.endswith('.pc') or filetype.startswith('libtool library file') or filetype.endswith('text executable')
 
 
 def match_text(path, filetype):
