@@ -390,7 +390,6 @@ def git_shortid(self, cwd):
 def git_isrootdir(self, cwd):
     try:
         root = self.git('rev-parse --show-toplevel', cwd)[0]
-        info (cwd, root)
         return root == cwd
     except:
         return False

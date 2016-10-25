@@ -481,7 +481,7 @@ class Package:
         self.deploy_package(build_artifact, self.staged_profile)
 
     def deploy_package(self, artifact, dest):
-        progress('Deploying (%s -> %s)' %
+        trace('Deploying (%s -> %s)' %
                  (os.path.basename(artifact), os.path.basename(dest)))
 
         unprotect_dir(dest, recursive=True)
