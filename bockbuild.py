@@ -303,7 +303,7 @@ class Bockbuild:
 
         if not os.path.exists (self.env_file):
             return False
-        self.tracked_env.extend(self.env.serialize())
+        self.tracked_env.extend(env.serialize())
         return is_changed(self.tracked_env, self.env_file)
 
     def load_package(self, source):
