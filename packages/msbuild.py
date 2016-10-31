@@ -43,4 +43,6 @@ class MSBuild (GitHubPackage):
 		for excluded in glob.glob("%s/*xunit*" % new_location):
 			self.rm(excluded)
 
+		for excluded in glob.glob("%s/NuGet*" % new_location):
+			self.rm(excluded)
 MSBuild ()
