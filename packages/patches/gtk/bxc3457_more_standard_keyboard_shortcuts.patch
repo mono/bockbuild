@@ -9,10 +9,10 @@ index 980f3e4..91033a6 100644
 +  bind "<ctrl>p"              { "move-cursor" (display-lines, -1, 0) }
 +  bind "<ctrl>n"              { "move-cursor" (display-lines, 1, 0) }
  }
- 
+
  class "GtkTextView" binding "gtk-mac-alt-arrows"
 @@ -19,6 +21,8 @@ class "GtkEntry" binding "gtk-mac-alt-arrows"
- 
+
  binding "gtk-mac-alt-delete"
  {
 +  bind "<ctrl>d" { "delete-from-cursor" (chars, 1) }

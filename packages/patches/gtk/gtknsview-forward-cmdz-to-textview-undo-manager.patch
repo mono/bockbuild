@@ -9,7 +9,7 @@ index d5f8c76..9ba080d 100644
 --- a/gtk/gtknsview.c
 +++ b/gtk/gtknsview.c
 @@ -712,6 +712,11 @@ gtk_ns_view_key_press (GtkWidget   *widget,
- 
+
            switch (event->keyval)
              {
 +            case GDK_KEY_z: /* undo */

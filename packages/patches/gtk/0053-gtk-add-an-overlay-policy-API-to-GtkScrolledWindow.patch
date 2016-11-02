@@ -17,7 +17,7 @@ index 9def3aa..a643b7d 100644
 @@ -121,6 +121,9 @@ typedef struct {
    gdouble                unclamped_hadj_value;
    gdouble                unclamped_vadj_value;
- 
+
 +  GtkPolicyType  hoverlay_policy;
 +  GtkPolicyType  voverlay_policy;
 +
@@ -27,7 +27,7 @@ index 9def3aa..a643b7d 100644
 @@ -536,6 +539,9 @@ gtk_scrolled_window_init (GtkScrolledWindow *scrolled_window)
                                  NULL);
    g_object_ref_sink (priv->opacity);
- 
+
 +  priv->hoverlay_policy = GTK_POLICY_AUTOMATIC;
 +  priv->voverlay_policy = GTK_POLICY_AUTOMATIC;
 +
@@ -37,7 +37,7 @@ index 9def3aa..a643b7d 100644
 @@ -865,6 +871,42 @@ gtk_scrolled_window_get_policy (GtkScrolledWindow *scrolled_window,
      *vscrollbar_policy = scrolled_window->vscrollbar_policy;
  }
- 
+
 +void
 +gtk_scrolled_window_set_overlay_policy (GtkScrolledWindow *scrolled_window,
 +                                        GtkPolicyType      hoverlay_policy,
@@ -80,7 +80,7 @@ index 9def3aa..a643b7d 100644
 @@ -1309,7 +1351,10 @@ gtk_scrolled_window_update_scrollbars (GtkScrolledWindow *scrolled_window)
                                          &vbar_rect, &vslider_rect,
                                          &hbar_rect, &hslider_rect);
- 
+
 -  if (priv->sb_visible && scrolled_window->vscrollbar && vbar_rect.width > 0)
 +  if (priv->sb_visible                              &&
 +      scrolled_window->vscrollbar                   &&
@@ -92,7 +92,7 @@ index 9def3aa..a643b7d 100644
 @@ -1326,7 +1371,10 @@ gtk_scrolled_window_update_scrollbars (GtkScrolledWindow *scrolled_window)
        priv->vbar_layer.opacity = 0.0;
      }
- 
+
 -  if (priv->sb_visible && scrolled_window->hscrollbar && hbar_rect.width > 0)
 +  if (priv->sb_visible                              &&
 +      scrolled_window->hscrollbar                   &&
@@ -103,7 +103,7 @@ index 9def3aa..a643b7d 100644
        rect.origin.y = priv->viewport_allocation.y + hbar_rect.y;
 @@ -1334,8 +1382,12 @@ gtk_scrolled_window_update_scrollbars (GtkScrolledWindow *scrolled_window)
        rect.size.height = hbar_rect.height;
- 
+
        /* don't overlap in the corner */
 -      if (scrolled_window->vscrollbar && vbar_rect.width > 0)
 -        rect.size.width -= vbar_rect.width;
@@ -113,13 +113,13 @@ index 9def3aa..a643b7d 100644
 +        {
 +          rect.size.width -= vbar_rect.width;
 +        }
- 
+
        rect.origin.y = window_height - rect.origin.y - rect.size.height;
- 
+
 @@ -1347,7 +1399,9 @@ gtk_scrolled_window_update_scrollbars (GtkScrolledWindow *scrolled_window)
        priv->hbar_layer.opacity = 0.0;
      }
- 
+
 -  if (scrolled_window->vscrollbar && vslider_rect.width > 0)
 +  if (scrolled_window->vscrollbar                   &&
 +      priv->voverlay_policy == GTK_POLICY_AUTOMATIC &&
@@ -130,7 +130,7 @@ index 9def3aa..a643b7d 100644
 @@ -1365,7 +1419,9 @@ gtk_scrolled_window_update_scrollbars (GtkScrolledWindow *scrolled_window)
        priv->vslider_layer.opacity = 0.0;
      }
- 
+
 -  if (scrolled_window->hscrollbar && hslider_rect.width > 0)
 +  if (scrolled_window->hscrollbar                   &&
 +      priv->hoverlay_policy == GTK_POLICY_AUTOMATIC &&
@@ -144,8 +144,8 @@ index f75596d..69dcb43 100644
 +++ b/gtk/gtkscrolledwindow.h
 @@ -116,6 +116,12 @@ void           gtk_scrolled_window_set_policy        (GtkScrolledWindow *scrolle
  void           gtk_scrolled_window_get_policy        (GtkScrolledWindow *scrolled_window,
- 						      GtkPolicyType     *hscrollbar_policy,
- 						      GtkPolicyType     *vscrollbar_policy);
+						      GtkPolicyType     *hscrollbar_policy,
+						      GtkPolicyType     *vscrollbar_policy);
 +void          gtk_scrolled_window_set_overlay_policy (GtkScrolledWindow *scrolled_window,
 +						      GtkPolicyType      hoverlay_policy,
 +						      GtkPolicyType      voverlay_policy);
@@ -153,8 +153,7 @@ index f75596d..69dcb43 100644
 +						      GtkPolicyType     *hoverlay_policy,
 +						      GtkPolicyType     *voverlay_policy);
  void           gtk_scrolled_window_set_placement     (GtkScrolledWindow *scrolled_window,
- 						      GtkCornerType      window_placement);
+						      GtkCornerType      window_placement);
  void           gtk_scrolled_window_unset_placement   (GtkScrolledWindow *scrolled_window);
--- 
+--
 1.7.10.2 (Apple Git-33)
-

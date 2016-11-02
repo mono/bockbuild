@@ -5,16 +5,16 @@ index 9e57edd..e8c28ad 100644
 @@ -46,6 +46,8 @@
  /* This is the window corresponding to the key window */
  static GdkWindow   *current_keyboard_window;
- 
+
 +static GdkWindow   *crossing_current_window = NULL;
 +
  /* This is the event mask from the last event */
  static GdkEventMask current_event_mask;
- 
+
 @@ -1129,12 +1131,18 @@ synthesize_crossing_event (GdkWindow *window,
        if (!(private->event_mask & GDK_ENTER_NOTIFY_MASK))
          return FALSE;
- 
+
 +      if (crossing_current_window == window)
 +        return FALSE;
 +
@@ -28,12 +28,12 @@ index 9e57edd..e8c28ad 100644
 +      crossing_current_window = window;
 +
        return TRUE;
- 
+
      case NSMouseExited:
 @@ -1142,6 +1150,11 @@ synthesize_crossing_event (GdkWindow *window,
        if (!(private->event_mask & GDK_LEAVE_NOTIFY_MASK))
          return FALSE;
- 
+
 +      if (crossing_current_window != NULL && crossing_current_window != window)
 +        return FALSE;
 +

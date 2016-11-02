@@ -38,13 +38,12 @@ index b37b2fa..3b30d3b 100644
 +                  g_printerr ("grabbing focus on %s\n",
 +                              class_getName ([ns_view->priv->view class]));
  #endif
- 
+
 -              gtk_widget_grab_focus (GTK_WIDGET (ns_view));
 +                  gtk_widget_grab_focus (GTK_WIDGET (ns_view));
 +                }
              }
            break;
- 
--- 
-1.7.10.2 (Apple Git-33)
 
+--
+1.7.10.2 (Apple Git-33)

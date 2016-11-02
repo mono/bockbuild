@@ -25,7 +25,7 @@ index 224d84c..36c716a 100644
 @@ -168,6 +168,12 @@ static pthread_cond_t select_thread_cond = PTHREAD_COND_INITIALIZER;
  static GPollFD *current_pollfds;
  static guint current_n_pollfds;
- 
+
 +/* We maintain serial numbers for calls to the start function. Because we
 + * only test for equality of this number (and not smaller/greater than)
 + * no special handling is needed for wrap around.
@@ -38,7 +38,7 @@ index 224d84c..36c716a 100644
 @@ -399,6 +405,8 @@ select_thread_start_poll (GPollFD *ufds,
    gint poll_fd_index = -1;
    gint i;
- 
+
 +  select_thread_start_serial++;
 +
    for (i = 0; i < nfds; i++)
@@ -49,7 +49,7 @@ index 224d84c..36c716a 100644
    NSDate *limit_date;
    gint n_ready;
 +  guint current_select_thread_serial;
- 
+
 -  static GPollFD *last_ufds;
 +  /* Maintain current poll parameters as static parameters. On recursive
 +   * calls to poll, we update the values. This way, if the poll array
@@ -62,15 +62,15 @@ index 224d84c..36c716a 100644
 +   */
 +  static GPollFD *current_ufds = NULL;
 +  static int current_nfds = 0;
- 
+
 -  last_ufds = ufds;
 +  current_ufds = ufds;
 +  current_nfds = nfds;
- 
+
    n_ready = select_thread_start_poll (ufds, nfds, timeout_);
    if (n_ready > 0)
      timeout_ = 0;
- 
+
 +  /* Using this serial number, we can check below whether the select
 +   * thread was started/collected in a recursive invocation of this
 +   * function.
@@ -83,7 +83,7 @@ index 224d84c..36c716a 100644
 @@ -726,17 +762,31 @@ poll_func (GPollFD *ufds,
                                 dequeue: YES];
    getting_events--;
- 
+
 -  /* We check if last_ufds did not change since the time this function was
 -   * called. It is possible that a recursive main loop (and thus recursive
 -   * invocation of this poll function) is triggered while in
@@ -120,9 +120,8 @@ index 224d84c..36c716a 100644
 +      for (i = 0; i < nfds; i++)
 +        current_ufds[i].revents = 0;
 +    }
-       
+
    if (event &&
        [event type] == NSApplicationDefined &&
--- 
+--
 1.7.10.2 (Apple Git-33)
-

@@ -15,7 +15,7 @@ index 694d20a..821981f 100644
 +++ b/gtk/gtkscrolledwindow.c
 @@ -1310,11 +1310,14 @@ static gboolean
  gtk_scrolled_window_expose (GtkWidget      *widget,
- 			    GdkEventExpose *event)
+			    GdkEventExpose *event)
  {
 +  GtkScrolledWindowPrivate *priv = GTK_SCROLLED_WINDOW_GET_PRIVATE (widget);
 +
@@ -29,8 +29,7 @@ index 694d20a..821981f 100644
 +      else
 +        gtk_scrolled_window_paint (widget, &event->area);
      }
- 
-   return FALSE;
--- 
-1.7.10.2 (Apple Git-33)
 
+   return FALSE;
+--
+1.7.10.2 (Apple Git-33)

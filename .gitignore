@@ -12,6 +12,14 @@ solitary/Solitary.exe*
 *.pyc
 *.pyo
 *.pkg
+*.sh
 *~
 .DS_Store
 cache
+/artifacts/
+/builds/
+/stage/
+/toolchain/
+/logs/
+/scratch/
+/.idea/

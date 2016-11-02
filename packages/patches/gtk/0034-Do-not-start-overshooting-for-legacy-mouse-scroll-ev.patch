@@ -27,13 +27,13 @@ index 77bb5af..4159af8 100644
 +      if (event->phase == GDK_EVENT_SCROLL_PHASE_NONE &&
 +          event->momentum_phase == GDK_EVENT_SCROLL_PHASE_NONE)
 +        legacy_mouse = TRUE;
- 
+
        _gtk_scrolled_window_get_overshoot (scrolled_window,
                                            &old_overshoot_x, &old_overshoot_y);
 @@ -2150,10 +2155,12 @@ gtk_scrolled_window_scroll_event (GtkWidget      *widget,
        if (old_overshoot_x != 0 || old_overshoot_y != 0)
          is_overshot = TRUE;
- 
+
 -      /* If a new gesture has started, reset snap back state.
 +      /* If a new gesture has started or we detect the end of a momentum
 +       * phase, reset snap back state.
@@ -55,7 +55,7 @@ index 77bb5af..4159af8 100644
 +                  (gtk_adjustment_get_value (adj) < 1.0 ||
 +                   gtk_adjustment_get_value (adj) > max_adj - 1.0))
                  may_overshoot = TRUE;
- 
+
                if (scrolled_window->hscrollbar_visible && (is_overshot || may_overshoot))
 @@ -2240,8 +2248,9 @@ gtk_scrolled_window_scroll_event (GtkWidget      *widget,
                 */
@@ -67,8 +67,7 @@ index 77bb5af..4159af8 100644
 +                  (gtk_adjustment_get_value (adj) < 1.0 ||
 +                   gtk_adjustment_get_value (adj) > max_adj - 1.0))
                  may_overshoot = TRUE;
- 
-               if (scrolled_window->vscrollbar_visible && (is_overshot || may_overshoot))
--- 
-1.7.10.2 (Apple Git-33)
 
+               if (scrolled_window->vscrollbar_visible && (is_overshot || may_overshoot))
+--
+1.7.10.2 (Apple Git-33)

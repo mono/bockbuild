@@ -13,8 +13,8 @@ index d997d0d..3b58f32 100644
 --- a/gtk/gtkcombobox.c
 +++ b/gtk/gtkcombobox.c
 @@ -1781,6 +1781,44 @@ gtk_combo_box_menu_position (GtkMenu  *menu,
- 				    menu_item);
- 
+				    menu_item);
+
        gtk_combo_box_menu_position_over (menu, x, y, push_in, user_data);
 +
 +      if (menu_item)
@@ -55,8 +55,7 @@ index d997d0d..3b58f32 100644
 +            gtk_combo_box_menu_position_below (menu, x, y, push_in, user_data);
 +        }
      }
- 
-   if (!gtk_widget_get_visible (GTK_MENU (priv->popup_widget)->toplevel))
--- 
-1.7.10.2 (Apple Git-33)
 
+   if (!gtk_widget_get_visible (GTK_MENU (priv->popup_widget)->toplevel))
+--
+1.7.10.2 (Apple Git-33)

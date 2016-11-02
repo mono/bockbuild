@@ -22,7 +22,7 @@ index 53f1962..c99a2c9 100644
 +                            CFSTR("NSPreferredScrollerStyleDidChangeNotification"),
 +                            0) == kCFCompareEqualTo)
 +    new_event.setting.name = "gtk-enable-overlay-scrollbars";
- 
+
    if (!new_event.setting.name)
      return;
 @@ -114,6 +118,20 @@ gdk_quartz_events_init_notifications (void)
@@ -44,13 +44,13 @@ index 53f1962..c99a2c9 100644
 +                                       CFNotificationSuspensionBehaviorDeliverImmediately);
 +    }
  }
- 
+
  void
 @@ -1686,7 +1704,43 @@ gdk_screen_get_setting (GdkScreen   *screen,
- 
+
        return TRUE;
      }
--  
+-
 +  else if (strcmp (name, "gtk-enable-overlay-scrollbars") == 0)
 +    {
 +      gboolean enabled = FALSE;
@@ -87,9 +87,9 @@ index 53f1962..c99a2c9 100644
 +
 +      return TRUE;
 +    }
-+ 
++
    /* FIXME: Add more settings */
- 
+
    return FALSE;
 diff --git a/gtk/gtksettings.c b/gtk/gtksettings.c
 index 3fbbf00..1455db1 100644
@@ -103,7 +103,7 @@ index 3fbbf00..1455db1 100644
 +  PROP_IM_STATUS_STYLE,
 +  PROP_ENABLE_OVERLAY_SCROLLBARS
  };
- 
+
  /* --- prototypes --- */
 @@ -1205,6 +1206,23 @@ gtk_settings_class_init (GtkSettingsClass *class)
                                                                  GTK_PARAM_READWRITE),
@@ -127,8 +127,7 @@ index 3fbbf00..1455db1 100644
 +
 +  g_assert (result == PROP_ENABLE_OVERLAY_SCROLLBARS);
  }
- 
- static void
--- 
-1.7.10.2 (Apple Git-33)
 
+ static void
+--
+1.7.10.2 (Apple Git-33)

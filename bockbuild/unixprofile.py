@@ -1,14 +1,20 @@
 from profile import Profile
-
+from bockbuild.environment import Environment
 
 class UnixProfile (Profile):
 
-    def __init__(self, prefix=False):
-        Profile.__init__(self, prefix)
+    def attach (self, bockbuild):
+        Profile.attach (self, bockbuild)
+
         self.name = 'unix'
+        self.env = Environment(self)
+        self.staged_prefix = bockbuild.staged_prefix 
+        self.toolchain_root = bockbuild.toolchain_root
 
         self.gcc_flags = ['-I%s/include' % self.staged_prefix]
         self.ld_flags = ['-L%s/lib' % self.staged_prefix]
+
+        self.env.set('BUILD_PREFIX', '%{prefix}')
 
         self.env.set('PATH', ':',
                      '%{toolchain_root}/bin',

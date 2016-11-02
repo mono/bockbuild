@@ -14,7 +14,7 @@ index 4159af8..7200462 100644
 @@ -3256,6 +3256,12 @@ gtk_scrolled_window_unrealize (GtkWidget *widget)
    GtkScrolledWindow *scrolled_window = GTK_SCROLLED_WINDOW (widget);
    GtkScrolledWindowPrivate *priv = GTK_SCROLLED_WINDOW_GET_PRIVATE (scrolled_window);
- 
+
 +  if (priv->sb_pointer_grabbed)
 +    {
 +      gtk_grab_remove (widget);
@@ -24,6 +24,5 @@ index 4159af8..7200462 100644
    gdk_window_set_user_data (priv->overshoot_window, NULL);
    gdk_window_destroy (priv->overshoot_window);
    priv->overshoot_window = NULL;
--- 
+--
 1.7.10.2 (Apple Git-33)
-

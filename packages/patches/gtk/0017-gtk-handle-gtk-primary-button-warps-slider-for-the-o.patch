@@ -14,7 +14,7 @@ index 7680f5d..02745b1 100644
 +++ b/gtk/gtkscrolledwindow.c
 @@ -2725,6 +2725,10 @@ gtk_scrolled_window_scroll_step_timeout (gpointer data)
  }
- 
+
  static gboolean
 +gtk_scrolled_window_captured_motion_notify_scrollbar (GtkWidget *widget,
 +                                                      GdkEvent  *event);
@@ -45,7 +45,7 @@ index 7680f5d..02745b1 100644
 +              mevent.window = bevent->window;
 +              mevent.x = bevent->x;
 +              mevent.y = bevent->y;
- 
+
 -          priv->sb_scroll_timeout_id =
 -            gdk_threads_add_timeout (SCROLL_INTERVAL_INITIAL,
 -                                     gtk_scrolled_window_scroll_step_timeout,
@@ -63,8 +63,7 @@ index 7680f5d..02745b1 100644
 +                                         scrolled_window);
 +            }
          }
- 
-       return TRUE;
--- 
-1.7.10.2 (Apple Git-33)
 
+       return TRUE;
+--
+1.7.10.2 (Apple Git-33)

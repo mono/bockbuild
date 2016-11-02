@@ -9,13 +9,13 @@ index 0770de6..9931b4c 100644
 --- a/gtk/gtknotebook.c
 +++ b/gtk/gtknotebook.c
 @@ -257,8 +257,6 @@ static void gtk_notebook_size_allocate       (GtkWidget        *widget,
- 					      GtkAllocation    *allocation);
+					      GtkAllocation    *allocation);
  static gint gtk_notebook_expose              (GtkWidget        *widget,
- 					      GdkEventExpose   *event);
+					      GdkEventExpose   *event);
 -static gboolean gtk_notebook_scroll          (GtkWidget        *widget,
 -                                              GdkEventScroll   *event);
  static gint gtk_notebook_button_press        (GtkWidget        *widget,
- 					      GdkEventButton   *event);
+					      GdkEventButton   *event);
  static gint gtk_notebook_button_release      (GtkWidget        *widget,
 @@ -542,7 +540,6 @@ gtk_notebook_class_init (GtkNotebookClass *class)
    widget_class->size_request = gtk_notebook_size_request;
@@ -36,17 +36,17 @@ index 0770de6..9931b4c 100644
 @@ -1852,8 +1848,7 @@ gtk_notebook_realize (GtkWidget *widget)
    attributes.event_mask = gtk_widget_get_events (widget);
    attributes.event_mask |= (GDK_BUTTON_PRESS_MASK |
- 			    GDK_BUTTON_RELEASE_MASK | GDK_KEY_PRESS_MASK |
+			    GDK_BUTTON_RELEASE_MASK | GDK_KEY_PRESS_MASK |
 -			    GDK_POINTER_MOTION_MASK | GDK_LEAVE_NOTIFY_MASK |
 -			    GDK_SCROLL_MASK);
 +			    GDK_POINTER_MOTION_MASK | GDK_LEAVE_NOTIFY_MASK);
    attributes_mask = GDK_WA_X | GDK_WA_Y;
- 
-   notebook->event_window = gdk_window_new (gtk_widget_get_parent_window (widget), 
+
+   notebook->event_window = gdk_window_new (gtk_widget_get_parent_window (widget),
 @@ -2604,49 +2599,6 @@ get_widget_coordinates (GtkWidget *widget,
      return FALSE;
  }
- 
+
 -static gboolean
 -gtk_notebook_scroll (GtkWidget      *widget,
 -                     GdkEventScroll *event)

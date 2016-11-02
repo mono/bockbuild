@@ -13,9 +13,9 @@ index 7094eb6..89c91da 100644
 --- a/gtk/gtkwindow.c
 +++ b/gtk/gtkwindow.c
 @@ -6631,13 +6631,28 @@ gtk_window_paint (GtkWidget     *widget,
- 		      GTK_SHADOW_NONE, area, widget, "base", 0, 0, -1, -1);
+		      GTK_SHADOW_NONE, area, widget, "base", 0, 0, -1, -1);
  }
- 
+
 +static void
 +gtk_window_paint_region (GtkWidget *widget,
 +                         GdkRegion *region)
@@ -33,16 +33,15 @@ index 7094eb6..89c91da 100644
 +
  static gint
  gtk_window_expose (GtkWidget      *widget,
- 		   GdkEventExpose *event)
+		   GdkEventExpose *event)
  {
    if (!gtk_widget_get_app_paintable (widget))
 -    gtk_window_paint (widget, &event->area);
--  
+-
 +    gtk_window_paint_region (widget, event->region);
 +
    if (GTK_WIDGET_CLASS (gtk_window_parent_class)->expose_event)
      return GTK_WIDGET_CLASS (gtk_window_parent_class)->expose_event (widget, event);
- 
--- 
-1.7.10.2 (Apple Git-33)
 
+--
+1.7.10.2 (Apple Git-33)

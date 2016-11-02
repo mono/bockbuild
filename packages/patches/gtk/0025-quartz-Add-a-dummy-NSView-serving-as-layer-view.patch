@@ -24,10 +24,10 @@ index 7f0ec40..c6ccf06 100644
 +
 +  [[self layer] removeAllAnimations];
  }
- 
+
  -(void)setNeedsInvalidateShadow: (BOOL)invalidate
 @@ -690,7 +692,11 @@
- 
+
  -(void)setFrame: (NSRect)frame
  {
 +  GdkWindowObject *private = GDK_WINDOW_OBJECT (gdk_window);
@@ -35,7 +35,7 @@ index 7f0ec40..c6ccf06 100644
 +
    [super setFrame: frame];
 +  [impl->layer_view setFrame: frame];
- 
+
    if ([self window])
      [self updateTrackingRect];
 diff --git a/gdk/quartz/gdkquartz.h b/gdk/quartz/gdkquartz.h
@@ -43,7 +43,7 @@ index 3c42983..8b0085c 100644
 --- a/gdk/quartz/gdkquartz.h
 +++ b/gdk/quartz/gdkquartz.h
 @@ -54,6 +54,7 @@ typedef enum
- 
+
  NSWindow *gdk_quartz_window_get_nswindow                        (GdkWindow      *window);
  NSView   *gdk_quartz_window_get_nsview                          (GdkWindow      *window);
 +NSView   *gdk_quartz_window_get_layer_view                      (GdkWindow      *window);
@@ -57,7 +57,7 @@ index 318a171..500776d 100644
 @@ -68,6 +68,17 @@ gdk_quartz_window_get_nsview (GdkWindow *window)
    return ((GdkWindowImplQuartz *)private->impl)->view;
  }
- 
+
 +NSView *
 +gdk_quartz_window_get_layer_view (GdkWindow *window)
 +{
@@ -73,9 +73,9 @@ index 318a171..500776d 100644
  gdk_quartz_window_get_nswindow (GdkWindow *window)
  {
 @@ -1024,6 +1035,11 @@ _gdk_window_impl_new (GdkWindow     *window,
- 	[impl->view setGdkWindow:window];
- 	[impl->toplevel setContentView:impl->view];
- 	[impl->view release];
+	[impl->view setGdkWindow:window];
+	[impl->toplevel setContentView:impl->view];
+	[impl->view release];
 +
 +        impl->layer_view = [[NSView alloc] initWithFrame:content_rect];
 +        [impl->view addSubview:impl->layer_view];
@@ -83,7 +83,7 @@ index 318a171..500776d 100644
 +        [impl->layer_view release];
        }
        break;
- 
+
 diff --git a/gdk/quartz/gdkwindow-quartz.h b/gdk/quartz/gdkwindow-quartz.h
 index 4a0e27a..f35238b 100644
 --- a/gdk/quartz/gdkwindow-quartz.h
@@ -93,9 +93,8 @@ index 4a0e27a..f35238b 100644
    NSTrackingRectTag tracking_rect;
    GdkQuartzView *view;
 +  NSView *layer_view;
- 
-   GdkWindowTypeHint type_hint;
- 
--- 
-1.7.10.2 (Apple Git-33)
 
+   GdkWindowTypeHint type_hint;
+
+--
+1.7.10.2 (Apple Git-33)

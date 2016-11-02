@@ -10,7 +10,7 @@ index f4ae401..d601ee3 100644
 +      _gdk_quartz_update_symbolic_hotkeys ();
      }
  }
- 
+
 diff --git a/gdk/quartz/gdkinput.c b/gdk/quartz/gdkinput.c
 index 6f5f8ea..8d5698f 100644
 --- a/gdk/quartz/gdkinput.c
@@ -22,7 +22,7 @@ index 6f5f8ea..8d5698f 100644
 +
 +  _gdk_quartz_release_symbolic_hotkeys ();
  }
- 
+
  gboolean
 diff --git a/gdk/quartz/gdkkeys-quartz.c b/gdk/quartz/gdkkeys-quartz.c
 index e81ea4d..746881b 100644
@@ -33,7 +33,7 @@ index e81ea4d..746881b 100644
  #include "gdk.h"
  #include "gdkkeysyms.h"
 +#include "gdkprivate-quartz.h"
- 
+
  #define NUM_KEYCODES 128
  #define KEYVALS_PER_KEYCODE 4
 @@ -65,6 +66,7 @@ static GdkKeymap *default_keymap = NULL;
@@ -41,13 +41,13 @@ index e81ea4d..746881b 100644
   */
  static guint *keyval_array = NULL;
 +static CFArrayRef global_hotkeys = NULL;
- 
+
  static inline UniChar
  macroman2ucs (unsigned char c)
 @@ -806,6 +808,24 @@ gdk_keymap_map_virtual_modifiers (GdkKeymap       *keymap,
    return TRUE;
  }
- 
+
 +void
 +_gdk_quartz_update_symbolic_hotkeys ()
 +{
@@ -79,26 +79,26 @@ index e81ea4d..746881b 100644
                             (flags & NSControlKeyMask ? controlKey : 0) |
                             (flags & NSShiftKeyMask ? shiftKey : 0);
    int i;
- 
+
 -  if (CopySymbolicHotKeys (&global_keys) == noErr && global_keys != NULL)
 +  if (global_hotkeys != NULL)
      {
 -      CFIndex length = CFArrayGetCount (global_keys);
 +      CFIndex length = CFArrayGetCount (global_hotkeys);
- 
+
        for (i = 0; i < length; i++)
- 	{
+	{
 -	  CFDictionaryRef key_info = CFArrayGetValueAtIndex (global_keys, i);
 +	  CFDictionaryRef key_info = CFArrayGetValueAtIndex (global_hotkeys, i);
- 
- 	  CFNumberRef code = CFDictionaryGetValue (key_info, kHISymbolicHotKeyCode);
- 	  CFNumberRef mods = CFDictionaryGetValue (key_info, kHISymbolicHotKeyModifiers);
+
+	  CFNumberRef code = CFDictionaryGetValue (key_info, kHISymbolicHotKeyCode);
+	  CFNumberRef mods = CFDictionaryGetValue (key_info, kHISymbolicHotKeyModifiers);
 @@ -846,8 +865,6 @@ _gdk_quartz_keys_event_type (NSEvent *event)
- 	}
+	}
      }
- 
+
 -    CFRelease (global_keys);
--  
+-
    switch ([event type])
      {
      case NSKeyDown:
@@ -107,8 +107,8 @@ index f8b382d..0b0f66b 100644
 --- a/gdk/quartz/gdkprivate-quartz.h
 +++ b/gdk/quartz/gdkprivate-quartz.h
 @@ -200,6 +200,8 @@ GdkImage *_gdk_quartz_image_copy_to_image (GdkDrawable *drawable,
- 					    gint         height);
- 
+					    gint         height);
+
  /* Keys */
 +void         _gdk_quartz_update_symbolic_hotkeys  ();
 +void         _gdk_quartz_release_symbolic_hotkeys ();

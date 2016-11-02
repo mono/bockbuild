@@ -82,11 +82,11 @@ class Package:
         else:
             self.configure = './configure --prefix="%{package_prefix}"'
 
-        self.make = 'make -j%s' % Package.profile.cpu_count
+        self.make = 'make -j%s' % Package.profile.bockbuild.cpu_count
         self.makeinstall = None
 
         self.git_branch = git_branch
-        self.git = Package.profile.git
+        self.git = Package.profile.bockbuild.git
 
         if not override_properties is None:
             for k, v in override_properties.iteritems():
@@ -137,10 +137,10 @@ class Package:
         self.version = package_version
 
     def fetch(self):
-        build_root = self.profile.build_root
-        scratch = self.profile.scratch
-        resource_dir = self.profile.resource_root
-        source_cache_dir = self.profile.source_cache
+        build_root = self.profile.bockbuild.build_root
+        scratch = self.profile.bockbuild.scratch
+        resources = self.profile.bockbuild.resources
+        source_cache_dir = self.profile.bockbuild.source_cache
         self.source_dir_name = expand_macros(self.source_dir_name, self)
         self.buildstring = []
         scratch_workspace = os.path.join(scratch, '%s.workspace' % self.name)
@@ -151,13 +151,17 @@ class Package:
             shutil.move(final_workspace, scratch_workspace)
 
         def checkout(self, source_url, cache_dir, workspace_dir):
+            is_local = os.path.isdir (source_url)
             def clean_git_workspace(dir):
                 trace('Cleaning git workspace: ' + self.name)
-                self.git('reset --hard', dir)
+                self.git('reset --hard', dir, hazard = True)
                 if config.iterative == False:
-                    self.git('clean -xffd', dir)
+                    self.git('clean -xffd', dir, hazard = True)
                 else:
                     warn('iterative')
+
+            def clean_local_git_workspace(dir): # avoid resetting and destroying work!
+                self.git('clean -xffd', dir)
 
             def create_cache():
                 # since this is a fresh cache, the workspace copy is invalid if
@@ -188,12 +192,16 @@ class Package:
                              (self.git_branch, self.git_branch), workspace_dir)
 
             def resolve():
+                root = git_rootdir(self, os.path.realpath (workspace_dir))
+                if not is_modifiable_repo(root):
+                    return clean_local_git_workspace
                 current_revision = git_get_revision(self, workspace_dir)
+                target_revision = None
 
                 if current_revision == self.revision:
                     return
 
-                if self.revision is None and self.git_branch is None:
+                if not is_local and self.revision is None and self.git_branch is None:
                     warn(
                         'Package does not define revision or branch, defaulting to tip of "master"')
                     self.git_branch = self.git_branch or 'master'
@@ -209,9 +217,9 @@ class Package:
                     if self.revision is None:  # target the tip of the branch
                         target_revision = git_get_revision(self, workspace_dir)
 
-                if (current_revision != target_revision):
+                if target_revision and (current_revision != target_revision):
                     self.git('reset --hard %s' %
-                             target_revision, workspace_dir)
+                             target_revision, workspace_dir, hazard = True)
                 self.git('submodule update --recursive', workspace_dir)
 
                 current_revision = git_get_revision(self, workspace_dir)
@@ -234,17 +242,22 @@ class Package:
                 self.desc = str
                 self.buildstring = ['%s <%s>' % (str, source_url)]
 
-            if os.path.exists(cache_dir):
-                update_cache()
+            if is_local:
+                link_dir (workspace_dir, source_url)
+                if git_is_dirty (self, workspace_dir):
+                    warn('The repository is dirty!')
             else:
-                create_cache()
+                if os.path.exists(cache_dir):
+                    update_cache()
+                else:
+                    create_cache()
 
-            if os.path.exists(workspace_dir):
-                if self.dont_clean == True:  # previous workspace was left dirty, delete
-                    clean_git_workspace(workspace_dir)
-                update_workspace()
-            else:
-                create_workspace()
+                if os.path.exists(workspace_dir):
+                    if self.dont_clean == True:  # previous workspace was left dirty, delete
+                        clean_git_workspace(workspace_dir)
+                    update_workspace()
+                else:
+                    create_workspace()
 
             cache = None  # at this point, the cache is not the problem; keep _fetch_sources from deleting it
 
@@ -350,7 +363,7 @@ class Package:
 
                     resolved_source = scratch_workspace
 
-                elif source.startswith(('git://', 'file://', 'ssh://')) or source.endswith('.git'):
+                elif source.startswith(('git://', 'file://', 'ssh://')) or source.endswith('.git') or (os.path.isdir(source) and git_isrootdir (self, source)):
                     cache = get_git_cache_path()
                     clean_func = checkout(
                         self, source, cache, scratch_workspace)
@@ -369,10 +382,12 @@ class Package:
                         self.name, self.version, source)
                     self.buildstring = ['local workspace: %s' % (source)]
                     clean_func = clean_local_copy
-                elif os.path.isfile(os.path.join(resource_dir, source)):
-                    resolved_source = os.path.join(resource_dir, source)
-                    self.buildstring.extend(
-                        ['%s md5: %s' % (source, md5(resolved_source))])
+                else:
+                    for path in resources:
+                        if os.path.isfile(os.path.join(path, source)):
+                            resolved_source = os.path.join(path, source)
+                            self.buildstring.extend(
+                                ['%s md5: %s' % (source, md5(resolved_source))])
 
                 if resolved_source is None:
                     error('could not resolve source: %s' % source)
@@ -441,11 +456,11 @@ class Package:
 
                 self.link(workspace_x86, workspace)
                 package_stage = self.do_build(
-                    'darwin-32', os.path.join(self.profile.scratch, self.name + '-x86.install'))
+                    'darwin-32', os.path.join(self.profile.bockbuild.scratch, self.name + '-x86.install'))
 
                 self.link(workspace_x64, workspace)
                 stagedir_x64 = self.do_build(
-                    'darwin-64', os.path.join(self.profile.scratch, self.name + '-x64.install'))
+                    'darwin-64', os.path.join(self.profile.bockbuild.scratch, self.name + '-x64.install'))
 
                 delete(workspace)
                 shutil.move(workspace_x86, workspace)
@@ -466,7 +481,7 @@ class Package:
         self.deploy_package(build_artifact, self.staged_profile)
 
     def deploy_package(self, artifact, dest):
-        progress('Deploying (%s -> %s)' %
+        trace('Deploying (%s -> %s)' %
                  (os.path.basename(artifact), os.path.basename(dest)))
 
         unprotect_dir(dest, recursive=True)
@@ -518,7 +533,7 @@ class Package:
         progress('Building (arch: %s)' % arch)
         if install_dir is None:
             install_dir = os.path.join(
-                self.profile.scratch, self.name + '.install')
+                self.profile.bockbuild.scratch, self.name + '.install')
 
         self.stage_root = install_dir
         self.rm_if_exists(self.stage_root)
@@ -550,16 +565,16 @@ class Package:
             if isinstance(e, CommandException):
                 if os.path.exists(self.workspace):
                     problem_dir = os.path.join(
-                        self.profile.root, os.path.basename(self.workspace) + '.problem')
+                        self.profile.bockbuild.execution_root, os.path.basename(self.workspace) + '.problem')
 
                     # take this chance to clear out older .problems
-                    for d in os.listdir(self.profile.root):
+                    for d in os.listdir(self.profile.bockbuild.execution_root):
                         if d.endswith('.problem'):
-                            self.rm(os.path.join(self.profile.root, d))
+                            self.rm(os.path.join(self.profile.bockbuild.execution_root, d))
 
                     shutil.move(self.workspace, problem_dir)
                     info('Build moved to ./%s \n Run "source ./%s" first to replicate bockbuild environment.' %
-                         (os.path.basename(problem_dir), os.path.basename(self.profile.env_script)))
+                         (os.path.basename(problem_dir), os.path.basename(self.profile.bockbuild.env_script)))
                     error(str(e))
             else:
                 self.rm_if_exists(self.workspace)

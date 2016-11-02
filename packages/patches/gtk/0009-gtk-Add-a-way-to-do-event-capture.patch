@@ -54,7 +54,7 @@ index 56c92db..21345ed 100644
    if (window_group->grabs)
      {
        grab_widget = window_group->grabs->data;
--      
+-
 +
 +      /* Find out the topmost widget where captured event propagation
 +       * should start, which is the widget holding the GTK+ grab
@@ -74,7 +74,7 @@ index 56c92db..21345ed 100644
 +      if (!_gtk_widget_captured_event (event_widget, event))
 +        gtk_widget_event (event_widget, event);
        break;
- 
+
      case GDK_SCROLL:
      case GDK_BUTTON_PRESS:
      case GDK_2BUTTON_PRESS:
@@ -83,7 +83,7 @@ index 56c92db..21345ed 100644
 +      if (!_gtk_propagate_captured_event (grab_widget, event, topmost_widget))
 +        gtk_propagate_event (grab_widget, event);
        break;
- 
+
      case GDK_KEY_PRESS:
 @@ -1682,19 +1692,22 @@ gtk_main_do_event (GdkEvent *event)
      case GDK_BUTTON_RELEASE:
@@ -93,28 +93,28 @@ index 56c92db..21345ed 100644
 +      if (!_gtk_propagate_captured_event (grab_widget, event, topmost_widget))
 +        gtk_propagate_event (grab_widget, event);
        break;
-       
+
      case GDK_ENTER_NOTIFY:
        GTK_PRIVATE_SET_FLAG (event_widget, GTK_HAS_POINTER);
        _gtk_widget_set_pointer_window (event_widget, event->any.window);
 -      if (gtk_widget_is_sensitive (grab_widget))
 +      if (gtk_widget_is_sensitive (grab_widget) &&
 +          !_gtk_propagate_captured_event (grab_widget, event, topmost_widget))
- 	gtk_widget_event (grab_widget, event);
+	gtk_widget_event (grab_widget, event);
        break;
-       
+
      case GDK_LEAVE_NOTIFY:
        GTK_PRIVATE_UNSET_FLAG (event_widget, GTK_HAS_POINTER);
 -      if (gtk_widget_is_sensitive (grab_widget))
 +      if (gtk_widget_is_sensitive (grab_widget) &&
 +          !_gtk_propagate_captured_event (grab_widget, event, topmost_widget))
- 	gtk_widget_event (grab_widget, event);
+	gtk_widget_event (grab_widget, event);
        break;
-       
+
 @@ -2400,44 +2413,96 @@ gtk_quit_invoke_function (GtkQuitFunction *quitf)
      }
  }
- 
+
 -/**
 - * gtk_propagate_event:
 - * @widget: a #GtkWidget
@@ -136,7 +136,7 @@ index 56c92db..21345ed 100644
 - * the mailing list for better ways to achieve your goals. For
 - * example, use gdk_window_invalidate_rect() or
 - * gtk_widget_queue_draw() instead of making up expose events.
-- * 
+- *
 - **/
 -void
 -gtk_propagate_event (GtkWidget *widget,
@@ -147,15 +147,15 @@ index 56c92db..21345ed 100644
 +                    GtkWidget *topmost)
  {
 -  gint handled_event;
--  
+-
 -  g_return_if_fail (GTK_IS_WIDGET (widget));
 -  g_return_if_fail (event != NULL);
--  
+-
 -  handled_event = FALSE;
 +  gboolean handled_event = FALSE;
- 
+
 -  g_object_ref (widget);
--      
+-
 -  if ((event->type == GDK_KEY_PRESS) ||
 -      (event->type == GDK_KEY_RELEASE))
 +  /* Propagate event up the widget tree so that
@@ -245,7 +245,7 @@ index 56c92db..21345ed 100644
        /* Only send key events within Window widgets to the Window
         *  The Window widget will in turn pass the
 @@ -2448,60 +2513,75 @@ gtk_propagate_event (GtkWidget *widget,
- 
+
        window = gtk_widget_get_toplevel (widget);
        if (GTK_IS_WINDOW (window))
 -	{
@@ -254,7 +254,7 @@ index 56c92db..21345ed 100644
 -	   */
 -	  if (widget != window && gtk_widget_has_grab (widget))
 -	    handled_event = gtk_widget_event (widget, event);
--	  
+-
 -	  if (!handled_event)
 -	    {
 -	      window = gtk_widget_get_toplevel (widget);
@@ -264,7 +264,7 @@ index 56c92db..21345ed 100644
 -		    gtk_widget_event (window, event);
 -		}
 -	    }
--		  
+-
 -	  handled_event = TRUE; /* don't send to widget */
 -	}
 +        {
@@ -289,7 +289,7 @@ index 56c92db..21345ed 100644
 +          return handled_event;
 +        }
      }
--  
+-
 -  /* Other events get propagated up the widget tree
 -   *  so that parents can see the button and motion
 -   *  events of the children.
@@ -299,7 +299,7 @@ index 56c92db..21345ed 100644
 -      while (TRUE)
 -	{
 -	  GtkWidget *tmp;
- 
+
 -	  /* Scroll events are special cased here because it
 -	   * feels wrong when scrolling a GtkViewport, say,
 -	   * to have children of the viewport eat the scroll
@@ -309,7 +309,7 @@ index 56c92db..21345ed 100644
 -	    handled_event = event->type != GDK_SCROLL;
 -	  else
 -	    handled_event = gtk_widget_event (widget, event);
--	      
+-
 -	  tmp = widget->parent;
 -	  g_object_unref (widget);
 +  /* Other events get propagated up/down the widget tree */
@@ -317,9 +317,9 @@ index 56c92db..21345ed 100644
 +    propagate_event_down (widget, event, topmost) :
 +    propagate_event_up (widget, event, topmost);
 +}
- 
+
 -	  widget = tmp;
--	  
+-
 -	  if (!handled_event && widget)
 -	    g_object_ref (widget);
 -	  else
@@ -369,7 +369,7 @@ index 56c92db..21345ed 100644
 +{
 +  return propagate_event (widget, event, TRUE, topmost);
  }
- 
+
  #if 0
 diff --git a/gtk/gtkprivate.h b/gtk/gtkprivate.h
 index 6386c32..3865a67 100644
@@ -377,8 +377,8 @@ index 6386c32..3865a67 100644
 +++ b/gtk/gtkprivate.h
 @@ -152,6 +152,20 @@ gboolean _gtk_translate_keyboard_accel_state     (GdkKeymap       *keymap,
                                                    GdkModifierType *consumed_modifiers);
- 
- 
+
+
 +gboolean        _gtk_propagate_captured_event  (GtkWidget       *widget,
 +                                                GdkEvent        *event,
 +                                                GtkWidget       *topmost);
@@ -394,24 +394,24 @@ index 6386c32..3865a67 100644
 +
 +
  G_END_DECLS
- 
+
  #endif /* __GTK_PRIVATE_H__ */
 diff --git a/gtk/gtkwidget.c b/gtk/gtkwidget.c
 index 1d1f6bb..8e38ee1 100644
 --- a/gtk/gtkwidget.c
 +++ b/gtk/gtkwidget.c
 @@ -351,6 +351,7 @@ static void gtk_widget_set_usize_internal (GtkWidget *widget,
- 					   gint       height);
+					   gint       height);
  static void gtk_widget_get_draw_rectangle (GtkWidget    *widget,
- 					   GdkRectangle *rect);
+					   GdkRectangle *rect);
 +static gboolean event_window_is_still_viewable (GdkEvent *event);
- 
- 
+
+
  /* --- variables --- */
 @@ -4807,6 +4808,58 @@ gtk_widget_event (GtkWidget *widget,
    return gtk_widget_event_internal (widget, event);
  }
- 
+
 +void
 +_gtk_widget_set_captured_event_handler (GtkWidget               *widget,
 +                                        GtkCapturedEventHandler  callback)
@@ -464,9 +464,8 @@ index 1d1f6bb..8e38ee1 100644
 +
 +  return return_val;
 +}
- 
+
  /**
   * gtk_widget_send_expose:
--- 
+--
 1.7.10.2 (Apple Git-33)
-

@@ -3,12 +3,12 @@ index e9428d0..8bd02d7 100644
 --- a/gdk/gdkwindow.h
 +++ b/gdk/gdkwindow.h
 @@ -724,6 +724,8 @@ void       gdk_window_remove_redirection     (GdkWindow     *window);
- 
+
  /* NSView embedding */
  gboolean   gdk_window_supports_nsview_embedding ();
 +gboolean   gdk_window_has_embedded_nsview_focus (GdkWindow *window);
 +void       gdk_window_set_has_embedded_nsview_focus (GdkWindow *window, gboolean value);
- 
+
  #ifndef GDK_DISABLE_DEPRECATED
  #ifndef GDK_MULTIHEAD_SAFE
 diff --git a/gdk/quartz/GdkQuartzWindow.c b/gdk/quartz/GdkQuartzWindow.c
@@ -18,7 +18,7 @@ index b6b794e..124427e 100644
 @@ -247,6 +247,15 @@
          }
      }
- 
+
 +  if (responder != NULL && [responder isKindOfClass: [NSTextView class]])
 +    {
 +      gdk_window_set_has_embedded_nsview_focus (window, TRUE);
@@ -30,7 +30,7 @@ index b6b794e..124427e 100644
 +
    return [super makeFirstResponder:responder];
  }
- 
+
 diff --git a/gdk/quartz/gdkwindow-quartz.c b/gdk/quartz/gdkwindow-quartz.c
 index 050139a..cd5cc26 100644
 --- a/gdk/quartz/gdkwindow-quartz.c
@@ -38,7 +38,7 @@ index 050139a..cd5cc26 100644
 @@ -895,6 +895,24 @@ gdk_window_supports_nsview_embedding ()
    return TRUE;
  }
- 
+
 +gboolean
 +gdk_window_has_embedded_nsview_focus (GdkWindow *window)
 +{
@@ -59,16 +59,16 @@ index 050139a..cd5cc26 100644
 +
  void
  _gdk_window_impl_new (GdkWindow     *window,
- 		      GdkWindow     *real_parent,
+		      GdkWindow     *real_parent,
 diff --git a/gdk/quartz/gdkwindow-quartz.h b/gdk/quartz/gdkwindow-quartz.h
 index f35238b..b619914 100644
 --- a/gdk/quartz/gdkwindow-quartz.h
 +++ b/gdk/quartz/gdkwindow-quartz.h
 @@ -61,6 +61,7 @@ struct _GdkWindowImplQuartz
    GList *sorted_children;
- 
+
    GdkRegion *needs_display_region;
 +  gboolean has_nsview_focus;
  };
-  
- struct _GdkWindowImplQuartzClass 
+
+ struct _GdkWindowImplQuartzClass

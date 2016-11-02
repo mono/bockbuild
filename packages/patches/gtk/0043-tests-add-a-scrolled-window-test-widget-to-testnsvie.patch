@@ -15,7 +15,7 @@ index 45b1d60..1a523e6 100644
 @@ -139,6 +139,57 @@ main (gint   argc,
                                ns_view);
    }
- 
+
 +  /* add an entry in a scrolled window to test scrolling / clipping */
 +  {
 +    GtkWidget *sw;
@@ -70,6 +70,5 @@ index 45b1d60..1a523e6 100644
    /* add an entry in an event box to test living inside another gdkwindow */
    {
      GtkWidget *event_box;
--- 
+--
 1.7.10.2 (Apple Git-33)
-

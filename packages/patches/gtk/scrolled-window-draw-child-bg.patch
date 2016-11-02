@@ -3,8 +3,8 @@ index 02920ce..3999d7d 100644
 --- a/gtk/gtkscrolledwindow.c
 +++ b/gtk/gtkscrolledwindow.c
 @@ -442,6 +442,13 @@ gtk_scrolled_window_class_init (GtkScrolledWindowClass *class)
- 							         GTK_PARAM_READABLE));
- 
+							         GTK_PARAM_READABLE));
+
    gtk_widget_class_install_style_property (widget_class,
 +             g_param_spec_boolean ("draw-child-bg",
 +                       P_("Draw Child Background"),
@@ -13,25 +13,25 @@ index 02920ce..3999d7d 100644
 +                       GTK_PARAM_READABLE));
 +
 +  gtk_widget_class_install_style_property (widget_class,
- 					   g_param_spec_int ("scrollbar-spacing",
- 							     P_("Scrollbar spacing"),
- 							     P_("Number of pixels between the scrollbars and the scrolled window"),
+					   g_param_spec_int ("scrollbar-spacing",
+							     P_("Scrollbar spacing"),
+							     P_("Number of pixels between the scrollbars and the scrolled window"),
 @@ -1296,8 +1303,10 @@ gtk_scrolled_window_paint (GtkWidget      *widget,
    GtkScrolledWindow *scrolled_window = GTK_SCROLLED_WINDOW (widget);
    GdkRectangle *area = &event->area;
    GtkAllocation relative_allocation;
 +  gboolean draw_child_bg;
 +  gtk_widget_style_get (widget, "draw-child-bg", &draw_child_bg, NULL);
- 
+
 -  if (scrolled_window->shadow_type != GTK_SHADOW_NONE)
 +  if (draw_child_bg || scrolled_window->shadow_type != GTK_SHADOW_NONE)
      {
        gboolean scrollbars_within_bevel;
- 
+
 @@ -1322,13 +1331,47 @@ gtk_scrolled_window_paint (GtkWidget      *widget,
            relative_allocation.height = widget->allocation.height - 2 * container->border_width;
          }
- 
+
 -      gtk_paint_shadow (widget->style, widget->window,
 -			GTK_STATE_NORMAL, scrolled_window->shadow_type,
 -			area, widget, "scrolled_window",
@@ -82,4 +82,3 @@ index 02920ce..3999d7d 100644
 +        }
      }
  }
- 

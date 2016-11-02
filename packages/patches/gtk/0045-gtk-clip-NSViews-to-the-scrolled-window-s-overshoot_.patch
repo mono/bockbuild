@@ -16,7 +16,7 @@ index 84d758f..db1da93 100644
 --- a/gtk/gtknsview.c
 +++ b/gtk/gtknsview.c
 @@ -160,6 +160,7 @@ gtk_ns_view_init (GtkNSView *ns_view)
- 
+
    if (viewport)
      {
 +      GdkWindow *window;
@@ -24,9 +24,9 @@ index 84d758f..db1da93 100644
        GtkAllocation viewport_allocation;
        CGRect rect;
 @@ -170,6 +171,36 @@ gtk_ns_view_init (GtkNSView *ns_view)
- 
+
        gtk_widget_get_allocation (viewport, &viewport_allocation);
- 
+
 +#if 0
 +      g_printerr ("viewport allocation: %d, %d (%d x %x)\n",
 +                  viewport_allocation.x,
@@ -66,14 +66,13 @@ index 1a523e6..24d1d41 100644
 +++ b/tests/testnsview.c
 @@ -149,7 +149,8 @@ main (gint   argc,
      NSTextField *text_field;
- 
+
      sw = gtk_scrolled_window_new (NULL, NULL);
 -    gtk_widget_set_size_request (sw, -1, 100);
 +    gtk_widget_set_size_request (sw, -1, 130);
 +    gtk_container_set_border_width (GTK_CONTAINER (sw), 20);
      gtk_box_pack_start (GTK_BOX (vbox), sw, FALSE, FALSE, 0);
      gtk_widget_show (sw);
- 
--- 
-1.7.10.2 (Apple Git-33)
 
+--
+1.7.10.2 (Apple Git-33)

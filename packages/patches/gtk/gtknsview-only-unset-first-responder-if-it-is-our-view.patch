@@ -14,11 +14,11 @@ index b325bda..645231d 100644
  {
    GtkNSView *ns_view = GTK_NS_VIEW (object);
 +  GtkWindow *window = GTK_WINDOW (gtk_widget_get_toplevel (GTK_WIDGET (object)));
- 
+
    if (G_OBJECT_CLASS (gtk_ns_view_parent_class)->notify)
      G_OBJECT_CLASS (gtk_ns_view_parent_class)->notify (object, pspec);
 @@ -550,7 +551,7 @@ gtk_ns_view_notify (GObject    *object,
- 
+
        if (gtk_widget_has_focus (GTK_WIDGET (object)))
          [ns_window makeFirstResponder:ns_view->priv->view];
 -      else

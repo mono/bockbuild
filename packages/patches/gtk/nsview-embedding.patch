@@ -4,7 +4,7 @@ index 6d4abc0..cf8b626 100644
 +++ b/gdk/gdkwindow.c
 @@ -1468,6 +1468,8 @@ gdk_window_new (GdkWindow     *parent,
      private->parent->children = g_list_prepend (private->parent->children, window);
- 
+
    native = _gdk_native_windows; /* Default */
 +  if (attributes->type_hint == 100)
 +      native = TRUE;
@@ -18,13 +18,13 @@ index 95a3665..e9428d0 100644
 @@ -722,6 +722,9 @@ void       gdk_window_redirect_to_drawable   (GdkWindow     *window,
                                                gint           height);
  void       gdk_window_remove_redirection     (GdkWindow     *window);
- 
+
 +/* NSView embedding */
 +gboolean   gdk_window_supports_nsview_embedding ();
 +
  #ifndef GDK_DISABLE_DEPRECATED
  #ifndef GDK_MULTIHEAD_SAFE
- GdkPointerHooks *gdk_set_pointer_hooks (const GdkPointerHooks *new_hooks);   
+ GdkPointerHooks *gdk_set_pointer_hooks (const GdkPointerHooks *new_hooks);
 diff --git a/gdk/quartz/GdkQuartzView.c b/gdk/quartz/GdkQuartzView.c
 index 1c92714..3c7ba37 100644
 --- a/gdk/quartz/GdkQuartzView.c
@@ -32,7 +32,7 @@ index 1c92714..3c7ba37 100644
 @@ -122,6 +122,11 @@
    return selectedRange;
  }
- 
+
 +-(BOOL)isGtkView
 +{
 +  return YES;
@@ -50,7 +50,7 @@ index 2f86de7..04acb62 100644
  - (NSTrackingRectTag)trackingRect;
  - (void)setNeedsInvalidateShadow: (BOOL)invalidate;
 +- (void)mouseDown:(NSEvent *)theEvent;
- 
+
  @end
 diff --git a/gdk/quartz/GdkQuartzWindow.c b/gdk/quartz/GdkQuartzWindow.c
 index 8face0c..b6b794e 100644
@@ -59,7 +59,7 @@ index 8face0c..b6b794e 100644
 @@ -228,6 +228,28 @@
    [self checkSendEnterNotify];
  }
- 
+
 +-(BOOL)makeFirstResponder:(NSResponder *)responder
 +{
 +  GdkWindow *window = [[self contentView] gdkWindow];
@@ -94,9 +94,9 @@ index 9cdee6b..928f961 100644
  -(void)showAndMakeKey:(BOOL)makeKey;
  -(void)hide;
 +-(BOOL)makeFirstResponder:(NSResponder *)responder;
- 
+
  @end
- 
+
 diff --git a/gdk/quartz/gdkevents-quartz.c b/gdk/quartz/gdkevents-quartz.c
 index b7b2665..f5bf65a 100644
 --- a/gdk/quartz/gdkevents-quartz.c
@@ -104,7 +104,7 @@ index b7b2665..f5bf65a 100644
 @@ -703,6 +703,37 @@ _gdk_quartz_events_send_map_event (GdkWindow *window)
      }
  }
- 
+
 +static NSView *
 +find_nsview_at_pos (GdkWindowImplQuartz *impl, gint x, gint y)
 +{
@@ -146,12 +146,12 @@ index b7b2665..f5bf65a 100644
 -                guint n_subviews;
 -                guint i;
 +                NSView *subview;
- 
+
                  toplevel = toplevel_under_pointer;
- 
+
                  toplevel_private = (GdkWindowObject *)toplevel;
                  toplevel_impl = (GdkWindowImplQuartz *)toplevel_private->impl;
- 
+
 -                n_subviews = [[toplevel_impl->view subviews] count];
 -
 -                for (i = 0; i < n_subviews; ++i)
@@ -171,7 +171,7 @@ index b7b2665..f5bf65a 100644
 +                if (subview != NULL && ![subview isKindOfClass:[GdkQuartzView class]]) {
 +                  g_signal_emit_by_name (toplevel, "native-child-event",
 +                                         subview, nsevent);
- 
+
 -                        /* event is within subview, forward back to Cocoa */
 -                        return NULL;
 -                      }
@@ -179,13 +179,13 @@ index b7b2665..f5bf65a 100644
 +                  /* event is within subview, forward back to Cocoa */
 +                  return NULL;
 +                }
- 
+
                  *x = x_tmp;
                  *y = y_tmp;
 @@ -1665,6 +1683,11 @@ gdk_event_translate (GdkEvent *event,
        GdkWindowObject *private = (GdkWindowObject *)window;
        GdkWindowImplQuartz *impl = GDK_WINDOW_IMPL_QUARTZ (private->impl);
- 
+
 +      GdkQuartzWindow *nswindow = ((GdkWindowImplQuartz *)private->impl)->toplevel;
 +      GdkQuartzView *nsview = ((GdkWindowImplQuartz *)private->impl)->view;
 +
@@ -207,7 +207,7 @@ index b7b2665..f5bf65a 100644
 +            return_val = FALSE;
 +            break;
 +          }
- 
+
          type = _gdk_quartz_keys_event_type (nsevent);
          if (type == GDK_NOTHING)
 diff --git a/gdk/quartz/gdkwindow-quartz.c b/gdk/quartz/gdkwindow-quartz.c
@@ -217,7 +217,7 @@ index 5b9ceef..050139a 100644
 @@ -889,6 +889,12 @@ get_nsscreen_for_point (gint x, gint y)
    return screen;
  }
- 
+
 +gboolean
 +gdk_window_supports_nsview_embedding ()
 +{
@@ -226,4 +226,4 @@ index 5b9ceef..050139a 100644
 +
  void
  _gdk_window_impl_new (GdkWindow     *window,
- 		      GdkWindow     *real_parent,
+		      GdkWindow     *real_parent,

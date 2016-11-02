@@ -13,8 +13,8 @@ index c35d962..b492d73 100644
 --- a/gtk/gtkimage.c
 +++ b/gtk/gtkimage.c
 @@ -1717,9 +1717,11 @@ ensure_pixbuf_for_icon_name (GtkImage *image)
- 	    }
- 	}
+	    }
+	}
        image->data.name.pixbuf =
 -	gtk_icon_theme_load_icon (icon_theme,
 -				  image->data.name.icon_name,
@@ -25,12 +25,12 @@ index c35d962..b492d73 100644
 +                                            gtk_widget_get_scale_factor (GTK_WIDGET (image)),
 +                                            flags, &error);
        if (image->data.name.pixbuf == NULL)
- 	{
- 	  g_error_free (error);
+	{
+	  g_error_free (error);
 @@ -1757,9 +1759,10 @@ ensure_pixbuf_for_gicon (GtkImage *image)
- 	  width = height = priv->pixel_size;
+	  width = height = priv->pixel_size;
            flags |= GTK_ICON_LOOKUP_FORCE_SIZE;
- 	}
+	}
 -      else if (!gtk_icon_size_lookup_for_settings (settings,
 -						   image->icon_size,
 -						   &width, &height))
@@ -38,25 +38,25 @@ index c35d962..b492d73 100644
 +                                             image->icon_size,
 +                                             gtk_widget_get_scale_factor (GTK_WIDGET (image)),
 +                                             &width, &height))
- 	{
- 	  if (image->icon_size == -1)
- 	    width = height = 48;
+	{
+	  if (image->icon_size == -1)
+	    width = height = 48;
 @@ -1848,11 +1851,11 @@ gtk_image_expose (GtkWidget      *widget,
        GdkBitmap *mask;
        GdkPixbuf *pixbuf;
        gboolean needs_state_transform;
 +      gdouble render_scale = 1.0;
- 
+
        image = GTK_IMAGE (widget);
        misc = GTK_MISC (widget);
        priv = GTK_IMAGE_GET_PRIVATE (image);
 -
        area = event->area;
- 
+
        /* For stock items and icon sets, we lazily calculate
 @@ -1954,12 +1957,13 @@ gtk_image_expose (GtkWidget      *widget,
            break;
- 
+
          case GTK_IMAGE_STOCK:
 -          pixbuf = gtk_widget_render_icon (widget,
 -                                           image->data.stock.stock_id,
@@ -68,14 +68,14 @@ index c35d962..b492d73 100644
 +                                                  image->icon_size,
 +                                                  NULL, &render_scale);
            if (pixbuf)
--            {              
+-            {
 +            {
                image_bound.width = gdk_pixbuf_get_width (pixbuf);
                image_bound.height = gdk_pixbuf_get_height (pixbuf);
              }
 @@ -1969,14 +1973,15 @@ gtk_image_expose (GtkWidget      *widget,
            break;
- 
+
          case GTK_IMAGE_ICON_SET:
 +          render_scale = gtk_widget_get_scale_factor (widget);
            pixbuf =
@@ -93,11 +93,11 @@ index c35d962..b492d73 100644
 +                                             image->icon_size,
 +                                             widget,
 +                                             NULL, &render_scale);
- 
+
            if (pixbuf)
              {
 @@ -2082,17 +2087,35 @@ gtk_image_expose (GtkWidget      *widget,
- 
+
                if (pixbuf)
                  {
 -                  gdk_draw_pixbuf (widget->window,
@@ -148,12 +148,12 @@ index c35d962..b492d73 100644
    GdkPixbuf *pixbuf = NULL;
    GtkImagePrivate *priv;
 +  gdouble render_scale;
- 
+
    priv = GTK_IMAGE_GET_PRIVATE (image);
 +  render_scale = gtk_widget_get_scale_factor (widget);
- 
+
    priv->need_calc_size = 0;
- 
+
 @@ -2311,20 +2336,20 @@ gtk_image_calc_size (GtkImage *image)
    switch (image->storage_type)
      {
@@ -167,7 +167,7 @@ index c35d962..b492d73 100644
 +                                              image->icon_size,
 +                                              NULL, &render_scale);
        break;
-       
+
      case GTK_IMAGE_ICON_SET:
 -      pixbuf = gtk_icon_set_render_icon (image->data.icon_set.icon_set,
 -                                         widget->style,
@@ -187,7 +187,7 @@ index c35d962..b492d73 100644
      case GTK_IMAGE_ICON_NAME:
        ensure_pixbuf_for_icon_name (image);
 @@ -2343,9 +2368,8 @@ gtk_image_calc_size (GtkImage *image)
- 
+
    if (pixbuf)
      {
 -      widget->requisition.width = gdk_pixbuf_get_width (pixbuf) + GTK_MISC (image)->xpad * 2;
@@ -198,6 +198,5 @@ index c35d962..b492d73 100644
        g_object_unref (pixbuf);
      }
  }
--- 
+--
 1.7.10.2 (Apple Git-33)
-

@@ -8,7 +8,7 @@ index a8800f7..a7d3f75 100644
                  /* Finally check the grab window. */
 -		GdkWindow *grab_toplevel;
 +		GdkWindow *grab_toplevel = NULL;
- 
+
 -		grab_toplevel = gdk_window_get_effective_toplevel (grab->window);
 -                get_window_point_from_screen_point (grab_toplevel,
 -                                                    screen_point, x, y);
@@ -29,6 +29,6 @@ index a8800f7..a7d3f75 100644
 +                                                            screen_point, x, y);
 +                      }
 +                  }
- 
- 		return grab_toplevel;
- 	      }
+
+		return grab_toplevel;
+	      }

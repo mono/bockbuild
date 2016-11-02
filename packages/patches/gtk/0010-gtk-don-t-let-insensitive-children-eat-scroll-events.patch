@@ -17,7 +17,7 @@ index 21345ed..5ca0993 100644
 +++ b/gtk/gtkmain.c
 @@ -2482,7 +2482,15 @@ propagate_event_down (GtkWidget *widget,
        widget = (GtkWidget *)l->data;
- 
+
        if (!gtk_widget_is_sensitive (widget))
 -        handled_event = TRUE;
 +        {
@@ -32,6 +32,5 @@ index 21345ed..5ca0993 100644
        else
          handled_event = _gtk_widget_captured_event (widget, event);
      }
--- 
+--
 1.7.10.2 (Apple Git-33)
-

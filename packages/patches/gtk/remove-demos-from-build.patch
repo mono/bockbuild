@@ -11,9 +11,9 @@ index 8e3a2f1..7288db2 100644
 @@ -1,7 +1,7 @@
  ## Makefile.am for GTK+
  include $(top_srcdir)/Makefile.decl
- 
+
 -SRC_SUBDIRS = gdk gtk modules demos tests perf
 +SRC_SUBDIRS = gdk gtk modules tests perf
  SUBDIRS = po po-properties $(SRC_SUBDIRS) docs m4macros build
- 
+
  # require automake 1.4

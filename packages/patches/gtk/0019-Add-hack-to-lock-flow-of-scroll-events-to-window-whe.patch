@@ -20,18 +20,18 @@ index 1843873..1dac543 100644
 +++ b/gdk/gdkwindow.c
 @@ -434,6 +434,10 @@ accumulate_get_window (GSignalInvocationHint *ihint,
  }
- 
+
  static GQuark quark_pointer_window = 0;
 +#ifdef GDK_WINDOWING_QUARTZ
 +static GQuark quark_last_scroll_pointer_window = 0;
 +static GQuark quark_last_scroll_event_window = 0;
 +#endif /* GDK_WINDOWING_QUARTZ */
- 
+
  static void
  gdk_window_class_init (GdkWindowObjectClass *klass)
 @@ -478,6 +482,12 @@ gdk_window_class_init (GdkWindowObjectClass *klass)
    drawable_class->get_source_drawable = gdk_window_get_source_drawable;
- 
+
    quark_pointer_window = g_quark_from_static_string ("gtk-pointer-window");
 +#ifdef GDK_WINDOWING_QUARTZ
 +  quark_last_scroll_pointer_window =
@@ -39,13 +39,13 @@ index 1843873..1dac543 100644
 +  quark_last_scroll_event_window =
 +      g_quark_from_static_string ("gtk-last-scroll-event-window");
 +#endif /* GDK_WINDOWING_QUARTZ */
- 
- 
+
+
    /* Properties */
 @@ -10702,6 +10712,64 @@ proxy_pointer_event (GdkDisplay                 *display,
- 			     GDK_BUTTON4_MASK | \
- 			     GDK_BUTTON5_MASK)
- 
+			     GDK_BUTTON4_MASK | \
+			     GDK_BUTTON5_MASK)
+
 +#ifdef GDK_WINDOWING_QUARTZ
 +static void
 +last_scroll_event_weak_ref_notify (gpointer  data,
@@ -106,11 +106,11 @@ index 1843873..1dac543 100644
 +
  static gboolean
  proxy_button_event (GdkEvent *source_event,
- 		    gulong serial)
+		    gulong serial)
 @@ -10769,6 +10837,32 @@ proxy_button_event (GdkEvent *source_event,
- 				type, state,
- 				NULL, serial);
- 
+				type, state,
+				NULL, serial);
+
 +#ifdef GDK_WINDOWING_QUARTZ
 +  /* A Quartz-specific hack we cannot handle from within the backend
 +   * unfortunately. For scroll events with precise deltas (i.e. these
@@ -139,7 +139,6 @@ index 1843873..1dac543 100644
 +
    if (event_win == NULL || display->ignore_core_events)
      return TRUE;
- 
--- 
-1.7.10.2 (Apple Git-33)
 
+--
+1.7.10.2 (Apple Git-33)

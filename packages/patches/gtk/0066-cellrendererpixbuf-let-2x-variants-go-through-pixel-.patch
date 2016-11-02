@@ -14,11 +14,11 @@ index 7c767b6..5969792 100644
 +++ b/gtk/gtkcellrendererpixbuf.c
 @@ -614,8 +614,8 @@ gtk_cell_renderer_pixbuf_create_themed_pixbuf (GtkCellRendererPixbuf *cellpixbuf
  }
- 
+
  static GdkPixbuf *
--create_colorized_pixbuf (GdkPixbuf *src, 
+-create_colorized_pixbuf (GdkPixbuf *src,
 -			 GdkColor  *new_color)
-+create_colorized_pixbuf_single (GdkPixbuf *src, 
++create_colorized_pixbuf_single (GdkPixbuf *src,
 +				GdkColor  *new_color)
  {
    gint i, j;
@@ -26,7 +26,7 @@ index 7c767b6..5969792 100644
 @@ -659,6 +659,28 @@ create_colorized_pixbuf (GdkPixbuf *src,
    return dest;
  }
- 
+
 +static GdkPixbuf *
 +create_colorized_pixbuf (GdkPixbuf *src,
 +			 GdkColor  *new_color)
@@ -49,9 +49,8 @@ index 7c767b6..5969792 100644
 +
 +  return colorized;
 +}
- 
+
  static void
  gtk_cell_renderer_pixbuf_get_size (GtkCellRenderer *cell,
--- 
+--
 1.7.10.2 (Apple Git-33)
-

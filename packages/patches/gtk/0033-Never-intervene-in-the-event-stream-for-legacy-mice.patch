@@ -35,6 +35,5 @@ index 7a3732c..2db0c0b 100644
            pointer_window = g_object_get_qdata (G_OBJECT (display),
                                                 quark_last_scroll_pointer_window);
            event_win = g_object_get_qdata (G_OBJECT (display),
--- 
+--
 1.7.10.2 (Apple Git-33)
-

@@ -7,15 +7,15 @@ index fc25098..de9a4b0 100644
  #define MENU_SCROLL_TIMEOUT1  50
  #define MENU_SCROLL_TIMEOUT2  20
 +#define GTK_SCROLL_STEP_SMOOTH 2
- 
+
  #define ATTACH_INFO_KEY "gtk-menu-child-attach-info-key"
  #define ATTACHED_MENUS "gtk-attached-menus"
 @@ -3504,17 +3505,25 @@ gtk_menu_scroll (GtkWidget	*widget,
- 		 GdkEventScroll *event)
+		 GdkEventScroll *event)
  {
    GtkMenu *menu = GTK_MENU (widget);
 +  gdouble dx, dy;
- 
+
 -  switch (event->direction)
 +  if (gdk_event_get_scroll_deltas ((GdkEvent *) event, &dx, &dy))
      {
@@ -43,5 +43,5 @@ index fc25098..de9a4b0 100644
 +          break;
 +        }
      }
- 
+
    return TRUE;

@@ -5,14 +5,14 @@ index e6c516c..f3fa26a 100644
 @@ -65,6 +65,11 @@ typedef struct _GdkEventWindowState GdkEventWindowState;
  typedef struct _GdkEventSetting     GdkEventSetting;
  typedef struct _GdkEventGrabBroken  GdkEventGrabBroken;
- 
+
 +/* OS X specific gesture events */
 +typedef struct _GdkEventGestureMagnify GdkEventGestureMagnify;
 +typedef struct _GdkEventGestureRotate  GdkEventGestureRotate;
 +typedef struct _GdkEventGestureSwipe   GdkEventGestureSwipe;
 +
  typedef union  _GdkEvent	    GdkEvent;
- 
+
  typedef void (*GdkEventFunc) (GdkEvent *event,
 @@ -152,6 +157,9 @@ typedef enum
    GDK_OWNER_CHANGE      = 34,
@@ -23,11 +23,11 @@ index e6c516c..f3fa26a 100644
 +  GDK_GESTURE_SWIPE     = 39,
    GDK_EVENT_LAST        /* helper variable for decls */
  } GdkEventType;
- 
+
 @@ -488,6 +496,52 @@ struct _GdkEventDND {
    gshort x_root, y_root;
  };
- 
+
 +/* Event types for OS X gestures */
 +
 +struct _GdkEventGestureMagnify
@@ -85,7 +85,7 @@ index e6c516c..f3fa26a 100644
 +  GdkEventGestureRotate     rotate;
 +  GdkEventGestureSwipe      swipe;
  };
- 
+
  GType     gdk_event_get_type            (void) G_GNUC_CONST;
 diff --git a/gdk/gdkwindow.c b/gdk/gdkwindow.c
 index d20b424..fb89451 100644
@@ -100,7 +100,7 @@ index d20b424..fb89451 100644
 +  0, /* GDK_GESTURE_SWIPE = 39 */
  };
  G_STATIC_ASSERT (G_N_ELEMENTS (type_masks) == GDK_EVENT_LAST);
- 
+
 diff --git a/gdk/quartz/GdkQuartzView.c b/gdk/quartz/GdkQuartzView.c
 index 2c897fb..cdae2f1 100644
 --- a/gdk/quartz/GdkQuartzView.c
@@ -108,7 +108,7 @@ index 2c897fb..cdae2f1 100644
 @@ -190,4 +190,37 @@
      [self updateTrackingRect];
  }
- 
+
 +/* Handle OS X gesture events. The Apple documentation is explicit
 + * that these events should not be captured through a tracking loop (which
 + * is how we handle usual event handling), so we fallback to overriding
@@ -150,7 +150,7 @@ index 9478c16..128c794 100644
 @@ -374,6 +374,11 @@ get_event_mask_from_ns_event (NSEvent *nsevent)
      case NSMouseExited:
        return GDK_LEAVE_NOTIFY_MASK;
- 
+
 +    case NSEventTypeMagnify:
 +    case NSEventTypeRotate:
 +    case NSEventTypeSwipe:
@@ -160,9 +160,9 @@ index 9478c16..128c794 100644
        g_assert_not_reached ();
      }
 @@ -752,6 +757,11 @@ find_window_for_ns_event (NSEvent *nsevent,
- 
+
        return toplevel;
- 
+
 +    case NSEventTypeMagnify:
 +    case NSEventTypeRotate:
 +    case NSEventTypeSwipe:
@@ -172,9 +172,9 @@ index 9478c16..128c794 100644
        /* Ignore everything else. */
        break;
 @@ -1011,6 +1021,139 @@ fill_key_event (GdkWindow    *window,
- 	  event->key.keyval));
+	  event->key.keyval));
  }
- 
+
 +
 +static GdkWindow *
 +find_window_for_ns_gesture_event (NSEvent *nsevent,
@@ -314,7 +314,7 @@ index 9478c16..128c794 100644
 @@ -1392,6 +1535,13 @@ gdk_event_translate (GdkEvent *event,
        }
        break;
- 
+
 +    /* Gesture events are handled through GdkQuartzView, because the
 +     * Apple documentation states very clearly that such events should
 +     * not be handled through a tracking loop (like GDK uses).
@@ -346,7 +346,7 @@ index c1b3083..03a3857 100644
 @@ -179,6 +179,10 @@ GdkModifierType _gdk_quartz_events_get_current_mouse_modifiers    (void);
  void         _gdk_quartz_events_send_enter_notify_event (GdkWindow *window);
  void         _gdk_quartz_events_break_all_grabs         (guint32    time);
- 
+
 +GdkEvent    *_gdk_quartz_events_create_magnify_event    (NSEvent   *event);
 +GdkEvent    *_gdk_quartz_events_create_rotate_event     (NSEvent   *event);
 +GdkEvent    *_gdk_quartz_events_create_swipe_event      (NSEvent   *event);
@@ -363,9 +363,9 @@ index 742d651..f79d04a 100644
  NSEvent  *gdk_quartz_event_get_nsevent                          (GdkEvent       *event);
  GdkOSXVersion gdk_quartz_osx_version                            (void);
 +gboolean  gdk_quartz_supports_gesture_events                    (void);
- 
+
  G_END_DECLS
- 
+
 diff --git a/gtk/gtkmain.c b/gtk/gtkmain.c
 index 5a88679..db77675 100644
 --- a/gtk/gtkmain.c
@@ -393,11 +393,11 @@ index 9a43d27..2d11e09 100644
 +  GESTURE_SWIPE_EVENT,
    LAST_SIGNAL
  };
- 
+
 @@ -2242,6 +2245,70 @@ gtk_widget_class_init (GtkWidgetClass *klass)
- 		  _gtk_marshal_BOOLEAN__BOXED,
- 		  G_TYPE_BOOLEAN, 1,
- 		  GDK_TYPE_EVENT | G_SIGNAL_TYPE_STATIC_SCOPE);
+		  _gtk_marshal_BOOLEAN__BOXED,
+		  G_TYPE_BOOLEAN, 1,
+		  GDK_TYPE_EVENT | G_SIGNAL_TYPE_STATIC_SCOPE);
 +  /**
 +   * GtkWidget::gesture-magnify-event:
 +   * @widget: the object which received the signal
@@ -466,9 +466,9 @@ index 9a43d27..2d11e09 100644
     * GtkWidget::grab-broken-event:
     * @widget: the object which received the signal
 @@ -4975,6 +5042,15 @@ gtk_widget_event_internal (GtkWidget *widget,
- 	case GDK_DAMAGE:
- 	  signal_num = DAMAGE_EVENT;
- 	  break;
+	case GDK_DAMAGE:
+	  signal_num = DAMAGE_EVENT;
+	  break;
 +        case GDK_GESTURE_MAGNIFY:
 +          signal_num = GESTURE_MAGNIFY_EVENT;
 +          break;
@@ -478,21 +478,21 @@ index 9a43d27..2d11e09 100644
 +        case GDK_GESTURE_SWIPE:
 +          signal_num = GESTURE_SWIPE_EVENT;
 +          break;
- 	default:
- 	  g_warning ("gtk_widget_event(): unhandled event type: %d", event->type);
- 	  signal_num = -1;
+	default:
+	  g_warning ("gtk_widget_event(): unhandled event type: %d", event->type);
+	  signal_num = -1;
 diff --git a/tests/Makefile.am b/tests/Makefile.am
 index 3888826..68a0a79 100644
 --- a/tests/Makefile.am
 +++ b/tests/Makefile.am
 @@ -88,7 +88,8 @@ noinst_PROGRAMS =  $(TEST_PROGS)	\
- 	testactions			\
- 	testgrouping			\
- 	testtooltips			\
+	testactions			\
+	testgrouping			\
+	testtooltips			\
 -	testvolumebutton
 +	testvolumebutton		\
 +	testgestures
- 
+
  if HAVE_CXX
  noinst_PROGRAMS += autotestkeywords
 @@ -165,6 +166,7 @@ testgrouping_DEPENDENCIES = $(TEST_DEPS)
@@ -500,19 +500,19 @@ index 3888826..68a0a79 100644
  testvolumebutton_DEPENDENCIES = $(TEST_DEPS)
  testwindows_DEPENDENCIES = $(TEST_DEPS)
 +testgestures_DEPENDENCIES = $(TEST_DEPS)
- 
+
  testentrycompletion_SOURCES = 	\
- 	prop-editor.c		\
+	prop-editor.c		\
 @@ -273,6 +275,9 @@ testoffscreenwindow_SOURCES =	\
  testwindows_SOURCES = 	\
- 	testwindows.c
- 
+	testwindows.c
+
 +testgestures_SOURCES = 	\
 +	testgestures.c
 +
  EXTRA_DIST += 			\
- 	prop-editor.h		\
- 	testgtk.1 		\
+	prop-editor.h		\
+	testgtk.1 		\
 diff --git a/tests/testgestures.c b/tests/testgestures.c
 new file mode 100644
 index 0000000..ae3ab99

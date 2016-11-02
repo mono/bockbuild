@@ -18,14 +18,14 @@ index 3b30d3b..d5eb307 100644
    GtkNSView *ns_view = GTK_NS_VIEW (widget);
    NSEvent *nsevent = gdk_quartz_event_get_nsevent ((GdkEvent *) event);
 -  NSWindow *ns_window;
- 
+
    if (gtk_ns_view_forward_event (widget, event))
      {
 -      ns_window = [ns_view->priv->view window];
 -      [ns_window sendEvent:nsevent];
 +      NSWindow *ns_window = [ns_view->priv->view window];
 +      NSResponder *responder = [ns_window firstResponder];
- 
+
 -      return TRUE;
 +      if ([responder isKindOfClass: [NSTextView class]] &&
 +          (event->state & (GDK_SHIFT_MASK | GDK_CONTROL_MASK |
@@ -68,22 +68,21 @@ index 3b30d3b..d5eb307 100644
 +          return TRUE;
 +        }
      }
- 
+
    return GTK_WIDGET_CLASS (gtk_ns_view_parent_class)->key_press_event (widget, event);
 @@ -683,11 +721,11 @@ gtk_ns_view_key_release (GtkWidget   *widget,
  {
    GtkNSView *ns_view = GTK_NS_VIEW (widget);
    NSEvent *nsevent = gdk_quartz_event_get_nsevent ((GdkEvent *) event);
 -  NSWindow *ns_window;
- 
+
    if (gtk_ns_view_forward_event (widget, event))
      {
 -      ns_window = [ns_view->priv->view window];
 +      NSWindow *ns_window = [ns_view->priv->view window];
 +
        [ns_window sendEvent:nsevent];
- 
-       return TRUE;
--- 
-1.7.10.2 (Apple Git-33)
 
+       return TRUE;
+--
+1.7.10.2 (Apple Git-33)

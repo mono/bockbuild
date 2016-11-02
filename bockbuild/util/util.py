@@ -36,6 +36,7 @@ class config:
     quiet = None
     never_rebuild = False
     verbose = False
+    protected_git_repos = [] # we do not allow modifying behavior on our profile repo or bockbuild repo.
 
 
 class CommandException (Exception):  # shell command failure
@@ -60,12 +61,6 @@ class Logger:
     print_color = False
     monkeywrench = False
 
-
-def log(phase, message):
-    # DISABLED until we can properly refactor/redirect logging
-    return
-
-# TODO: move these functions to either Profile or their own class
 
 
 def get_caller(skip=0, get_dump=False):
@@ -120,7 +115,8 @@ def loginit(message):
         Logger.monkeywrench = True
     elif sys.stdout.isatty():
         Logger.print_color = True
-        logprint(message, bcolors.BOLD)
+        logprint('** %s **' % message, bcolors.BOLD)
+        print
 
 
 def colorprint(message, color):
@@ -167,7 +163,7 @@ def title(message, summary=True):
 
 
 def info(message, 	summary=True):
-    logprint(message, bcolors.OKGREEN, summary, header='info')
+    logprint(message, '--\t' + bcolors.OKGREEN, summary, header= None)
 
 
 def progress(message):
@@ -193,6 +189,10 @@ def error(message, more_output=False):
     logprint(message, bcolors.FAIL, header=get_caller(), summary=True)
     if not more_output:
         sys.exit(255)
+
+def finish():
+    logprint('\n** %s **\n' % 'Goodbye!', bcolors.BOLD)
+    sys.exit(0)
 
 
 def trace(message, skip=0):
@@ -251,6 +251,10 @@ def ensure_dir(d, purge=False):
 
     os.makedirs(d)
 
+def first_existing (paths):
+    for p in paths:
+        if os.path.exists (p): return p
+    error ('None of these paths were found: %s' % paths)
 
 # quick and dirty assuming they have the same name/paths
 def identical_files(first, second):
@@ -330,8 +334,10 @@ def find_git(self, echo=False):
     if not git_bin:
         error('git not found in PATH')
 
-    def git_func(self, args, cwd):
-        # assert_git_dir(self)
+    def git_func(self, args, cwd, hazard = False):
+        if hazard:
+            root = git_rootdir (self, cwd)
+            assert_modifiable_repo (root)
         (exit, out, err) = run(git_bin, args.split(' '), cwd)
         return out.split('\n')
 
@@ -345,6 +351,11 @@ def assert_git_dir(self):
     except:
         error('Attempted git action in non-git directory')
 
+def assert_modifiable_repo(cwd):
+    if cwd in config.protected_git_repos:
+        raise BockbuildException ('Hazardous Git operation attempt at protected path: %s' % cwd)
+
+is_modifiable_repo = lambda x: os.path.realpath(x) not in config.protected_git_repos
 
 def git_get_revision(self, cwd):
     return self.git('rev-parse HEAD', cwd)[0]
@@ -361,8 +372,7 @@ def git_get_branch(self, cwd):
 
 
 def git_is_dirty(self, cwd):
-    str = self.git('symbolic-ref --short HEAD --dirty', cwd)[0]
-    return 'dirty' in str
+    return 'dirty' in git_shortid (self, cwd)
 
 
 def git_patch(self, dir, patch):
@@ -377,6 +387,15 @@ def git_shortid(self, cwd):
     else:
         return '%s-%s' % (branch, short_rev)
 
+def git_isrootdir(self, cwd):
+    try:
+        root = self.git('rev-parse --show-toplevel', cwd)[0]
+        return root == cwd
+    except:
+        return False
+
+def git_rootdir(self, cwd):
+    return self.git('rev-parse --show-toplevel', cwd)[0]
 
 def protect_dir(path, recursive=False):
     if not os.path.isdir(path):
@@ -454,6 +473,12 @@ def delete(path):
     if os.path.exists(path):
         error('Deleting failed: %s' % orig_path)
 
+def link_dir(link_path, dest_path):
+    if not os.path.isdir (dest_path):
+        error ('Not found or not a directory: %s' % dest_path)
+    if os.path.lexists(link_path):
+        delete(link_path)
+    os.symlink(dest_path, link_path)
 
 def merge_trees(src, dst, delete_src=True):
     if not os.path.isdir(src) or not os.path.isdir(dst):
@@ -531,7 +556,7 @@ def dump(self, name):
             yield '%s.%s = "%s"\n' % (name, k, self.__dict__[k])
 
 
-def expand_macros(node, vars, extra_vars=None):
+def expand_macros(node, vars, extra_vars='active_profile'):
     def sub_macro(m):
         type = m.groups()[0]
         expr = m.groups()[1]
@@ -547,7 +572,7 @@ def expand_macros(node, vars, extra_vars=None):
             except:
                 pass
         if not resolved:
-            error("'%s' could not be resolved in string '%s'" %
+            raise Exception("'%s' could not be resolved in string '%s'" %
                   (m.groups()[1], node))
         if o is None:
             return ''
