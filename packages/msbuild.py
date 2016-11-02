@@ -37,12 +37,10 @@ class MSBuild (GitHubPackage):
 			line = line.replace ('@mono_instdir@', '%s/lib/mono' % self.staged_prefix)
 			print line
 
-		for excluded in glob.glob("%s/*UnitTests*" % new_location):
-			self.rm(excluded)
+		patterns = ["*UnitTests*", "*xunit*", "NuGet*", "System.Runtime.InteropServices.RuntimeInformation.dll"]
 
-		for excluded in glob.glob("%s/*xunit*" % new_location):
-			self.rm(excluded)
+		for pattern in patterns:
+			for excluded in glob.glob("%s/%s" % (new_location, pattern)):
+				self.rm(excluded)
 
-		for excluded in glob.glob("%s/NuGet*" % new_location):
-			self.rm(excluded)
 MSBuild ()
