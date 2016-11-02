@@ -2,7 +2,7 @@ import fileinput
 
 class NuGet3 (Package):
 	def __init__ (self):
-		Package.__init__ (self, name ='NuGet 3', version = '3.5.0-rc1',
+		Package.__init__ (self, name ='NuGet 3', version = '3.5.0',
 			sources = ['https://dist.nuget.org/win-x86-commandline/v%{version}/NuGet.exe'])
 
 	def build (self):
