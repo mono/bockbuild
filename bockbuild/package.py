@@ -143,6 +143,7 @@ class Package:
         source_cache_dir = self.profile.bockbuild.source_cache
         self.source_dir_name = expand_macros(self.source_dir_name, self)
         self.buildstring = []
+        self.is_local = False
         scratch_workspace = os.path.join(scratch, '%s.workspace' % self.name)
         final_workspace = os.path.join(build_root, self.source_dir_name)
 
@@ -151,7 +152,7 @@ class Package:
             shutil.move(final_workspace, scratch_workspace)
 
         def checkout(self, source_url, cache_dir, workspace_dir):
-            is_local = os.path.isdir (source_url)
+            self.is_local = os.path.isdir (source_url)
             def clean_git_workspace(dir):
                 trace('Cleaning git workspace: ' + self.name)
                 self.git('reset --hard', dir, hazard = True)
@@ -201,7 +202,7 @@ class Package:
                 if current_revision == self.revision:
                     return
 
-                if not is_local and self.revision is None and self.git_branch is None:
+                if not self.is_local and self.revision is None and self.git_branch is None:
                     warn(
                         'Package does not define revision or branch, defaulting to tip of "master"')
                     self.git_branch = self.git_branch or 'master'
@@ -242,10 +243,20 @@ class Package:
                 self.desc = str
                 self.buildstring = ['%s <%s>' % (str, source_url)]
 
-            if is_local:
+            if self.is_local:
                 link_dir (workspace_dir, source_url)
                 if git_is_dirty (self, workspace_dir):
-                    warn('The repository is dirty!')
+                    if self.profile.bockbuild.cmd_options.release_build:
+                        error ('Release builds cannot have uncommitted local changes!')
+                    else:
+                        info ('The repository is dirty, your changes will be committed.')
+                        bockbuild_commit_msg = 'Bockbuild'
+                        top_commit_msg = git_get_commit_msg (self, workspace_dir)
+                        if top_commit_msg == bockbuild_commit_msg:
+                            self.git ('commit -a --allow-empty --amend -m %s' % bockbuild_commit_msg, workspace_dir)
+                        else:
+                            self.git('commit -a --allow-empty -m %s' % bockbuild_commit_msg, workspace_dir)
+
             else:
                 if os.path.exists(cache_dir):
                     update_cache()
@@ -479,6 +490,10 @@ class Package:
 
             self.make_artifact(package_stage, build_artifact)
         self.deploy_package(build_artifact, self.staged_profile)
+        if self.is_local:
+            verbose ('Cleaning local repo')
+            self.git ('reset --hard', workspace)
+
 
     def deploy_package(self, artifact, dest):
         trace('Deploying (%s -> %s)' %
@@ -563,7 +578,7 @@ class Package:
         except (Exception, KeyboardInterrupt) as e:
             self.rm_if_exists(self.stage_root)
             if isinstance(e, CommandException):
-                if os.path.exists(self.workspace):
+                if os.path.exists(self.workspace) and self.is_local:
                     problem_dir = os.path.join(
                         self.profile.bockbuild.execution_root, os.path.basename(self.workspace) + '.problem')
 
@@ -573,9 +588,10 @@ class Package:
                             self.rm(os.path.join(self.profile.bockbuild.execution_root, d))
 
                     shutil.move(self.workspace, problem_dir)
-                    info('Build moved to ./%s \n Run "source ./%s" first to replicate bockbuild environment.' %
-                         (os.path.basename(problem_dir), os.path.basename(self.profile.bockbuild.env_script)))
-                    error(str(e))
+                    info('Build moved to ./%s\n' % os.path.basename(problem_dir))
+                info('Run "source ./%s" first to replicate bockbuild environment.' %
+                    os.path.basename(self.profile.bockbuild.env_script))
+                error(str(e))
             else:
                 self.rm_if_exists(self.workspace)
                 raise

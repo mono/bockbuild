@@ -397,6 +397,9 @@ def git_isrootdir(self, cwd):
 def git_rootdir(self, cwd):
     return self.git('rev-parse --show-toplevel', cwd)[0]
 
+def git_get_commit_msg(self, cwd):
+    return self.git('show -s --format=%B HEAD', cwd)[0]
+
 def protect_dir(path, recursive=False):
     if not os.path.isdir(path):
         error('only safe for dirs: %s' % path)
