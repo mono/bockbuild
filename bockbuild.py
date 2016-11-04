@@ -23,12 +23,12 @@ def find_profiles (base_path):
     assert Profile.loaded == None
 
     search_path = first_existing(['%s/bockbuild' % base_path, '%s/packaging' % base_path])
-    sys.path.append('%s/bockbuild' % base_path)
+    sys.path.append(search_path)
     profiles = []
     resolved_names = []
     while True:
         progress_made = False
-        for path in iterate_dir ('%s/bockbuild' % base_path, with_dirs=True):
+        for path in iterate_dir (search_path, with_dirs=True):
             file = '%s/profile.py' % path
             if os.path.isdir (path) and os.path.isfile (file):
                 name = os.path.basename (path)
