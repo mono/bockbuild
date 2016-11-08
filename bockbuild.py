@@ -291,8 +291,8 @@ class Bockbuild:
                       (self.staged_prefix, self.package_root), False)
             unprotect_dir(self.package_root)
 
-            self.process_release(self.package_root)
-            self.package()
+            profile.process_release(self.package_root)
+            profile.package()
 
     def track_env(self):
         env = active_profile.env
