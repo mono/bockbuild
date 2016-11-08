@@ -213,6 +213,8 @@ class Bockbuild:
 
         if stage_invalidated:
             ensure_dir (stage, purge = True)
+            for package in packages.values():
+                package.deploy_requests.append (stage)
 
         for package in packages.values():
             package.start_build(arch, stage, stage)

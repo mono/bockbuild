@@ -59,6 +59,7 @@ class Package:
         self.build_dependency = False
         self.dont_clean = False
         self.needs_build = None
+        self.deploy_requests = []
 
         if configure_flags:
             self.configure_flags.extend(configure_flags)
@@ -489,7 +490,8 @@ class Package:
                 package_stage = self.do_build(arch)
 
             self.make_artifact(package_stage, build_artifact)
-        self.deploy_package(build_artifact, self.staged_profile)
+        for target in self.deploy_requests:
+            self.deploy_package(build_artifact, target)
         if self.is_local:
             verbose ('Cleaning local repo')
             self.git ('reset --hard', workspace)
