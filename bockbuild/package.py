@@ -236,7 +236,7 @@ class Package:
 
                 str = self.name
                 if self.version:
-                    str += ' v.' + self.version
+                    str += ' %s' % self.version
 
                 str += ' (%s)' % git_shortid(self, workspace_dir)
 
@@ -311,7 +311,7 @@ class Package:
 
             def define():
                 self.resolve_version(workspace_dir)
-                self.desc = '%s v. %s' % (self.name, self.version)
+                self.desc = '%s %s' % (self.name, self.version)
                 self.buildstring = ['%s <%s> md5: %s)' % (
                     self.desc, archive, md5(cache_dest))]
 
@@ -631,6 +631,7 @@ class Package:
             with open(self.log, 'r') as log:
                 output_text = log.readlines()
                 for line in output_text:
+                    line = line.replace(config.absolute_root, '@')
                     print line,
             warn('build env: ' + self.build_env)
             raise CommandException('command failed: %s' %

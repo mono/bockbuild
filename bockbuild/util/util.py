@@ -37,6 +37,7 @@ class config:
     never_rebuild = False
     verbose = False
     protected_git_repos = [] # we do not allow modifying behavior on our profile repo or bockbuild repo.
+    absolute_root = None # there is no file resolution beneath this path. Displayed paths are shortened by omitting this segment.
 
 
 class CommandException (Exception):  # shell command failure
@@ -120,6 +121,7 @@ def loginit(message):
 
 
 def colorprint(message, color):
+    message = str(message).replace (os.path.join(config.absolute_root,''), '%s@%s' % (bcolors.BOLD, bcolors.ENDC))
     if Logger.print_color:
         print '%s%s%s' % (color, message, bcolors.ENDC)
     else:

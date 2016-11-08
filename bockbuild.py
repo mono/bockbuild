@@ -71,6 +71,7 @@ class Bockbuild:
         self.root = os.path.dirname (os.path.realpath(__file__)) # Bockbuild system root
         config.protected_git_repos.append (self.root)
         self.execution_root = os.getcwd()
+        config.absolute_root = os.path.commonprefix([self.root, self.execution_root])
         self.resources = set([os.path.realpath(
             os.path.join(self.root, 'packages'))]) # list of paths on where to look for packages, patches, etc.
         self.build_root = os.path.join(self.root, 'builds')
