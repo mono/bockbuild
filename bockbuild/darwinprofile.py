@@ -301,7 +301,7 @@ class DarwinProfile (UnixProfile):
                         tokens[idx] = remap
 
                     output.write(" ".join(tokens))
-                output.close
+                output.close ()
 
     class stage_binaries (Profile.FileProcessor):
 
