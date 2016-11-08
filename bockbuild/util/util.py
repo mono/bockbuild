@@ -422,7 +422,8 @@ def unprotect_dir(path, recursive=False):
 
     if recursive:
         for root, subdirs, filelist in os.walk(path):
-            unprotect_dir(root, recursive=False)
+            if not os.path.islink(root):
+                unprotect_dir(root, recursive=False)
 
 # wrap around shutil.rmtree, which is unreliable. Sometimes a few attempts
 # do the trick...
