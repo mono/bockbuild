@@ -519,14 +519,16 @@ class Package:
 
         # catalogue files
         files = list()
+        size = 0
 
         for path in iterate_dir(artifact_stage, summary=False):
             relpath = os.path.relpath(path, artifact_stage)
             destpath = os.path.join(dest, relpath)
             if os.path.exists(destpath) and not identical_files(path, destpath):
                 warn(
-                    'deploy: Different file exists in package already: ''%s''' % relpath )
+                    'Different file exists in package already: ''%s''' % relpath )
             files.append(relpath)
+            size = size + os.path.getsize(path)
 
         files.sort()
         is_changed(files, artifact + '.files')
@@ -543,6 +545,7 @@ class Package:
         self.rm_if_exists(artifact_stage)
 
         protect_dir(dest, recursive=True)
+        verbose ('%d files, %sMB' % (len(files), "{:.2f}".format (size /1024 / 1024 )))
 
         return True
 
