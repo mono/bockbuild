@@ -121,8 +121,11 @@ class DarwinProfile (UnixProfile):
         else:
             error('Unknown arch %s' % arch)
 
+        configure_cache =  '%s/%s-%s.cache' % (self.bockbuild.build_root, package.name, arch)
+        package.aux_files.append (configure_cache)
+
         package.local_configure_flags.extend(
-            ['--cache-file=%s/%s-%s.cache' % (self.bockbuild.build_root, package.name, arch)])
+            ['--cache-file=%s' % configure_cache])
 
         if package.name in self.debug_info:
             package.local_gcc_flags.extend(['-g'])

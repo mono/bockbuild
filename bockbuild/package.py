@@ -34,6 +34,7 @@ class Package:
         self.gcc_flags = list(Package.profile.gcc_flags)
         self.cpp_flags = list(Package.profile.gcc_flags)
         self.ld_flags = list(Package.profile.ld_flags)
+        self.aux_files = [] # delete workspace-related files that are residing outside the workspace dir
 
         self.local_cpp_flags = []
         self.local_gcc_flags = []
@@ -583,16 +584,19 @@ class Package:
         except (Exception, KeyboardInterrupt) as e:
             self.rm_if_exists(self.stage_root)
             if isinstance(e, CommandException):
-                if os.path.exists(self.workspace) and self.is_local:
+                if os.path.exists(self.workspace) and not self.is_local:
+                    for path in self.aux_files:
+                        self.rm_if_exists(path)
                     problem_dir = os.path.join(
                         self.profile.bockbuild.execution_root, os.path.basename(self.workspace) + '.problem')
+
+                    shutil.move(self.workspace, problem_dir)
 
                     # take this chance to clear out older .problems
                     for d in os.listdir(self.profile.bockbuild.execution_root):
                         if d.endswith('.problem'):
                             self.rm(os.path.join(self.profile.bockbuild.execution_root, d))
 
-                    shutil.move(self.workspace, problem_dir)
                     info('Build moved to ./%s\n' % os.path.basename(problem_dir))
                 info('Run "source ./%s" first to replicate bockbuild environment.' %
                     os.path.basename(self.profile.bockbuild.env_script))
