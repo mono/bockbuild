@@ -46,7 +46,7 @@ class CommandException (Exception):  # shell command failure
         if cwd is None:
             cwd = os.getcwd()
         Exception.__init__(self, '%s: %s (path: %s)' %
-                           (get_caller(), cwd, message))
+                           (get_caller(), message, cwd))
         verbose(message)
 
 
