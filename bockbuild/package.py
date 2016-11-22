@@ -283,7 +283,7 @@ class Package:
                 try:
                     filename, message = MyUrlOpener().retrieve(archive, cache_dest)
                 except IOError as e:
-                    raise BockbuildException(
+                    raise CommandException(
                         '%s error downloading %s' % (e[1], archive))
 
             def update_cache():
@@ -364,7 +364,7 @@ class Package:
                             clean_func = checkout_archive(
                                 cached_source, cache, scratch_workspace)
                             source = cached_source
-                        except BockbuildException as e:
+                        except CommandException as e:
                             warn(repr(e))
                             verbose('Trying original source')
                             clean_func = checkout_archive(
