@@ -143,7 +143,6 @@ class Package:
         scratch = self.profile.bockbuild.scratch
         resources = self.profile.bockbuild.resources
         source_cache_dir = self.profile.bockbuild.source_cache
-        self.source_dir_name = expand_macros(self.source_dir_name, self)
         self.buildstring = []
         self.is_local = False
         scratch_workspace = os.path.join(scratch, '%s.workspace' % self.name)
