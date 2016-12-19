@@ -107,3 +107,10 @@ popd
 
 # Mono framework should be owned by root
 chown -R root:admin ${FW}
+
+#update PATH using the 'path_helper' tool, which includes items installed in /etc/paths.d/
+PATH_HELPER_CMD='eval $(/usr/libexec/path_helper -s)'
+grep -q -F "${PATH_HELPER_CMD}" ~/.bash_profile || echo ${PATH_HELPER_CMD} >> ~/.bash_profile
+if test -e ~/.zshrc; then
+    grep -q -F "${PATH_HELPER_CMD}" ~/.zshrc || echo ${PATH_HELPER_CMD} >> ~/.zshrc
+fi
