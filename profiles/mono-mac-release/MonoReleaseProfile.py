@@ -58,7 +58,6 @@ class MonoReleaseProfile(DarwinProfile):
     # Mono
         'mono-llvm',
         'mono_master',
-        'msbuild',
         'pcl-reference-assemblies',
         'libgdiplus',
         'xsp',
