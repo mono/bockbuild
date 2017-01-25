@@ -62,7 +62,6 @@ class MonoReleaseProfile(DarwinProfile):
         'libgdiplus',
         'xsp',
         'gtk-sharp',
-        'ironlangs',
         'fsharp',
         'mono-basic',
         'nuget2',
