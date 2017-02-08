@@ -188,6 +188,9 @@ class GtkPackage (GnomeGitPackage):
 				# https://bugzilla.xamarin.com/show_bug.cgi?id=51382
 				# https://bugzilla.xamarin.com/show_bug.cgi?id=51375
 				'patches/gtk/recompute-viewport-allocation-for-overlay-scrollbars.patch'
+
+				'patches/gtk/a11y-fix-dialog-accessibility.patch',
+				'patches/gtk/a11y-emit-container-add-when-inserting-menu.patch'
 			])
 
 	def prep (self):
