@@ -332,12 +332,26 @@ def find_git(self, echo=False):
         error('git not found in PATH')
 
     @retry
-    def git_operation(self, args, cwd, hazard = False, output_on_fail = None, singleline_output = False):
+    def git_operation(self, args, cwd, hazard = False, allow_fail = False, singleline_output = False):
         if hazard:
             root = git_rootdir (self, cwd)
             assert_modifiable_repo (root)
-        (exit, out, err) = run(git_bin, args.split(' '), cwd)
-        return out.split('\n')
+        try:
+            (exit, out, err) = run(git_bin, args.split(' '), cwd)
+        except CommandException:
+            if allow_fail:
+                return None
+            else:
+                raise
+
+        lines = out.split('\n')
+        if singleline_output:
+            if len(lines) > 1:
+                error ('Single line output expected from git. Received the following:\n%s' % out)
+            else:
+                return lines[0]
+
+        return lines
 
     self.git = git_operation.__get__(self, self.__class__)
     self.git_bin = git_bin
@@ -360,14 +374,7 @@ def git_get_revision(self, cwd):
 
 
 def git_get_branch(self, cwd):
-    revision = git_get_revision(self, cwd)
-    try:
-        output = self.git('symbolic-ref -q --short HEAD', cwd)
-    except:
-        return None  # detached HEAD
-    else:
-        return output[0]
-
+    return self.git('symbolic-ref -q --short HEAD', cwd, allow_fail = True, singleline_output = True)
 
 def git_is_dirty(self, cwd):
     return 'dirty' in git_shortid (self, cwd)
@@ -383,7 +390,7 @@ def git_shortid(self, cwd):
     if branch is None:
         return short_rev
     else:
-        return '%s-%s' % (branch, short_rev)
+        return '%s@%s' % (branch, short_rev)
 
 def git_isrootdir(self, cwd):
     try:
@@ -639,7 +646,7 @@ def run(cmd, args, cwd, env=None):
         raise CommandException('"%s" failed, error code %s\nstderr:\n%s' % (
             cmd + str(args), exit_code, stderr), cwd=cwd)
 
-    return (exit_code, stdout, stderr)
+    return (exit_code, stdout[:-1], stderr)
 
 
 def run_shell(cmd, print_cmd=False, cwd=None):
