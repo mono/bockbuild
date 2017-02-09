@@ -7,6 +7,7 @@ class FsharpPackage(GitHubTarballPackage):
 			configure = './configure --prefix="%{package_prefix}"')
 
 		self.extra_stage_files = ['lib/mono/xbuild/Microsoft/VisualStudio/v/FSharp/Microsoft.FSharp.Targets']
+		self.sources.extend (['patches/fsharp-fix-mdb-support.patch'])
 
 	def prep(self):
 		Package.prep (self)
