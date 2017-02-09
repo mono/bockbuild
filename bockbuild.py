@@ -108,7 +108,7 @@ class Bockbuild:
         if len (sys.argv) < 2:
             info ('Profiles in %s --' % self.git ('config --get remote.origin.url', self.profile_root)[0])
             info(map (lambda x: '\t%s: %s' % (x.name, x.description), self.profiles))
-            finish()
+            finish (exit_codes.FAILURE)
 
         global active_profile
         Package.profile = active_profile = self.load_profile (sys.argv[1])
@@ -385,8 +385,12 @@ if __name__ == "__main__":
         exc_type, exc_value, exc_traceback = sys.exc_info()
         error('%s (%s)' % (e, exc_type.__name__), more_output=True)
         error(('%s:%s @%s\t\t"%s"' % p for p in traceback.extract_tb(
-            exc_traceback)[-5:]), more_output=True)
+            exc_traceback)[-5:]))
     except KeyboardInterrupt:
         error('Interrupted.')
     finally:
-        finish()
+        if config.exit_code == exit_codes.NOTSET:
+            print 'spurious sys.exit() call'
+        if config.exit_code == exit_codes.SUCCESS:
+            logprint('\n** %s **\n' % 'Goodbye!', bcolors.BOLD)
+        sys.exit (config.exit_code)

@@ -27,6 +27,10 @@ class bcolors:
     BOLD = '\033[1m'
     UNDERLINE = '\033[4m'
 
+class exit_codes:
+    NOTSET = -1
+    SUCCESS = 0
+    FAILURE = 1
 
 class config:
     trace = False
@@ -38,7 +42,7 @@ class config:
     verbose = False
     protected_git_repos = [] # we do not allow modifying behavior on our profile repo or bockbuild repo.
     absolute_root = None # there is no file resolution beneath this path. Displayed paths are shortened by omitting this segment.
-
+    exit_code = exit_codes.NOTSET
 
 class CommandException (Exception):  # shell command failure
 
@@ -183,6 +187,10 @@ def warn(message):
         message = '%s %s' % ('(bockbuild warning)', message)
     logprint(message, bcolors.FAIL, header=get_caller())
 
+def finish (exit_code):
+    if exit_code > config.exit_code:
+        config.exit_code = exit_code
+    sys.exit(config.exit_code)
 
 def error(message, more_output=False):
     config.trace = False
@@ -190,12 +198,7 @@ def error(message, more_output=False):
         message = '%s %s' % ('(bockbuild error)', message)
     logprint(message, bcolors.FAIL, header=get_caller(), summary=True)
     if not more_output:
-        sys.exit(255)
-
-def finish():
-    logprint('\n** %s **\n' % 'Goodbye!', bcolors.BOLD)
-    sys.exit(0)
-
+        finish(exit_codes.FAILURE)
 
 def trace(message, skip=0):
     if config.trace == False:
