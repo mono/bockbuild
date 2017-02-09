@@ -415,18 +415,18 @@ class Package:
 					shutil.copytree (workspace_x86, workspace_x64)
 
 					self.link (workspace_x86, workspace)
-					package_stage = self.do_build ('darwin-32', os.path.join (self.profile.scratch, self.name + '-x86.install'))
+					stagedir_x32 = self.do_build ('darwin-32', os.path.join (self.profile.scratch, self.name + '-x86.install'))
 
 					self.link (workspace_x64, workspace)
-					stagedir_x64 = self.do_build ('darwin-64', os.path.join (self.profile.scratch, self.name + '-x64.install'))
+					package_stage = self.do_build ('darwin-64', os.path.join (self.profile.scratch, self.name + '-x64.install'))
 
 					delete (workspace)
 					shutil.move (workspace_x86, workspace)
 
 					print 'lipo', self.name
 
-					self.lipo_dirs (stagedir_x64, package_stage, 'lib')
-					self.copy_side_by_side (stagedir_x64, package_stage, 'bin', '64', '32')
+					self.lipo_dirs (stagedir_x32, package_stage, 'lib')
+					self.copy_side_by_side (stagedir_x32, package_stage, 'bin', '32', '64')
 				elif arch == 'toolchain':
 					package_stage = self.do_build ('darwin-64')
 				elif self.m32_only:
