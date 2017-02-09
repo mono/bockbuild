@@ -730,7 +730,7 @@ class Package:
 				dest_orig_file = os.path.join (dest_dir, reldir, filename)
 
 				if not os.path.exists (dest_orig_file):
-					error ('lipo: %s exists in %s but not in %s' % (relpath, src_dir, dest_dir))
+					warn ('lipo: %s exists in %s but not in %s' % (relpath, src_dir, dest_dir))
 				if orig_suffix != None:
 					suffixed = os.path.join (dest_dir, reldir, add_suffix (filename, orig_suffix))
 					trace (suffixed)
