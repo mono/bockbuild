@@ -221,6 +221,8 @@ class Package:
                 if target_revision and (current_revision != target_revision):
                     self.git('reset --hard %s' %
                              target_revision, workspace_dir, hazard = True)
+
+                self.git('submodule init', workspace_dir)
                 self.git('submodule update --recursive', workspace_dir)
 
                 current_revision = git_get_revision(self, workspace_dir)
