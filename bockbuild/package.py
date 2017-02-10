@@ -250,13 +250,12 @@ class Package:
                         error ('Release builds cannot have uncommitted local changes!')
                     else:
                         info ('The repository is dirty, your changes will be committed.')
-                        bockbuild_commit_msg = 'Bockbuild'
-                        top_commit_msg = git_get_commit_msg (self, workspace_dir)
+                        bockbuild_commit_msg = '"WIP (auto-committed by bockbuild)"'
+                        top_commit_msg = git_get_commit_msg (self, source_url)
                         if top_commit_msg == bockbuild_commit_msg:
-                            self.git ('commit -a --allow-empty --amend -m %s' % bockbuild_commit_msg, workspace_dir)
+                            self.git ('commit -a --allow-empty --amend -m', source_url, options = [bockbuild_commit_msg])
                         else:
-                            self.git('commit -a --allow-empty -m %s' % bockbuild_commit_msg, workspace_dir)
-
+                            self.git('commit -a --allow-empty -m', source_url, options = [bockbuild_commit_msg])
             else:
                 if os.path.exists(cache_dir):
                     update_cache()

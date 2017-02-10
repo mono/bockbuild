@@ -335,12 +335,17 @@ def find_git(self, echo=False):
         error('git not found in PATH')
 
     @retry
-    def git_operation(self, args, cwd, hazard = False, allow_fail = False, singleline_output = False):
+    def git_operation(self, args, cwd, hazard = False, allow_fail = False, singleline_output = False, options = None):
         if hazard:
             root = git_rootdir (self, cwd)
             assert_modifiable_repo (root)
         try:
-            (exit, out, err) = run(git_bin, args.split(' '), cwd)
+            fullargs = args.split(' ')
+            if options:
+                if not isinstance(options, list):
+                    error ('options argument must be a list')
+                fullargs = fullargs + options
+            (exit, out, err) = run(git_bin, fullargs, cwd)
         except CommandException:
             if allow_fail:
                 return None
