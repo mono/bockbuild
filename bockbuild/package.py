@@ -152,7 +152,6 @@ class Package:
             shutil.move(dest, scratch_workspace)
 
         def checkout(self, source_url, cache_dir, workspace_dir):
-            self.is_local = os.path.isdir (source_url)
             def clean_git_workspace(dir):
                 trace('Cleaning git workspace: ' + self.name)
                 self.git('reset --hard', dir, hazard = True)
@@ -246,8 +245,7 @@ class Package:
                 self.buildstring = ['%s <%s>' % (str, source_url)]
 
             if self.is_local:
-                link_dir (workspace_dir, source_url)
-                if git_is_dirty (self, workspace_dir):
+                if git_is_dirty (self, source_url):
                     if self.profile.bockbuild.cmd_options.release_build:
                         error ('Release builds cannot have uncommitted local changes!')
                     else:
@@ -264,12 +262,12 @@ class Package:
                 else:
                     create_cache()
 
-                if os.path.exists(workspace_dir):
-                    if self.dont_clean == True:  # previous workspace was left dirty, delete
-                        clean_git_workspace(workspace_dir)
-                    update_workspace()
-                else:
-                    create_workspace()
+            if os.path.exists(workspace_dir):
+                if self.dont_clean == True:  # previous workspace was left dirty, delete
+                    clean_git_workspace(workspace_dir)
+                update_workspace()
+            else:
+                create_workspace()
 
             cache = None  # at this point, the cache is not the problem; keep _fetch_sources from deleting it
 
@@ -377,6 +375,11 @@ class Package:
 
                 elif source.startswith(('git://', 'file://', 'ssh://')) or source.endswith('.git') or (os.path.isdir(source) and git_isrootdir (self, source)):
                     cache = get_git_cache_path()
+
+                    if os.path.isdir(source):
+                        self.is_local = True
+                        self.link(source, cache)
+
                     clean_func = checkout(
                         self, source, cache, scratch_workspace)
                     resolved_source = scratch_workspace
@@ -464,7 +467,7 @@ class Package:
                 self.rm_if_exists(workspace_x64)
 
                 shutil.move(workspace, workspace_x86)
-                shutil.copytree(workspace_x86, workspace_x64)
+                self.shadow_copy(workspace_x86, workspace_x64)
 
                 self.link(workspace_x86, workspace)
                 package_stage = self.do_build(
@@ -492,10 +495,6 @@ class Package:
             self.make_artifact(package_stage, build_artifact)
         for target in self.deploy_requests:
             self.deploy_package(build_artifact, target)
-        if self.is_local:
-            verbose ('Cleaning local repo')
-            self.git ('reset --hard', workspace)
-
 
     def deploy_package(self, artifact, dest):
         trace('Deploying (%s -> %s)' %
@@ -583,7 +582,7 @@ class Package:
         except (Exception, KeyboardInterrupt) as e:
             self.rm_if_exists(self.stage_root)
             if isinstance(e, CommandException):
-                if os.path.exists(self.workspace) and not self.is_local:
+                if os.path.exists(self.workspace):
                     for path in self.aux_files:
                         self.rm_if_exists(path)
                     problem_dir = os.path.join(
