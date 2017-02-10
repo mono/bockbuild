@@ -799,8 +799,6 @@ class Package:
                 fullpath = os.path.join (root, file)
                 os.link (fullpath, os.path.join (destpath, file))
 
-        finish(exit_codes.SUCCESS)
-
     def copy_side_by_side(self, src_dir, dest_dir, bin_subdir, suffix, orig_suffix=None):
         def add_suffix(filename, sfx):
             fileparts = filename.split('.', 1)
