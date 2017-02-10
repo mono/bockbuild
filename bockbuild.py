@@ -73,20 +73,20 @@ class Bockbuild:
         self.resources = set([os.path.realpath(
             os.path.join(self.root, 'packages'))]) # list of paths on where to look for packages, patches, etc.
 
-        self.state_root = self.root # root path for all storage; artifacts, build I/O, cache, storage and output
+        config.state_root = self.root # root path for all storage; artifacts, build I/O, cache, storage and output
         config.protected_git_repos.append (self.root)
         config.absolute_root = os.path.commonprefix([self.root, self.execution_root])
 
-        self.build_root = os.path.join(self.state_root, 'builds')
-        self.staged_prefix = os.path.join(self.state_root, 'stage')
-        self.toolchain_root = os.path.join(self.state_root, 'toolchain')
-        self.artifact_root = os.path.join(self.state_root, 'artifacts')
-        self.package_root = os.path.join(self.state_root, 'distribution')
-        self.scratch = os.path.join(self.state_root, 'scratch')
-        self.logs = os.path.join(self.state_root, 'logs')
-        self.env_file = os.path.join(self.state_root, 'last-successful-build.env')
+        self.build_root = os.path.join(config.state_root, 'builds')
+        self.staged_prefix = os.path.join(config.state_root, 'stage')
+        self.toolchain_root = os.path.join(config.state_root, 'toolchain')
+        self.artifact_root = os.path.join(config.state_root, 'artifacts')
+        self.package_root = os.path.join(config.state_root, 'distribution')
+        self.scratch = os.path.join(config.state_root, 'scratch')
+        self.logs = os.path.join(config.state_root, 'logs')
+        self.env_file = os.path.join(config.state_root, 'last-successful-build.env')
         self.source_cache = os.getenv('BOCKBUILD_SOURCE_CACHE') or os.path.realpath(
-            os.path.join(self.state_root, 'cache'))
+            os.path.join(config.state_root, 'cache'))
         self.cpu_count = get_cpu_count()
         self.host = get_host()
         self.uname = backtick('uname -a')

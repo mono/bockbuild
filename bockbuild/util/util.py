@@ -42,6 +42,7 @@ class config:
     verbose = False
     protected_git_repos = [] # we do not allow modifying behavior on our profile repo or bockbuild repo.
     absolute_root = None # there is no file resolution beneath this path. Displayed paths are shortened by omitting this segment.
+    state_root = None
     exit_code = exit_codes.NOTSET
 
 class CommandException (Exception):  # shell command failure
