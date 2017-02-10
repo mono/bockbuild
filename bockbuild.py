@@ -299,6 +299,8 @@ class Bockbuild:
             profile.process_release(self.package_root)
             profile.package()
 
+        finish(exit_codes.SUCCESS)
+
     def track_env(self):
         env = active_profile.env
         env.compile()
