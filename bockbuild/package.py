@@ -180,7 +180,7 @@ class Package:
                     self.git('fetch origin %s' % self.git_branch, cache_dir)
 
             def create_workspace():
-                self.git('clone --local --shared %s %s' %
+                self.git('clone --local --shared --recursive %s %s' %
                          (cache_dir, workspace_dir), cache_dir)
 
             def update_workspace():
@@ -221,7 +221,6 @@ class Package:
                     self.git('reset --hard %s' %
                              target_revision, workspace_dir, hazard = True)
 
-                self.git('submodule init', workspace_dir)
                 self.git('submodule update --recursive', workspace_dir)
 
                 current_revision = git_get_revision(self, workspace_dir)
