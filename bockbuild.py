@@ -96,14 +96,14 @@ class Bockbuild:
         self.toolchain = []
 
         find_git(self)
-        self.bockbuild_rev = git_get_revision(self, self.root)
+        self.bockbuild_rev = git_shortid(self, self.root)
         self.profile_root = git_rootdir (self, self.execution_root)
         self.profiles = find_profiles (self.profile_root)
 
         for profile in self.profiles:
             self.resources.add(profile.path)
 
-        loginit('bockbuild (%s)' % (git_shortid(self, self.root)))
+        loginit('bockbuild (%s)' % (self.bockbuild_rev))
         info('cmd: %s' % ' '.join(sys.argv))
 
         if len (sys.argv) < 2:
