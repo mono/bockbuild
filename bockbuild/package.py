@@ -248,6 +248,7 @@ class Package:
                 self.buildstring = ['%s <%s>' % (str, source_url)]
 
             if self.is_local:
+                self.rm_if_exists(workspace_dir)
                 work_committed = False
                 if git_is_dirty (self, source_url):
                     if self.profile.bockbuild.cmd_options.release_build:
