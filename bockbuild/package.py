@@ -737,6 +737,7 @@ class Package:
 					shutil.move (dest_orig_file, suffixed)
 					os.symlink (os.path.basename (suffixed), dest_orig_file)
 
+				os.makedirs (os.path.dirname (dest_file))
 				shutil.copy2 (path, dest_file)
 
 	def arch_build (self, arch):
