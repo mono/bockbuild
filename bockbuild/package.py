@@ -776,28 +776,29 @@ class Package:
 
     #creates a deep hardlink copy of a directory
     def shadow_copy (self, source, dest):
-        if os.path.commonprefix  ([source, config.state_root]) == source:
-            print 'this repo includes state dir'
+        trace ('shadow_copy %s %s' % (source , dest))
         if os.path.exists(dest):
             error ('Destination directory must not exist')
 
+        # Bockbuild state may be under the directory if we are copying a local workspace. Avoid recursive copying
         stateroot_parent = os.path.dirname (config.state_root)
         stateroot_name = os.path.basename (config.state_root)
         stateroot_found = False
+
+        if not os.path.commonprefix  ([source, config.state_root]) == source:
+            stateroot_found = True
 
         for root, subdirs, filelist in os.walk (source):
             relpath = os.path.relpath(root, source) # e.g. 'lib/mystuff'
             destpath = os.path.join(dest, relpath)
             os.makedirs(destpath)
-            #print relpath
             if not stateroot_found and root == stateroot_parent:
-                print len(subdirs)
                 subdirs [:] = [dir for dir in subdirs if dir != stateroot_name]
-                print len(subdirs)
                 stateroot_found = True
             for file in filelist:
                 fullpath = os.path.join (root, file)
                 os.link (fullpath, os.path.join (destpath, file))
+        trace ('shadow_copy done')
 
     def copy_side_by_side(self, src_dir, dest_dir, bin_subdir, suffix, orig_suffix=None):
         def add_suffix(filename, sfx):
