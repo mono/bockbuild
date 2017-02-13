@@ -329,6 +329,15 @@ def which(program):
 
     return None
 
+def parse_rootdir(result, cwd):
+    # http://stackoverflow.com/a/18339166
+    if os.path.basename(result) == '.git': # normal repo
+        return os.path.dirname(result)
+    elif result == '.':
+        return cwd
+    else:
+        return result
+
 
 def find_git(self, echo=False):
     git_bin = which('git')
@@ -339,11 +348,15 @@ def find_git(self, echo=False):
     def git_operation(self, args, cwd, hazard = False, allow_fail = False, singleline_output = False, options = None, allow_nonrootdir = False):
         try:
             (exit, out, err) = run(git_bin, ['rev-parse', '--show-toplevel'], cwd)
-            root = out
+            if len(out) > 0:
+                root = out
+            else:
+                (exit, out, err) = run(git_bin, ['rev-parse', '--git-dir'], cwd)
+                root = parse_rootdir(out, cwd)
         except:
             raise
         if root != cwd and not allow_nonrootdir:
-            error ('Git operations allowed only on the root directory of the repo.')
+            error ('Git operations allowed only on the root directory of the repo (root: %s cwd: %s)' % (root, cwd))
         if hazard:
             root = git_rootdir (self, cwd)
             assert_modifiable_repo (root)
@@ -408,15 +421,22 @@ def git_shortid(self, cwd):
     else:
         return '%s@%s' % (branch, short_rev)
 
+def git_rootdir(self, cwd):
+    # http://stackoverflow.com/a/18339166
+    result = self.git('rev-parse --show-toplevel', cwd, allow_nonrootdir=True, singleline_output=True)
+    if len(result) > 0:
+        return result
+    else:
+        result = self.git('rev-parse --git-dir', cwd, allow_nonrootdir=True, singleline_output=True)
+        return parse_rootdir(result)
+
 def git_isrootdir(self, cwd):
     try:
-        root = self.git('rev-parse --show-toplevel', cwd, allow_nonrootdir = True)[0]
-        return root == cwd
+        return git_rootdir (self, cwd) == cwd
     except:
-        return False
+        error('git_isrootdir')
 
-def git_rootdir(self, cwd):
-    return self.git('rev-parse --show-toplevel', cwd, allow_nonrootdir = True)[0]
+
 
 def git_get_commit_msg(self, cwd):
     return self.git('show -s --format=%B HEAD', cwd)[0]
