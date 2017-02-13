@@ -95,6 +95,7 @@ class Package:
                 self.__dict__[k] = v
 
         self.makeinstall = self.makeinstall or 'make install DESTDIR=%{stage_root}'
+        self.fetched = False
 
     def extract_organization(self, source):
         if (not "git" in source) or ("http" in source):
@@ -140,6 +141,9 @@ class Package:
 
     @retry
     def fetch(self, dest):
+        if self.fetched:
+            return
+
         scratch = self.profile.bockbuild.scratch
         resources = self.profile.bockbuild.resources
         source_cache_dir = self.profile.bockbuild.source_cache
@@ -244,6 +248,7 @@ class Package:
                 self.buildstring = ['%s <%s>' % (str, source_url)]
 
             if self.is_local:
+                work_committed = False
                 if git_is_dirty (self, source_url):
                     if self.profile.bockbuild.cmd_options.release_build:
                         error ('Release builds cannot have uncommitted local changes!')
@@ -255,18 +260,21 @@ class Package:
                             self.git ('commit -a --allow-empty --amend -m', source_url, options = [bockbuild_commit_msg])
                         else:
                             self.git('commit -a --allow-empty -m', source_url, options = [bockbuild_commit_msg])
+                        work_committed = True
+                self.shadow_copy (source_url, workspace_dir)
+                if work_committed:
+                    self.git ('reset HEAD~1', source_url)
             else:
                 if os.path.exists(cache_dir):
                     update_cache()
                 else:
                     create_cache()
-
-            if os.path.exists(workspace_dir):
-                if self.dont_clean == True:  # previous workspace was left dirty, delete
-                    clean_git_workspace(workspace_dir)
-                update_workspace()
-            else:
-                create_workspace()
+                if os.path.exists(workspace_dir):
+                    if self.dont_clean == True:  # previous workspace was left dirty, delete
+                        clean_git_workspace(workspace_dir)
+                    update_workspace()
+                else:
+                    create_workspace()
 
             cache = None  # at this point, the cache is not the problem; keep _fetch_sources from deleting it
 
@@ -373,12 +381,11 @@ class Package:
                     resolved_source = scratch_workspace
 
                 elif source.startswith(('git://', 'file://', 'ssh://')) or source.endswith('.git') or (os.path.isdir(source) and git_isrootdir (self, source)):
-                    cache = get_git_cache_path()
-
                     if os.path.isdir(source):
                         self.is_local = True
-                        self.link(source, cache)
-
+                        cache = None
+                    else:
+                        cache = get_git_cache_path()
                     clean_func = checkout(
                         self, source, cache, scratch_workspace)
                     resolved_source = scratch_workspace
@@ -432,6 +439,7 @@ class Package:
 
         self.workspace = dest
         shutil.move(scratch_workspace, self.workspace)
+        self.fetched = True
 
     def request_build(self, reason):
         self.needs_build = reason
@@ -775,7 +783,7 @@ class Package:
                         warn("lipo: 32-bit version of file %s not found" % file)
 
     #creates a deep hardlink copy of a directory
-    def shadow_copy (self, source, dest):
+    def shadow_copy (self, source, dest, exclude_git = False):
         trace ('shadow_copy %s %s' % (source , dest))
         if os.path.exists(dest):
             error ('Destination directory must not exist')
@@ -792,11 +800,17 @@ class Package:
             relpath = os.path.relpath(root, source) # e.g. 'lib/mystuff'
             destpath = os.path.join(dest, relpath)
             os.makedirs(destpath)
+            if exclude_git:
+                subdirs[:] = [dir for dir in subdirs if dir != '.git']
             if not stateroot_found and root == stateroot_parent:
                 subdirs [:] = [dir for dir in subdirs if dir != stateroot_name]
                 stateroot_found = True
             for file in filelist:
                 fullpath = os.path.join (root, file)
+                if os.path.islink(fullpath):
+                    target = os.path.join(os.path.dirname(fullpath), os.readlink(fullpath))
+                    if not os.path.exists(fullpath) or os.path.commonprefix  ([config.state_root, target]) == config.state_root:
+                        break
                 os.link (fullpath, os.path.join (destpath, file))
         trace ('shadow_copy done')
 
