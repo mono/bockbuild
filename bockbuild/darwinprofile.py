@@ -76,7 +76,7 @@ class DarwinProfile (UnixProfile):
 
         #TODO: Version checking
 
-        map(lambda t : self.configure_flags.append ('%s=no' % t), 'basename_r clock_getres clock_gettime clock_settime dirname_r getentropy mkostemp mkostemps'.split(' '))
+        map(lambda t : self.configure_flags.append ('ac_cv_func_%s=no' % t), 'basename_r clock_getres clock_gettime clock_settime dirname_r getentropy mkostemp mkostemps'.split(' '))
 
         self.gcc_flags.extend([
             '-D_XOPEN_SOURCE',
