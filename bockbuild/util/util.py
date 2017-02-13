@@ -121,8 +121,8 @@ def loginit(message):
         Logger.monkeywrench = True
     elif sys.stdout.isatty():
         Logger.print_color = True
-        logprint('** %s **' % message, bcolors.BOLD)
-        print
+    logprint('** %s **' % message, bcolors.BOLD)
+    print
 
 
 def colorprint(message, color):
