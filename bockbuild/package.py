@@ -152,8 +152,14 @@ class Package:
         scratch_workspace = os.path.join(scratch, '%s.workspace' % self.name)
 
         self.rm_if_exists(scratch_workspace)
-        if os.path.exists(dest):
-            shutil.move(dest, scratch_workspace)
+        if os.path.lexists(dest):
+            if os.path.islink(dest):
+                delete(dest)
+            elif os.path.isdir(dest):
+                shutil.move(dest, scratch_workspace)
+            else:
+                error ('Unexpected workspace found at %s' % dest)
+
 
         def checkout(self, source_url, cache_dir, workspace_dir):
             def clean_git_workspace(dir):
