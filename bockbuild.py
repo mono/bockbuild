@@ -185,6 +185,9 @@ class Bockbuild:
         build_list = []
         stage_invalidated = False #if anything is dirty we flush the stageination path and fill it again
 
+        if self.full_rebuild:
+            ensure_dir (stage, purge = True)
+
         progress('Fetching packages')
         for package in packages.values():
             package.build_artifact = os.path.join(
