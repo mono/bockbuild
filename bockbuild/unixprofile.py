@@ -13,6 +13,7 @@ class UnixProfile (Profile):
 
         self.gcc_flags = ['-I%s/include' % self.staged_prefix]
         self.ld_flags = ['-L%s/lib' % self.staged_prefix]
+        self.configure_flags = []
 
         self.env.set('BUILD_PREFIX', '%{prefix}')
 
