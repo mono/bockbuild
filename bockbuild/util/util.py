@@ -336,7 +336,14 @@ def find_git(self, echo=False):
         error('git not found in PATH')
 
     @retry
-    def git_operation(self, args, cwd, hazard = False, allow_fail = False, singleline_output = False, options = None):
+    def git_operation(self, args, cwd, hazard = False, allow_fail = False, singleline_output = False, options = None, allow_nonrootdir = False):
+        try:
+            (exit, out, err) = run(git_bin, ['rev-parse', '--show-toplevel'], cwd)
+            root = out
+        except:
+            raise
+        if root != cwd and not allow_nonrootdir:
+            error ('Git operations allowed only on the root directory of the repo.')
         if hazard:
             root = git_rootdir (self, cwd)
             assert_modifiable_repo (root)
@@ -403,13 +410,13 @@ def git_shortid(self, cwd):
 
 def git_isrootdir(self, cwd):
     try:
-        root = self.git('rev-parse --show-toplevel', cwd)[0]
+        root = self.git('rev-parse --show-toplevel', cwd, allow_nonrootdir = True)[0]
         return root == cwd
     except:
         return False
 
 def git_rootdir(self, cwd):
-    return self.git('rev-parse --show-toplevel', cwd)[0]
+    return self.git('rev-parse --show-toplevel', cwd, allow_nonrootdir = True)[0]
 
 def git_get_commit_msg(self, cwd):
     return self.git('show -s --format=%B HEAD', cwd)[0]
