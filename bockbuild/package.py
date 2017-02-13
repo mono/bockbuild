@@ -174,7 +174,7 @@ class Package:
                     self.rm(workspace_dir)
                 progress('Cloning git repo: %s' % source_url)
                 self.git('clone --mirror %s %s' %
-                         (source_url, cache_dir), scratch)
+                         (source_url, cache_dir), self.profile.bockbuild.root)
 
             def update_cache():
                 trace('Updating cache: ' + cache_dir)
