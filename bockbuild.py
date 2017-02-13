@@ -312,8 +312,6 @@ class Bockbuild:
             self.root, self.profile_name) + '_env.sh'
         env.write_source_script(self.env_script)
 
-        if not os.path.exists (self.env_file):
-            return False
         self.tracked_env.extend(env.serialize())
         return is_changed(self.tracked_env, self.env_file)
 
