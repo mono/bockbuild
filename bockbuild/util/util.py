@@ -347,6 +347,7 @@ def find_git(self, echo=False):
     @retry
     def git_operation(self, args, cwd, hazard = False, allow_fail = False, singleline_output = False, options = None, allow_nonrootdir = False):
         try:
+            cwd = os.path.realpath(cwd)
             (exit, out, err) = run(git_bin, ['rev-parse', '--show-toplevel'], cwd)
             if len(out) > 0:
                 root = out
