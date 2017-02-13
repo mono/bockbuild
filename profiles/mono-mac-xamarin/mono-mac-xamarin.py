@@ -96,6 +96,6 @@ if __name__ == "__main__":
     except Exception as e:
         exc_type, exc_value, exc_traceback = sys.exc_info()
         error ('%s (%s)' % (e ,exc_type.__name__), more_output = True)
-        error (('%s:%s @%s\t\t"%s"' % p for p in traceback.extract_tb(exc_traceback)[-3:]), more_output = True)
+        error (('%s:%s @%s\t\t"%s"' % p for p in traceback.extract_tb(exc_traceback)[-3:]))
     except KeyboardInterrupt:
         error ('Interrupted.')
