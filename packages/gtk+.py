@@ -181,7 +181,7 @@ class GtkPackage (GnomeGitPackage):
 				# https://bugzilla.xamarin.com/show_bug.cgi?id=41657
 				'patches/gtk/bxc-41657.patch',
 
-				'patches/gtk/box-signals.patch'
+				'patches/gtk/box-signals.patch',
 
 				'patches/gtk/emit-container-add.patch',
 				'patches/gtk/create-accessibility-object.patch',
