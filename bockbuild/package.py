@@ -141,7 +141,7 @@ class Package:
 
     @retry
     def fetch(self, dest):
-        if self.fetched:
+        if self.fetched and not os.path.lexists(dest):
             return
 
         scratch = self.profile.bockbuild.scratch
