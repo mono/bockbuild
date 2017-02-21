@@ -446,6 +446,9 @@ class Package:
 
         self.workspace = dest
         shutil.move(scratch_workspace, self.workspace)
+
+        if not os.path.exists(self.workspace):
+            error ('Workspace was not created')
         self.fetched = True
 
     def request_build(self, reason):
@@ -632,6 +635,9 @@ class Package:
             return
         if not isinstance(command, str):
             error('command arg must be a string: %s' % repr(command))
+
+        if not os.path.isdir(cwd):
+            error('Directory does not exist: %s' % cwd)
 
         try:
             env_command = '%s %s' % (
