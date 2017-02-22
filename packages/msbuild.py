@@ -21,6 +21,7 @@ class MSBuild (GitHubPackage):
 		os.makedirs(bindir)
 
 		self.sh('cp msbuild-mono-deploy.in %s/msbuild' % bindir)
+		self.sh('cp %s/Roslyn/System.Reflection.Metadata.dll %s' % (new_location, new_location))
 
 		xbuild_dir = os.path.join (self.staged_prefix, 'lib/mono/xbuild')
 		new_xbuild_tv_dir = os.path.join (xbuild_dir, self.version)
