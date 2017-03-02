@@ -33,6 +33,8 @@ class MSBuild (GitHubPackage):
 		for dep in glob.glob("%s/Microsoft/NuGet/*" % xbuild_dir):
                     self.sh('ln -s %s %s' % (dep, xbuild_dir))
 
+		self.sh('cp -R sdks %s/Sdks' % new_location)
+
 		for line in fileinput.input('%s/msbuild' % bindir, inplace=True):
 			line = line.replace ('@bindir@' , '%s/bin' % self.staged_prefix)
 			line = line.replace ('@mono_instdir@', '%s/lib/mono' % self.staged_prefix)
