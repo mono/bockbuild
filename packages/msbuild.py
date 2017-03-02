@@ -3,7 +3,7 @@ import fileinput
 class MSBuild (GitHubPackage):
 	def __init__ (self):
 		GitHubPackage.__init__ (self, 'mono', 'msbuild', '15.0',
-			git_branch = 'xplat-master')
+			git_branch = 'xplat-2017-02')
 
 	def build (self):
 		self.sh ('./cibuild.sh --scope Compile --target Mono --host Mono')
