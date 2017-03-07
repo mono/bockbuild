@@ -3,7 +3,7 @@ import fileinput
 class MSBuild (GitHubPackage):
 	def __init__ (self):
 		GitHubPackage.__init__ (self, 'mono', 'msbuild', '15.0',
-			git_branch = 'xplat-master')
+			git_branch = 'xplat-2017-02')
 
 	def build (self):
 		self.sh ('./cibuild.sh --scope Compile --target Mono --host Mono')
@@ -32,6 +32,8 @@ class MSBuild (GitHubPackage):
 		self.sh('cp -R nuget-support/tasks-targets/ %s/' % xbuild_dir)
 		for dep in glob.glob("%s/Microsoft/NuGet/*" % xbuild_dir):
                     self.sh('ln -s %s %s' % (dep, xbuild_dir))
+
+		self.sh('cp -R sdks %s/Sdks' % new_location)
 
 		for line in fileinput.input('%s/msbuild' % bindir, inplace=True):
 			line = line.replace ('@bindir@' , '%s/bin' % self.staged_prefix)
