@@ -232,7 +232,7 @@ class MonoReleaseProfile(DarwinProfile, MonoReleasePackages):
         for path, dirs, files in os.walk(self.staged_prefix):
             for name in files:
                 f = os.path.join(path, name)
-                file_type = backtick('file "%s"' % f)
+                file_type = self.osx_file_type_workaround(f)
                 if "dSYM" in f:
                     continue
                 if "Mach-O" in "".join(file_type):
@@ -343,7 +343,7 @@ class MonoReleaseProfile(DarwinProfile, MonoReleasePackages):
         for path, dirs, files in os.walk(bindir):
             for name in files:
                 f = os.path.join(path, name)
-                file_type = backtick('file "%s"' % f)
+                file_type = self.osx_file_type_workaround(f)
                 if "Mach-O executable" in "".join(file_type):
                     self.verify(f)
 
