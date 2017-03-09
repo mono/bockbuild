@@ -50,7 +50,7 @@ class MonoMasterPackage(Package):
 		self.make = '%s EXTERNAL_MCS=%s EXTERNAL_RUNTIME=%s' % (self.make, self.profile.env.system_mcs, self.profile.env.system_mono)
 		Package.configure(self)
 		if self.custom_version_str is not None:
-		replace_in_file(os.path.join (self.workspace, 'config.h'), {self.version : self.custom_version_str})
+			replace_in_file(os.path.join (self.workspace, 'config.h'), {self.version : self.custom_version_str})
 		Package.make(self)
 
 	def prep (self):
