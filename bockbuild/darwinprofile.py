@@ -57,7 +57,7 @@ class DarwinProfile (UnixProfile):
         'gtk-doc'
     ]
 
-    def use_Xcode(self, min_version='5.11', xcodebuild_version_prefix='Xcode '):
+    def use_Xcode(self, min_version='5.1.1', xcodebuild_version_prefix='Xcode '):
         xcrun_cc_str = backtick('xcrun cc --version')[0]
         cc_str = backtick('cc --version')[0]
         if xcrun_cc_str != cc_str:
