@@ -181,13 +181,18 @@ class GtkPackage (GnomeGitPackage):
 				# https://bugzilla.xamarin.com/show_bug.cgi?id=41657
 				'patches/gtk/bxc-41657.patch',
 
+				'patches/gtk/box-signals.patch',
+
 				'patches/gtk/emit-container-add.patch',
 				'patches/gtk/create-accessibility-object.patch',
 				'patches/gtk/make-gtkpaned-emit-signals.patch',
 
 				# https://bugzilla.xamarin.com/show_bug.cgi?id=51382
 				# https://bugzilla.xamarin.com/show_bug.cgi?id=51375
-				'patches/gtk/recompute-viewport-allocation-for-overlay-scrollbars.patch'
+				'patches/gtk/recompute-viewport-allocation-for-overlay-scrollbars.patch',
+
+				'patches/gtk/a11y-fix-dialog-accessibility.patch',
+				'patches/gtk/a11y-emit-container-add-when-inserting-menu.patch'
 			])
 
 	def prep (self):
