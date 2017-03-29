@@ -6,7 +6,7 @@ class MSBuild (GitHubPackage):
 			git_branch = 'xplat-master')
 
 	def build (self):
-		self.sh ('./cibuild.sh --scope Compile --target Mono --host Mono')
+		self.sh ('./cibuild.sh --scope Test --target Mono --host Mono')
 
 	def install (self):
 		# adjusted from 'install-mono-prefix.sh'
