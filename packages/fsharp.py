@@ -2,8 +2,8 @@ class FsharpPackage(GitHubTarballPackage):
 	def __init__(self):
 		GitHubTarballPackage.__init__(self,
 			'fsharp', 'fsharp',
-			'4.1.4',
-			'7ee0a9cba00718e8b0bca87514228602f3254bf9',
+			'4.1.5',
+			'24eb0bc4bfdde9b4c12b604757ea8db209bf2aa3',
 			configure = './configure --prefix="%{package_prefix}"')
 
 		self.extra_stage_files = ['lib/mono/xbuild/Microsoft/VisualStudio/v/FSharp/Microsoft.FSharp.Targets']
