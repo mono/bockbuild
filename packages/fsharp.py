@@ -4,7 +4,7 @@ class FsharpPackage(GitHubTarballPackage):
 			'fsharp', 'fsharp',
 			'4.1.5',
 			'24eb0bc4bfdde9b4c12b604757ea8db209bf2aa3',
-			configure = './configure --prefix="%{package_prefix}"'
+			configure = './configure --prefix="%{package_prefix}"',
 			override_properties = { 'make': 'make' })
 
 		self.extra_stage_files = ['lib/mono/xbuild/Microsoft/VisualStudio/v/FSharp/Microsoft.FSharp.Targets']
