@@ -3,15 +3,12 @@ class FsharpPackage(GitHubTarballPackage):
 		GitHubTarballPackage.__init__(self,
 			'fsharp', 'fsharp',
 			'4.1.8',
-			'29607f57efe83edeecd35070929fbdcf001b4d37',
+			'991186f6c95b30a80f217b9319354b32c86212de',
 			configure = './configure --prefix="%{package_prefix}"',
 			override_properties = { 'make': 'make' })
 
 		self.extra_stage_files = ['lib/mono/xbuild/Microsoft/VisualStudio/v/FSharp/Microsoft.FSharp.Targets']
-		self.sources.extend ([
-			'patches/fsharp-fix-mdb-support.patch',
-			'patches/fsharp-fix-compile-after-issue.patch',
-			'patches/fsharp-Add-missing-symlinks.patch'])
+		self.sources.extend (['patches/fsharp-fix-mdb-support.patch'])
 
 	def prep(self):
 		Package.prep (self)
