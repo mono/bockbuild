@@ -1,0 +1,63 @@
+commit d67443c2e65bcd9a8f09b659d9d51ccc03fa760a
+Author: Ankit Jain <ankit.jain@xamarin.com>
+Date:   Tue Apr 4 14:00:39 2017 -0400
+
+    [msbuild] Fix regression in Microsoft.Build.FSharp.targets
+    
+    - 948e2c78e4dec774e07b82adfd8f5c240adfb621 added the generated
+      AssemblyAttribute file to `@(CompileBefore)` or `@(CompileAfter)`
+      depeding on `$(OutputType) == 'Exe'`. But this broke projects which
+      have `$(OutputType) == 'WinExe'`, for which it was added to
+      `@(CompileAfter)`.
+    
+    This manifested as:
+                                    Tool /Library/Frameworks/Mono.framework/Versions/5.0.0/lib/mono/fsharp/fsc.exe execution started with arguments:  -o:obj/x86/Debug/MonoSuite.FSharpGTK.exe
+                                    -g
+                                    --debug:full
+                                    --noframework
+                                    --define:DEBUG
+                                    --optimize-
+                                    --tailcalls-
+                                    --platform:x86
+                                    -r:/Library/Frameworks/Mono.framework/Versions/5.0.0/lib/mono/4.5-api/mscorlib.dll
+                                    -r:/Library/Frameworks/Mono.framework/Versions/5.0.0/lib/mono/gac/FSharp.Core/4.4.1.0__b03f5f7f11d50a3a/FSharp.Core.dll
+                                    -r:/Library/Frameworks/Mono.framework/Versions/5.0.0/lib/mono/4.5-api/System.dll
+                                    -r:/Library/Frameworks/Mono.framework/Versions/5.0.0/lib/mono/gtk-sharp-2.0/gtk-sharp.dll
+                                    -r:/Library/Frameworks/Mono.framework/Versions/5.0.0/lib/mono/gtk-sharp-2.0/gdk-sharp.dll
+                                    -r:/Library/Frameworks/Mono.framework/Versions/5.0.0/lib/mono/gtk-sharp-2.0/glib-sharp.dll
+                                    -r:/Library/Frameworks/Mono.framework/Versions/5.0.0/lib/mono/gtk-sharp-2.0/glade-sharp.dll
+                                    -r:/Library/Frameworks/Mono.framework/Versions/5.0.0/lib/mono/gtk-sharp-2.0/pango-sharp.dll
+                                    -r:/Library/Frameworks/Mono.framework/Versions/5.0.0/lib/mono/gtk-sharp-2.0/atk-sharp.dll
+                                    -r:/Library/Frameworks/Mono.framework/Versions/5.0.0/lib/mono/4.5-api/System.Core.dll
+                                    -r:/Users/xamarin/Library/Caches/xtmp/6e143ead/MonoSuite.FSharpLib/bin/Debug//MonoSuite.FSharpLib.dll
+                                    --target:winexe
+                                    --warnaserror:76
+                                    --fullpaths
+                                    --flaterrors
+                                    --highentropyva-
+                                    AssemblyInfo.fs
+                                    MainWindow.fs
+                                    Main.fs
+                                    obj/x86/Debug/.NETFramework,Version=v4.5.AssemblyAttribute.fs
+                                    Environment variables being passed to the tool:
+                                    F# Compiler for F# 4.1
+                                    Freely distributed under the Apache 2.0 Open Source License
+    /Users/xamarin/Library/Caches/xtmp/6e143ead/MonoSuite.FSharpGTK/Main.fs(8,13): error FS0433: A function labeled with the 'EntryPointAttribute' attribute must be the last declaration in the last file in the compilation sequence.
+    
+    Bug: https://bugzilla.xamarin.com/show_bug.cgi?id=54463
+
+diff --git a/src/fsharp/FSharp.Build/Microsoft.FSharp.targets b/src/fsharp/FSharp.Build/Microsoft.FSharp.targets
+index 4831b29d..cef64a7f 100644
+--- a/src/fsharp/FSharp.Build/Microsoft.FSharp.targets
++++ b/src/fsharp/FSharp.Build/Microsoft.FSharp.targets
+@@ -305,8 +305,8 @@ this file.
+             Overwrite="true"/>
+ 
+         <ItemGroup>
+-            <CompileBefore Include="$(TargetFrameworkMonikerAssemblyAttributesPath)" Condition="'$(AdditionalSourcesText)' != '' AND '$(OutputType)' == 'Exe'"/>
+-            <CompileAfter Include="$(TargetFrameworkMonikerAssemblyAttributesPath)" Condition="'$(AdditionalSourcesText)' != '' AND '$(OutputType)' != 'Exe'"/>
++            <CompileBefore Include="$(TargetFrameworkMonikerAssemblyAttributesPath)" Condition="'$(AdditionalSourcesText)' != '' AND ('$(OutputType)' == 'Exe' OR '$(OutputType)' == 'WinExe')"/>
++            <CompileAfter Include="$(TargetFrameworkMonikerAssemblyAttributesPath)" Condition="'$(AdditionalSourcesText)' != '' AND '$(OutputType)' != 'Exe' AND '$(OutputType)' != 'WinExe'"/>
+         </ItemGroup>
+ 
+     </Target>
