@@ -1,0 +1,35 @@
+diff --git a/Languages/IronPython/IronPythonConsole/AssemblyInfo.cs b/Languages/IronPython/IronPythonConsole/AssemblyInfo.cs
+index c796ffa..6c63ab6 100644
+--- a/Languages/IronPython/IronPythonConsole/AssemblyInfo.cs
++++ b/Languages/IronPython/IronPythonConsole/AssemblyInfo.cs
+@@ -55,7 +55,6 @@ using System.Security;
+ //   (*) Delay Signing is an advanced option - see the Microsoft .NET Framework
+ //       documentation for more information on this.
+ //
+-[assembly: AssemblyKeyName("")]
+ [assembly: SecurityTransparent]
+ [assembly: CLSCompliant(false)]
+ [assembly: ComVisible(false)]
+diff --git a/Languages/IronPython/IronPythonWindow/AssemblyInfo.cs b/Languages/IronPython/IronPythonWindow/AssemblyInfo.cs
+index 4e2a0b0..2db4483 100644
+--- a/Languages/IronPython/IronPythonWindow/AssemblyInfo.cs
++++ b/Languages/IronPython/IronPythonWindow/AssemblyInfo.cs
+@@ -55,7 +55,6 @@ using System.Security;
+ //   (*) Delay Signing is an advanced option - see the Microsoft .NET Framework
+ //       documentation for more information on this.
+ //
+-[assembly: AssemblyKeyName("")]
+ [assembly: SecurityTransparent]
+ [assembly: CLSCompliant(false)]
+ [assembly: ComVisible(false)]
+diff --git a/Languages/IronPython/Samples/WinFormsMapPoint/WinForms/MapPointWebServiceHelper/AssemblyInfo.cs b/Languages/IronPython/Samples/WinFormsMapPoint/WinForms/MapPointWebServiceHelper/AssemblyInfo.cs
+index 2d6534f..55bc422 100644
+--- a/Languages/IronPython/Samples/WinFormsMapPoint/WinForms/MapPointWebServiceHelper/AssemblyInfo.cs
++++ b/Languages/IronPython/Samples/WinFormsMapPoint/WinForms/MapPointWebServiceHelper/AssemblyInfo.cs
+@@ -68,5 +68,3 @@ using System.Runtime.CompilerServices;
+ //       documentation for more information on this.
+ //
+ [assembly: AssemblyDelaySign(false)]
+-[assembly: AssemblyKeyFile("")]
+-[assembly: AssemblyKeyName("")]
+

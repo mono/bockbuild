@@ -63,6 +63,7 @@ class MonoReleaseProfile(DarwinProfile):
         'pcl-reference-assemblies',
         'xsp',
         'gtk-sharp',
+        'ironlangs',
         'fsharp',
         'mono-basic',
         'nuget2',

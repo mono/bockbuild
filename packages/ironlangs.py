@@ -11,8 +11,13 @@ class IronLanguagesPackage(GitHubTarballPackage):
 			configure = '')
 
 		#override: avoid naming the package 'main' because of the repo name
-		self.sources = ['https://github.com/%{organization}/main/tarball/%{revision}']
+		self.sources = ['https://github.com/%{organization}/main/tarball/%{revision}', 'patches/ironpython-mono-msbuild-signing-fix.patch']
 		self.source_dir_name = '%s-%s-%s' % ( self.organization, 'main', self.revision[:7] )
+
+	def prep(self):
+                Package.prep(self)
+                for p in range(1, len(self.local_sources)):
+                        self.sh('patch -p1 < "%{local_sources[' + str(p) + ']}"')
 
 	def build (self):
 		self.ironruby = os.path.join (self.workspace, 'ironruby', 'bin') + os.sep
