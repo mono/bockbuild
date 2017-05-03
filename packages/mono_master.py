@@ -83,6 +83,9 @@ class MonoMasterPackage(Package):
 
 		self.sh('cp -R %s/14.0/Imports %s' % (xbuild_dir, new_xbuild_tv_dir))
 
+                for dep in glob.glob("%s/Microsoft/NuGet/*" % xbuild_dir):
+                    self.sh('ln -s %s %s' % (dep, xbuild_dir))
+
 	def deploy(self):
 		if self.profile.arch == 'darwin-universal':
 			os.symlink ('mono-sgen64', '%s/bin/mono64' % self.staged_profile)
