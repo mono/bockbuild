@@ -1,8 +1,10 @@
 import fileinput
 
-class MSBuild (GitHubPackage):
+class MSBuild (Package):
 	def __init__ (self):
-		GitHubPackage.__init__ (self, 'xamarin', 'msbuild', '15.0',
+		Package.__init__ (self, 'msbuild', '15.0',
+                        organization = 'mono',
+                        sources = ['git@github.com:xamarin/msbuild.git'],
 			git_branch = 'd15.3')
 
 	def build (self):
