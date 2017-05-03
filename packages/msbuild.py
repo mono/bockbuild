@@ -2,8 +2,8 @@ import fileinput
 
 class MSBuild (GitHubPackage):
 	def __init__ (self):
-		GitHubPackage.__init__ (self, 'mono', 'msbuild', '15.0',
-			git_branch = 'xplat-master')
+		GitHubPackage.__init__ (self, 'xamarin', 'msbuild', '15.0',
+			git_branch = 'd15.3')
 
 	def build (self):
 		self.sh ('./cibuild.sh --scope Compile --target Mono --host Mono --config Release')
