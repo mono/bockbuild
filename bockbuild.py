@@ -223,7 +223,7 @@ class Bockbuild:
                 package.deploy_requests.append (stage)
 
         for package in packages.values():
-            package.start_build(arch, stage, stage)
+            package.start_build(arch, dest, stage)
             # make artifact in scratch
             # delete artifact + buildstring
             with open(package.buildstring_file, 'w') as output:
