@@ -52,7 +52,7 @@ class DarwinProfile (UnixProfile):
 
         # needed to autogen gtk+
         'gtk-osx-docbook',
-        #'gtk-doc'
+        'gtk-doc'
     ]
 
     def use_Xcode(self, min_version='5.1.1', xcodebuild_version_prefix='Xcode '):
