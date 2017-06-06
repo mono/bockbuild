@@ -2,7 +2,7 @@ import fileinput
 
 class MSBuild (GitHubPackage):
 	def __init__ (self):
-		GitHubPackage.__init__ (self, 'mono', 'msbuild', '15.0',
+		GitHubPackage.__init__ (self, 'mono', 'msbuild', '15.3',
 			git_branch = 'd15.3')
 
 	def build (self):
