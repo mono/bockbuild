@@ -66,8 +66,7 @@ class MonoReleaseProfile(DarwinProfile):
         'ironlangs',
         'fsharp',
         'mono-basic',
-        'nuget2',
-        'nuget3'
+        'nuget'
         ]
 
     def __init__(self):
