@@ -199,7 +199,7 @@ class GtkPackage (GnomeGitPackage):
                 'patches/gtk/0001-A11y-Make-GtkTable-emit-the-container-add-signal.patch',
 
 		# https://bugzilla.xamarin.com/show_bug.cgi?id=5162
-		'packages/patches/gtk/get-ascii-capable-keyboard-input-source.patch'
+		'patches/gtk/get-ascii-capable-keyboard-input-source.patch'
             ])
 
     def prep(self):
