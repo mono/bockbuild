@@ -199,8 +199,8 @@ class GtkPackage (GnomeGitPackage):
                 'patches/gtk/0001-A11y-Make-GtkTable-emit-the-container-add-signal.patch',
 
                 'patches/gtk/gtk-add-new-osx-versions.patch',
-                'patches/gtk/gtk-new-screen-updates-api.patch',
-              
+                # 'patches/gtk/gtk-new-screen-updates-api.patch',
+
                 # https://bugzilla.xamarin.com/show_bug.cgi?id=5162
                 'patches/gtk/get-ascii-capable-keyboard-input-source.patch'
             ])
