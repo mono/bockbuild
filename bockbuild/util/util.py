@@ -547,13 +547,17 @@ def run (cmd, args, cwd, env = None):
 
 	return (exit_code, stdout, stderr)
 
-def run_shell (cmd, print_cmd = False, cwd = None):
+def run_shell (cmd, print_cmd = False, cwd = None, fatal=True):
 	if print_cmd: print '++',cmd
 	if not print_cmd: trace (cmd)
 	proc = subprocess.Popen (cmd, shell = True, bufsize = -1, cwd = cwd)
 	exit_code = proc.wait ()
 	if not exit_code == 0:
-		raise CommandException('"%s" failed, error code %s' % (cmd, exit_code), cwd)
+		msg = '"%s" failed, error code %s' % (cmd, exit_code)
+		if fatal:
+			raise CommandException(msg, cwd)
+		else:
+			warn(msg)
 
 def backtick (cmd, print_cmd = False, echo = False):
 	if print_cmd or echo: print '``', cmd
