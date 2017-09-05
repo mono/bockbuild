@@ -1,0 +1,34 @@
+commit 49bb044dc1ad0bc39cf3c203efa052a5790d96ad
+Author: Yusuke Yamada <yamachu.dev@gmail.com>
+Date:   Tue Sep 5 11:43:10 2017 +0900
+
+    [Mac] Fix issue that cannot get keyboard layout data in case of using Japanese Input
+
+diff --git a/gdk/quartz/gdkkeys-quartz.c b/gdk/quartz/gdkkeys-quartz.c
+index aed5ccdd5f..3a40dcc56f 100644
+--- a/gdk/quartz/gdkkeys-quartz.c
++++ b/gdk/quartz/gdkkeys-quartz.c
+@@ -269,8 +269,21 @@ update_keymap (void)
+ 
+   if (chr_data == NULL)
+     {
+-      g_error ("cannot get keyboard layout data");
+-      return;
++      g_free (new_layout);
++      
++      new_layout = TISCopyCurrentKeyboardInputSource();
++
++      layout_data_ref = (CFDataRef) TISGetInputSourceProperty
++        (new_layout, kTISPropertyUnicodeKeyLayoutData);
++  
++      if (layout_data_ref)
++        chr_data = CFDataGetBytePtr (layout_data_ref);
++  
++      if (chr_data == NULL)
++        {
++          g_error ("cannot get keyboard layout data");
++          return;
++        }
+     }
+ #else
+   /* Get the layout kind */
