@@ -1,0 +1,22 @@
+From aa01d64601f7bfe0cbff84442bf4d0c3efa01036 Mon Sep 17 00:00:00 2001
+From: Don Syme <donsyme@fastmail.fm>
+Date: Tue, 5 Sep 2017 11:55:08 +0100
+Subject: [PATCH] remove output
+
+---
+ src/absil/ilread.fs | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/src/absil/ilread.fs b/src/absil/ilread.fs
+index b58da07ff..5e47a9e83 100755
+--- a/src/absil/ilread.fs
++++ b/src/absil/ilread.fs
+@@ -2350,7 +2350,7 @@ and seekReadMethod ctxt numtypars (idx:int) =
+          elif pinvoke then 
+            seekReadImplMap ctxt nm  idx
+          elif internalcall || abstr || unmanaged || (codetype <> 0x00) then 
+-           if codeRVA <> 0x0 then dprintn "non-IL or abstract method with non-zero RVA"
++           //if codeRVA <> 0x0 then dprintn "non-IL or abstract method with non-zero RVA"
+            mkMethBodyLazyAux (notlazy MethodBody.Abstract)  
+          else 
+            seekReadMethodRVA ctxt (idx,nm,internalcall,noinline,numtypars) codeRVA   
