@@ -14,7 +14,7 @@ index aed5ccdd5f..3a40dcc56f 100644
      {
 -      g_error ("cannot get keyboard layout data");
 -      return;
-+      g_free (new_layout);
++      g_free (new_layout); new_layout = NULL;
 +      
 +      new_layout = TISCopyCurrentKeyboardInputSource();
 +
