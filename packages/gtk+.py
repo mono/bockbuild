@@ -205,8 +205,7 @@ class GtkPackage (GnomeGitPackage):
                 'patches/gtk/get-ascii-capable-keyboard-input-source.patch',
 
                 # https://developercommunity.visualstudio.com/content/problem/104471/visual-studio-for-mac-720540-cannot-launch-exc-bre.html
-                'patches/gtk/japanese-keyboard-input-source.patch',
-		'patches/gtk/set_new_layout_null.patch'
+                'patches/gtk/japanese-keyboard-input-source.patch'
             ])
 
     def prep(self):
