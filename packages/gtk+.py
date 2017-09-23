@@ -198,7 +198,7 @@ class GtkPackage (GnomeGitPackage):
                 'patches/gtk/recompute-viewport-allocation-for-overlay-scrollbars.patch',
                 'patches/gtk/0001-A11y-Make-GtkTable-emit-the-container-add-signal.patch',
 
-                'patches/gtk/gtk-add-new-osx-versions.patch',
+                #'patches/gtk/gtk-add-new-osx-versions.patch',
                 # 'patches/gtk/gtk-new-screen-updates-api.patch',
 
                 # https://bugzilla.xamarin.com/show_bug.cgi?id=5162
