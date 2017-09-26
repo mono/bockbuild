@@ -186,10 +186,10 @@ class GtkPackage (GnomeGitPackage):
                 # https://bugzilla.xamarin.com/show_bug.cgi?id=41657
                 'patches/gtk/bxc-41657.patch',
 
-                'patches/gtk/emit-container-add.patch',
-                'patches/gtk/create-accessibility-object.patch',
+                #'patches/gtk/emit-container-add.patch',
+                #'patches/gtk/create-accessibility-object.patch',
 
-                'patches/gtk/make-gtkpaned-emit-signals.patch',
+                #'patches/gtk/make-gtkpaned-emit-signals.patch',
                 #'patches/gtk/0001-A11y-Fix-dialog-accessibility.patch',
                 #'patches/gtk/0001-A11y-Emit-the-container-add-signal-when-inserting-a-.patch',
 
