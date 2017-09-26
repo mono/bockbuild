@@ -186,26 +186,26 @@ class GtkPackage (GnomeGitPackage):
                 # https://bugzilla.xamarin.com/show_bug.cgi?id=41657
                 'patches/gtk/bxc-41657.patch',
 
-                #'patches/gtk/emit-container-add.patch',
-                #'patches/gtk/create-accessibility-object.patch',
+                'patches/gtk/emit-container-add.patch',
+                'patches/gtk/create-accessibility-object.patch',
 
-                #'patches/gtk/make-gtkpaned-emit-signals.patch',
-                #'patches/gtk/0001-A11y-Fix-dialog-accessibility.patch',
-                #'patches/gtk/0001-A11y-Emit-the-container-add-signal-when-inserting-a-.patch',
+                'patches/gtk/make-gtkpaned-emit-signals.patch',
+                'patches/gtk/0001-A11y-Fix-dialog-accessibility.patch',
+                'patches/gtk/0001-A11y-Emit-the-container-add-signal-when-inserting-a-.patch',
 
                 # https://bugzilla.xamarin.com/show_bug.cgi?id=51382
                 # https://bugzilla.xamarin.com/show_bug.cgi?id=51375
-                #'patches/gtk/recompute-viewport-allocation-for-overlay-scrollbars.patch',
-                #'patches/gtk/0001-A11y-Make-GtkTable-emit-the-container-add-signal.patch',
+                'patches/gtk/recompute-viewport-allocation-for-overlay-scrollbars.patch',
+                'patches/gtk/0001-A11y-Make-GtkTable-emit-the-container-add-signal.patch',
 
-                #'patches/gtk/gtk-add-new-osx-versions.patch',
+                'patches/gtk/gtk-add-new-osx-versions.patch',
                 # 'patches/gtk/gtk-new-screen-updates-api.patch',
 
                 # https://bugzilla.xamarin.com/show_bug.cgi?id=5162
                 # 'patches/gtk/get-ascii-capable-keyboard-input-source.patch',
 
                 # https://developercommunity.visualstudio.com/content/problem/104471/visual-studio-for-mac-720540-cannot-launch-exc-bre.html
-                #'patches/gtk/update_only_apple_keyboard_layout.patch'
+                'patches/gtk/update_only_apple_keyboard_layout.patch'
             ])
 
     def prep(self):

@@ -3,8 +3,8 @@ class GtkSharp212ReleasePackage (Package):
     def __init__(self):
         Package.__init__(self, 'gtk-sharp',
                          sources=['git://github.com/mono/gtk-sharp.git'],
-                         git_branch='gtk-sharp-2-12-branch',
-                         revision='43d38a806de8efe62a09a3284178880f2ae36a56',
+                         git_branch='revert-string-marshalling',
+                         revision='c58035785d72b9ba4dbe9fe746d9e654ee74f905',
                          override_properties={
                              'configure': './bootstrap-2.12 --prefix=%{package_prefix}',
                          }
