@@ -40,13 +40,6 @@ class GlibPackage (GnomeXzPackage):
                 self.sh(
                     'patch --ignore-whitespace -p1 < %{local_sources[' + str(p) + ']}')
 
-    def arch_build(self, arch):
-        Package.profile.arch_build(arch, self)
-        Package.arch_build(self, arch)
-
-        if self.darwin:
-            self.local_configure_flags.extend(['--disable-compile-warnings'])
-
     def build(self):
         # modified build for darwin
         if self.darwin:
