@@ -359,10 +359,17 @@ class Package:
 
         clean_func = None  # what to run if the workspace needs to be redone
 
-        if self.sources is None:
-            return None
-
         expand_macros(self.sources, self)
+
+        if not self.sources:
+            def clean_nop (dir):
+                pass
+            self.sources = []
+            self.desc = '%s %s' % (self.name, self.version)
+            self.buildstring.extend(
+                ['%s md5: %s' % (os.path.basename(self._path), md5(self._path))])
+            clean_func = clean_nop
+
         local_sources = []
 
         try:
@@ -441,8 +448,6 @@ class Package:
         if clean_func is None:
             error('workspace cleaning function (clean_func) must be set')
 
-        self.buildstring.extend(
-            ['%s md5: %s' % (os.path.basename(self._path), md5(self._path))])
         self.local_sources = local_sources
         self.clean = clean_func
 
@@ -542,7 +547,7 @@ class Package:
         files = list()
         size = 0
 
-        for path in iterate_dir(artifact_stage, summary=False):
+        for path in iterate_dir(artifact_stage, with_links = True, summary=False):
             relpath = os.path.relpath(path, artifact_stage)
             destpath = os.path.join(dest, relpath)
             if os.path.exists(destpath) and not identical_files(path, destpath):
