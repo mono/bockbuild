@@ -554,7 +554,7 @@ class Package:
                 warn(
                     'Different file exists in package already: ''%s''' % relpath )
             files.append(relpath)
-            if os.path.islink(path):
+            if not os.path.islink(path):
                 size = size + os.path.getsize(path)
 
         files.sort()
