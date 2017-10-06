@@ -554,7 +554,8 @@ class Package:
                 warn(
                     'Different file exists in package already: ''%s''' % relpath )
             files.append(relpath)
-            size = size + os.path.getsize(path)
+            if os.path.islink(path):
+                size = size + os.path.getsize(path)
 
         files.sort()
         is_changed(files, artifact + '.files')
