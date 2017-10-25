@@ -39,12 +39,6 @@ class PangoPackage (GnomeXzPackage):
             'patches/pango-system-font-check-version.patch'
         ])
 
-#    def prep(self):
-#       GnomePackage.prep(self)
-#        if Package.profile.name == 'darwin':
-#            for p in range(1, len(self.local_sources)):
-#                self.sh('patch -p1 < "%{local_sources[' + str(p) + ']}"')
-
     def deploy(self):
         self.sh('pango-querymodules --update-cache')
 
