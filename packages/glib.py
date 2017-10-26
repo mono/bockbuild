@@ -34,7 +34,7 @@ class GlibPackage (GnomeXzPackage):
     def prep(self):
         Package.prep(self)
         if self.darwin:
-            for p in range(2, 8):
+            for p in range(2, 5):
                 self.sh('patch -p0 < %{local_sources[' + str(p) + ']}')
             # for p in range(8, len(self.local_sources)):
             #     self.sh(
