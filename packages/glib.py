@@ -3,8 +3,8 @@ class GlibPackage (GnomeXzPackage):
     def __init__(self):
         GnomeXzPackage.__init__(self,
                                 'glib',
-                                version_major='2.36',
-                                version_minor='4')
+                                version_major='2.54',
+                                version_minor='1')
 
         self.darwin = Package.profile.name == 'darwin'
 
@@ -31,14 +31,14 @@ class GlibPackage (GnomeXzPackage):
                 'patches/glib-recursive-poll.patch',
             ])
 
-    def prep(self):
-        Package.prep(self)
-        if self.darwin:
-            for p in range(2, 8):
-                self.sh('patch -p0 < %{local_sources[' + str(p) + ']}')
-            for p in range(8, len(self.local_sources)):
-                self.sh(
-                    'patch --ignore-whitespace -p1 < %{local_sources[' + str(p) + ']}')
+    # def prep(self):
+    #     Package.prep(self)
+    #     if self.darwin:
+    #         for p in range(2, 8):
+    #             self.sh('patch -p0 < %{local_sources[' + str(p) + ']}')
+    #         for p in range(8, len(self.local_sources)):
+    #             self.sh(
+    #                 'patch --ignore-whitespace -p1 < %{local_sources[' + str(p) + ']}')
 
     def arch_build(self, arch):
         Package.profile.arch_build(arch, self)
