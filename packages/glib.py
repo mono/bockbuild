@@ -14,7 +14,7 @@ class GlibPackage (GnomeXzPackage):
                 # https://trac.macports.org/export/91680/trunk/dports/devel/glib2/files/config.h.ed
                 'patches/glib/config.h.ed',
                 # https://trac.macports.org/export/98985/trunk/dports/devel/glib2/files/patch-configure.diff
-                'patches/glib/patch-configure.diff',
+                # 'patches/glib/patch-configure.diff',
                 # https://trac.macports.org/export/42728/trunk/dports/devel/glib2/files/patch-gi18n.h.diff
                 'patches/glib/patch-gi18n.h.diff',
                 # https://trac.macports.org/export/92608/trunk/dports/devel/glib2/files/patch-gio_gdbusprivate.c.diff
@@ -22,13 +22,13 @@ class GlibPackage (GnomeXzPackage):
                 # https://trac.macports.org/export/49466/trunk/dports/devel/glib2/files/patch-gio_xdgmime_xdgmime.c.diff
                 'patches/glib/patch-gio_xdgmime_xdgmime.c.diff',
                 # https://trac.macports.org/export/91680/trunk/dports/devel/glib2/files/patch-glib-2.0.pc.in.diff
-                'patches/glib/patch-glib-2.0.pc.in.diff',
+                # 'patches/glib/patch-glib-2.0.pc.in.diff',
                 # https://trac.macports.org/export/64476/trunk/dports/devel/glib2/files/patch-glib_gunicollate.c.diff
                 'patches/glib/patch-glib_gunicollate.c.diff',
 
                 # Bug 6156 - [gtk] Quitting the application with unsaved file and answering Cancel results in crash
                 # https://bugzilla.xamarin.com/attachment.cgi?id=2214
-                'patches/glib-recursive-poll.patch',
+                #'patches/glib-recursive-poll.patch',
             ])
 
     def prep(self):
