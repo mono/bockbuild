@@ -26,6 +26,10 @@ class GlibPackage (GnomeXzPackage):
                 # https://trac.macports.org/export/64476/trunk/dports/devel/glib2/files/patch-glib_gunicollate.c.diff
                 'patches/glib/patch-glib_gunicollate.c.diff',
 
+                # This check is blowing up on wrench but not my local builds. Adding this patch, hopefully
+                # temporarily, to just get this building.
+                'patches/glib/revert-universal-configure-check.patch',
+
                 # Bug 6156 - [gtk] Quitting the application with unsaved file and answering Cancel results in crash
                 # https://bugzilla.xamarin.com/attachment.cgi?id=2214
                 #'patches/glib-recursive-poll.patch',
@@ -34,7 +38,7 @@ class GlibPackage (GnomeXzPackage):
     def prep(self):
         Package.prep(self)
         if self.darwin:
-            for p in range(2, 5):
+            for p in range(2, 6):
                 self.sh('patch -p0 < %{local_sources[' + str(p) + ']}')
             # for p in range(8, len(self.local_sources)):
             #     self.sh(
