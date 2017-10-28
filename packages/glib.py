@@ -54,12 +54,12 @@ class GlibPackage (GnomeXzPackage):
             Package.arch_build(self, arch)
 
         if self.darwin:
-            self.local_configure_flags.extend(['--disable-compile-warnings'])
+            self.local_configure_flags.extend(['--disable-compile-warnings', '--with-pcre=internal'])
 
     def build(self):
         # modified build for darwin
         if self.darwin:
-            self.local_configure_flags.extend(['--disable-compile-warnings'])
+            self.local_configure_flags.extend(['--disable-compile-warnings', '--with-pcre=internal'])
             Package.configure(self)
             self.sh([
                 # 'autoconf',
