@@ -42,6 +42,7 @@ class GlibPackage (GnomeXzPackage):
         if self.darwin:
             for p in range(2, len(self.local_sources)):
                 self.sh('patch -p1 < %{local_sources[' + str(p) + ']}')
+            self.sh('autoreconf')
 
     def arch_build(self, arch):
         Package.profile.arch_build(arch, self)
