@@ -1,6 +1,8 @@
---- gio/gdbusprivate.c.orig	2012-04-30 11:24:02.000000000 -0500
-+++ gio/gdbusprivate.c	2012-05-02 01:57:47.000000000 -0500
-@@ -2094,7 +2094,7 @@
+diff --git a/gio/gdbusprivate.c b/gio/gdbusprivate.c
+index 288c31f..16d08ad 100644
+--- a/gio/gdbusprivate.c
++++ b/gio/gdbusprivate.c
+@@ -2098,7 +2098,7 @@ _g_dbus_get_machine_id (GError **error)
    /* TODO: use PACKAGE_LOCALSTATEDIR ? */
    ret = NULL;
    first_error = NULL;
@@ -9,7 +11,7 @@
                              &ret,
                              NULL,
                              &first_error) &&
-@@ -2104,7 +2104,7 @@
+@@ -2108,7 +2108,7 @@ _g_dbus_get_machine_id (GError **error)
                              NULL))
      {
        g_propagate_prefixed_error (error, first_error,

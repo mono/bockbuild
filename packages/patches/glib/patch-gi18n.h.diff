@@ -1,6 +1,8 @@
---- glib/gi18n.h.orig	2008-11-23 23:45:23.000000000 -0600
-+++ glib/gi18n.h	2008-11-25 23:59:29.000000000 -0600
-@@ -27,7 +27,9 @@
+diff --git a/glib/gi18n.h b/glib/gi18n.h
+index 5f996d2..51fcd91 100644
+--- a/glib/gi18n.h
++++ b/glib/gi18n.h
+@@ -25,7 +25,9 @@
  
  #define  _(String) gettext (String)
  #define Q_(String) g_dpgettext (NULL, String, 0)
