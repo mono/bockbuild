@@ -24,12 +24,13 @@ class GlibPackage (GnomeXzPackage):
                 # https://trac.macports.org/export/91680/trunk/dports/devel/glib2/files/patch-glib-2.0.pc.in.diff
                 # 'patches/glib/patch-glib-2.0.pc.in.diff',
 
+                # https://trac.macports.org/export/64476/trunk/dports/devel/glib2/files/patch-glib_gunicollate.c.diff
+                'patches/glib/patch-glib_gunicollate.c.diff',
+
                 # This check is blowing up on wrench but not my local builds. Adding this patch, hopefully
                 # temporarily, to just get this building.
                 'patches/glib/revert-universal-configure-check.patch',
 
-                # https://trac.macports.org/export/64476/trunk/dports/devel/glib2/files/patch-glib_gunicollate.c.diff
-                'patches/glib/patch-glib_gunicollate.c.diff',
 
                 # Bug 6156 - [gtk] Quitting the application with unsaved file and answering Cancel results in crash
                 # https://bugzilla.xamarin.com/attachment.cgi?id=2214
