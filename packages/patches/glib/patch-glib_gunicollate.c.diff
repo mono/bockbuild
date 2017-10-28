@@ -1,6 +1,8 @@
---- glib/gunicollate.c.orig	2009-03-31 18:04:20.000000000 -0500
-+++ glib/gunicollate.c	2010-03-06 17:59:08.000000000 -0600
-@@ -26,6 +26,9 @@
+diff --git a/glib/gunicollate.c b/glib/gunicollate.c
+index 161a2de..3fbf944 100644
+--- a/glib/gunicollate.c
++++ b/glib/gunicollate.c
+@@ -24,6 +24,9 @@
  #include <wchar.h>
  #endif
  
