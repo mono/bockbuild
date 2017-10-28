@@ -39,11 +39,11 @@ class GlibPackage (GnomeXzPackage):
     def prep(self):
         Package.prep(self)
         if self.darwin:
-            for p in range(2, 6):
+            for p in range(2, 5):
                 self.sh('patch -p0 < %{local_sources[' + str(p) + ']}')
-            # for p in range(8, len(self.local_sources)):
-            #     self.sh(
-            #         'patch --ignore-whitespace -p1 < %{local_sources[' + str(p) + ']}')
+            for p in range(5, len(self.local_sources)):
+                self.sh(
+                    'patch --ignore-whitespace -p1 < %{local_sources[' + str(p) + ']}')
 
     def arch_build(self, arch):
         Package.profile.arch_build(arch, self)
