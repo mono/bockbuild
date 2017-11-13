@@ -39,7 +39,7 @@ class PangoPackage (GnomeXzPackage):
             'patches/pango-system-font-check-version.patch'
         ])
 
-    def deploy(self):
-        self.sh('pango-querymodules --update-cache')
+    #def deploy(self):
+    #    self.sh('pango-querymodules --update-cache')
 
 PangoPackage()
