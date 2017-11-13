@@ -13,8 +13,8 @@ class GlibPackage (GnomeXzPackage):
             self.sources.extend([
                 # https://trac.macports.org/export/91680/trunk/dports/devel/glib2/files/config.h.ed
                 'patches/glib/config.h.ed',
-                # https://trac.macports.org/export/98985/trunk/dports/devel/glib2/files/patch-configure.diff
-                # 'patches/glib/patch-configure.diff',
+                # https://trac.macports.org/export/153163/trunk/dports/devel/glib2/files/patch-configure.diff
+                'patches/glib/patch-configure.diff',
                 # https://trac.macports.org/export/42728/trunk/dports/devel/glib2/files/patch-gi18n.h.diff
                 'patches/glib/patch-gi18n.h.diff',
                 # https://trac.macports.org/export/92608/trunk/dports/devel/glib2/files/patch-gio_gdbusprivate.c.diff
@@ -22,7 +22,7 @@ class GlibPackage (GnomeXzPackage):
                 # https://trac.macports.org/export/49466/trunk/dports/devel/glib2/files/patch-gio_xdgmime_xdgmime.c.diff
                 'patches/glib/patch-gio_xdgmime_xdgmime.c.diff',
                 # https://trac.macports.org/export/91680/trunk/dports/devel/glib2/files/patch-glib-2.0.pc.in.diff
-                # 'patches/glib/patch-glib-2.0.pc.in.diff',
+                'patches/glib/patch-glib-2.0.pc.in.diff',
 
                 # https://trac.macports.org/export/64476/trunk/dports/devel/glib2/files/patch-glib_gunicollate.c.diff
                 'patches/glib/patch-glib_gunicollate.c.diff',
@@ -41,8 +41,7 @@ class GlibPackage (GnomeXzPackage):
         Package.prep(self)
         if self.darwin:
             for p in range(2, len(self.local_sources)):
-                self.sh('patch -p1 < %{local_sources[' + str(p) + ']}')
-            self.sh('autoreconf')
+                self.sh('patch --ignore-whitespace -p1 < %{local_sources[' + str(p) + ']}')
 
     def arch_build(self, arch):
         Package.profile.arch_build(arch, self)
@@ -68,7 +67,7 @@ class GlibPackage (GnomeXzPackage):
                     # work around
                     # https://bugzilla.gnome.org/show_bug.cgi?id=700350
                     'touch docs/reference/*/Makefile.in',
-                    'touch docs/reference/*/*/Makefile.in',
+                    #'touch docs/reference/*/*/Makefile.in',
                     #'%{make}'
                     ])
             Package.make(self)

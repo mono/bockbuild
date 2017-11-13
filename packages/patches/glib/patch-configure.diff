@@ -1,15 +1,18 @@
---- configure.orig	2012-10-15 19:29:14.000000000 -0500
-+++ configure	2012-10-22 17:29:31.000000000 -0500
-@@ -5602,7 +5602,7 @@
- fi
+diff --git a/configure b/configure
+index 08b7af4..bf51739 100755
+--- a/configure
++++ b/configure
+@@ -22884,9 +22884,6 @@ $as_echo "#define AC_APPLE_UNIVERSAL_BUILD 1" >>confdefs.h
+  presetting ac_cv_c_bigendian=no (or yes) will help" "$LINENO" 5 ;;
+  esac
  
- GLIB_RUNTIME_LIBDIR="$with_runtime_libdir"
--ABS_GLIB_RUNTIME_LIBDIR="`readlink -f $libdir/$with_runtime_libdir`"
-+ABS_GLIB_RUNTIME_LIBDIR="`readlink $libdir/$with_runtime_libdir`"
+-if test x$ac_cv_c_bigendian = xuniversal ; then
+-  as_fn_error $? "Universal builds not supported: see https://bugs.gnome.org/742548" "$LINENO" 5
+-fi
  
  
-  if test "x$with_runtime_libdir" != "x"; then
-@@ -30649,10 +30649,10 @@
+ # check for header files
+@@ -31051,10 +31048,10 @@ x$glib_cv___va_copy)	glib_vacopy='#define G_VA_COPY	__va_copy' ;;
  *)			glib_vacopy=''
  esac
  
@@ -21,9 +24,9 @@
 +#define G_VA_COPY_AS_ARRAY 1
 +#endif"
  
- if test x$glib_cv_hasinline = xyes; then
-     glib_inline='#define G_HAVE_INLINE 1'
-@@ -32411,18 +32411,32 @@
+ g_have_gnuc_varargs=$g_have_gnuc_varargs
+ g_have_iso_c_varargs=$g_have_iso_c_varargs
+@@ -32710,18 +32707,32 @@ _______EOF
  	cat >>$outfile <<_______EOF
  #define G_HAVE_GINT64 1          /* deprecated, always true */
  
@@ -63,26 +66,29 @@
  _______EOF
          else
  	  cat >>$outfile <<_______EOF
-@@ -32434,9 +32448,15 @@
+@@ -32733,10 +32744,17 @@ _______EOF
  
          cat >>$outfile <<_______EOF
  
 -#define GLIB_SIZEOF_VOID_P $glib_void_p
 -#define GLIB_SIZEOF_LONG   $glib_long
 -#define GLIB_SIZEOF_SIZE_T $glib_size_t
+-#define GLIB_SIZEOF_SSIZE_T $glib_ssize_t
 +#ifdef __LP64__
 +#define GLIB_SIZEOF_VOID_P 8
 +#define GLIB_SIZEOF_LONG   8
 +#define GLIB_SIZEOF_SIZE_T 8
++#define GLIB_SIZEOF_SSIZE_T 8
 +#else
 +#define GLIB_SIZEOF_VOID_P 4
 +#define GLIB_SIZEOF_LONG   4
 +#define GLIB_SIZEOF_SIZE_T 4
++#define GLIB_SIZEOF_SSIZE_T 4
 +#endif
  
  _______EOF
  
-@@ -32464,18 +32484,33 @@
+@@ -32767,18 +32785,33 @@ _______EOF
  	if test -z "$glib_unknown_void_p"; then
  	  cat >>$outfile <<_______EOF
  
@@ -94,10 +100,14 @@
 +
 +#define GINT_TO_POINTER(i)	((gpointer) (glong) (i))
 +#define GUINT_TO_POINTER(u)	((gpointer) (gulong) (u))
-+
+ 
+-#define GINT_TO_POINTER(i)	((gpointer) ${glib_gpi_cast} (i))
+-#define GUINT_TO_POINTER(u)	((gpointer) ${glib_gpui_cast} (u))
 +typedef signed long gintptr;
 +typedef unsigned long guintptr;
-+
+ 
+-typedef signed $glib_intptr_type_define gintptr;
+-typedef unsigned $glib_intptr_type_define guintptr;
 +#define G_GINTPTR_MODIFIER      "l"
 +#define G_GINTPTR_FORMAT        "li"
 +#define G_GUINTPTR_FORMAT       "lu"
@@ -105,19 +115,15 @@
 +#define GPOINTER_TO_INT(p)	((gint)   (p))
 +#define GPOINTER_TO_UINT(p)	((guint)  (p))
  
--#define GINT_TO_POINTER(i)	((gpointer) ${glib_gpi_cast} (i))
--#define GUINT_TO_POINTER(u)	((gpointer) ${glib_gpui_cast} (u))
-+#define GINT_TO_POINTER(i)	((gpointer)  (i))
-+#define GUINT_TO_POINTER(u)	((gpointer)  (u))
- 
--typedef signed $glib_intptr_type_define gintptr;
--typedef unsigned $glib_intptr_type_define guintptr;
-+typedef signed int gintptr;
-+typedef unsigned int guintptr;
- 
 -#define G_GINTPTR_MODIFIER      $gintptr_modifier
 -#define G_GINTPTR_FORMAT        $gintptr_format
 -#define G_GUINTPTR_FORMAT       $guintptr_format
++#define GINT_TO_POINTER(i)	((gpointer)  (i))
++#define GUINT_TO_POINTER(u)	((gpointer)  (u))
++
++typedef signed int gintptr;
++typedef unsigned int guintptr;
++
 +#define G_GINTPTR_MODIFIER      ""
 +#define G_GINTPTR_FORMAT        "i"
 +#define G_GUINTPTR_FORMAT       "u"
@@ -125,7 +131,7 @@
  _______EOF
  	else
  	  echo '#error SIZEOF_VOID_P unknown - This should never happen' >>$outfile
-@@ -32588,7 +32623,9 @@
+@@ -32873,7 +32906,9 @@ _______EOF
  
  	if test x"$g_memory_barrier_needed" != xno; then
  	  echo >>$outfile
@@ -135,7 +141,7 @@
  	fi
  	if test x"$g_atomic_lock_free" = xyes; then
            echo >>$outfile
-@@ -32598,27 +32635,52 @@
+@@ -32883,27 +32918,52 @@ _______EOF
  	g_bit_sizes="16 32 64"
  	for bits in $g_bit_sizes; do
  	  cat >>$outfile <<_______EOF
@@ -178,9 +184,9 @@
  #define GINT_TO_BE(val)		((gint) GINT${gintbits}_TO_BE (val))
  #define GUINT_TO_BE(val)	((guint) GUINT${gintbits}_TO_BE (val))
 -#define GSIZE_TO_LE(val)	((gsize) GUINT${gsizebits}_TO_LE (val))
--#define GSSIZE_TO_LE(val)	((gssize) GINT${gsizebits}_TO_LE (val))
+-#define GSSIZE_TO_LE(val)	((gssize) GINT${gssizebits}_TO_LE (val))
 -#define GSIZE_TO_BE(val)	((gsize) GUINT${gsizebits}_TO_BE (val))
--#define GSSIZE_TO_BE(val)	((gssize) GINT${gsizebits}_TO_BE (val))
+-#define GSSIZE_TO_BE(val)	((gssize) GINT${gssizebits}_TO_BE (val))
 -#define G_BYTE_ORDER $g_byte_order
 +#ifdef __LP64__
 +#define GSIZE_TO_LE(val)	((gsize) GUINT64_TO_LE (val))
