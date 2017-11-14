@@ -1,0 +1,15 @@
+diff --git a/pango/shape.c b/pango/shape.c
+index 6f53526..3403004 100644
+--- a/pango/shape.c
++++ b/pango/shape.c
+@@ -152,8 +152,8 @@ pango_shape_full (const gchar      *item_text,
+ 		  if (!engine_name)
+ 		    engine_name = "(unknown)";
+ 
+-		  g_warning ("shaping failure, expect ugly output. shape-engine='%s', font='%s', text='%.*s'",
+-			     engine_name, font_name, item_length, item_text);
++		  g_warning ("shaping failure, expect ugly output. shape-engine='%s', font='%s'",
++			     engine_name, font_name);
+ 
+ 		  g_object_set_data_full (G_OBJECT (analysis->shape_engine), font_name,
+ 					  GINT_TO_POINTER (1), NULL);

@@ -36,7 +36,9 @@ class PangoPackage (GnomeXzPackage):
             'patches/pango-coretext-fix-yosemite-crasher.patch',
 
             'patches/pango-system-font-single.patch',
-            'patches/pango-system-font-check-version.patch'
+            'patches/pango-system-font-check-version.patch',
+
+            'patches/pango-shaping-failure-warning.patch'
         ])
 
     #def deploy(self):
