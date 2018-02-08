@@ -2,6 +2,7 @@ class GtkPackage (GitHubPackage):
 
     def __init__(self):
         GitHubPackage.__init__(self, 'GNOME', 'gtk', '2.24', '280fc402be5fb46b66bcd32056963bb1afb8b54b',
+                                 configure='./autogen.sh --prefix="%{package_prefix}"',
                                  configure_flags=[
                                      '--with-gdktarget=%{gdk_target}',
                                      #				'--disable-cups',
