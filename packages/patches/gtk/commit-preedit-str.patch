@@ -1,0 +1,13 @@
+diff --git a/modules/input/imquartz.c b/modules/input/imquartz.c
+index c93330f22b..415c3d9c8c 100644
+--- a/modules/input/imquartz.c
++++ b/modules/input/imquartz.c
+@@ -264,6 +264,8 @@ discard_preedit (GtkIMContext *context)
+ 
+   if (qc->preedit_str && strlen (qc->preedit_str) > 0)
+     {
++      g_signal_emit_by_name (context, "commit", qc->preedit_str);
++
+       g_free (qc->preedit_str);
+       qc->preedit_str = NULL;
+       g_signal_emit_by_name (context, "preedit_changed");
