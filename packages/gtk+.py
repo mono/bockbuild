@@ -210,7 +210,7 @@ class GtkPackage (GitHubPackage):
 
                 'patches/gtk/gtk-backing-scale-factor.patch',
 
-                'patches/gtk-fix-find_nsview_at_pos-recursive.patch'
+                'patches/gtk/gtk-fix-find_nsview_at_pos-recursive.patch'
             ])
 
     def prep(self):
