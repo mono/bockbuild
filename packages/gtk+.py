@@ -216,7 +216,8 @@ class GtkPackage (GitHubPackage):
 		'patches/gtk/gtk-imquartz-commit-on-focus-out.patch',
 
 		# https://devdiv.visualstudio.com/DevDiv/_workitems/edit/737323
-		'patches/gtk/gtk-nsview-subview-focus-fixes.patch'
+		'patches/gtk/gtk-nsview-subview-focus-fixes.patch',
+		'patches/gtk/gtk-nsview-focus-tabbing.patch'
             ])
 
     def prep(self):
