@@ -9,6 +9,15 @@ class GtkSharp212ReleasePackage (Package):
                              'configure': './bootstrap-2.12 --prefix=%{package_prefix}',
                          }
                          )
+        self.sources.extend([
+            'patches/gtk-sharp-range.patch'
+            ])
         self.make = 'make CSC=mcs'
+
+    def prep(self):
+        Package.prep(self)
+
+        for p in range(1, len(self.sources)):
+            self.sh('patch -p1 < "%{local_sources[' + str(p) + ']}"')
 
 GtkSharp212ReleasePackage()

@@ -1,0 +1,13 @@
+diff --git a/sample/test/TestRange.cs b/sample/test/TestRange.cs
+index 82fb81105..3da945e69 100644
+--- a/sample/test/TestRange.cs
++++ b/sample/test/TestRange.cs
+@@ -9,6 +9,8 @@
+ using System;
+ 
+ using Gtk;
++// disambiguate, Gtk.Range vs System.Range
++using Range=Gtk.Range;
+ 
+ namespace WidgetViewer {
+ 
