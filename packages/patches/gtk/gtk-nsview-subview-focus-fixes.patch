@@ -1,5 +1,5 @@
 diff --git a/gtk/gtknsview.c b/gtk/gtknsview.c
-index a4b4dd4dbe..5b9961eb14 100644
+index a4b4dd4dbe..ebe07833fb 100644
 --- a/gtk/gtknsview.c
 +++ b/gtk/gtknsview.c
 @@ -49,6 +49,7 @@ enum
@@ -10,7 +10,7 @@ index a4b4dd4dbe..5b9961eb14 100644
    guint   map_timeout;
    gboolean enable_swizzle;
  };
-@@ -442,15 +443,29 @@ gtk_ns_view_replace_draw_insertion_point (void)
+@@ -442,15 +443,30 @@ gtk_ns_view_replace_draw_insertion_point (void)
      }
  }
  
@@ -22,7 +22,8 @@ index a4b4dd4dbe..5b9961eb14 100644
 +  }
 +
 +  for (NSView *subview in [view subviews]) {
-+    return does_accept_first_responder_recursively (subview);
++    if (does_accept_first_responder_recursively (subview))
++      return TRUE;
 +  }
 +
 +  return FALSE;
@@ -42,7 +43,7 @@ index a4b4dd4dbe..5b9961eb14 100644
  
  #if DEBUG_FOCUS
    g_printerr ("%s can focus: %d\n",
-@@ -549,10 +564,12 @@ gtk_ns_view_notify (GObject    *object,
+@@ -549,10 +565,12 @@ gtk_ns_view_notify (GObject    *object,
                    gtk_widget_has_focus (GTK_WIDGET (object)));
  #endif
  
@@ -58,7 +59,7 @@ index a4b4dd4dbe..5b9961eb14 100644
      }
  }
  
-@@ -712,7 +729,7 @@ gtk_ns_view_grab_focus (GtkWidget *widget)
+@@ -712,7 +730,7 @@ gtk_ns_view_grab_focus (GtkWidget *widget)
    GTK_WIDGET_CLASS (gtk_ns_view_parent_class)->grab_focus (widget);
  
    ns_window = [ns_view->priv->view window];
@@ -67,7 +68,7 @@ index a4b4dd4dbe..5b9961eb14 100644
  }
  
  static gboolean
-@@ -818,15 +835,20 @@ gtk_ns_view_native_child_event (GdkWindow *window,
+@@ -818,15 +836,20 @@ gtk_ns_view_native_child_event (GdkWindow *window,
  
                if (hit &&
                    (hit == view ||
