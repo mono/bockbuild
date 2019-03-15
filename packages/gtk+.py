@@ -219,7 +219,8 @@ class GtkPackage (GitHubPackage):
 		'patches/gtk/gtk-nsview-subview-focus-fixes.patch',
 		'patches/gtk/gtk-nsview-focus-tabbing.patch',
 		'patches/gtk/popup-combo-box-with-arrows.patch',
-		'patches/gtk/0001-prevent-gdk-quartz-window-delegate-replacement.patch'
+		'patches/gtk/0001-prevent-gdk-quartz-window-delegate-replacement.patch',
+		'patches/gtk/0077-fix-nsview-embedding-mouse-move-event-when-popup-window-appears.patch'
             ])
 
     def prep(self):
