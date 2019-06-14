@@ -1,0 +1,137 @@
+--- gtk/gtkcombobox.c.old	2019-06-14 12:12:13.000000000 +0100
++++ gtk/gtkcombobox.c	2019-06-14 12:12:22.000000000 +0100
+@@ -333,6 +333,4 @@
+ static gboolean gtk_combo_box_expose_event         (GtkWidget        *widget,
+                                                     GdkEventExpose   *event);
+-static gboolean gtk_combo_box_scroll_event         (GtkWidget        *widget,
+-                                                    GdkEventScroll   *event);
+ static void     gtk_combo_box_set_active_internal  (GtkComboBox      *combo_box,
+ 						    GtkTreePath      *path);
+@@ -523,4 +521,6 @@
+ 					 GdkEvent        *event);
+ 
++typedef gboolean (*_NativeMenuHandler) (GtkComboBox *);
++static _NativeMenuHandler _native_menu_handler;
+ 
+ G_DEFINE_TYPE_WITH_CODE (GtkComboBox, gtk_combo_box, GTK_TYPE_BIN,
+@@ -554,5 +554,4 @@
+   widget_class->size_request = gtk_combo_box_size_request;
+   widget_class->expose_event = gtk_combo_box_expose_event;
+-  widget_class->scroll_event = gtk_combo_box_scroll_event;
+   widget_class->mnemonic_activate = gtk_combo_box_mnemonic_activate;
+   widget_class->grab_focus = gtk_combo_box_grab_focus;
+@@ -1687,5 +1686,5 @@
+   monitor_num = gdk_screen_get_monitor_at_window (screen, 
+ 						  GTK_WIDGET (combo_box)->window);
+-  gdk_screen_get_monitor_geometry (screen, monitor_num, &monitor);
++  gdk_screen_get_monitor_workarea (screen, monitor_num, &monitor);
+   
+   if (*x < monitor.x)
+@@ -1801,4 +1800,42 @@
+ 
+       gtk_combo_box_menu_position_over (menu, x, y, push_in, user_data);
++
++      if (menu_item)
++        {
++          GdkScreen *screen;
++          GtkWidget *widget = GTK_WIDGET (combo_box);
++          gint monitor_num;
++          GdkRectangle monitor;
++          gint px, py;
++          gint menu_height;
++          gint scroll_offset = 0;
++
++          screen = gtk_widget_get_screen (widget);
++          gdk_display_get_pointer (gdk_screen_get_display (screen),
++                                   NULL, &px, &py, NULL);
++
++          monitor_num = gdk_screen_get_monitor_at_point (screen, px, py);
++
++          gdk_screen_get_monitor_workarea (screen, monitor_num, &monitor);
++
++          menu_height = GTK_WIDGET (menu)->requisition.height;
++
++          if (*y + menu_height > monitor.y + monitor.height)
++            {
++              scroll_offset -= *y + menu_height - (monitor.y + monitor.height);
++            }
++          else if (*y < monitor.y)
++            {
++              scroll_offset += monitor.y - *y;
++            }
++
++          /* don't scroll the menu if less than 3 items would be visible,
++           * use 4 to roughly take the scroll buttons into account
++           */
++          if (scroll_offset != 0 &&
++              (menu->toplevel->requisition.height - ABS (scroll_offset) <
++               5 * menu_item->requisition.height))
++            gtk_combo_box_menu_position_below (menu, x, y, push_in, user_data);
++        }
+     }
+ 
+@@ -1856,5 +1893,5 @@
+   monitor_num = gdk_screen_get_monitor_at_window (screen, 
+ 						  GTK_WIDGET (combo_box)->window);
+-  gdk_screen_get_monitor_geometry (screen, monitor_num, &monitor);
++  gdk_screen_get_monitor_workarea (screen, monitor_num, &monitor);
+ 
+   if (*x < monitor.x)
+@@ -2002,5 +2039,17 @@
+ {
+   gboolean retval = FALSE;
++
++  /* Try the widget handler */
+   g_signal_emit (combo_box, combo_box_signals[SHOW_POPUP], 0, &retval);
++
++  if (retval) {
++    return retval;
++  }
++
++  /* Try the global handler */
++  if (_native_menu_handler != NULL) {
++    retval = _native_menu_handler (combo_box);
++  }
++
+   return retval;
+ }
+@@ -2969,29 +3018,4 @@
+ }
+ 
+-static gboolean
+-gtk_combo_box_scroll_event (GtkWidget          *widget,
+-                            GdkEventScroll     *event)
+-{
+-  GtkComboBox *combo_box = GTK_COMBO_BOX (widget);
+-  gboolean found;
+-  GtkTreeIter iter;
+-  GtkTreeIter new_iter;
+-
+-  if (!gtk_combo_box_get_active_iter (combo_box, &iter))
+-    return TRUE;
+-  
+-  if (event->direction == GDK_SCROLL_UP)
+-    found = tree_prev (combo_box, combo_box->priv->model, 
+-		       &iter, &new_iter, FALSE);
+-  else
+-    found = tree_next (combo_box, combo_box->priv->model, 
+-		       &iter, &new_iter, FALSE);
+-  
+-  if (found)
+-    gtk_combo_box_set_active_iter (combo_box, &new_iter);
+-
+-  return TRUE;
+-}
+-
+ /*
+  * menu style
+@@ -6446,4 +6470,9 @@
+ }
+ 
++void
++xamarin_attach_gtk_combo_box_popup_menu_handler (_NativeMenuHandler native_menu_handler)
++{
++  _native_menu_handler = native_menu_handler;
++}
+ #define __GTK_COMBO_BOX_C__
+ #include "gtkaliasdef.c"
