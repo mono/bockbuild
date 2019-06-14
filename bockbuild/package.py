@@ -338,6 +338,12 @@ class Package:
             return clean_archive
 
         def get_download_dest(url,version):
+            try:
+                os.makedirs (os.path.join (source_cache_dir, version))
+            except OSError, e:
+                if e.errno != os.errno.EEXIST:
+                    raise
+                pass
             return os.path.join(source_cache_dir, version, os.path.basename(url))
 
         def get_git_cache_path():
