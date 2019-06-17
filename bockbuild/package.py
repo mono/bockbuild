@@ -338,13 +338,17 @@ class Package:
             return clean_archive
 
         def get_download_dest(url,version):
+            if version is not None:
+                dest_dir = '%s-%s' % (self.name, version)
+            else:
+                dest_dir = self.name
             try:
-                os.makedirs (os.path.join (source_cache_dir, version))
+                os.makedirs (os.path.join(source_cache_dir, dest_dir))
             except OSError, e:
                 if e.errno != os.errno.EEXIST:
                     raise
                 pass
-            return os.path.join(source_cache_dir, version, os.path.basename(url))
+            return os.path.join(source_cache_dir, dest_dir, os.path.basename(url))
 
         def get_git_cache_path():
             if self.organization is None:
@@ -376,7 +380,7 @@ class Package:
                 #	raise Exception ('HTTP downloads are no longer allowed: %s', source)
 
                 if source.startswith(('http://', 'https://', 'ftp://')):
-                    cache = get_download_dest(source,self.version)
+                    cache = get_download_dest(source, self.version)
                     if self.profile.cache_host is not None:
                         cached_source = os.path.join(
                             self.profile.cache_host, os.path.basename(source))
