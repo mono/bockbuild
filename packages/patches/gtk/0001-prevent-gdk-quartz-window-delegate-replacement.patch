@@ -1,26 +1,22 @@
 diff --git a/gdk/quartz/GdkQuartzWindow.c b/gdk/quartz/GdkQuartzWindow.c
-index e8e0de5c7..63f3402f8 100644
+index e8e0de5c7..d0c6e84ec 100644
 --- a/gdk/quartz/GdkQuartzWindow.c
 +++ b/gdk/quartz/GdkQuartzWindow.c
-@@ -22,7 +22,16 @@
- #include "gdkwindow-quartz.h"
- #include "gdkprivate-quartz.h"
+@@ -24,6 +24,13 @@
  
--@implementation GdkQuartzWindow
-+@implementation GdkQuartzWindow {
-+  BOOL _allowDelegateToBeSetToNil;
-+}
-+
+ @implementation GdkQuartzWindow
+ 
 +-(void)dealloc
 +{
 +  // During deallocation, Cocoa resets the delegate to nil
 +  // We need to track that so that we don't throw an error
 +  _allowDelegateToBeSetToNil = YES;
 +}
- 
++
  -(BOOL)windowShouldClose:(id)sender
  {
-@@ -259,6 +268,16 @@
+   GdkWindow *window = [[self contentView] gdkWindow];
+@@ -259,6 +266,16 @@
    return [super makeFirstResponder:responder];
  }
  
@@ -37,7 +33,7 @@ index e8e0de5c7..63f3402f8 100644
  -(id)initWithContentRect:(NSRect)contentRect styleMask:(NSUInteger)styleMask backing:(NSBackingStoreType)backingType defer:(BOOL)flag screen:(NSScreen *)screen
  {
    self = [super initWithContentRect:contentRect
-@@ -271,6 +290,7 @@
+@@ -271,6 +288,7 @@
    [self setDelegate:self];
    [self setReleasedWhenClosed:YES];
  
@@ -45,3 +41,16 @@ index e8e0de5c7..63f3402f8 100644
    return self;
  }
  
+diff --git a/gdk/quartz/GdkQuartzWindow.h b/gdk/quartz/GdkQuartzWindow.h
+index 928f9617e..23cde0037 100644
+--- a/gdk/quartz/GdkQuartzWindow.h
++++ b/gdk/quartz/GdkQuartzWindow.h
+@@ -34,6 +34,8 @@
+   NSPoint initialMoveLocation;
+   NSPoint initialResizeLocation;
+   NSRect  initialResizeFrame;
++
++  BOOL    _allowDelegateToBeSetToNil;
+ }
+ 
+ -(BOOL)isInMove;
