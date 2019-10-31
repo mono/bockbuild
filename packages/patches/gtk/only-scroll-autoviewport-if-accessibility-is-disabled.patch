@@ -1,0 +1,118 @@
+diff --git a/gdk/gdk.h b/gdk/gdk.h
+index 3f0b1acf6..094f2fee7 100644
+--- a/gdk/gdk.h
++++ b/gdk/gdk.h
+@@ -221,6 +221,8 @@ guint    gdk_threads_add_timeout_seconds      (guint          interval,
+                                                GSourceFunc    function,
+                                                gpointer       data);
+ 
++gboolean gdk_accessibility_is_enabled         (void);
++
+ #ifdef	G_THREADS_ENABLED
+ #  define GDK_THREADS_ENTER()	G_STMT_START {	\
+       if (gdk_threads_lock)                 	\
+diff --git a/gdk/quartz/gdkmain-quartz.c b/gdk/quartz/gdkmain-quartz.c
+index 6e82478ea..6db6d5a88 100644
+--- a/gdk/quartz/gdkmain-quartz.c
++++ b/gdk/quartz/gdkmain-quartz.c
+@@ -22,18 +22,55 @@
+ #include <dlfcn.h>
+ 
+ #include "gdk.h"
++#include <Cocoa/Cocoa.h>
+ #include <ApplicationServices/ApplicationServices.h>
+ 
++@interface AccessibilityNotificationReceiver : NSObject
++{
++  @public gboolean atk_cocoa_enabled;
++}
++
++- (void) accessibilityEnabled:(id)sender;
++- (void) accessibilityDisabled:(id)sender;
++
++@end
++
+ const GOptionEntry _gdk_windowing_args[] = {
+   { NULL }
+ };
+ 
++static AccessibilityNotificationReceiver *receiver = NULL;
++
++@implementation AccessibilityNotificationReceiver
++
++- (void) accessibilityEnabled:(id)sender
++{
++  g_return_if_fail (receiver != NULL);
++
++  g_print ("a11y ENABLED!\n");
++
++  receiver->atk_cocoa_enabled = TRUE;
++}
++
++- (void) accessibilityDisabled:(id)sender
++{
++  g_return_if_fail (receiver != NULL);
++
++  g_print ("a11y DISABLED\n");
++
++  receiver->atk_cocoa_enabled = FALSE;
++}
++
++@end
++
+ void
+ _gdk_windowing_init (void)
+ {
+   ProcessSerialNumber psn = { 0, kCurrentProcess };
+   void (*_gtk_quartz_framework_init_ptr) (void);
+ 
++  receiver = [[AccessibilityNotificationReceiver alloc] init];
++
+   /* Make the current process a foreground application, i.e. an app
+    * with a user interface, in case we're not running from a .app bundle
+    */
+@@ -43,6 +80,30 @@ _gdk_windowing_init (void)
+   _gtk_quartz_framework_init_ptr = dlsym (RTLD_DEFAULT, "_gtk_quartz_framework_init");
+   if (_gtk_quartz_framework_init_ptr)
+     _gtk_quartz_framework_init_ptr ();
++
++  [[NSNotificationCenter defaultCenter] addObserver:receiver
++                                        selector:@selector(accessibilityEnabled:)
++                                        name:@"AtkCocoaAccessibilityEnabled"
++                                        object: [NSApplication sharedApplication]];
++
++  [[NSNotificationCenter defaultCenter] addObserver:receiver
++                                        selector:@selector(accessibilityDisabled:)
++                                        name:@"AtkCocoaAccessibilityDisabled"
++                                        object: [NSApplication sharedApplication]];
++}
++
++gboolean
++gdk_accessibility_is_enabled (void)
++{
++  g_return_val_if_fail (receiver != NULL, FALSE);
++
++  return receiver->atk_cocoa_enabled;
++}
++
++void
++_gdk_windowing_exit (void)
++{
++  [receiver release];
+ }
+ 
+ void
+diff --git a/gtk/gtkviewport.c b/gtk/gtkviewport.c
+index 24dd9f099..38659dbaa 100644
+--- a/gtk/gtkviewport.c
++++ b/gtk/gtkviewport.c
+@@ -829,6 +829,9 @@ gtk_viewport_set_focus_child (GtkContainer *container,
+   if (child == NULL)
+     return;
+ 
++  if (gdk_accessibility_is_enabled ())
++    return;
++
+   g_idle_add (set_focus_child_cb, container);
+ }
+ 

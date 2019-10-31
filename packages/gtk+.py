@@ -226,7 +226,8 @@ class GtkPackage (GitHubPackage):
                 'patches/gtk/nsview-embedding-skip-hidden-subviews.patch',
                 'patches/gtk/0001-gtk-combo-box-native-menu-hook.patch',
 
-                'patches/gtk/gtkviewport-autoscroll.patch'
+                'patches/gtk/gtkviewport-autoscroll.patch',
+                'packages/patches/gtk/only-scroll-autoviewport-if-accessibility-is-disabled.patch'
             ])
 
     def prep(self):
