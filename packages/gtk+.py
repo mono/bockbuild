@@ -229,7 +229,8 @@ class GtkPackage (GitHubPackage):
                 'patches/gtk/gtkviewport-autoscroll.patch',
 
                 # https://devdiv.visualstudio.com/DevDiv/_workitems/edit/993471
-                'patches/gtk/gtk-pboard-types.patch'
+                'patches/gtk/gtk-pboard-types.patch',
+		'packages/patches/gtk/define-NSPasteboardTypeURL.patch'
             ])
 
     def prep(self):
