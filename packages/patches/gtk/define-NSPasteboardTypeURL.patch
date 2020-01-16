@@ -7,7 +7,7 @@ index 558c53535e..6ee894533f 100644
  #endif
  
 +#ifndef NSPasteboardTypeURL
-+#define NSPasteboardTypeURL NSURLPboardType;
++#define NSPasteboardTypeURL NSURLPboardType
 +#endif
 +
  typedef enum
