@@ -41,7 +41,7 @@ class PangoPackage (GnomeXzPackage):
             # https://devdiv.visualstudio.com/DevDiv/_workitems/edit/573960
             'patches/pango-get-shaper-for-ideographic-space.patch',
 
-            'patches/pango-return-cfont.patch'
+            'patches/pango-familyName.patch'
         ])
 
     def prep(self):
