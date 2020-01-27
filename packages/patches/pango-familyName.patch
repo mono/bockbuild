@@ -1,109 +1,20 @@
-commit 217d60fb3715e132cfc620d1e6f183de0473e564
+commit a8bd6caefcbe5462547a277a4fb864989626ef6f
 Author: Cody Russell <cody@jhu.edu>
-Date:   Mon Jan 27 09:55:42 2020 -0600
+Date:   Mon Jan 27 10:44:06 2020 -0600
 
-    Testing
+    Try to get the family name from sysfont
 
 diff --git a/pango/pangocoretext-fontmap.c b/pango/pangocoretext-fontmap.c
-index 7482fef..f000abb 100644
+index 30605fe..7124db4 100644
 --- a/pango/pangocoretext-fontmap.c
 +++ b/pango/pangocoretext-fontmap.c
-@@ -1430,53 +1430,51 @@ pango_core_text_font_map_init (PangoCoreTextFontMap *ctfontmap)
-       CFRelease (dict);
-     }
- 
--  if (true)
--    {
--      NSFont *sysfont = [NSFont systemFontOfSize: 0.0];
+@@ -1437,7 +1437,8 @@ pango_core_text_font_map_init (PangoCoreTextFontMap *ctfontmap)
+   if (major == 10 && minor >= 11)
+     {
+       NSFont *sysfont = [NSFont systemFontOfSize: 0.0];
 -      NSString *name = [[NSFont fontWithName: [[sysfont fontDescriptor] postscriptName] size: 0.0] familyName];
--
--      NSArray *fontfaces = [[NSFontManager sharedFontManager] availableMembersOfFontFamily: name];
--      int num_faces = [fontfaces count];
--      g_print ("NUMBER OF SYSTEM FONT FACES: %d\n", num_faces);
--      CFRelease (name);
--
--      for (int faceindex = 0; faceindex < num_faces; faceindex++)
--        {
--          SInt64 font_traits;
--          char *buffer;
--          char *family_name;
--          CFNumberRef number;
--          CFDictionaryRef dict;
--          CTFontDescriptorRef desc = [sysfont fontDescriptor];
--
--          buffer = ct_font_descriptor_get_family_name (desc, TRUE);
--          if (!buffer)
--            continue;
--
--          family_name = g_utf8_casefold (buffer, -1);
--          family = g_hash_table_lookup (ctfontmap->families, family_name);
--          if (!family)
--            {
--              family = g_object_new (PANGO_TYPE_CORE_TEXT_FAMILY, NULL);
--              g_hash_table_insert (ctfontmap->families, g_strdup ("-apple-system-font"), family);
--              family->family_name = g_strdup (buffer);
--            }
--
--          g_free (buffer);
--          g_free (family_name);
--
--          dict = CTFontDescriptorCopyAttribute (desc, kCTFontTraitsAttribute);
--          number = (CFNumberRef)CFDictionaryGetValue (dict, kCTFontSymbolicTrait);
--
--          if (CFNumberGetValue (number, kCFNumberSInt64Type, &font_traits))
--            {
--              if ((font_traits & kCTFontMonoSpaceTrait) == kCTFontMonoSpaceTrait)
--                family->is_monospace = TRUE;
--            }
--
--          CFRelease (dict);
--        }
--    }
-+    NSFont *sysfont = [NSFont systemFontOfSize: 0.0];
-+    //NSString *name = [[NSFont fontWithName: [[sysfont fontDescriptor] postscriptName] size: 0.0] familyName];
-+    NSString *name = [sysfont familyName];
-+
-+    NSArray *fontfaces = [[NSFontManager sharedFontManager] availableMembersOfFontFamily: name];
-+    int num_faces = [fontfaces count];
-+    g_print ("NUMBER OF SYSTEM FONT FACES: %d\n", num_faces);
-+    CFRelease (name);
-+
-+    for (int faceindex = 0; faceindex < num_faces; faceindex++)
-+      {
-+        SInt64 font_traits;
-+        char *buffer;
-+        char *family_name;
-+        CFNumberRef number;
-+        CFDictionaryRef dict;
-+        CTFontDescriptorRef desc = [sysfont fontDescriptor];
-+
-+        buffer = ct_font_descriptor_get_family_name (desc, TRUE);
-+        if (!buffer)
-+          continue;
-+
-+        family_name = g_utf8_casefold (buffer, -1);
-+        family = g_hash_table_lookup (ctfontmap->families, family_name);
-+        if (!family)
-+          {
-+            family = g_object_new (PANGO_TYPE_CORE_TEXT_FAMILY, NULL);
-+            g_hash_table_insert (ctfontmap->families, g_strdup ("-apple-system-font"), family);
-+            family->family_name = g_strdup (buffer);
-+          }
-+
-+        g_free (buffer);
-+        g_free (family_name);
-+
-+        dict = CTFontDescriptorCopyAttribute (desc, kCTFontTraitsAttribute);
-+        number = (CFNumberRef)CFDictionaryGetValue (dict, kCTFontSymbolicTrait);
-+
-+        if (CFNumberGetValue (number, kCFNumberSInt64Type, &font_traits))
-+          {
-+            if ((font_traits & kCTFontMonoSpaceTrait) == kCTFontMonoSpaceTrait)
-+              family->is_monospace = TRUE;
-+          }
-+
-+        CFRelease (dict);
-+      }
++      //NSString *name = [[NSFont fontWithName: [[sysfont fontDescriptor] postscriptName] size: 0.0] familyName];
++      name = [sysfont familyName];
  
-   /* Insert aliases */
-   family = g_object_new (PANGO_TYPE_CORE_TEXT_FAMILY, NULL);
+       NSArray *fontfaces = [[NSFontManager sharedFontManager] availableMembersOfFontFamily: name];
+       int num_faces = [fontfaces count];
