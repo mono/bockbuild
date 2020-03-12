@@ -1,0 +1,27 @@
+commit 8d786bab96e6f5199edb9ea10e38953ba3e79824
+Author: Cody Russell <cody@jhu.edu>
+Date:   Thu Mar 12 09:56:24 2020 -0500
+
+    [Mac] Possible fix for crash in find_nsview_at_pos()
+    
+    Possibly fixes VSTS #1080409
+
+diff --git a/gdk/quartz/gdkevents-quartz.c b/gdk/quartz/gdkevents-quartz.c
+index a12597d0f9..df37a426c0 100644
+--- a/gdk/quartz/gdkevents-quartz.c
++++ b/gdk/quartz/gdkevents-quartz.c
+@@ -740,11 +740,12 @@ find_nsview_at_pos (GdkWindowImplQuartz *impl, gint x, gint y)
+   for (i = 0; i < n_subviews; ++i)
+     {
+       NSView* sv = [[view subviews] objectAtIndex:i];
+-      NSRect r = [sv frame];
+ 
+-      if (sv == impl->layer_view)
++      if (sv == NULL || sv == impl->layer_view)
+         continue;
+ 
++      NSRect r = [sv frame];
++
+       if (![sv isHidden] &&
+           r.origin.x <= x && r.origin.x + r.size.width >= x &&
+           r.origin.y <= y && r.origin.y + r.size.height >= y)

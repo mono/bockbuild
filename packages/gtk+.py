@@ -230,7 +230,9 @@ class GtkPackage (GitHubPackage):
 
                 # https://devdiv.visualstudio.com/DevDiv/_workitems/edit/993471
                 'patches/gtk/gtk-pboard-types.patch',
-                'patches/gtk/define-NSPasteboardTypeURL.patch'
+                'patches/gtk/define-NSPasteboardTypeURL.patch',
+
+                'patches/gtk/fix-crasher-in-find_nsview_at_pos.patch'
             ])
 
     def prep(self):
