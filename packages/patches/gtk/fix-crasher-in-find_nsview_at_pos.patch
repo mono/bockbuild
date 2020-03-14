@@ -1,4 +1,4 @@
-commit 8d786bab96e6f5199edb9ea10e38953ba3e79824
+commit 195923c21686906851ae2cf3ce1c58e74be28e6f
 Author: Cody Russell <cody@jhu.edu>
 Date:   Thu Mar 12 09:56:24 2020 -0500
 
@@ -7,17 +7,19 @@ Date:   Thu Mar 12 09:56:24 2020 -0500
     Possibly fixes VSTS #1080409
 
 diff --git a/gdk/quartz/gdkevents-quartz.c b/gdk/quartz/gdkevents-quartz.c
-index a12597d0f9..df37a426c0 100644
+index a12597d0f9..f22722f25d 100644
 --- a/gdk/quartz/gdkevents-quartz.c
 +++ b/gdk/quartz/gdkevents-quartz.c
-@@ -740,11 +740,12 @@ find_nsview_at_pos (GdkWindowImplQuartz *impl, gint x, gint y)
+@@ -740,11 +740,14 @@ find_nsview_at_pos (GdkWindowImplQuartz *impl, gint x, gint y)
    for (i = 0; i < n_subviews; ++i)
      {
        NSView* sv = [[view subviews] objectAtIndex:i];
 -      NSRect r = [sv frame];
  
 -      if (sv == impl->layer_view)
-+      if (sv == NULL || sv == impl->layer_view)
++      if (sv == NULL)
++        return;
++      else if (sv == impl->layer_view)
          continue;
  
 +      NSRect r = [sv frame];
