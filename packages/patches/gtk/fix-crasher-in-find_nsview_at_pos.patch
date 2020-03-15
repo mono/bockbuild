@@ -1,4 +1,4 @@
-commit 195923c21686906851ae2cf3ce1c58e74be28e6f
+commit 51a514e097b12bee4dacc84eaf28e7e6b460859e
 Author: Cody Russell <cody@jhu.edu>
 Date:   Thu Mar 12 09:56:24 2020 -0500
 
@@ -7,7 +7,7 @@ Date:   Thu Mar 12 09:56:24 2020 -0500
     Possibly fixes VSTS #1080409
 
 diff --git a/gdk/quartz/gdkevents-quartz.c b/gdk/quartz/gdkevents-quartz.c
-index a12597d0f9..f22722f25d 100644
+index a12597d0f9..3611a73d0b 100644
 --- a/gdk/quartz/gdkevents-quartz.c
 +++ b/gdk/quartz/gdkevents-quartz.c
 @@ -740,11 +740,14 @@ find_nsview_at_pos (GdkWindowImplQuartz *impl, gint x, gint y)
@@ -18,7 +18,7 @@ index a12597d0f9..f22722f25d 100644
  
 -      if (sv == impl->layer_view)
 +      if (sv == NULL)
-+        return;
++        return NULL;
 +      else if (sv == impl->layer_view)
          continue;
  
