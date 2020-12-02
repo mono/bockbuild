@@ -1,0 +1,77 @@
+From 037b678d1cf740a1885b0aabb5ffe8be20b8b567 Mon Sep 17 00:00:00 2001
+From: Marius Ungureanu <maungu@microsoft.com>
+Date: Wed, 2 Dec 2020 17:39:31 +0200
+Subject: [PATCH] Optimize querying symbolic hotkeys
+
+This API is not threadsafe and there is no alternative API for querying
+whether the symbolic hotkeys have changed.
+
+Instead, we can check the last modification time of the preferences file
+and only update the symbolic hotkeys _iff_ the underlying storage file
+has changed.
+---
+ gdk/quartz/gdkkeys-quartz.c | 37 +++++++++++++++++++++++++++++++++++--
+ 1 file changed, 35 insertions(+), 2 deletions(-)
+
+diff --git a/gdk/quartz/gdkkeys-quartz.c b/gdk/quartz/gdkkeys-quartz.c
+index 5a4d88787d..c4937e9977 100644
+--- a/gdk/quartz/gdkkeys-quartz.c
++++ b/gdk/quartz/gdkkeys-quartz.c
+@@ -68,6 +68,7 @@ static GdkKeymap *default_keymap = NULL;
+  */
+ static guint *keyval_array = NULL;
+ static CFArrayRef global_hotkeys = NULL;
++static struct timespec preferences_last_mtime = {};
+ 
+ static inline UniChar
+ macroman2ucs (unsigned char c)
+@@ -815,12 +816,44 @@ gdk_keymap_map_virtual_modifiers (GdkKeymap       *keymap,
+   return TRUE;
+ }
+ 
++static gboolean
++should_update_symbolic_hotkeys ()
++{
++  const gchar *path_segments[] = {
++    g_get_home_dir(),
++    "Library",
++    "Preferences",
++    "com.apple.symbolichotkeys.plist",
++  };
++
++  const gchar *preferences_file = g_build_pathv(G_DIR_SEPARATOR_S, path_segments);
++  GStatBuf buf;
++
++  int res = g_stat(preferences_file, &buf);
++  g_free(preferences_file);
++
++  if (res != 0) {
++    /* In case we have any IO error, ensure correctness by querying */
++    return TRUE;
++  }
++
++  bool preferences_file_modified = preferences_last_mtime.tv_sec != buf.st_mtim.tv_sec
++    && preferences_last_mtime.tv_nsec != buf.st_mtim.tv_nsec;
++
++  preferences_last_mtime.tv_sec = buf.st_mtim.tv_sec;
++  preferences_last_mtime.tv_nsec = buf.st_mtim.tv_nsec;
++
++  return preferences_file_modified;
++}
++
+ void
+ _gdk_quartz_update_symbolic_hotkeys ()
+ {
+-  _gdk_quartz_release_symbolic_hotkeys ();
++  if (should_update_symbolic_hotkeys ()) {
++    _gdk_quartz_release_symbolic_hotkeys ();
+ 
+-  CopySymbolicHotKeys (&global_hotkeys);
++    CopySymbolicHotKeys (&global_hotkeys);
++  }
+ }
+ 
+ void
+-- 
+2.21.1 (Apple Git-122.3)
+
