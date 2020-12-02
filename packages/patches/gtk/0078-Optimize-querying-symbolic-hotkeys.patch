@@ -1,4 +1,4 @@
-From 037b678d1cf740a1885b0aabb5ffe8be20b8b567 Mon Sep 17 00:00:00 2001
+From 8330f6b4de828a01891e754d6c9103b26c330806 Mon Sep 17 00:00:00 2001
 From: Marius Ungureanu <maungu@microsoft.com>
 Date: Wed, 2 Dec 2020 17:39:31 +0200
 Subject: [PATCH] Optimize querying symbolic hotkeys
@@ -10,14 +10,23 @@ Instead, we can check the last modification time of the preferences file
 and only update the symbolic hotkeys _iff_ the underlying storage file
 has changed.
 ---
- gdk/quartz/gdkkeys-quartz.c | 37 +++++++++++++++++++++++++++++++++++--
- 1 file changed, 35 insertions(+), 2 deletions(-)
+ gdk/quartz/gdkkeys-quartz.c | 39 +++++++++++++++++++++++++++++++++++--
+ 1 file changed, 37 insertions(+), 2 deletions(-)
 
 diff --git a/gdk/quartz/gdkkeys-quartz.c b/gdk/quartz/gdkkeys-quartz.c
-index 5a4d88787d..c4937e9977 100644
+index 5a4d88787d..98dd7d884d 100644
 --- a/gdk/quartz/gdkkeys-quartz.c
 +++ b/gdk/quartz/gdkkeys-quartz.c
-@@ -68,6 +68,7 @@ static GdkKeymap *default_keymap = NULL;
+@@ -58,6 +58,8 @@
+ #include "gdkprivate-quartz.h"
+ #include <Foundation/Foundation.h>
+ 
++#include <glib/gstdio.h>
++
+ #define NUM_KEYCODES 128
+ #define KEYVALS_PER_KEYCODE 4
+ 
+@@ -68,6 +70,7 @@ static GdkKeymap *default_keymap = NULL;
   */
  static guint *keyval_array = NULL;
  static CFArrayRef global_hotkeys = NULL;
@@ -25,21 +34,21 @@ index 5a4d88787d..c4937e9977 100644
  
  static inline UniChar
  macroman2ucs (unsigned char c)
-@@ -815,12 +816,44 @@ gdk_keymap_map_virtual_modifiers (GdkKeymap       *keymap,
+@@ -815,12 +818,44 @@ gdk_keymap_map_virtual_modifiers (GdkKeymap       *keymap,
    return TRUE;
  }
  
 +static gboolean
 +should_update_symbolic_hotkeys ()
 +{
-+  const gchar *path_segments[] = {
++  gchar *path_segments[] = {
 +    g_get_home_dir(),
 +    "Library",
 +    "Preferences",
 +    "com.apple.symbolichotkeys.plist",
 +  };
 +
-+  const gchar *preferences_file = g_build_pathv(G_DIR_SEPARATOR_S, path_segments);
++  gchar *preferences_file = g_build_pathv(G_DIR_SEPARATOR_S, path_segments);
 +  GStatBuf buf;
 +
 +  int res = g_stat(preferences_file, &buf);
