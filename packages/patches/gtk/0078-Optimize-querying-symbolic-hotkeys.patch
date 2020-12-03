@@ -1,4 +1,4 @@
-From 8330f6b4de828a01891e754d6c9103b26c330806 Mon Sep 17 00:00:00 2001
+From 63536e833cfa6423f9493d4add8d6b67303e8021 Mon Sep 17 00:00:00 2001
 From: Marius Ungureanu <maungu@microsoft.com>
 Date: Wed, 2 Dec 2020 17:39:31 +0200
 Subject: [PATCH] Optimize querying symbolic hotkeys
@@ -14,7 +14,7 @@ has changed.
  1 file changed, 37 insertions(+), 2 deletions(-)
 
 diff --git a/gdk/quartz/gdkkeys-quartz.c b/gdk/quartz/gdkkeys-quartz.c
-index 5a4d88787d..98dd7d884d 100644
+index 5a4d88787d..e5bd1e4f60 100644
 --- a/gdk/quartz/gdkkeys-quartz.c
 +++ b/gdk/quartz/gdkkeys-quartz.c
 @@ -58,6 +58,8 @@
@@ -59,11 +59,11 @@ index 5a4d88787d..98dd7d884d 100644
 +    return TRUE;
 +  }
 +
-+  bool preferences_file_modified = preferences_last_mtime.tv_sec != buf.st_mtim.tv_sec
-+    && preferences_last_mtime.tv_nsec != buf.st_mtim.tv_nsec;
++  bool preferences_file_modified = preferences_last_mtime.tv_sec != buf.st_mtimespec.tv_sec
++    && preferences_last_mtime.tv_nsec != buf.st_mtimespec.tv_nsec;
 +
-+  preferences_last_mtime.tv_sec = buf.st_mtim.tv_sec;
-+  preferences_last_mtime.tv_nsec = buf.st_mtim.tv_nsec;
++  preferences_last_mtime.tv_sec = buf.st_mtimespec.tv_sec;
++  preferences_last_mtime.tv_nsec = buf.st_mtimespec.tv_nsec;
 +
 +  return preferences_file_modified;
 +}
