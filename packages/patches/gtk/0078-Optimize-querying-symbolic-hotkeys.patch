@@ -1,4 +1,4 @@
-From 63536e833cfa6423f9493d4add8d6b67303e8021 Mon Sep 17 00:00:00 2001
+From ba68d11840da0ea10b863c598b1947fa1090a557 Mon Sep 17 00:00:00 2001
 From: Marius Ungureanu <maungu@microsoft.com>
 Date: Wed, 2 Dec 2020 17:39:31 +0200
 Subject: [PATCH] Optimize querying symbolic hotkeys
@@ -10,11 +10,11 @@ Instead, we can check the last modification time of the preferences file
 and only update the symbolic hotkeys _iff_ the underlying storage file
 has changed.
 ---
- gdk/quartz/gdkkeys-quartz.c | 39 +++++++++++++++++++++++++++++++++++--
- 1 file changed, 37 insertions(+), 2 deletions(-)
+ gdk/quartz/gdkkeys-quartz.c | 40 +++++++++++++++++++++++++++++++++++--
+ 1 file changed, 38 insertions(+), 2 deletions(-)
 
 diff --git a/gdk/quartz/gdkkeys-quartz.c b/gdk/quartz/gdkkeys-quartz.c
-index 5a4d88787d..e5bd1e4f60 100644
+index 5a4d88787d..8ee8628dd2 100644
 --- a/gdk/quartz/gdkkeys-quartz.c
 +++ b/gdk/quartz/gdkkeys-quartz.c
 @@ -58,6 +58,8 @@
@@ -34,7 +34,7 @@ index 5a4d88787d..e5bd1e4f60 100644
  
  static inline UniChar
  macroman2ucs (unsigned char c)
-@@ -815,12 +818,44 @@ gdk_keymap_map_virtual_modifiers (GdkKeymap       *keymap,
+@@ -815,12 +818,45 @@ gdk_keymap_map_virtual_modifiers (GdkKeymap       *keymap,
    return TRUE;
  }
  
@@ -46,6 +46,7 @@ index 5a4d88787d..e5bd1e4f60 100644
 +    "Library",
 +    "Preferences",
 +    "com.apple.symbolichotkeys.plist",
++    NULL,
 +  };
 +
 +  gchar *preferences_file = g_build_pathv(G_DIR_SEPARATOR_S, path_segments);
