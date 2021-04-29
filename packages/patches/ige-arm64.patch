@@ -1,0 +1,97 @@
+diff -ruN ige-mac-integration-0.9.4.original/configure ige-mac-integration-0.9.4.problem/configure
+--- ige-mac-integration-0.9.4.original/configure	2010-07-03 11:26:44.000000000 -0400
++++ ige-mac-integration-0.9.4.problem/configure	2020-08-06 11:03:36.000000000 -0400
+@@ -11092,7 +11092,7 @@
+ int
+ main ()
+ {
+-#ifndef __x86_64__
++#if !(defined( __x86_64__)||defined(__arm64__))
+ #error
+ #endif
+ 
+diff -ruN ige-mac-integration-0.9.4.original/configure.ac ige-mac-integration-0.9.4.problem/configure.ac
+--- ige-mac-integration-0.9.4.original/configure.ac	2010-07-03 10:29:15.000000000 -0400
++++ ige-mac-integration-0.9.4.problem/configure.ac	2020-08-06 11:02:53.000000000 -0400
+@@ -11,7 +11,7 @@
+ AM_PROG_LIBTOOL
+ AC_MSG_CHECKING([Bitness])
+ AC_PREPROC_IFELSE(
+-    [AC_LANG_PROGRAM([[]],[[#ifndef __x86_64__
++    [AC_LANG_PROGRAM([[]],[[#if !(defined( __x86_64__)||defined(__arm64__))
+ #error
+ #endif
+ 	]])],
+diff -ruN ige-mac-integration-0.9.4.original/src/ige-mac-bundle.c ige-mac-integration-0.9.4.problem/src/ige-mac-bundle.c
+--- ige-mac-integration-0.9.4.original/src/ige-mac-bundle.c	2010-07-03 10:29:15.000000000 -0400
++++ ige-mac-integration-0.9.4.problem/src/ige-mac-bundle.c	2020-08-06 11:06:41.000000000 -0400
+@@ -22,7 +22,7 @@
+  * -psn_... arguments?
+  */
+ 
+-#ifndef __x86_64__
++#if !(defined(__x86_64__) || defined(__arm64__))
+ #include <gtk/gtk.h>
+ #include <Carbon/Carbon.h>
+ 
+diff -ruN ige-mac-integration-0.9.4.original/src/ige-mac-bundle.h ige-mac-integration-0.9.4.problem/src/ige-mac-bundle.h
+--- ige-mac-integration-0.9.4.original/src/ige-mac-bundle.h	2010-07-03 10:29:15.000000000 -0400
++++ ige-mac-integration-0.9.4.problem/src/ige-mac-bundle.h	2020-08-06 11:06:46.000000000 -0400
+@@ -21,7 +21,7 @@
+ #ifndef __IGE_MAC_BUNDLE_H__
+ #define __IGE_MAC_BUNDLE_H__
+ 
+-#ifndef __x86_64__
++#if !(defined(__x86_64__) || defined(__arm64__))
+ #include <glib-object.h>
+ 
+ G_BEGIN_DECLS
+diff -ruN ige-mac-integration-0.9.4.original/src/ige-mac-dock.c ige-mac-integration-0.9.4.problem/src/ige-mac-dock.c
+--- ige-mac-integration-0.9.4.original/src/ige-mac-dock.c	2020-08-05 14:13:05.000000000 -0400
++++ ige-mac-integration-0.9.4.problem/src/ige-mac-dock.c	2020-08-06 11:05:56.000000000 -0400
+@@ -17,8 +17,8 @@
+  * Free Software Foundation, Inc., 59 Temple Place - Suite 330,
+  * Boston, MA 02111-1307, USA.
+  */
++#if !(defined(__x86_64__) || defined(__arm64__))
+ 
+-#ifndef __x86_64__
+ /* FIXME: Add example like this to docs for the open documents stuff:
+ 
+     <key>CFBundleDocumentTypes</key>
+diff -ruN ige-mac-integration-0.9.4.original/src/ige-mac-dock.h ige-mac-integration-0.9.4.problem/src/ige-mac-dock.h
+--- ige-mac-integration-0.9.4.original/src/ige-mac-dock.h	2010-07-03 10:29:15.000000000 -0400
++++ ige-mac-integration-0.9.4.problem/src/ige-mac-dock.h	2020-08-06 11:06:28.000000000 -0400
+@@ -23,7 +23,7 @@
+ 
+ #ifndef __IGE_MAC_DOCK_H__
+ #define __IGE_MAC_DOCK_H__
+-#ifndef __x86_64__
++#if !(defined(__x86_64__) || defined(__arm64__))
+ 
+ #include <gtk/gtk.h>
+ #include <ige-mac-bundle.h>
+diff -ruN ige-mac-integration-0.9.4.original/src/ige-mac-menu.c ige-mac-integration-0.9.4.problem/src/ige-mac-menu.c
+--- ige-mac-integration-0.9.4.original/src/ige-mac-menu.c	2020-08-05 14:21:07.000000000 -0400
++++ ige-mac-integration-0.9.4.problem/src/ige-mac-menu.c	2020-08-06 11:05:42.000000000 -0400
+@@ -23,7 +23,7 @@
+  * Boston, MA 02111-1307, USA.
+  */
+ 
+-#ifndef __x86_64__
++#if !(defined(__x86_64__) || defined(__arm64__))
+ #include "config.h"
+ 
+ #include <gtk/gtk.h>
+diff -ruN ige-mac-integration-0.9.4.original/src/ige-mac-menu.h ige-mac-integration-0.9.4.problem/src/ige-mac-menu.h
+--- ige-mac-integration-0.9.4.original/src/ige-mac-menu.h	2010-07-03 10:29:15.000000000 -0400
++++ ige-mac-integration-0.9.4.problem/src/ige-mac-menu.h	2020-08-06 11:06:17.000000000 -0400
+@@ -25,7 +25,7 @@
+ 
+ #ifndef __IGE_MAC_MENU_H__
+ #define __IGE_MAC_MENU_H__
+-#ifndef __x86_64__
++#if !(defined(__x86_64__) || defined(__arm64__))
+ 
+ #include <gtk/gtk.h>
+ 

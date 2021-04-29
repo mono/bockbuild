@@ -1,0 +1,43 @@
+diff --exclude='*.la*' --exclude=configure --exclude=.deps --exclude='config.*' --exclude=autom4te.cache --exclude='*m4' --exclude=.git --exclude=Makefile.in --exclude=Makefile -ru gtk-2.24.problem/gtk/gtkclipboard-quartz.c gtk-works/gtk/gtkclipboard-quartz.c
+--- gtk-2.24.problem/gtk/gtkclipboard-quartz.c	2020-08-05 13:47:21.000000000 -0400
++++ gtk-works/gtk/gtkclipboard-quartz.c	2020-08-05 13:42:56.000000000 -0400
+@@ -32,6 +32,7 @@
+ #include "gtkintl.h"
+ #include "gtktextbuffer.h"
+ #include "gtkquartz.h"
++#include "gdk/quartz/gdkquartz.h"
+ #include "gtkalias.h"
+ 
+ enum {
+diff --exclude='*.la*' --exclude=configure --exclude=.deps --exclude='config.*' --exclude=autom4te.cache --exclude='*m4' --exclude=.git --exclude=Makefile.in --exclude=Makefile -ru gtk-2.24.problem/gtk/gtkiconfactory.c gtk-works/gtk/gtkiconfactory.c
+--- gtk-2.24.problem/gtk/gtkiconfactory.c	2020-08-05 13:47:21.000000000 -0400
++++ gtk-works/gtk/gtkiconfactory.c	2020-08-05 13:36:37.000000000 -0400
+@@ -27,6 +27,7 @@
+ #include "config.h"
+ #include <stdlib.h>
+ #include <errno.h>
++#include <math.h>
+ #include <string.h>
+ #include "gtkiconfactory.h"
+ #include "gtkiconcache.h"
+@@ -1490,6 +1491,8 @@
+         {
+           tmp_pixbuf = gtk_icon_info_load_icon (info, &error);
+           gtk_icon_info_free (info);
++        } else {
++	  tmp_pixbuf = NULL;
+         }
+     }
+   else
+diff --exclude='*.la*' --exclude=configure --exclude=.deps --exclude='config.*' --exclude=autom4te.cache --exclude='*m4' --exclude=.git --exclude=Makefile.in --exclude=Makefile -ru gtk-2.24.problem/gtk/gtkprivate.h gtk-works/gtk/gtkprivate.h
+--- gtk-2.24.problem/gtk/gtkprivate.h	2020-08-05 13:47:21.000000000 -0400
++++ gtk-works/gtk/gtkprivate.h	2020-08-05 13:34:39.000000000 -0400
+@@ -30,7 +30,7 @@
+ #include <gtk/gtkwidget.h>
+ 
+ G_BEGIN_DECLS
+-
++gboolean  gdk_quartz_get_fix_modifiers (void);
+ /* The private flags that are used in the private_flags member of GtkWidget.
+  */
+ typedef enum

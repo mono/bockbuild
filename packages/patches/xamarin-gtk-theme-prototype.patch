@@ -1,0 +1,39 @@
+diff --exclude='*.*o' --exclude=.libs --exclude='*la' -ruN xamarin-gtk-theme-None.orig/src/murrine_rc_style.h xamarin-gtk-theme-None.problem/src/murrine_rc_style.h
+--- xamarin-gtk-theme-None.orig/src/murrine_rc_style.h	2020-08-03 14:42:53.000000000 -0400
++++ xamarin-gtk-theme-None.problem/src/murrine_rc_style.h	2020-08-06 12:04:11.000000000 -0400
+@@ -35,6 +35,8 @@
+ #define MURRINE_IS_RC_STYLE_CLASS(klass)   (G_TYPE_CHECK_CLASS_TYPE ((klass), MURRINE_TYPE_RC_STYLE))
+ #define MURRINE_RC_STYLE_GET_CLASS(obj)    (G_TYPE_INSTANCE_GET_CLASS ((obj), MURRINE_TYPE_RC_STYLE, MurrineRcStyleClass))
+ 
++void
++murrine_rc_style_register_types (GTypeModule *module);
+ typedef enum
+ {
+ //	MRN_FLAG_UNUSED = 1 << 0,
+diff --exclude='*.*o' --exclude=.libs --exclude='*la' -ruN xamarin-gtk-theme-None.orig/src/murrine_style.h xamarin-gtk-theme-None.problem/src/murrine_style.h
+--- xamarin-gtk-theme-None.orig/src/murrine_style.h	2020-08-03 14:42:53.000000000 -0400
++++ xamarin-gtk-theme-None.problem/src/murrine_style.h	2020-08-06 12:04:32.000000000 -0400
+@@ -38,6 +38,9 @@
+ #define MURRINE_IS_STYLE_CLASS(klass)   (G_TYPE_CHECK_CLASS_TYPE ((klass), MURRINE_TYPE_STYLE))
+ #define MURRINE_STYLE_GET_CLASS(obj)    (G_TYPE_INSTANCE_GET_CLASS ((obj), MURRINE_TYPE_STYLE, MurrineStyleClass))
+ 
++void
++murrine_style_register_types (GTypeModule *module);
++
+ struct _MurrineStyle
+ {
+ 	GtkStyle parent_instance;
+diff --exclude='*.*o' --exclude=.libs --exclude='*la' -ruN xamarin-gtk-theme-None.orig/src/support.h xamarin-gtk-theme-None.problem/src/support.h
+--- xamarin-gtk-theme-None.orig/src/support.h	2020-08-03 14:42:53.000000000 -0400
++++ xamarin-gtk-theme-None.problem/src/support.h	2020-08-06 12:03:40.000000000 -0400
+@@ -44,6 +44,10 @@
+ #define MENU_OPACITY 0.90
+ #define TOOLTIP_OPACITY 0.90
+ 
++gboolean murrine_widget_is_ltr (GtkWidget *widget);
++gboolean
++murrine_object_is_a (const GObject * object, const gchar * type_name);
++
+ /* From gtk-engines 20071109 */
+ #define MRN_IS_WIDGET(object) ((object)  && murrine_object_is_a ((GObject*)(object), "GtkWidget"))
+ #define MRN_IS_CONTAINER(object) ((object)  && murrine_object_is_a ((GObject*)(object), "GtkContainer"))

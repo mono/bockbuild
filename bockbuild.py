@@ -62,6 +62,7 @@ def find_profiles (base_path):
         if not progress_made:
             break
     assert Profile.loaded == None
+    progress ('Hello')
     return profiles
 
 class Bockbuild:
@@ -105,16 +106,19 @@ class Bockbuild:
 
         loginit('bockbuild (%s)' % (self.bockbuild_rev))
         info('cmd: %s' % ' '.join(sys.argv))
-
+	progress ('here')
         if len (sys.argv) < 2:
             info ('Profiles in %s --' % self.git ('config --get remote.origin.url', self.profile_root)[0])
             info(map (lambda x: '\t%s: %s' % (x.name, x.description), self.profiles))
             finish (exit_codes.FAILURE)
 
         global active_profile
+	progress (sys.argv[1])
         Package.profile = active_profile = self.load_profile (sys.argv[1])
 
+	progress ('here34')
         self.parser = self.init_parser()
+	progress ('here2')
         self.cmd_options, self.cmd_args = self.parser.parse_args(sys.argv[2:])
 
         self.packages_to_build = self.cmd_args or active_profile.packages
@@ -139,8 +143,12 @@ class Bockbuild:
         self.build()
 
     def init_parser(self):
+	
+	progress ('herep')
         parser = OptionParser(
             usage='usage: %prog [options] [package_names...]')
+
+	progress ('here5')
         parser.add_option('--build',
                           action='store_true', dest='do_build', default=True,
                           help='build the profile')
@@ -366,6 +374,7 @@ class Bockbuild:
 
         sys.path.append (path)
         self.resources.add (path)
+	progress (fullpath)
         execfile(fullpath, globals())
         Profile.loaded.attach (self)
 
