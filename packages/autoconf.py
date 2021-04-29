@@ -13,12 +13,12 @@ class Autoconf (GnuPackage):
 
     def arch_build(self, arch):
         if arch == 'darwin-universal':
-            self.local_ld_flags = ['-arch i386', '-arch x86_64']
-            self.local_gcc_flags = ['-arch i386', '-arch x86_64']
+            self.local_ld_flags = ['-arch arm64', '-arch x86_64']
+            self.local_gcc_flags = ['-arch arm64', '-arch x86_64']
         elif arch == 'darwin-32':
-            self.local_ld_flags = ['-arch i386', '-m32']
-            self.local_gcc_flags = ['-arch i386', '-m32']
-            self.local_configure_flags = ['--build=i386-apple-darwin13.0.0']
+            self.local_ld_flags = ['-arch arm64']
+            self.local_gcc_flags = ['-arch arm64']
+            self.local_configure_flags = ['--build=arm64-apple-darwin13.0.0']
         elif arch == 'darwin-64':
             self.local_ld_flags = ['-arch x86_64 -m64']
             self.local_gcc_flags = ['-arch x86_64 -m64']
