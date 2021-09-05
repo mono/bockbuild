@@ -132,19 +132,23 @@ class DarwinProfile (UnixProfile):
             self.bockbuild.cmd_options.arch = 'darwin-32'
 
     def arch_build(self, arch, package):
-        if arch == 'darwin-universal':
-            package.local_ld_flags = ['-arch i386', '-arch x86_64']
-            package.local_gcc_flags = ['-arch i386', '-arch x86_64']
+	if arch == 'darwin-arm64':
+	    package.local_ld_flags = ['-arch arm64']
+	    package.local_gcc_flags = ['-arch arm64']
+        elif arch == 'darwin-universal':
+            package.local_ld_flags = ['-arch arm64', '-arch x86_64']
+            package.local_gcc_flags = ['-arch arm64', '-arch x86_64']
         elif arch == 'darwin-32':
-            package.local_ld_flags = ['-arch i386', '-m32']
-            package.local_gcc_flags = ['-arch i386', '-m32']
+            package.local_ld_flags = ['-arch arm64']
+            package.local_gcc_flags = ['-arch arm64']
             package.local_configure_flags = [
-                '--build=i386-apple-darwin13.0.0', '--host=i386-apple-darwin13.0.0', '--disable-dependency-tracking']
+                '--build=arm64-apple-darwin13.0.0', '--host=arm64-apple-darwin13.0.0', '--disable-dependency-tracking']
         elif arch == 'darwin-64':
-            package.local_ld_flags = ['-arch x86_64 -m64']
-            package.local_gcc_flags = ['-arch x86_64 -m64']
-            package.local_configure_flags = [
-                '--build=x86_64-apple-darwin13.0.0', '--host=x86_64-apple-darwin13.0.0', '--disable-dependency-tracking']
+            package.local_ld_flags = ['-arch arm64']
+            package.local_gcc_flags = ['-arch arm64']
+
+            #package.local_ld_flags = ['-arch x86_64 -m64']
+            #package.local_gcc_flags = ['-arch x86_64 -m64']
         else:
             error('Unknown arch %s' % arch)
 
@@ -306,7 +310,7 @@ class DarwinProfile (UnixProfile):
             Profile.FileProcessor.__init__(self, match=match_stageable_binary)
 
         def process(self, path):
-            run_shell('dsymutil -t 2 "%s" >/dev/null' % path)
+            run_shell('dsymutil "%s" >/dev/null' % path)
             run_shell('strip -S "%s" > /dev/null' % path)
 
     class validate_rpaths (Profile.FileProcessor):

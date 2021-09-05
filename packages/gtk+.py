@@ -235,7 +235,8 @@ class GtkPackage (GitHubPackage):
 
                 # https://dev.azure.com/devdiv/DevDiv/_workitems/edit/1092021/
                 'patches/gtk/0078-Optimize-querying-symbolic-hotkeys.patch',
-                'patches/gtk/gdk-quartz-Remove-titlebar-handling-from-find_child.patch'
+                'patches/gtk/gdk-quartz-Remove-titlebar-handling-from-find_child.patch',
+                'patches/gtk/bigsurfix.patch'
             ])
 
     def prep(self):
