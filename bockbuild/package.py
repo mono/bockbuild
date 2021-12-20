@@ -10,7 +10,7 @@ import time
 import urllib
 from util.util import *
 import functools
-
+import platform
 
 class Package:
 
@@ -67,7 +67,10 @@ class Package:
 
         self.source_dir_name = source_dir_name
         if self.source_dir_name is None:
-            self.source_dir_name = "%s-%s" % (name, version)
+            if version is None:
+                self.source_dir_name = name
+            else:
+                self.source_dir_name = "%s-%s" % (name, version)
 
         self.revision = revision
 
@@ -171,8 +174,12 @@ class Package:
                 if os.path.exists(workspace_dir):
                     self.rm(workspace_dir)
                 progress('Cloning git repo: %s' % source_url)
-                self.git('clone --mirror %s %s' %
-                         (source_url, cache_dir), self.profile.bockbuild.root)
+                if self.git_branch is None:
+                    self.git('clone %s %s' %
+                            (source_url, cache_dir), self.profile.bockbuild.root)
+                else:
+                    self.git('clone -b %s %s %s' %
+                            (self.git_branch, source_url, cache_dir), self.profile.bockbuild.root)
 
             def update_cache():
                 trace('Updating cache: ' + cache_dir)
@@ -212,9 +219,9 @@ class Package:
                     target_revision = self.revision
 
                 if self.git_branch is not None:
-                    self.git('checkout %s' % self.git_branch, workspace_dir)
-                    self.git('merge origin/%s --ff-only' %
-                             self.git_branch, workspace_dir)
+                    # self.git('checkout %s' % self.git_branch, workspace_dir)
+                    # self.git('merge origin/%s --ff-only' %
+                    #          self.git_branch, workspace_dir)
 
                     if self.revision is None:  # target the tip of the branch
                         target_revision = git_get_revision(self, workspace_dir)
@@ -508,13 +515,18 @@ class Package:
                 delete(workspace)
                 shutil.move(workspace_x86, workspace)
 
-                print 'lipo', self.name
+                print('lipo', self.name)
 
                 self.lipo_dirs(stagedir_x32, package_stage, 'lib')
                 self.copy_side_by_side(
                     stagedir_x32, package_stage, 'bin', '32', '64')
             elif arch == 'toolchain':
-                package_stage = self.do_build('darwin-64')
+                toolchain_arch = ''
+                if platform.processor() == 'arm':
+                    toolchain_arch = 'darwin-arm64'
+                else:
+                    toolchain_arch = 'darwin-64'
+                package_stage = self.do_build(toolchain_arch)
             elif self.m64_only:
                 package_stage = self.do_build('darwin-64')
             elif self.m32_only:

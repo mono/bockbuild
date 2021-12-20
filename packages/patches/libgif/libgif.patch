@@ -1,0 +1,11 @@
+diff --git a/lib/gif_hash.c b/lib/gif_hash.c
+--- a/lib/gif_hash.c
++++ b/lib/gif_hash.c
+@@ -47,6 +47,7 @@
+ #include <fcntl.h>
+ #endif /* HAVE_FCNTL_H */
+ #include <stdio.h>
++#include <stdlib.h>
+ #include <string.h>
+ #include "gif_lib.h"
+ #include "gif_hash.h"

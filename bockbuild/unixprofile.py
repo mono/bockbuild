@@ -24,7 +24,8 @@ class UnixProfile (Profile):
                      '%{staged_prefix}/bin',
                      '/usr/bin',
                      '/bin',
-                     '/usr/local/bin')
+                     '/usr/local/bin',
+                     '/opt/homebrew/bin')
 
         self.env.set('C_INCLUDE_PATH',  '%{staged_prefix}/include')
 

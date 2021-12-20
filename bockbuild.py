@@ -105,7 +105,6 @@ class Bockbuild:
 
         loginit('bockbuild (%s)' % (self.bockbuild_rev))
         info('cmd: %s' % ' '.join(sys.argv))
-
         if len (sys.argv) < 2:
             info ('Profiles in %s --' % self.git ('config --get remote.origin.url', self.profile_root)[0])
             info(map (lambda x: '\t%s: %s' % (x.name, x.description), self.profiles))
@@ -139,8 +138,10 @@ class Bockbuild:
         self.build()
 
     def init_parser(self):
+	
         parser = OptionParser(
             usage='usage: %prog [options] [package_names...]')
+
         parser.add_option('--build',
                           action='store_true', dest='do_build', default=True,
                           help='build the profile')
