@@ -43,13 +43,13 @@ class DarwinProfile (UnixProfile):
     # ccache uses a different CC since it's not installed yet
     # every thing after ccache needs a working ccache
     default_toolchain = [
-        'cmake',
-        'autoconf',
-        'automake',
+        #'cmake',
+        #'autoconf',
+        #'automake',
         'ccache',
-        'libtool',
-        'xz',
-        'tar',
+       # 'libtool',
+       # 'xz',
+       # 'tar',
 
         # needed to autogen gtk+
         'gtk-osx-docbook',
@@ -132,9 +132,9 @@ class DarwinProfile (UnixProfile):
             self.bockbuild.cmd_options.arch = 'darwin-32'
 
     def arch_build(self, arch, package):
-	if arch == 'darwin-arm64':
-	    package.local_ld_flags = ['-arch arm64']
-	    package.local_gcc_flags = ['-arch arm64']
+        if arch == 'darwin-arm64':
+            package.local_ld_flags = ['-arch arm64']
+            package.local_gcc_flags = ['-arch arm64']
         elif arch == 'darwin-universal':
             package.local_ld_flags = ['-arch arm64', '-arch x86_64']
             package.local_gcc_flags = ['-arch arm64', '-arch x86_64']
